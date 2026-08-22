@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bhola Prasad Shah — Software Developer</title>
+<meta name="description" content="Portfolio of Bhola Prasad Shah, software developer based in Kathmandu, Nepal.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #FAFAF8;
+    --bg-raised: #F1F0EB;
+    --ink: #171A1C;
+    --ink-soft: #454B4E;
+    --muted: #7B8083;
+    --line: #DEDBD2;
+    --accent: #1F5C4E;      /* pine / forest */
+    --accent-soft: #E4ECE9;
+    --brass: #A97B32;       /* instrument brass, secondary accent */
+    --paper-shadow: rgba(23,26,28,0.06);
+    --display: 'Fraunces', serif;
+    --body: 'IBM Plex Sans', sans-serif;
+    --mono: 'IBM Plex Mono', monospace;
+  }
+
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--body);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{ color:inherit; }
+  img{ max-width:100%; display:block; }
+
+  ::selection{ background:var(--accent); color:var(--bg); }
+
+  .wrap{
+    max-width:1080px;
+    margin:0 auto;
+    padding:0 32px;
+  }
+
+  /* ---------- Contour / topographic signature motif ---------- */
+  .contour-bg{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    z-index:0;
+    opacity:0.55;
+  }
+  .contour-bg path{
+    fill:none;
+    stroke:var(--accent);
+    stroke-width:1;
+    opacity:0.35;
+  }
+  .contour-bg path:nth-child(odd){ opacity:0.2; }
+
+  /* ---------- Header ---------- */
+  header{
+    position:sticky; top:0; z-index:50;
+    background:rgba(250,250,248,0.86);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:20px 32px;
+    max-width:1080px; margin:0 auto;
+  }
+  .brand{
+    font-family:var(--mono);
+    font-size:14px;
+    letter-spacing:0.02em;
+    text-decoration:none;
+    display:flex; align-items:center; gap:8px;
+  }
+  .brand .dot{
+    width:8px; height:8px; border-radius:50%;
+    background:var(--accent);
+    display:inline-block;
+  }
+  nav ul{
+    list-style:none;
+    display:flex;
+    gap:32px;
+  }
+  nav ul a{
+    text-decoration:none;
+    font-size:14px;
+    color:var(--ink-soft);
+    transition:color 0.2s ease;
+  }
+  nav ul a:hover{ color:var(--accent); }
+  .nav-toggle{ display:none; }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    position:relative;
+    overflow:hidden;
+    padding:120px 0 100px;
+    border-bottom:1px solid var(--line);
+  }
+  .hero .wrap{ position:relative; z-index:1; }
+  .coord{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:0.08em;
+    color:var(--brass);
+    text-transform:uppercase;
+    margin-bottom:24px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .coord::before{
+    content:'';
+    width:24px; height:1px;
+    background:var(--brass);
+    display:inline-block;
+  }
+  h1.name{
+    font-family:var(--display);
+    font-weight:500;
+    font-size:clamp(44px, 7vw, 84px);
+    line-height:1.02;
+    letter-spacing:-0.01em;
+    max-width:14ch;
+  }
+  .role{
+    font-family:var(--display);
+    font-style:italic;
+    font-weight:400;
+    font-size:clamp(20px, 2.6vw, 28px);
+    color:var(--accent);
+    margin-top:14px;
+  }
+  .hero-desc{
+    max-width:52ch;
+    margin-top:28px;
+    color:var(--ink-soft);
+    font-size:17px;
+  }
+  .hero-cta{
+    margin-top:40px;
+    display:flex; gap:16px; flex-wrap:wrap;
+  }
+  .btn{
+    font-family:var(--body);
+    font-size:14px;
+    font-weight:500;
+    padding:13px 26px;
+    border-radius:2px;
+    text-decoration:none;
+    display:inline-block;
+    transition:all 0.2s ease;
+    border:1px solid transparent;
+  }
+  .btn-primary{
+    background:var(--ink);
+    color:var(--bg);
+  }
+  .btn-primary:hover{ background:var(--accent); }
+  .btn-outline{
+    border-color:var(--line);
+    color:var(--ink);
+  }
+  .btn-outline:hover{ border-color:var(--ink); }
+
+  /* ---------- Section shell ---------- */
+  section{ padding:96px 0; border-bottom:1px solid var(--line); }
+  section:last-of-type{ border-bottom:none; }
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin-bottom:14px;
+  }
+  h2.section-title{
+    font-family:var(--display);
+    font-weight:500;
+    font-size:clamp(28px, 4vw, 40px);
+    letter-spacing:-0.01em;
+    margin-bottom:48px;
+    max-width:20ch;
+  }
+
+  /* ---------- About ---------- */
+  .about-grid{
+    display:grid;
+    grid-template-columns:1.1fr 0.9fr;
+    gap:64px;
+    align-items:start;
+  }
+  .about-text p{
+    color:var(--ink-soft);
+    font-size:16px;
+    margin-bottom:18px;
+    max-width:56ch;
+  }
+  .about-text p:first-child{
+    font-size:19px;
+    color:var(--ink);
+  }
+  .fact-list{
+    display:flex; flex-direction:column; gap:0;
+    border-top:1px solid var(--line);
+  }
+  .fact-row{
+    display:flex; justify-content:space-between;
+    padding:16px 0;
+    border-bottom:1px solid var(--line);
+    font-size:14px;
+  }
+  .fact-row .k{ font-family:var(--mono); color:var(--muted); }
+  .fact-row .v{ color:var(--ink); text-align:right; }
+
+  /* ---------- Skills ---------- */
+  .skills-grid{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+  }
+  .skill-cell{
+    background:var(--bg);
+    padding:28px 24px;
+  }
+  .skill-cell .cat{
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--brass);
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    margin-bottom:12px;
+  }
+  .skill-cell ul{ list-style:none; }
+  .skill-cell li{
+    font-size:15px;
+    color:var(--ink-soft);
+    padding:4px 0;
+  }
+
+  /* ---------- Projects ---------- */
+  .project{
+    display:grid;
+    grid-template-columns:80px 1fr;
+    gap:32px;
+    padding:36px 0;
+    border-top:1px solid var(--line);
+    transition:background 0.2s ease;
+  }
+  .project:last-child{ border-bottom:1px solid var(--line); }
+  .project:hover{ background:var(--bg-raised); }
+  .project .elev{
+    font-family:var(--mono);
+    font-size:13px;
+    color:var(--muted);
+    padding-top:4px;
+  }
+  .project h3{
+    font-family:var(--display);
+    font-weight:500;
+    font-size:22px;
+    margin-bottom:8px;
+  }
+  .project p{
+    color:var(--ink-soft);
+    font-size:15px;
+    max-width:60ch;
+    margin-bottom:14px;
+  }
+  .tag-row{ display:flex; gap:8px; flex-wrap:wrap; }
+  .tag{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:0.04em;
+    padding:4px 10px;
+    background:var(--accent-soft);
+    color:var(--accent);
+    border-radius:2px;
+  }
+  .project-link{
+    display:inline-block;
+    margin-top:14px;
+    font-size:13px;
+    font-family:var(--mono);
+    color:var(--ink);
+    text-decoration:none;
+    border-bottom:1px solid var(--ink);
+  }
+
+  /* ---------- Experience ---------- */
+  .timeline{ position:relative; padding-left:28px; }
+  .timeline::before{
+    content:'';
+    position:absolute; left:0; top:6px; bottom:6px;
+    width:1px;
+    background:var(--line);
+  }
+  .tl-item{ position:relative; padding-bottom:44px; }
+  .tl-item:last-child{ padding-bottom:0; }
+  .tl-item::before{
+    content:'';
+    position:absolute; left:-32px; top:6px;
+    width:9px; height:9px;
+    border-radius:50%;
+    background:var(--accent);
+    border:2px solid var(--bg);
+    outline:1px solid var(--accent);
+  }
+  .tl-date{
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--muted);
+    margin-bottom:6px;
+  }
+  .tl-item h3{
+    font-family:var(--display);
+    font-size:19px;
+    font-weight:500;
+  }
+  .tl-item .org{ color:var(--accent); font-size:14px; margin-bottom:8px; }
+  .tl-item p{ color:var(--ink-soft); font-size:15px; max-width:60ch; }
+
+  /* ---------- Contact ---------- */
+  .contact-inner{
+    display:grid;
+    grid-template-columns:1.1fr 0.9fr;
+    gap:64px;
+    align-items:center;
+  }
+  .contact-inner h2{
+    font-family:var(--display);
+    font-weight:500;
+    font-size:clamp(30px,4vw,44px);
+    line-height:1.1;
+    max-width:14ch;
+  }
+  .contact-links{ display:flex; flex-direction:column; gap:0; }
+  .contact-links a{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:18px 0;
+    border-bottom:1px solid var(--line);
+    text-decoration:none;
+    font-size:15px;
+    color:var(--ink);
+  }
+  .contact-links a .arrow{
+    font-family:var(--mono); color:var(--muted);
+    transition:transform 0.2s ease, color 0.2s ease;
+  }
+  .contact-links a:hover .arrow{ transform:translateX(4px); color:var(--accent); }
+
+  footer{
+    padding:32px 0;
+    text-align:center;
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--muted);
+  }
+
+  @media (max-width:760px){
+    nav ul{ display:none; }
+    .about-grid, .contact-inner{ grid-template-columns:1fr; }
+    .skills-grid{ grid-template-columns:1fr; }
+    .project{ grid-template-columns:1fr; gap:8px; }
+    .hero{ padding:90px 0 70px; }
+    section{ padding:64px 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior:auto; }
+    *{ transition:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <nav class="nav">
+    <a href="#top" class="brand"><span class="dot"></span>B. PRASAD SHAH</a>
+    <ul>
+      <li><a href="#about">About</a></li>
+      <li><a href="#skills">Skills</a></li>
+      <li><a href="#work">Work</a></li>
+      <li><a href="#experience">Experience</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
+</header>
+
+<section class="hero" id="top">
+  <svg class="contour-bg" viewBox="0 0 1080 500" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M -50 420 Q 200 380 400 430 T 900 400 T 1150 440" />
+    <path d="M -50 370 Q 220 320 420 380 T 920 340 T 1150 390" />
+    <path d="M -50 320 Q 240 260 440 330 T 940 280 T 1150 330" />
+    <path d="M -50 270 Q 260 200 460 280 T 960 220 T 1150 270" />
+    <path d="M -50 220 Q 280 140 480 230 T 980 160 T 1150 210" />
+    <path d="M -50 170 Q 300 80 500 180 T 1000 100 T 1150 150" />
+  </svg>
+  <div class="wrap">
+    <div class="coord">27.7172° N, 85.3240° E — Kathmandu, Nepal</div>
+    <h1 class="name">Bhola Prasad Shah</h1>
+    <div class="role">Software Developer</div>
+    <p class="hero-desc">
+      I build reliable web applications and backend systems — from first line of code
+      to production. Currently focused on full-stack development, clean architecture,
+      and shipping things that hold up under real use.
+    </p>
+    <div class="hero-cta">
+      <a href="#work" class="btn btn-primary">View my work</a>
+      <a href="#contact" class="btn btn-outline">Get in touch</a>
+    </div>
+  </div>
+</section>
+
+<section id="about">
+  <div class="wrap">
+    <div class="eyebrow">01 — About</div>
+    <div class="about-grid">
+      <div class="about-text">
+        <p>I'm a software developer based in Kathmandu, working across the stack —
+        from designing APIs and data models to building the interfaces people
+        actually use.</p>
+        <p>My approach is practical: understand the problem first, choose the
+        simplest tool that solves it well, and write code that the next person
+        (often me, six months later) can actually read. I care about performance,
+        clarity, and shipping things that work.</p>
+        <p>Outside of client and product work, I spend time exploring new tools,
+        contributing to small open-source projects, and writing notes on things
+        I've learned the hard way.</p>
+      </div>
+      <div class="fact-list">
+        <div class="fact-row"><span class="k">BASED IN</span><span class="v">Kathmandu, Nepal</span></div>
+        <div class="fact-row"><span class="k">FOCUS</span><span class="v">Full-stack development</span></div>
+        <div class="fact-row"><span class="k">AVAILABLE FOR</span><span class="v">Freelance &amp; full-time</span></div>
+        <div class="fact-row"><span class="k">EXPERIENCE</span><span class="v">3+ years</span></div>
+        <div class="fact-row"><span class="k">RESUME</span><span class="v"><a href="#" style="text-decoration:underline;">Download PDF</a></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="skills">
+  <div class="wrap">
+    <div class="eyebrow">02 — Skills</div>
+    <h2 class="section-title">Tools I reach for</h2>
+    <div class="skills-grid">
+      <div class="skill-cell">
+        <div class="cat">Languages</div>
+        <ul>
+          <li>JavaScript / TypeScript</li>
+          <li>Python</li>
+          <li>SQL</li>
+          <li>HTML &amp; CSS</li>
+        </ul>
+      </div>
+      <div class="skill-cell">
+        <div class="cat">Frontend</div>
+        <ul>
+          <li>React</li>
+          <li>Next.js</li>
+          <li>Tailwind CSS</li>
+          <li>Responsive design</li>
+        </ul>
+      </div>
+      <div class="skill-cell">
+        <div class="cat">Backend</div>
+        <ul>
+          <li>Node.js / Express</li>
+          <li>REST &amp; GraphQL APIs</li>
+          <li>PostgreSQL / MongoDB</li>
+          <li>Authentication &amp; security</li>
+        </ul>
+      </div>
+      <div class="skill-cell">
+        <div class="cat">Infrastructure</div>
+        <ul>
+          <li>Git &amp; GitHub</li>
+          <li>Docker</li>
+          <li>Linux servers</li>
+          <li>CI/CD basics</li>
+        </ul>
+      </div>
+      <div class="skill-cell">
+        <div class="cat">Tools</div>
+        <ul>
+          <li>VS Code</li>
+          <li>Figma (handoff)</li>
+          <li>Postman</li>
+          <li>Notion</li>
+        </ul>
+      </div>
+      <div class="skill-cell">
+        <div class="cat">Practices</div>
+        <ul>
+          <li>Testing &amp; debugging</li>
+          <li>Code review</li>
+          <li>Agile workflows</li>
+          <li>Technical writing</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="work">
+  <div class="wrap">
+    <div class="eyebrow">03 — Selected work</div>
+    <h2 class="section-title">Projects I've built</h2>
+
+    <div class="project">
+      <div class="elev">01</div>
+      <div>
+        <h3>Project One — replace with your project name</h3>
+        <p>A short, honest description of what this project does, who it's for,
+        and the problem it solves. One or two sentences is enough.</p>
+        <div class="tag-row">
+          <span class="tag">React</span>
+          <span class="tag">Node.js</span>
+          <span class="tag">PostgreSQL</span>
+        </div>
+        <a href="#" class="project-link">View project →</a>
+      </div>
+    </div>
+
+    <div class="project">
+      <div class="elev">02</div>
+      <div>
+        <h3>Project Two — replace with your project name</h3>
+        <p>What you built, the stack you used, and the outcome or impact —
+        a number or result makes this more convincing than adjectives.</p>
+        <div class="tag-row">
+          <span class="tag">Next.js</span>
+          <span class="tag">TypeScript</span>
+          <span class="tag">Tailwind</span>
+        </div>
+        <a href="#" class="project-link">View project →</a>
+      </div>
+    </div>
+
+    <div class="project">
+      <div class="elev">03</div>
+      <div>
+        <h3>Project Three — replace with your project name</h3>
+        <p>Include a link to the live site or GitHub repo so people can see
+        the real thing, not just read about it.</p>
+        <div class="tag-row">
+          <span class="tag">Python</span>
+          <span class="tag">API</span>
+          <span class="tag">Docker</span>
+        </div>
+        <a href="#" class="project-link">View project →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="experience">
+  <div class="wrap">
+    <div class="eyebrow">04 — Experience</div>
+    <h2 class="section-title">Where I've worked</h2>
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-date">2024 — Present</div>
+        <h3>Job Title — Company Name</h3>
+        <div class="org">Kathmandu, Nepal</div>
+        <p>Describe your main responsibilities and one or two concrete
+        achievements — what you shipped, improved, or owned.</p>
+      </div>
+      <div class="tl-item">
+        <div class="tl-date">2022 — 2024</div>
+        <h3>Job Title — Company Name</h3>
+        <div class="org">Kathmandu, Nepal</div>
+        <p>Same format — role, scope, and a measurable result if you have one.</p>
+      </div>
+      <div class="tl-item">
+        <div class="tl-date">2021 — 2022</div>
+        <h3>Job Title — Company Name</h3>
+        <div class="org">Remote</div>
+        <p>Earliest relevant role or internship — keep it brief.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="wrap">
+    <div class="contact-inner">
+      <div>
+        <div class="eyebrow">05 — Contact</div>
+        <h2>Let's build something worth shipping.</h2>
+      </div>
+      <div class="contact-links">
+        <a href="mailto:hello@bholaprasadshah.com.np">
+          <span>Email</span><span class="arrow">hello@bholaprasadshah.com.np →</span>
+        </a>
+        <a href="https://github.com/" target="_blank" rel="noopener">
+          <span>GitHub</span><span class="arrow">/yourusername →</span>
+        </a>
+        <a href="https://linkedin.com/" target="_blank" rel="noopener">
+          <span>LinkedIn</span><span class="arrow">/in/yourprofile →</span>
+        </a>
+        <a href="https://twitter.com/" target="_blank" rel="noopener">
+          <span>Twitter / X</span><span class="arrow">@yourhandle →</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">© 2026 Bhola Prasad Shah · Kathmandu, Nepal</div>
+</footer>
+
+</body>
+</html>
