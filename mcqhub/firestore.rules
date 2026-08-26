@@ -1,0 +1,38 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Basic shape/sanity checks for a player's score document.
+    // This stops obviously malformed or out-of-range writes, but — since
+    // there's no login system — it can't fully stop someone from editing
+    // requests to inflate their own score. That would need a server-side
+    // function to grade quizzes instead of the browser. Fine for a casual
+    // portfolio leaderboard; avoid this pattern for anything that needs
+    // to be tamper-proof.
+    function isValidPlayer(playerId, data) {
+      return data.name is string
+        && data.name.size() > 0 && data.name.size() <= 24
+        && playerId == data.name.lower()
+        && data.bestPercent is number && data.bestPercent >= 0 && data.bestPercent <= 100
+        && data.gamesPlayed is number && data.gamesPlayed >= 0
+        && data.totalCorrect is number && data.totalCorrect >= 0
+        && data.totalQuestions is number && data.totalQuestions >= 0
+        && data.totalCorrect <= data.totalQuestions;
+    }
+
+    match /players/{playerId} {
+      allow read: if true;
+
+      allow create: if isValidPlayer(playerId, request.resource.data)
+                    && request.resource.data.gamesPlayed == 0;
+
+      allow update: if isValidPlayer(playerId, request.resource.data)
+                    && request.resource.data.gamesPlayed == resource.data.gamesPlayed + 1
+                    && request.resource.data.totalQuestions >= resource.data.totalQuestions
+                    && request.resource.data.totalCorrect >= resource.data.totalCorrect
+                    && request.resource.data.bestPercent >= resource.data.bestPercent;
+
+      allow delete: if false;
+    }
+  }
+}
