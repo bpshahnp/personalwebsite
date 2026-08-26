@@ -1,0 +1,27 @@
+[
+  {
+    "question": "What does 'HTML' stand for?",
+    "options": ["Hyper Trainer Marking Language", "HyperText Markup Language", "HyperText Machine Language", "High Text Markup Language"],
+    "answerIndex": 1
+  },
+  {
+    "question": "Which company developed the Python programming language?",
+    "options": ["It was created by an individual, Guido van Rossum", "Microsoft", "Google", "Apple"],
+    "answerIndex": 0
+  },
+  {
+    "question": "What does 'CPU' stand for?",
+    "options": ["Central Process Unit", "Computer Personal Unit", "Central Processing Unit", "Control Processing Unit"],
+    "answerIndex": 2
+  },
+  {
+    "question": "Which of these is a version control system?",
+    "options": ["Git", "Photoshop", "Excel", "Figma"],
+    "answerIndex": 0
+  },
+  {
+    "question": "What does 'URL' stand for?",
+    "options": ["Uniform Resource Locator", "Universal Reference Link", "United Resource Locator", "Uniform Reference Locator"],
+    "answerIndex": 0
+  }
+]

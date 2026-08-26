@@ -1,0 +1,27 @@
+[
+  {
+    "question": "What is the capital of Nepal?",
+    "options": ["Pokhara", "Kathmandu", "Biratnagar", "Lalitpur"],
+    "answerIndex": 1
+  },
+  {
+    "question": "Which is the tallest mountain in the world, located on Nepal's border?",
+    "options": ["K2", "Kangchenjunga", "Mount Everest", "Annapurna"],
+    "answerIndex": 2
+  },
+  {
+    "question": "What is Nepal's national flower?",
+    "options": ["Lotus", "Rhododendron", "Sunflower", "Marigold"],
+    "answerIndex": 1
+  },
+  {
+    "question": "Nepal shares its borders with which two countries?",
+    "options": ["India and China", "India and Bhutan", "China and Pakistan", "India and Bangladesh"],
+    "answerIndex": 0
+  },
+  {
+    "question": "What is the official language of Nepal?",
+    "options": ["Hindi", "Nepali", "Bengali", "Newari"],
+    "answerIndex": 1
+  }
+]
