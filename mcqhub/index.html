@@ -1,1 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Hub — B. Prasad Shah</title>
+<meta name="description" content="MCQ Quiz Hub">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<!-- Firebase (compat SDK — simplest to drop into a plain HTML/JS site) -->
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+</head>
+<body>
 
+<svg class="contour-bg" viewBox="0 0 1080 700" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+  <path d="M -50 620 Q 200 580 400 630 T 900 600 T 1150 640" />
+  <path d="M -50 560 Q 220 510 420 570 T 920 530 T 1150 580" />
+  <path d="M -50 500 Q 240 440 440 510 T 940 460 T 1150 510" />
+  <path d="M -50 440 Q 260 370 460 450 T 960 390 T 1150 440" />
+  <path d="M -50 380 Q 280 300 480 390 T 980 320 T 1150 370" />
+  <path d="M -50 320 Q 300 230 500 330 T 1000 250 T 1150 300" />
+  <path d="M -50 260 Q 320 160 520 270 T 1020 180 T 1150 230" />
+</svg>
+
+<div id="app">
+  <div class="sheet">
+
+    <div class="top-controls">
+      <a class="back-link" href="../index.html">← back</a>
+      <div class="top-right">
+        <span class="who hidden" id="whoBadge"></span>
+        <button class="icon-btn" id="muteBtn" title="Toggle sound" aria-label="Toggle sound">🔊</button>
+      </div>
+    </div>
+
+    <!-- NAME / ACCOUNT SCREEN -->
+    <div id="name-screen">
+      <span class="dot"></span>
+      <h1>Quiz Hub</h1>
+      <div class="sub">Enter your name to play and track your score</div>
+
+      <form id="nameForm">
+        <div class="field">
+          <label for="nameInput">Your name</label>
+          <input type="text" id="nameInput" class="text-input" placeholder="e.g. Bhola" maxlength="24" autocomplete="off" required>
+        </div>
+        <button class="btn" type="submit" id="nameSubmitBtn">Continue</button>
+      </form>
+      <div class="fine-print">Your name and scores appear on a public, shared leaderboard visible to everyone who plays.</div>
+      <div class="fine-print error hidden" id="connectionError">Couldn't reach the live scoreboard. Check your connection, or the site owner needs to finish the Firebase setup.</div>
+    </div>
+
+    <!-- DASHBOARD SCREEN -->
+    <div id="dashboard-screen" class="hidden">
+      <span class="dot"></span>
+      <h1 id="dashboardGreeting">Welcome</h1>
+      <div class="sub">Your stats and the shared, live leaderboard</div>
+
+      <div class="stat-row" id="myStats"></div>
+
+      <div class="field">
+        <label><span class="live-dot" aria-hidden="true"></span>Leaderboard — live</label>
+        <div class="leaderboard" id="leaderboard"><div class="lb-empty">Loading…</div></div>
+      </div>
+
+      <button class="btn" id="newQuizBtn">Start a new quiz</button>
+      <button class="btn ghost" id="switchUserBtn">Switch user</button>
+    </div>
+
+    <!-- SETUP SCREEN -->
+    <div id="setup-screen" class="hidden">
+      <span class="dot"></span>
+      <h1>New quiz</h1>
+      <div class="sub" id="setupSubtitle">Loading questions…</div>
+
+      <div class="field">
+        <label>Category</label>
+        <div class="pill-group" id="categoryPills"></div>
+      </div>
+
+      <div class="field">
+        <label for="countSelect">Number of questions</label>
+        <select id="countSelect"></select>
+      </div>
+
+      <button class="btn" id="startBtn" disabled>Start quiz</button>
+      <button class="btn ghost" id="backToDashboardBtn">Back to dashboard</button>
+    </div>
+
+    <!-- QUIZ SCREEN -->
+    <div id="quiz-screen" class="hidden">
+      <div class="quiz-top">
+        <span class="counter" id="qCounter">Question 1 of 10</span>
+        <span class="score-badge" id="scoreBadge">Score: 0</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+
+      <p class="question" id="questionText"></p>
+      <div class="options" id="optionsList"></div>
+      <div class="feedback" id="feedback"></div>
+
+      <button class="btn hidden" id="nextBtn">Next question</button>
+    </div>
+
+    <!-- RESULT SCREEN -->
+    <div id="result-screen" class="hidden">
+      <span class="dot"></span>
+      <div class="sub">Results</div>
+      <div class="score-hero">
+        <div class="big" id="resultScore">0/0</div>
+        <div class="tag" id="resultTag">Nice work</div>
+      </div>
+      <div class="rank-note" id="rankNote"></div>
+      <div class="btn-row">
+        <button class="btn ghost" id="reviewToggleBtn">Review answers</button>
+        <button class="btn" id="restartBtn">Play again</button>
+      </div>
+      <div class="review hidden" id="reviewList"></div>
+      <button class="btn ghost" id="toDashboardBtn">Back to dashboard</button>
+    </div>
+
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
