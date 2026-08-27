@@ -6,7 +6,7 @@ service cloud.firestore {
     function isValidPlayer(playerId, data) {
       return data.name is string
         && data.name.size() > 0 && data.name.size() <= 24
-        && playerId == data.name.lower()
+        && playerId == data.name
         && data.bestPercent is number && data.bestPercent >= 0 && data.bestPercent <= 100
         && data.gamesPlayed is number && data.gamesPlayed >= 0
         && data.totalCorrect is number && data.totalCorrect >= 0
