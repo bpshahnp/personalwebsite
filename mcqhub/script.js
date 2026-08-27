@@ -50,7 +50,7 @@ async function getOrCreateAccount(displayName){
   const snap = await ref.get();
   if(!snap.exists){
     await ref.set({
-      name: displayName.trim(),
+      name: key, // Stored in lowercase to match playerId and satisfy security rules
       gamesPlayed: 0,
       totalCorrect: 0,
       totalQuestions: 0,
