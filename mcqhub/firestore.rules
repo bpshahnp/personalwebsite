@@ -3,12 +3,6 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // Basic shape/sanity checks for a player's score document.
-    // This stops obviously malformed or out-of-range writes, but — since
-    // there's no login system — it can't fully stop someone from editing
-    // requests to inflate their own score. That would need a server-side
-    // function to grade quizzes instead of the browser. Fine for a casual
-    // portfolio leaderboard; avoid this pattern for anything that needs
-    // to be tamper-proof.
     function isValidPlayer(playerId, data) {
       return data.name is string
         && data.name.size() > 0 && data.name.size() <= 24
