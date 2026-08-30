@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin | B. Prasad Shah</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="index.html" class="logo">B. <span>Prasad Shah</span></a>
+      <nav class="main-nav">
+        <a href="index.html">Home</a>
+        <a href="mcq.html">MCQ Hub</a>
+      </nav>
+      <div class="header-actions">
+        <button class="btn btn-outline" id="signOutBtn" hidden>Sign out</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== Not logged in: sign-in gate ===== -->
+  <section class="admin-gate" id="signInGate">
+    <div class="container" style="max-width:380px">
+      <h1 class="section-title" style="text-align:center">Admin sign in</h1>
+      <form id="adminLoginForm" class="admin-login-form">
+        <label>Email <input type="email" id="adminEmail" required /></label>
+        <label>Password <input type="password" id="adminPassword" required minlength="6" /></label>
+        <button type="submit" class="btn btn-primary" style="width:100%">Sign in</button>
+      </form>
+      <p class="modal-status" id="adminLoginStatus"></p>
+      <p class="modal-alt">Only email addresses listed in <code>ADMIN_EMAILS</code> (in <code>js/firebase-config.js</code>) can manage content.</p>
+    </div>
+  </section>
+
+  <!-- ===== Logged in but not on the admin allowlist ===== -->
+  <section class="admin-gate" id="notAuthorized" hidden>
+    <div class="container" style="max-width:420px; text-align:center">
+      <h1 class="section-title">Not authorized</h1>
+      <p>Your account is signed in, but isn't on the admin list yet. Add your email to <code>ADMIN_EMAILS</code> in <code>js/firebase-config.js</code> (and to your Firestore rules) to get access.</p>
+    </div>
+  </section>
+
+  <!-- ===== Admin dashboard ===== -->
+  <section class="admin-dashboard" id="dashboard" hidden>
+    <div class="container">
+      <h1 class="section-title">Admin Panel</h1>
+
+      <div class="admin-tabs">
+        <button class="admin-tab active" data-tab="questions">Questions (MCQ Hub)</button>
+        <button class="admin-tab" data-tab="updates">Latest Updates</button>
+      </div>
+
+      <!-- ---- Questions tab ---- -->
+      <div class="admin-panel" id="tab-questions">
+        <form id="questionForm" class="admin-form">
+          <input type="hidden" id="questionId" />
+          <label>Question <textarea id="qText" rows="2" required></textarea></label>
+          <div class="admin-form-grid">
+            <label>Option A <input type="text" id="opt0" required /></label>
+            <label>Option B <input type="text" id="opt1" required /></label>
+            <label>Option C <input type="text" id="opt2" required /></label>
+            <label>Option D <input type="text" id="opt3" required /></label>
+          </div>
+          <label>Correct option
+            <select id="correctIndex" required>
+              <option value="0">A</option>
+              <option value="1">B</option>
+              <option value="2">C</option>
+              <option value="3">D</option>
+            </select>
+          </label>
+          <label>Explanation <textarea id="qExplanation" rows="2"></textarea></label>
+          <label>Category <input type="text" id="qCategory" placeholder="e.g. Python Basics" /></label>
+          <div class="admin-form-actions">
+            <button type="submit" class="btn btn-primary" id="questionSubmitBtn">Add question</button>
+            <button type="button" class="btn btn-outline" id="cancelQuestionEdit" hidden>Cancel edit</button>
+          </div>
+        </form>
+
+        <div id="questionsAdminList" class="admin-list">
+          <p class="updates-loading">Loading questions…</p>
+        </div>
+      </div>
+
+      <!-- ---- Updates tab ---- -->
+      <div class="admin-panel" id="tab-updates" hidden>
+        <form id="updateForm" class="admin-form">
+          <input type="hidden" id="updateId" />
+          <label>Title <input type="text" id="uTitle" required /></label>
+          <div class="admin-form-grid">
+            <label>Date (as shown) <input type="text" id="uDate" placeholder="08/30/2026" required /></label>
+            <label>Order (higher shows first) <input type="number" id="uOrder" value="1" required /></label>
+          </div>
+          <div class="admin-form-actions">
+            <button type="submit" class="btn btn-primary" id="updateSubmitBtn">Add update</button>
+            <button type="button" class="btn btn-outline" id="cancelUpdateEdit" hidden>Cancel edit</button>
+          </div>
+        </form>
+
+        <div id="updatesAdminList" class="admin-list">
+          <p class="updates-loading">Loading updates…</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

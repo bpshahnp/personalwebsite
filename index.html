@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>B. Prasad Shah | MCQ Hub &amp; Python Hub</title>
+  <meta name="description" content="Master your knowledge with B. Prasad Shah's MCQ Hub, Python Hub, and educational resources." />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- ===== Header ===== -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="#" class="logo">B. <span>Prasad Shah</span></a>
+
+      <nav class="main-nav" id="mainNav">
+        <a href="#home" class="active">Home</a>
+        <a href="mcq.html">MCQ Hub</a>
+        <a href="#python-hub">Python Hub</a>
+        <div class="dropdown">
+          <button class="dropdown-toggle">See More Options ▾</button>
+          <div class="dropdown-menu">
+            <a href="#resources">Additional Resources</a>
+            <a href="#updates">Latest Updates</a>
+            <a href="#contact">Contact</a>
+            <a href="admin.html">Admin Panel</a>
+          </div>
+        </div>
+      </nav>
+
+      <div class="header-actions">
+        <form class="search-form" id="searchForm" role="search">
+          <input type="search" id="searchInput" placeholder="Search topics..." aria-label="Search topics" />
+          <button type="submit" aria-label="Search">🔍</button>
+        </form>
+        <button class="btn btn-outline" id="loginBtn">Login / Sign Up</button>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">☰</button>
+    </div>
+  </header>
+
+  <!-- ===== Hero ===== -->
+  <section class="hero" id="home">
+    <div class="hero-bg" aria-hidden="true"></div>
+    <div class="container hero-inner">
+      <h1>Master Your<br />Knowledge</h1>
+      <p>Access MCQ Hub, Python Hub, and more educational resources — built to help you learn faster and retain more.</p>
+      <a href="#mcq-hub" class="btn btn-primary">Explore Courses</a>
+    </div>
+  </section>
+
+  <!-- ===== Featured Hubs ===== -->
+  <section class="hubs" id="hubs">
+    <div class="container">
+      <h2 class="section-title">Featured Hubs</h2>
+
+      <div class="hub-grid">
+        <article class="hub-card" id="mcq-hub">
+          <div class="hub-icon" data-icon="mcq">📋</div>
+          <h3>MCQ Hub</h3>
+          <p>Practice diverse multiple-choice questions with detailed explanations.</p>
+          <a href="mcq.html" class="btn btn-secondary">Go to MCQ Hub</a>
+        </article>
+
+        <article class="hub-card" id="python-hub">
+          <div class="hub-icon" data-icon="python">🐍</div>
+          <h3>Python Hub</h3>
+          <p>Learn Python programming from basics to advanced, with hands-on examples.</p>
+          <a href="#" class="btn btn-secondary">Go to Python Hub</a>
+        </article>
+
+        <article class="hub-card" id="resources">
+          <div class="hub-icon" data-icon="folder">📁</div>
+          <h3>Additional Resources</h3>
+          <p>Explore upcoming categories, notes, and study materials.</p>
+          <a href="#" class="btn btn-secondary">View More</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Latest Updates (pulled live from Firebase) ===== -->
+  <section class="updates" id="updates">
+    <div class="container">
+      <h2 class="section-title">Latest Updates</h2>
+      <ul class="updates-list" id="updatesList">
+        <li class="updates-loading">Loading latest updates…</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===== Footer ===== -->
+  <footer class="site-footer" id="contact">
+    <div class="container footer-inner">
+      <p>&copy; <span id="year"></span> B. Prasad Shah — Python Hub</p>
+      <div class="footer-links">
+        <a href="#home">About Us</a>
+        <a href="#contact">Contact</a>
+        <a href="admin.html">Admin</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Login modal -->
+  <div class="modal" id="loginModal" hidden>
+    <div class="modal-content">
+      <button class="modal-close" id="modalClose" aria-label="Close">&times;</button>
+      <h3>Login to B. Prasad Shah</h3>
+      <form id="loginForm">
+        <label>Email
+          <input type="email" id="emailInput" required />
+        </label>
+        <label>Password
+          <input type="password" id="passwordInput" required minlength="6" />
+        </label>
+        <button type="submit" class="btn btn-primary" style="width:100%">Login</button>
+        <p class="modal-alt">No account? <a href="#" id="signupLink">Sign up instead</a></p>
+      </form>
+      <p class="modal-status" id="authStatus"></p>
+    </div>
+  </div>
+
+  <!-- Firebase SDKs (compat build — simplest to drop into plain HTML/JS) -->
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+
+  <script src="js/firebase-config.js"></script>
+  <script src="js/script.js"></script>
+</body>
+</html>
