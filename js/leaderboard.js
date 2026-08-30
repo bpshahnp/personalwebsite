@@ -28,11 +28,12 @@ db.collection("scores")
         return;
       }
 
-      snapshot.forEach((doc, index) => {
+      let rank = 0;
+      snapshot.forEach((doc) => {
+        rank++;
         const s = doc.data();
         const row = document.createElement("div");
         row.className = "leaderboard-row";
-        const rank = index + 1;
         const medal = rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : rank;
         row.innerHTML = `
           <span class="leaderboard-rank">${medal}</span>
