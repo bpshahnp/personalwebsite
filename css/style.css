@@ -391,18 +391,65 @@ img { max-width: 100%; display: block; }
 /* ---------- Responsive ---------- */
 @media (max-width: 880px) {
   .hub-grid { grid-template-columns: 1fr; }
+
+  .header-inner {
+    flex-wrap: wrap;
+    row-gap: 0;
+  }
+  .logo { order: 1; flex: 1; }
+  .nav-toggle { display: block; order: 2; }
+
   .main-nav, .header-actions { display: none; }
-  .nav-toggle { display: block; }
-  .site-header.open .main-nav,
-  .site-header.open .header-actions {
+
+  .site-header.open .main-nav {
+    order: 3;
     display: flex;
     flex-direction: column;
     align-items: stretch;
     width: 100%;
+    margin-top: 14px;
+    border-top: 1px solid var(--line);
   }
-  .site-header.open .header-inner { flex-wrap: wrap; }
+  .site-header.open .header-actions {
+    order: 4;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    width: 100%;
+    padding: 14px 0 16px;
+  }
+
+  .site-header.open .main-nav a {
+    padding: 13px 2px;
+    border-bottom: 1px solid var(--line);
+  }
+  .site-header.open .main-nav a:last-of-type { border-bottom: none; }
+
+  .site-header.open .dropdown { width: 100%; }
+  .site-header.open .dropdown-toggle {
+    width: 100%;
+    text-align: left;
+    padding: 13px 2px;
+    border-bottom: 1px solid var(--line);
+  }
+  .site-header.open .dropdown-menu {
+    position: static;
+    display: none;
+    box-shadow: none;
+    border: none;
+    border-radius: 0;
+    padding: 0 0 0 14px;
+    min-width: 0;
+  }
+  .site-header.open .dropdown.open .dropdown-menu { display: block; }
+  .site-header.open .dropdown-menu a { padding: 10px 4px; }
+
   .search-form input { width: 100%; }
+  .auth-widget { width: 100%; }
+  .auth-icon-btn { align-self: flex-start; }
 }
+
 
 /* ---------- Page hero (MCQ Hub) ---------- */
 .page-hero {
