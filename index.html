@@ -44,9 +44,47 @@
         </div>
       </div>
 
-      <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">☰</button>
+      <!-- Mobile-only: search icon + hamburger, shown once viewport narrows -->
+      <div class="mobile-header-icons">
+        <button class="search-toggle" id="searchToggle" aria-label="Search">🔍</button>
+        <button class="nav-toggle" id="navToggle" aria-label="Open menu">☰</button>
+      </div>
+    </div>
+
+    <!-- Mobile search bar, revealed by the search icon (search icon only — no full form clutter) -->
+    <div class="mobile-search" id="mobileSearch" hidden>
+      <div class="container">
+        <input type="search" id="mobileSearchInput" placeholder="Search topics..." aria-label="Search topics" />
+      </div>
     </div>
   </header>
+
+  <!-- ===== Mobile nav drawer (opened by the hamburger; no search bar in here) ===== -->
+  <div class="nav-drawer" id="navDrawer">
+    <button class="drawer-close" id="drawerClose" aria-label="Close menu">&times;</button>
+    <nav class="drawer-nav">
+      <a href="#home" class="active">Home</a>
+      <a href="mcq.html">MCQ Hub</a>
+      <a href="python.html">Python Hub</a>
+      <a href="leaderboard.html">Leaderboard</a>
+      <div class="dropdown">
+        <button class="dropdown-toggle">See More Options ▾</button>
+        <div class="dropdown-menu">
+          <a href="#resources">Additional Resources</a>
+          <a href="#updates">Latest Updates</a>
+          <a href="#contact">Contact</a>
+          <a href="admin.html">Admin Panel</a>
+        </div>
+      </div>
+    </nav>
+    <div class="drawer-account">
+      <div class="auth-widget">
+        <button class="auth-icon-btn" id="authIconBtnMobile" aria-label="Account">👤</button>
+        <div class="auth-dropdown" id="authDropdownMobile" hidden></div>
+      </div>
+    </div>
+  </div>
+  <div class="drawer-overlay" id="drawerOverlay"></div>
 
   <!-- ===== Hero ===== -->
   <section class="hero" id="home">
@@ -117,6 +155,7 @@
 
   <script src="js/firebase-config.js"></script>
   <script src="js/auth-widget.js"></script>
+  <script src="js/nav-drawer.js"></script>
   <script src="js/script.js"></script>
 </body>
 </html>
