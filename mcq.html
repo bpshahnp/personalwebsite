@@ -18,7 +18,14 @@
         <a href="index.html">Home</a>
         <a href="mcq.html" class="active">MCQ Hub</a>
         <a href="python.html">Python Hub</a>
+        <a href="leaderboard.html">Leaderboard</a>
       </nav>
+      <div class="header-actions">
+        <div class="auth-widget">
+          <button class="auth-icon-btn" id="authIconBtn" aria-label="Account">👤</button>
+          <div class="auth-dropdown" id="authDropdown" hidden></div>
+        </div>
+      </div>
       <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">☰</button>
     </div>
   </header>
@@ -81,10 +88,12 @@
         <h2>Quiz complete!</h2>
         <p class="quiz-final-score" id="finalScoreText">You scored 0 / 0</p>
         <div class="quiz-progress-track"><div class="quiz-progress-fill" id="finalScoreFill"></div></div>
+        <p class="quiz-muted" id="leaderboardStatus"></p>
 
         <div id="reviewList" class="review-list"></div>
 
         <div class="quiz-nav">
+          <a href="leaderboard.html" class="btn btn-outline">View Leaderboard</a>
           <button class="btn btn-primary" id="retryQuizBtn">Take Another Quiz</button>
         </div>
       </div>
@@ -106,6 +115,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
   <script src="js/firebase-config.js"></script>
+  <script src="js/auth-widget.js"></script>
   <script src="js/mcq.js"></script>
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();

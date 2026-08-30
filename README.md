@@ -10,12 +10,16 @@ bprasadshah/
 ├── index.html            → home page
 ├── mcq.html              → MCQ Hub — full quiz with live scoring, from Firestore
 ├── python.html           → Python Hub — searchable, runnable Python programs
+├── leaderboard.html      → Leaderboard — top MCQ quiz scores, ranked live
 ├── admin.html            → Admin Panel — add/edit/delete questions, programs & updates
 ├── firestore.rules        → security rules (see step 5)
+├── firestore.indexes.json → composite index needed for leaderboard sorting
 ├── css/style.css          → all styling
 ├── js/firebase-config.js  → connects to YOUR Firebase project + admin allowlist
-├── js/script.js           → home page: nav, search, login, live "Latest Updates"
-├── js/mcq.js              → quiz engine (start screen, live score, results/review)
+├── js/auth-widget.js      → shared account icon + login/logout dropdown (all pages)
+├── js/script.js           → home page: nav, search, live "Latest Updates"
+├── js/mcq.js              → quiz engine (start screen, live score, results, saves to leaderboard)
+├── js/leaderboard.js      → renders ranked scores on leaderboard.html
 ├── js/python-hub.js       → renders programs, search/category filter, runs code via Pyodide
 ├── js/admin.js            → sign-in gate + CRUD forms on admin.html
 └── README.md              → this guide
@@ -88,6 +92,38 @@ static version:
 
 Add a program from **Admin → Programs (Python Hub)**: title, category,
 an optional description, and the code itself.
+
+## How the account icon works
+
+Every page (`index.html`, `mcq.html`, `python.html`, `leaderboard.html`)
+now shows a small circular account icon (👤) in the header instead of
+a full "Login / Sign Up" or "Hi, name (Logout)" button — that text
+button was wide enough to break the nav bar on smaller screens.
+Clicking the icon opens a small dropdown with a login/signup form (if
+signed out) or your email + a Logout button (if signed in). It's one
+shared file, `js/auth-widget.js`, wired into every page's header.
+
+## How the Leaderboard works
+
+`leaderboard.html` shows the top MCQ quiz scores, best score first,
+with medal icons for the top 3.
+
+- Firestore collection: `scores`, **one document per user** (the doc
+  ID is their Firebase Auth UID), holding their personal best.
+- When someone finishes a quiz on `mcq.html`, if they're logged in
+  their score is compared to their existing best and only saved if
+  it's an improvement — so retaking a quiz doesn't spam duplicate
+  entries, it just updates their rank.
+- If they're not logged in, the result screen tells them to log in
+  (via the account icon) to save the score — a guest can still take
+  the quiz, they just won't appear on the board unless signed in.
+- Security rule: anyone can read the leaderboard, but a user can only
+  write to their own document (`request.auth.uid == uid`), so no one
+  can edit someone else's score.
+- `firestore.indexes.json` defines the composite index the leaderboard
+  query needs (sorting by percentage, then raw score). Deploying with
+  `firebase deploy --only firestore:indexes` (or the general `firebase
+  deploy`) creates it automatically — no manual step in the console.
 
 ## 3. Add your first "Latest Update"
 

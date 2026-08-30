@@ -10,8 +10,7 @@ service cloud.firestore {
     function isAdmin() {
       return request.auth != null &&
         request.auth.token.email in [
-          "bholashroff345@gmail.com"   // ← replace with your real admin email(s)
-          // "second-admin@example.com",
+          "bholashroff345@gmail.com"
         ];
     }
 
@@ -34,6 +33,16 @@ service cloud.firestore {
     match /pythonPrograms/{programId} {
       allow read: if true;
       allow create, update, delete: if isAdmin();
+    }
+
+    // ---- MCQ leaderboard --------------------------------------------------
+    // Shown on leaderboard.html. One doc per user (doc id = uid), holding
+    // their personal-best quiz score. Public read (so the board is visible
+    // to everyone); a user may only write to their OWN doc — no admin
+    // needed here, this just stops anyone editing someone else's score.
+    match /scores/{uid} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == uid;
     }
 
     // ---- Everything else: locked by default ------------------------------

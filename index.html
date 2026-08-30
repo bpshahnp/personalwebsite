@@ -21,6 +21,7 @@
         <a href="#home" class="active">Home</a>
         <a href="mcq.html">MCQ Hub</a>
         <a href="python.html">Python Hub</a>
+        <a href="leaderboard.html">Leaderboard</a>
         <div class="dropdown">
           <button class="dropdown-toggle">See More Options ▾</button>
           <div class="dropdown-menu">
@@ -37,7 +38,10 @@
           <input type="search" id="searchInput" placeholder="Search topics..." aria-label="Search topics" />
           <button type="submit" aria-label="Search">🔍</button>
         </form>
-        <button class="btn btn-outline" id="loginBtn">Login / Sign Up</button>
+        <div class="auth-widget">
+          <button class="auth-icon-btn" id="authIconBtn" aria-label="Account">👤</button>
+          <div class="auth-dropdown" id="authDropdown" hidden></div>
+        </div>
       </div>
 
       <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">☰</button>
@@ -106,31 +110,13 @@
     </div>
   </footer>
 
-  <!-- Login modal -->
-  <div class="modal" id="loginModal" hidden>
-    <div class="modal-content">
-      <button class="modal-close" id="modalClose" aria-label="Close">&times;</button>
-      <h3>Login to B. Prasad Shah</h3>
-      <form id="loginForm">
-        <label>Email
-          <input type="email" id="emailInput" required />
-        </label>
-        <label>Password
-          <input type="password" id="passwordInput" required minlength="6" />
-        </label>
-        <button type="submit" class="btn btn-primary" style="width:100%">Login</button>
-        <p class="modal-alt">No account? <a href="#" id="signupLink">Sign up instead</a></p>
-      </form>
-      <p class="modal-status" id="authStatus"></p>
-    </div>
-  </div>
-
   <!-- Firebase SDKs (compat build — simplest to drop into plain HTML/JS) -->
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
 
   <script src="js/firebase-config.js"></script>
+  <script src="js/auth-widget.js"></script>
   <script src="js/script.js"></script>
 </body>
 </html>
