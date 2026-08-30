@@ -557,6 +557,225 @@ img { max-width: 100%; display: block; }
 .btn-danger { border-color: #d1483a; color: #d1483a; }
 .btn-danger:hover { background: #d1483a; color: var(--white); }
 
+/* ---------- Python Hub ---------- */
+.pyhub-toolbar {
+  background: var(--white);
+  border-bottom: 1px solid var(--line);
+}
+.pyhub-toolbar-inner {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 18px 24px;
+}
+.pyhub-toolbar-inner h1 {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  margin: 0;
+  color: var(--navy-deep);
+  white-space: nowrap;
+}
+.search-box { flex: 1; max-width: 420px; }
+.search-box input {
+  width: 100%;
+  padding: 9px 14px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font: inherit;
+}
+.menu-toggle {
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+}
+.menu-toggle span { width: 22px; height: 2px; background: var(--navy); display: block; }
+
+.loader-banner {
+  display: none;
+  text-align: center;
+  background: var(--navy);
+  color: var(--white);
+  font-size: 0.85rem;
+  padding: 10px;
+}
+.loader-banner.visible { display: block; }
+
+.pyhub-container {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 32px;
+  padding: 40px 24px 88px;
+}
+
+.sidebar h3 {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  color: var(--navy-deep);
+  margin: 0 0 12px;
+}
+.sidebar ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.sidebar li {
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--mist);
+}
+.sidebar li:hover { background: var(--cream); }
+.sidebar li.active { background: var(--navy); color: var(--white); }
+
+.snippet-card {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px 24px;
+  box-shadow: var(--shadow);
+  margin-bottom: 20px;
+}
+.snippet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+.snippet-head h3 {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  margin: 0;
+  color: var(--navy-deep);
+}
+.snippet-desc { color: var(--mist); font-size: 0.9rem; margin: 0 0 14px; }
+.snippet-card pre[class*="language-"] { border-radius: 8px; margin: 0 0 14px; font-size: 0.85rem; }
+.snippet-actions { display: flex; }
+.snippet-output {
+  background: var(--navy-deep);
+  color: #d7f7dc;
+  padding: 12px 14px;
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 0.85rem;
+  white-space: pre-wrap;
+  margin-top: 14px;
+}
+
+.overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,41,0.5);
+  z-index: 40;
+}
+.overlay.visible { display: block; }
+
+@media (max-width: 880px) {
+  .pyhub-container { grid-template-columns: 1fr; }
+  .menu-toggle { display: flex; }
+  .sidebar {
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    width: 240px;
+    background: var(--white);
+    padding: 24px;
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+    z-index: 50;
+    overflow-y: auto;
+  }
+  .sidebar.open { transform: translateX(0); }
+  .search-box { max-width: none; }
+}
+
+/* ---------- Quiz (MCQ Hub) ---------- */
+.quiz-section { padding: 48px 0 100px; }
+.quiz-container { max-width: 640px; }
+.quiz-card {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 28px 26px;
+  box-shadow: var(--shadow);
+}
+.quiz-card h2 {
+  font-family: var(--font-display);
+  color: var(--navy-deep);
+  margin-top: 0;
+}
+.quiz-muted { color: var(--mist); font-size: 0.9rem; }
+.quiz-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--mist);
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+.quiz-field select {
+  font: inherit;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--ink);
+  font-weight: 400;
+}
+
+.quiz-status-bar {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: var(--mist);
+  margin-bottom: 10px;
+}
+.quiz-score { font-weight: 700; color: var(--navy-deep); }
+
+.quiz-progress-track {
+  height: 6px;
+  background: var(--cream);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 22px;
+}
+.quiz-progress-fill {
+  height: 100%;
+  background: var(--orange);
+  transition: width 0.25s ease;
+  width: 0%;
+}
+
+.quiz-card h3 { font-family: var(--font-display); color: var(--navy-deep); margin: 4px 0 16px; }
+.quiz-nav { margin-top: 20px; display: flex; justify-content: flex-end; }
+
+.quiz-final-score {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  color: var(--navy-deep);
+  margin: 4px 0 12px;
+}
+
+.review-list { display: flex; flex-direction: column; gap: 16px; margin-top: 24px; }
+.review-item { border-top: 1px solid var(--line); padding-top: 14px; }
+.review-question { font-weight: 600; margin: 0 0 6px; }
+.review-tag {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+.review-correct { background: #e4f6e9; color: #2f7c46; }
+.review-incorrect { background: #fbe7e4; color: #b8382c; }
+.review-answer { font-size: 0.88rem; margin: 2px 0; color: var(--mist); }
+
+/* ---------- Code textarea (admin) ---------- */
+.code-textarea { font-family: "SFMono-Regular", Consolas, monospace; font-size: 0.88rem; }
+
 @media (max-width: 640px) {
   .admin-form-grid { grid-template-columns: 1fr; }
 }
