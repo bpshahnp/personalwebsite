@@ -1,88 +1,194 @@
 /* ============================================
-   mcq.js — renders the "questions" Firestore
-   collection as interactive multiple-choice cards.
-   Doc shape:
+   mcq.js — quiz engine with live scoring.
+   Reads the "questions" Firestore collection:
    {
      question: string,
      options: [string, string, string, string],
-     correctIndex: number,   // 0-based index into options
+     correctIndex: number,
      explanation: string,
      category: string,
      order: number
    }
    ============================================ */
 
-const mcqList = document.getElementById("mcqList");
-const categoryFilter = document.getElementById("categoryFilter");
+const quizStart = document.getElementById("quizStart");
+const quizPlay = document.getElementById("quizPlay");
+const quizResult = document.getElementById("quizResult");
 
-let allQuestions = [];
+const questionBankStatus = document.getElementById("questionBankStatus");
+const categorySelect = document.getElementById("categorySelect");
+const countSelect = document.getElementById("countSelect");
+const startQuizBtn = document.getElementById("startQuizBtn");
 
+const quizProgress = document.getElementById("quizProgress");
+const quizScore = document.getElementById("quizScore");
+const quizProgressFill = document.getElementById("quizProgressFill");
+const quizQuestionCategory = document.getElementById("quizQuestionCategory");
+const quizQuestionText = document.getElementById("quizQuestionText");
+const quizOptions = document.getElementById("quizOptions");
+const quizExplanation = document.getElementById("quizExplanation");
+const nextQuestionBtn = document.getElementById("nextQuestionBtn");
+
+const finalScoreText = document.getElementById("finalScoreText");
+const finalScoreFill = document.getElementById("finalScoreFill");
+const reviewList = document.getElementById("reviewList");
+const retryQuizBtn = document.getElementById("retryQuizBtn");
+
+let questionBank = [];
+let quizQuestions = [];
+let currentIndex = 0;
+let score = 0;
+let answered = false;
+let userAnswers = []; // { question, options, correctIndex, chosenIndex }
+
+/* ---------- Load question bank once ---------- */
 db.collection("questions")
-  .orderBy("order", "desc")
-  .onSnapshot(
-    (snapshot) => {
-      allQuestions = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      renderQuestions(allQuestions);
-    },
-    (err) => {
-      mcqList.innerHTML = `<p class="updates-loading">Could not load questions (${err.message}).</p>`;
+  .get()
+  .then((snapshot) => {
+    questionBank = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    if (!questionBank.length) {
+      questionBankStatus.textContent = "No questions yet — add some from the Admin Panel.";
+      return;
     }
-  );
+    const categories = ["All", ...new Set(questionBank.map((q) => q.category).filter(Boolean))];
+    categorySelect.innerHTML = categories
+      .map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`)
+      .join("");
+    questionBankStatus.textContent = `${questionBank.length} question${questionBank.length === 1 ? "" : "s"} available.`;
+    startQuizBtn.disabled = false;
+  })
+  .catch((err) => {
+    questionBankStatus.textContent = `Could not load questions (${err.message}).`;
+  });
 
-categoryFilter.addEventListener("input", () => {
-  const q = categoryFilter.value.trim().toLowerCase();
-  const filtered = q
-    ? allQuestions.filter((item) => (item.category || "").toLowerCase().includes(q))
-    : allQuestions;
-  renderQuestions(filtered);
+/* ---------- Start quiz ---------- */
+startQuizBtn.addEventListener("click", () => {
+  const category = categorySelect.value;
+  const countValue = countSelect.value;
+
+  let pool = category === "All" ? [...questionBank] : questionBank.filter((q) => q.category === category);
+  shuffle(pool);
+
+  const count = countValue === "all" ? pool.length : Math.min(Number(countValue), pool.length);
+  quizQuestions = pool.slice(0, count);
+
+  currentIndex = 0;
+  score = 0;
+  userAnswers = [];
+
+  quizStart.hidden = true;
+  quizResult.hidden = true;
+  quizPlay.hidden = false;
+  renderQuestion();
 });
 
-function renderQuestions(questions) {
-  if (!questions.length) {
-    mcqList.innerHTML = `<p class="updates-loading">No questions yet. Add some from the <a href="admin.html">Admin Panel</a>.</p>`;
-    return;
+function renderQuestion() {
+  answered = false;
+  const q = quizQuestions[currentIndex];
+
+  quizProgress.textContent = `Question ${currentIndex + 1} of ${quizQuestions.length}`;
+  quizScore.textContent = `Score: ${score} / ${currentIndex}`;
+  quizProgressFill.style.width = `${(currentIndex / quizQuestions.length) * 100}%`;
+
+  if (q.category) {
+    quizQuestionCategory.textContent = q.category;
+    quizQuestionCategory.hidden = false;
+  } else {
+    quizQuestionCategory.hidden = true;
   }
 
-  mcqList.innerHTML = "";
-  questions.forEach((q, qIndex) => {
-    const card = document.createElement("article");
-    card.className = "mcq-card";
+  quizQuestionText.textContent = q.question || "";
+  quizExplanation.hidden = true;
+  nextQuestionBtn.hidden = true;
+  nextQuestionBtn.textContent =
+    currentIndex === quizQuestions.length - 1 ? "See Results →" : "Next Question →";
 
-    const options = (q.options || [])
-      .map(
-        (opt, i) => `<button class="mcq-option" data-index="${i}">${escapeHtml(opt)}</button>`
-      )
-      .join("");
-
-    card.innerHTML = `
-      ${q.category ? `<span class="mcq-category">${escapeHtml(q.category)}</span>` : ""}
-      <h3>${qIndex + 1}. ${escapeHtml(q.question || "")}</h3>
-      <div class="mcq-options">${options}</div>
-      <p class="mcq-explanation" hidden></p>
-    `;
-
-    const optionButtons = card.querySelectorAll(".mcq-option");
-    const explanationEl = card.querySelector(".mcq-explanation");
-
-    optionButtons.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        if (card.dataset.answered) return; // lock after first pick
-        card.dataset.answered = "true";
-        const chosen = Number(btn.dataset.index);
-        optionButtons.forEach((b) => {
-          const i = Number(b.dataset.index);
-          if (i === q.correctIndex) b.classList.add("correct");
-          else if (i === chosen) b.classList.add("incorrect");
-        });
-        if (q.explanation) {
-          explanationEl.textContent = q.explanation;
-          explanationEl.hidden = false;
-        }
-      });
-    });
-
-    mcqList.appendChild(card);
+  quizOptions.innerHTML = "";
+  (q.options || []).forEach((opt, i) => {
+    const btn = document.createElement("button");
+    btn.className = "mcq-option";
+    btn.textContent = opt;
+    btn.dataset.index = i;
+    btn.addEventListener("click", () => selectAnswer(i, btn));
+    quizOptions.appendChild(btn);
   });
+}
+
+function selectAnswer(chosenIndex, btnEl) {
+  if (answered) return;
+  answered = true;
+  const q = quizQuestions[currentIndex];
+  const correct = chosenIndex === q.correctIndex;
+  if (correct) score++;
+
+  [...quizOptions.children].forEach((b) => {
+    const i = Number(b.dataset.index);
+    if (i === q.correctIndex) b.classList.add("correct");
+    else if (i === chosenIndex) b.classList.add("incorrect");
+  });
+
+  if (q.explanation) {
+    quizExplanation.textContent = q.explanation;
+    quizExplanation.hidden = false;
+  }
+
+  quizScore.textContent = `Score: ${score} / ${currentIndex + 1}`;
+  nextQuestionBtn.hidden = false;
+
+  userAnswers.push({
+    question: q.question,
+    options: q.options,
+    correctIndex: q.correctIndex,
+    chosenIndex,
+    explanation: q.explanation,
+  });
+}
+
+nextQuestionBtn.addEventListener("click", () => {
+  currentIndex++;
+  if (currentIndex >= quizQuestions.length) {
+    showResults();
+  } else {
+    renderQuestion();
+  }
+});
+
+function showResults() {
+  quizPlay.hidden = true;
+  quizResult.hidden = false;
+
+  const total = quizQuestions.length;
+  const pct = total ? Math.round((score / total) * 100) : 0;
+  finalScoreText.textContent = `You scored ${score} / ${total} (${pct}%)`;
+  finalScoreFill.style.width = `${pct}%`;
+
+  reviewList.innerHTML = "";
+  userAnswers.forEach((a, idx) => {
+    const isCorrect = a.chosenIndex === a.correctIndex;
+    const item = document.createElement("div");
+    item.className = "review-item";
+    item.innerHTML = `
+      <p class="review-question">${idx + 1}. ${escapeHtml(a.question)}
+        <span class="review-tag ${isCorrect ? "review-correct" : "review-incorrect"}">${isCorrect ? "Correct" : "Incorrect"}</span>
+      </p>
+      <p class="review-answer">Your answer: <strong>${escapeHtml(a.options[a.chosenIndex] ?? "—")}</strong></p>
+      ${!isCorrect ? `<p class="review-answer">Correct answer: <strong>${escapeHtml(a.options[a.correctIndex] ?? "—")}</strong></p>` : ""}
+      ${a.explanation ? `<p class="mcq-explanation">${escapeHtml(a.explanation)}</p>` : ""}
+    `;
+    reviewList.appendChild(item);
+  });
+}
+
+retryQuizBtn.addEventListener("click", () => {
+  quizResult.hidden = true;
+  quizStart.hidden = false;
+});
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
 }
 
 function escapeHtml(str) {

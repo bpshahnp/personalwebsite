@@ -21,6 +21,7 @@ auth.onAuthStateChanged((user) => {
     show(dashboard);
     hide(signInGate, notAuthorized);
     initQuestionsAdmin();
+    initPythonAdmin();
     initUpdatesAdmin();
   } else {
     show(notAuthorized);
@@ -52,6 +53,7 @@ document.querySelectorAll(".admin-tab").forEach((tabBtn) => {
     document.querySelectorAll(".admin-tab").forEach((b) => b.classList.remove("active"));
     tabBtn.classList.add("active");
     document.getElementById("tab-questions").hidden = tabBtn.dataset.tab !== "questions";
+    document.getElementById("tab-python").hidden = tabBtn.dataset.tab !== "python";
     document.getElementById("tab-updates").hidden = tabBtn.dataset.tab !== "updates";
   });
 });
@@ -144,6 +146,90 @@ function initQuestionsAdmin() {
     form.reset();
     idField.value = "";
     submitBtn.textContent = "Add question";
+    cancelBtn.hidden = true;
+  }
+}
+
+/* ============================================
+   PYTHON PROGRAMS — add / edit / delete
+   ============================================ */
+let pythonUnsub = null;
+
+function initPythonAdmin() {
+  if (pythonUnsub) return;
+  const form = document.getElementById("pythonForm");
+  const listEl = document.getElementById("pythonAdminList");
+  const submitBtn = document.getElementById("pythonSubmitBtn");
+  const cancelBtn = document.getElementById("cancelPythonEdit");
+  const idField = document.getElementById("pyId");
+
+  pythonUnsub = db.collection("pythonPrograms").orderBy("order", "desc").onSnapshot(
+    (snapshot) => {
+      if (snapshot.empty) {
+        listEl.innerHTML = `<p class="updates-loading">No programs yet — add one above.</p>`;
+        return;
+      }
+      listEl.innerHTML = "";
+      snapshot.forEach((doc) => {
+        const p = doc.data();
+        const row = document.createElement("div");
+        row.className = "admin-row";
+        row.innerHTML = `
+          <div>
+            <strong>${escapeHtml(p.title || "")}</strong>
+            ${p.category ? `<span class="admin-tag">${escapeHtml(p.category)}</span>` : ""}
+          </div>
+          <div class="admin-row-actions">
+            <button class="btn btn-outline btn-sm" data-action="edit">Edit</button>
+            <button class="btn btn-outline btn-sm btn-danger" data-action="delete">Delete</button>
+          </div>
+        `;
+        row.querySelector('[data-action="edit"]').addEventListener("click", () => {
+          idField.value = doc.id;
+          document.getElementById("pyTitle").value = p.title || "";
+          document.getElementById("pyCategory").value = p.category || "";
+          document.getElementById("pyOrder").value = p.order ?? 1;
+          document.getElementById("pyDescription").value = p.description || "";
+          document.getElementById("pyCode").value = p.code || "";
+          submitBtn.textContent = "Save changes";
+          cancelBtn.hidden = false;
+          form.scrollIntoView({ behavior: "smooth" });
+        });
+        row.querySelector('[data-action="delete"]').addEventListener("click", () => {
+          if (confirm("Delete this program?")) db.collection("pythonPrograms").doc(doc.id).delete();
+        });
+        listEl.appendChild(row);
+      });
+    },
+    (err) => {
+      listEl.innerHTML = `<p class="updates-loading">Could not load programs (${err.message}).</p>`;
+    }
+  );
+
+  cancelBtn.addEventListener("click", () => resetPythonForm());
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const payload = {
+      title: document.getElementById("pyTitle").value.trim(),
+      category: document.getElementById("pyCategory").value.trim(),
+      description: document.getElementById("pyDescription").value.trim(),
+      code: document.getElementById("pyCode").value,
+      order: Number(document.getElementById("pyOrder").value),
+    };
+    const editingId = idField.value;
+    const savePromise = editingId
+      ? db.collection("pythonPrograms").doc(editingId).update(payload)
+      : db.collection("pythonPrograms").add(payload);
+
+    savePromise.then(() => resetPythonForm()).catch((err) => alert(err.message));
+  });
+
+  function resetPythonForm() {
+    form.reset();
+    idField.value = "";
+    document.getElementById("pyOrder").value = 1;
+    submitBtn.textContent = "Add program";
     cancelBtn.hidden = true;
   }
 }
