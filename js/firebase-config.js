@@ -13,12 +13,14 @@
    ============================================ */
 
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyBbcikq94xF11ECeqJHBD4WXe8PCbZrkJg",
+  authDomain: "personalwebsite-9b430.firebaseapp.com",
+  databaseURL: "https://personalwebsite-9b430-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "personalwebsite-9b430",
+  storageBucket: "personalwebsite-9b430.firebasestorage.app",
+  messagingSenderId: "385218355179",
+  appId: "1:385218355179:web:b07ddad4538f7aef9983ae",
+  measurementId: "G-G5ZY2VQC5Y"
 };
 
 // Initialize Firebase (compat SDK, loaded via <script> tags in index.html)
