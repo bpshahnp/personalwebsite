@@ -11,6 +11,19 @@ navToggle.addEventListener("click", () => {
   siteHeader.classList.toggle("open");
 });
 
+/* ---------- "See More Options" dropdown: tap-to-toggle (mobile) ---------- */
+document.querySelectorAll(".dropdown-toggle").forEach((btn) => {
+  btn.addEventListener("click", (e) => {
+    e.preventDefault();
+    btn.closest(".dropdown").classList.toggle("open");
+  });
+});
+
+// Collapse the mobile menu after tapping a nav/dropdown link
+document.querySelectorAll(".main-nav a").forEach((link) => {
+  link.addEventListener("click", () => siteHeader.classList.remove("open"));
+});
+
 /* ---------- Search (filters hub cards by keyword) ---------- */
 document.getElementById("searchForm").addEventListener("submit", (e) => {
   e.preventDefault();
