@@ -8,12 +8,15 @@ Updates" section stays in sync across every device automatically.
 ```
 bprasadshah/
 ├── index.html            → home page
-├── mcq.html              → MCQ Hub — displays questions live from Firestore
-├── admin.html            → Admin Panel — add/edit/delete questions & updates
+├── mcq.html              → MCQ Hub — full quiz with live scoring, from Firestore
+├── python.html           → Python Hub — searchable, runnable Python programs
+├── admin.html            → Admin Panel — add/edit/delete questions, programs & updates
+├── firestore.rules        → security rules (see step 5)
 ├── css/style.css          → all styling
 ├── js/firebase-config.js  → connects to YOUR Firebase project + admin allowlist
 ├── js/script.js           → home page: nav, search, login, live "Latest Updates"
-├── js/mcq.js              → renders/answers questions on mcq.html
+├── js/mcq.js              → quiz engine (start screen, live score, results/review)
+├── js/python-hub.js       → renders programs, search/category filter, runs code via Pyodide
 ├── js/admin.js            → sign-in gate + CRUD forms on admin.html
 └── README.md              → this guide
 ```
@@ -49,13 +52,42 @@ Firebase console day-to-day.
 2. Create that user under **Authentication → Users → Add user** in the
    Firebase console (or open `admin.html` and it will offer a normal
    sign-in — you still need the user to exist first).
-3. Open `admin.html`, sign in, and you'll see two tabs: **Questions
-   (MCQ Hub)** and **Latest Updates** — each with a form to add new
-   entries and a list below it with Edit/Delete buttons on every entry.
+3. Open `admin.html`, sign in, and you'll see three tabs: **Questions
+   (MCQ Hub)**, **Programs (Python Hub)**, and **Latest Updates** —
+   each with a form to add new entries and a list below it with
+   Edit/Delete buttons on every entry.
 
 ⚠️ `ADMIN_EMAILS` only controls what the *page* shows. Anyone could
 still write to Firestore directly unless you also lock it down with
-security rules — see step 4 below.
+security rules — see step 5 below.
+
+## How MCQ Hub works
+
+`mcq.html` is a real quiz, not a static list:
+- Visitor picks a category and number of questions, then **Start Quiz**.
+- Each question is scored immediately on click, with the running score
+  shown live at the top (`Score: X / Y`) and a progress bar.
+- At the end, a results screen shows the final score/percentage and a
+  full review of every question with the visitor's answer vs. the
+  correct one.
+
+Send me your question set whenever you're ready and I'll load it in —
+or add them yourself any time via **Admin → Questions**, one at a time
+(question text, 4 options, correct option, explanation, category).
+
+## How Python Hub works
+
+`python.html` mirrors the `.py hub` layout you uploaded: a category
+sidebar, a search box, and a card per program. Two differences from a
+static version:
+- **Content comes from Firestore** (`pythonPrograms` collection), so
+  editing it in Admin updates the page live on every device.
+- **Run buttons execute the code in-browser** using Pyodide (a Python
+  interpreter compiled to WebAssembly) — no backend server needed, and
+  output/errors print right under the code.
+
+Add a program from **Admin → Programs (Python Hub)**: title, category,
+an optional description, and the code itself.
 
 ## 3. Add your first "Latest Update"
 
@@ -83,35 +115,23 @@ python3 -m http.server 8000
 
 ## 5. Lock down Firestore before going live
 
-Test mode allows anyone to read/write. Before launch, go to
-**Firestore Database → Rules** and use something like this — it keeps
-`ADMIN_EMAILS` in step 2 backed by a real server-side check, so only
-those accounts can write, no matter who calls Firestore:
+Test mode allows anyone to read/write. The exact rules to use live in
+**`firestore.rules`** in this project — open it, put your real admin
+email(s) in place of the placeholder, then either:
 
-```
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
+- **Paste manually**: Firebase console → Firestore Database → Rules →
+  paste the contents of `firestore.rules` → Publish, or
+- **Deploy via CLI** (recommended, keeps rules version-controlled):
+  ```bash
+  firebase init firestore   # if you haven't already; point it at firestore.rules
+  firebase deploy --only firestore:rules
+  ```
 
-    function isAdmin() {
-      return request.auth != null &&
-        request.auth.token.email in [
-          "yourname@gmail.com"   // ← keep this in sync with ADMIN_EMAILS
-        ];
-    }
-
-    match /updates/{docId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    match /questions/{docId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-  }
-}
-```
+The rules make `updates` and `questions` publicly readable (so the
+site works for visitors) but writable only by the email(s) in the
+`isAdmin()` allowlist — which must match `ADMIN_EMAILS` in
+`js/firebase-config.js`. Everything else is denied by default, so any
+collection you add later starts locked until you explicitly open it up.
 
 ## 6. Publish the site (Firebase Hosting)
 

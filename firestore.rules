@@ -1,0 +1,45 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---- Admin check --------------------------------------------------
+    // Keep this list identical to ADMIN_EMAILS in js/firebase-config.js.
+    // Anyone signed in with one of these emails can write; everyone else
+    // (including signed-out visitors) can only read.
+    function isAdmin() {
+      return request.auth != null &&
+        request.auth.token.email in [
+          "you@example.com"   // ← replace with your real admin email(s)
+          // "second-admin@example.com",
+        ];
+    }
+
+    // ---- Latest Updates -------------------------------------------------
+    // Shown on index.html. Public read, admin-only write.
+    match /updates/{updateId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ---- MCQ Hub questions ----------------------------------------------
+    // Shown on mcq.html. Public read, admin-only write.
+    match /questions/{questionId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ---- Python Hub programs ---------------------------------------------
+    // Shown on python.html. Public read, admin-only write.
+    match /pythonPrograms/{programId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ---- Everything else: locked by default ------------------------------
+    // Deny-by-default so a future collection isn't accidentally left open.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

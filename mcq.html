@@ -17,11 +17,8 @@
       <nav class="main-nav">
         <a href="index.html">Home</a>
         <a href="mcq.html" class="active">MCQ Hub</a>
-        <a href="index.html#python-hub">Python Hub</a>
+        <a href="python.html">Python Hub</a>
       </nav>
-      <div class="header-actions">
-        <input type="search" id="categoryFilter" placeholder="Filter by category…" class="filter-input" />
-      </div>
       <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">☰</button>
     </div>
   </header>
@@ -29,15 +26,69 @@
   <section class="page-hero">
     <div class="container">
       <h1>MCQ Hub</h1>
-      <p>Practice questions below. Pick an option to see if you're right, with an explanation for each.</p>
+      <p>Take a quiz, get scored live as you go, and review your answers at the end.</p>
     </div>
   </section>
 
-  <section class="mcq-section">
-    <div class="container">
-      <div id="mcqList" class="mcq-list">
-        <p class="updates-loading">Loading questions…</p>
+  <section class="quiz-section">
+    <div class="container quiz-container">
+
+      <!-- ===== Start screen ===== -->
+      <div id="quizStart" class="quiz-card">
+        <h2>Set up your quiz</h2>
+        <p class="quiz-muted" id="questionBankStatus">Loading question bank…</p>
+
+        <label class="quiz-field">
+          Category
+          <select id="categorySelect">
+            <option value="All">All categories</option>
+          </select>
+        </label>
+
+        <label class="quiz-field">
+          Number of questions
+          <select id="countSelect">
+            <option value="5">5</option>
+            <option value="10" selected>10</option>
+            <option value="20">20</option>
+            <option value="all">All available</option>
+          </select>
+        </label>
+
+        <button class="btn btn-primary" id="startQuizBtn" style="width:100%" disabled>Start Quiz</button>
       </div>
+
+      <!-- ===== Quiz in progress ===== -->
+      <div id="quizPlay" class="quiz-card" hidden>
+        <div class="quiz-status-bar">
+          <span id="quizProgress">Question 1 of 10</span>
+          <span id="quizScore" class="quiz-score">Score: 0 / 0</span>
+        </div>
+        <div class="quiz-progress-track"><div class="quiz-progress-fill" id="quizProgressFill"></div></div>
+
+        <span class="mcq-category" id="quizQuestionCategory" hidden></span>
+        <h3 id="quizQuestionText"></h3>
+        <div class="mcq-options" id="quizOptions"></div>
+        <p class="mcq-explanation" id="quizExplanation" hidden></p>
+
+        <div class="quiz-nav">
+          <button class="btn btn-primary" id="nextQuestionBtn" hidden>Next Question →</button>
+        </div>
+      </div>
+
+      <!-- ===== Result screen ===== -->
+      <div id="quizResult" class="quiz-card" hidden>
+        <h2>Quiz complete!</h2>
+        <p class="quiz-final-score" id="finalScoreText">You scored 0 / 0</p>
+        <div class="quiz-progress-track"><div class="quiz-progress-fill" id="finalScoreFill"></div></div>
+
+        <div id="reviewList" class="review-list"></div>
+
+        <div class="quiz-nav">
+          <button class="btn btn-primary" id="retryQuizBtn">Take Another Quiz</button>
+        </div>
+      </div>
+
     </div>
   </section>
 
@@ -56,7 +107,9 @@
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
   <script src="js/firebase-config.js"></script>
   <script src="js/mcq.js"></script>
-  <script>document.getElementById("year").textContent = new Date().getFullYear();
-  document.getElementById("navToggle").addEventListener("click", () => document.querySelector(".site-header").classList.toggle("open"));</script>
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+    document.getElementById("navToggle").addEventListener("click", () => document.querySelector(".site-header").classList.toggle("open"));
+  </script>
 </body>
 </html>

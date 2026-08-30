@@ -53,6 +53,7 @@
 
       <div class="admin-tabs">
         <button class="admin-tab active" data-tab="questions">Questions (MCQ Hub)</button>
+        <button class="admin-tab" data-tab="python">Programs (Python Hub)</button>
         <button class="admin-tab" data-tab="updates">Latest Updates</button>
       </div>
 
@@ -85,6 +86,30 @@
 
         <div id="questionsAdminList" class="admin-list">
           <p class="updates-loading">Loading questions…</p>
+        </div>
+      </div>
+
+      <!-- ---- Python Programs tab ---- -->
+      <div class="admin-panel" id="tab-python" hidden>
+        <form id="pythonForm" class="admin-form">
+          <input type="hidden" id="pyId" />
+          <label>Title <input type="text" id="pyTitle" required /></label>
+          <div class="admin-form-grid">
+            <label>Category <input type="text" id="pyCategory" placeholder="e.g. Loops, Sorting" required /></label>
+            <label>Order (higher shows first) <input type="number" id="pyOrder" value="1" required /></label>
+          </div>
+          <label>Description <textarea id="pyDescription" rows="2" placeholder="What this program does"></textarea></label>
+          <label>Python code
+            <textarea id="pyCode" rows="8" class="code-textarea" required placeholder="print('Hello, world!')"></textarea>
+          </label>
+          <div class="admin-form-actions">
+            <button type="submit" class="btn btn-primary" id="pythonSubmitBtn">Add program</button>
+            <button type="button" class="btn btn-outline" id="cancelPythonEdit" hidden>Cancel edit</button>
+          </div>
+        </form>
+
+        <div id="pythonAdminList" class="admin-list">
+          <p class="updates-loading">Loading programs…</p>
         </div>
       </div>
 

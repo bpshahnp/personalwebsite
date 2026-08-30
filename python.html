@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Python Hub | B. Prasad Shah</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Prism.js Syntax Highlighter -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+
+  <!-- Pyodide Python Interpreter (runs Python in-browser) -->
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="index.html" class="logo">B. <span>Prasad Shah</span></a>
+      <nav class="main-nav">
+        <a href="index.html">Home</a>
+        <a href="mcq.html">MCQ Hub</a>
+        <a href="python.html" class="active">Python Hub</a>
+      </nav>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">☰</button>
+    </div>
+  </header>
+
+  <!-- ===== .py hub toolbar ===== -->
+  <div class="pyhub-toolbar">
+    <div class="container pyhub-toolbar-inner">
+      <h1>.py hub</h1>
+      <div class="search-box">
+        <input type="text" id="search-input" placeholder="Search programs (e.g. list, binary)..." aria-label="Search programs">
+      </div>
+      <button id="menu-toggle" class="menu-toggle" aria-label="Toggle categories">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading banner for the in-browser Python engine -->
+  <div id="pyodide-loader" class="loader-banner">Loading Python environment (only needed to run code, this may take a moment)…</div>
+
+  <div class="container pyhub-container">
+    <aside class="sidebar" id="sidebar">
+      <h3>Categories</h3>
+      <ul id="category-list">
+        <!-- Categories injected by js/python-hub.js -->
+      </ul>
+    </aside>
+
+    <main class="content">
+      <h2 id="current-category">All Programs</h2>
+      <div id="snippet-container">
+        <p class="updates-loading">Loading programs…</p>
+      </div>
+    </main>
+  </div>
+
+  <div class="overlay" id="overlay"></div>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>&copy; <span id="year"></span> B. Prasad Shah — Python Hub</p>
+      <div class="footer-links">
+        <a href="index.html">Home</a>
+        <a href="admin.html">Admin</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Prism.js Core + Python grammar -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/python-hub.js"></script>
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+    document.getElementById("navToggle").addEventListener("click", () => document.querySelector(".site-header").classList.toggle("open"));
+  </script>
+</body>
+</html>
