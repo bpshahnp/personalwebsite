@@ -12,6 +12,7 @@
       real values below, replacing the placeholders.
    ============================================ */
 
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyBbcikq94xF11ECeqJHBD4WXe8PCbZrkJg",
   authDomain: "personalwebsite-9b430.firebaseapp.com",
