@@ -21,57 +21,6 @@ document.getElementById("searchForm").addEventListener("submit", (e) => {
   });
 });
 
-/* ---------- Login modal ---------- */
-const loginModal = document.getElementById("loginModal");
-const loginBtn = document.getElementById("loginBtn");
-const modalClose = document.getElementById("modalClose");
-const authStatus = document.getElementById("authStatus");
-let isSignupMode = false;
-
-loginBtn.addEventListener("click", () => (loginModal.hidden = false));
-modalClose.addEventListener("click", () => (loginModal.hidden = true));
-loginModal.addEventListener("click", (e) => {
-  if (e.target === loginModal) loginModal.hidden = true;
-});
-
-document.getElementById("signupLink").addEventListener("click", (e) => {
-  e.preventDefault();
-  isSignupMode = !isSignupMode;
-  document.querySelector("#loginForm button[type=submit]").textContent = isSignupMode
-    ? "Sign Up"
-    : "Login";
-  e.target.textContent = isSignupMode ? "Have an account? Login" : "Sign up instead";
-});
-
-document.getElementById("loginForm").addEventListener("submit", (e) => {
-  e.preventDefault();
-  const email = document.getElementById("emailInput").value;
-  const password = document.getElementById("passwordInput").value;
-
-  const action = isSignupMode
-    ? auth.createUserWithEmailAndPassword(email, password)
-    : auth.signInWithEmailAndPassword(email, password);
-
-  action
-    .then((cred) => {
-      authStatus.textContent = `Welcome, ${cred.user.email}`;
-      authStatus.style.color = "green";
-      setTimeout(() => (loginModal.hidden = true), 900);
-    })
-    .catch((err) => {
-      authStatus.textContent = err.message;
-      authStatus.style.color = "crimson";
-    });
-});
-
-// Reflect logged-in state on the header button
-auth.onAuthStateChanged((user) => {
-  loginBtn.textContent = user ? `Hi, ${user.email.split("@")[0]} (Logout)` : "Login / Sign Up";
-});
-loginBtn.addEventListener("click", () => {
-  if (auth.currentUser) auth.signOut();
-});
-
 /* ---------- Latest Updates — live from Firestore ----------
    Firestore collection: "updates"
    Each document: { title: string, date: string (or Timestamp), order: number }
