@@ -45,6 +45,42 @@ a { color: inherit; text-decoration: none; }
 
 img { max-width: 100%; display: block; }
 
+/* ---------- python-hub --------- */
+.snippet-stdin-form {
+  background: #0d1117;
+  border-radius: 6px;
+  padding: 12px;
+  margin: 10px 0;
+}
+.stdin-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.stdin-label {
+  color: #FFD43B;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+.stdin-input {
+  flex: 1;
+  background: #161b22;
+  border: 1px solid #30363d;
+  color: #e6edf3;
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-family: "JetBrains Mono", monospace;
+}
+.stdin-submit {
+  margin-top: 4px;
+}
+.snippet-plot {
+  max-width: 100%;
+  border-radius: 6px;
+  margin-top: 8px;
+}
 /* ---------- Buttons ---------- */
 .btn {
   display: inline-block;
