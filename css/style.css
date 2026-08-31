@@ -178,23 +178,26 @@ img { max-width: 100%; display: block; }
 
 .nav-toggle {
   display: none;
+  align-items: center;
+  justify-content: center;
   background: none;
   border: none;
-  font-size: 1.4rem;
   cursor: pointer;
   color: var(--navy);
+  padding: 6px;
 }
 
 .mobile-header-icons {
   display: none;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 .search-toggle {
   display: none;
+  align-items: center;
+  justify-content: center;
   background: none;
   border: none;
-  font-size: 1.15rem;
   cursor: pointer;
   color: var(--navy);
   padding: 6px;
@@ -277,21 +280,6 @@ img { max-width: 100%; display: block; }
 }
 .drawer-nav .dropdown.open .dropdown-menu { display: block; }
 .drawer-nav .dropdown-menu a { padding: 10px 2px; border-bottom: none; }
-
-.drawer-account {
-  margin-top: 22px;
-  padding-top: 18px;
-  border-top: 1px solid var(--line);
-}
-.drawer-account .auth-widget { width: 100%; }
-.drawer-account .auth-icon-btn { margin-bottom: 4px; }
-.drawer-account .auth-dropdown {
-  position: static;
-  width: 100%;
-  box-shadow: none;
-  border: none;
-  padding: 12px 0 0;
-}
 
 .drawer-overlay {
   display: none;
