@@ -26,9 +26,28 @@
           <div class="auth-dropdown" id="authDropdown" hidden></div>
         </div>
       </div>
-      <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">☰</button>
+      <div class="mobile-header-icons">
+        <button class="nav-toggle" id="navToggle" aria-label="Open menu">☰</button>
+      </div>
     </div>
   </header>
+
+  <div class="nav-drawer" id="navDrawer">
+    <button class="drawer-close" id="drawerClose" aria-label="Close menu">&times;</button>
+    <nav class="drawer-nav">
+      <a href="index.html">Home</a>
+      <a href="mcq.html">MCQ Hub</a>
+      <a href="python.html">Python Hub</a>
+      <a href="leaderboard.html" class="active">Leaderboard</a>
+    </nav>
+    <div class="drawer-account">
+      <div class="auth-widget">
+        <button class="auth-icon-btn" id="authIconBtnMobile" aria-label="Account">👤</button>
+        <div class="auth-dropdown" id="authDropdownMobile" hidden></div>
+      </div>
+    </div>
+  </div>
+  <div class="drawer-overlay" id="drawerOverlay"></div>
 
   <section class="page-hero">
     <div class="container">
@@ -63,10 +82,10 @@
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
   <script src="js/firebase-config.js"></script>
   <script src="js/auth-widget.js"></script>
+  <script src="js/nav-drawer.js"></script>
   <script src="js/leaderboard.js"></script>
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
-    document.getElementById("navToggle").addEventListener("click", () => document.querySelector(".site-header").classList.toggle("open"));
   </script>
 </body>
 </html>
