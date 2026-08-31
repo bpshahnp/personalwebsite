@@ -40,5 +40,5 @@ const db = firebase.firestore();
    database itself rejects writes from anyone else.
 ------------------------------------------------------------------- */
 const ADMIN_EMAILS = [
-  "you@example.com" // ← replace with your real login email
+  "bholashroff345@gmail.com" // ← replace with your real login email
 ];
