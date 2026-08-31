@@ -1,38 +1,30 @@
 /* ============================================
-   script.js — site behavior + Firebase wiring
+   script.js — home page behavior + Firebase wiring
+   (mobile nav drawer + dropdown-toggle now live in
+   js/nav-drawer.js, shared across all pages)
    ============================================ */
 
 document.getElementById("year").textContent = new Date().getFullYear();
 
-/* ---------- Mobile nav toggle ---------- */
-const navToggle = document.getElementById("navToggle");
-const siteHeader = document.querySelector(".site-header");
-navToggle.addEventListener("click", () => {
-  siteHeader.classList.toggle("open");
-});
+/* ---------- Search (filters hub cards by keyword) ----------
+   Works from both the desktop search box and the mobile one —
+   nav-drawer.js mirrors typing from the mobile box into this one.
+------------------------------------------------------------- */
+const searchInput = document.getElementById("searchInput");
 
-/* ---------- "See More Options" dropdown: tap-to-toggle (mobile) ---------- */
-document.querySelectorAll(".dropdown-toggle").forEach((btn) => {
-  btn.addEventListener("click", (e) => {
-    e.preventDefault();
-    btn.closest(".dropdown").classList.toggle("open");
-  });
-});
-
-// Collapse the mobile menu after tapping a nav/dropdown link
-document.querySelectorAll(".main-nav a").forEach((link) => {
-  link.addEventListener("click", () => siteHeader.classList.remove("open"));
-});
-
-/* ---------- Search (filters hub cards by keyword) ---------- */
-document.getElementById("searchForm").addEventListener("submit", (e) => {
-  e.preventDefault();
-  const query = document.getElementById("searchInput").value.trim().toLowerCase();
+function filterHubCards() {
+  const query = searchInput.value.trim().toLowerCase();
   document.querySelectorAll(".hub-card").forEach((card) => {
     const text = card.textContent.toLowerCase();
     card.style.display = query === "" || text.includes(query) ? "" : "none";
   });
+}
+
+document.getElementById("searchForm").addEventListener("submit", (e) => {
+  e.preventDefault();
+  filterHubCards();
 });
+searchInput.addEventListener("input", filterHubCards);
 
 /* ---------- Latest Updates — live from Firestore ----------
    Firestore collection: "updates"
