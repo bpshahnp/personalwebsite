@@ -192,6 +192,9 @@ img { max-width: 100%; display: block; }
   align-items: center;
   gap: 6px;
 }
+.mobile-header-icons .auth-widget {
+  margin-left: 10px;
+}
 .search-toggle {
   display: none;
   align-items: center;
