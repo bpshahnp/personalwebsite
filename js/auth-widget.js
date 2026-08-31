@@ -11,6 +11,9 @@
      </div>
    ============================================ */
 
+const ACCOUNT_ICON_SVG =
+  '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>';
+
 function renderAuthDropdown(dropdown, user) {
   if (user) {
     dropdown.innerHTML = `
@@ -83,7 +86,12 @@ function setupAuthWidgets() {
       const btn = widget.querySelector(".auth-icon-btn");
       const dropdown = widget.querySelector(".auth-dropdown");
       if (!btn || !dropdown) return;
-      btn.textContent = user ? user.email[0].toUpperCase() : "👤";
+      btn.textContent = "";
+      if (user) {
+        btn.textContent = user.email[0].toUpperCase();
+      } else {
+        btn.innerHTML = ACCOUNT_ICON_SVG;
+      }
       btn.classList.toggle("signed-in", !!user);
       renderAuthDropdown(dropdown, user);
     });
