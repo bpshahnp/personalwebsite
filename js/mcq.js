@@ -38,6 +38,44 @@ let questionBank = [];
 let quizQuestions = [];
 let currentIndex = 0;
 let score = 0;
+
+/* ---------- Sound effects (no audio files needed — synthesized tones) ---------- */
+let audioCtx;
+function getAudioCtx() {
+  if (!audioCtx) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (AC) audioCtx = new AC();
+  }
+  return audioCtx;
+}
+
+function playTone(freq, duration, type, delay) {
+  const ctx = getAudioCtx();
+  if (!ctx) return;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = type || "sine";
+  osc.frequency.value = freq;
+  const startAt = ctx.currentTime + (delay || 0);
+  gain.gain.setValueAtTime(0.001, startAt);
+  gain.gain.exponentialRampToValueAtTime(0.18, startAt + 0.015);
+  gain.gain.exponentialRampToValueAtTime(0.001, startAt + duration);
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(startAt);
+  osc.stop(startAt + duration + 0.02);
+}
+
+function playCorrectSound() {
+  // short, bright two-note "ding-ding" rising tone
+  playTone(660, 0.12, "sine", 0);
+  playTone(880, 0.16, "sine", 0.1);
+}
+
+function playIncorrectSound() {
+  // short low buzz
+  playTone(180, 0.22, "sawtooth", 0);
+}
 let answered = false;
 let userAnswers = []; // { question, options, correctIndex, chosenIndex }
 
@@ -121,6 +159,9 @@ function selectAnswer(chosenIndex, btnEl) {
   const q = quizQuestions[currentIndex];
   const correct = chosenIndex === q.correctIndex;
   if (correct) score++;
+
+  if (correct) playCorrectSound();
+  else playIncorrectSound();
 
   [...quizOptions.children].forEach((b) => {
     const i = Number(b.dataset.index);
