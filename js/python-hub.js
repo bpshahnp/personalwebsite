@@ -13,14 +13,18 @@
      order: number
    }
 
-   This version hardens the "Run" flow against the
-   most common Pyodide failure modes:
+   Hardened against the common Pyodide failure modes:
      1. input() / sys.stdin.read()   -> OSError [Errno 29]
      2. import of a non-preloaded pkg -> ModuleNotFoundError
      3. matplotlib plt.show()        -> silently does nothing
      4. state leaking between runs   -> confusing "already defined" bugs
      5. noisy internal traceback     -> unreadable errors for students
      6. runaway / infinite loops     -> tab freezes with no feedback
+
+   Input UX: instead of a native window.prompt() popup, input() calls
+   are detected up front and rendered as inline fields inside the same
+   output panel where results are shown — then the whole run (prompts +
+   typed values + program output) is echoed there like a real terminal.
    ============================================ */
 
 const sidebar = document.getElementById("sidebar");
@@ -55,8 +59,7 @@ function ensurePyodide() {
   if (pyodideLoading) return pyodideLoading;
   loaderBanner.classList.add("visible");
   pyodideLoading = loadPyodide().then(async (py) => {
-    // Preload micropip once so we can install missing packages on demand,
-    // and load matplotlib's Pyodide-friendly backend up front.
+    // Preload micropip once so we can install missing packages on demand.
     await py.loadPackage(["micropip"]);
     pyodideInstance = py;
     loaderBanner.classList.remove("visible");
@@ -65,17 +68,73 @@ function ensurePyodide() {
   return pyodideLoading;
 }
 
-/* ---------- Stdin: feed input() calls from a lightweight prompt ----------
-   Pyodide's stdin callback must return synchronously, so a true non-blocking
-   UI isn't possible without SharedArrayBuffer + a worker. window.prompt is
-   the standard, dependency-free way to unblock input() in-browser. */
-function makeStdin(promptLabel) {
-  return {
-    stdin: () => {
-      const val = window.prompt(promptLabel || "Input requested by the program:");
-      return val === null ? "" : val + "\n";
-    },
+/* ---------- Detect input() calls so we can ask for them inline ----------
+   Best-effort: pulls the literal prompt string out of input("...") /
+   input('...') calls. If a prompt can't be statically determined (e.g.
+   input(some_variable)), falls back to a generic label. Extra input()
+   calls at runtime beyond what was pre-filled (e.g. inside a loop) fall
+   back to window.prompt so the program still works, just less inline. */
+function extractInputPrompts(code) {
+  const re = /input\s*\(\s*(?:f?(['"])((?:\\.|(?!\1).)*)\1)?\s*\)/g;
+  const prompts = [];
+  let match;
+  let i = 0;
+  while ((match = re.exec(code)) !== null) {
+    i += 1;
+    prompts.push(match[2] !== undefined ? match[2] : `Input #${i}`);
+  }
+  return prompts;
+}
+
+/* ---------- Render the inline "terminal-style" input form ---------- */
+function renderStdinForm(formEl, prompts, onSubmit) {
+  formEl.innerHTML = "";
+  formEl.hidden = false;
+
+  const fields = prompts.map((label, idx) => {
+    const row = document.createElement("div");
+    row.className = "stdin-row";
+
+    const lbl = document.createElement("label");
+    lbl.textContent = label.trim() || `Input #${idx + 1}`;
+    lbl.className = "stdin-label";
+
+    const inp = document.createElement("input");
+    inp.type = "text";
+    inp.className = "stdin-input";
+    inp.autocomplete = "off";
+    if (idx === 0) inp.autofocus = true;
+
+    row.appendChild(lbl);
+    row.appendChild(inp);
+    formEl.appendChild(row);
+    return inp;
+  });
+
+  const submitBtn = document.createElement("button");
+  submitBtn.type = "button";
+  submitBtn.className = "btn btn-primary btn-sm stdin-submit";
+  submitBtn.textContent = "▶ Run with these inputs";
+  formEl.appendChild(submitBtn);
+
+  const submit = () => {
+    const values = fields.map((f) => f.value);
+    onSubmit(values);
   };
+
+  submitBtn.addEventListener("click", submit);
+  fields.forEach((f, idx) => {
+    f.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter") return;
+      if (idx < fields.length - 1) {
+        fields[idx + 1].focus();
+      } else {
+        submit();
+      }
+    });
+  });
+
+  if (fields[0]) fields[0].focus();
 }
 
 /* ---------- Turn a raw Pyodide error into something a student can read ----------
@@ -94,7 +153,7 @@ function cleanTraceback(rawMessage) {
 /* ---------- Friendly hints for the most common failure classes ---------- */
 function friendlyHint(message) {
   if (/Errno 29/.test(message) || /OSError/.test(message)) {
-    return "Hint: this usually means the program tried to read input(). Re-run and answer the prompt that pops up.";
+    return "Hint: the program asked for more input() values than were provided.";
   }
   if (/ModuleNotFoundError|No module named/.test(message)) {
     return "Hint: this package isn't preloaded — the runner tried to install it automatically. If it still fails, that package may not be available for Pyodide.";
@@ -123,19 +182,19 @@ function extractMissingModule(message) {
 
 /* ---------- matplotlib support: capture any open figures as images ---------- */
 const MPL_SETUP = `
-import sys as _sys
-if "matplotlib" in _sys.modules or True:
-    try:
-        import matplotlib
-        matplotlib.use("AGG")
-    except Exception:
-        pass
+try:
+    import matplotlib
+    matplotlib.use("AGG")
+except Exception:
+    pass
 `;
 
 async function captureFigures(py) {
   const hasMpl = py.runPython(`"matplotlib" in __import__("sys").modules`);
   if (!hasMpl) return [];
-  return py.runPython(`
+  return py
+    .runPython(
+      `
 import io, base64
 _out = []
 try:
@@ -149,15 +208,24 @@ try:
 except Exception:
     pass
 _out
-  `).toJs();
+  `
+    )
+    .toJs();
 }
 
-async function runProgram(code, outputEl, runBtn, imagesEl) {
+/* ---------- Actually run the program ----------
+   presetInputs: values already collected via the inline form, consumed
+   in order as input() is called. If the program calls input() more times
+   than we have preset values for, falls back to window.prompt so it still
+   works (e.g. input() inside a loop whose count can't be known statically). */
+async function runProgram(code, outputEl, runBtn, imagesEl, presetInputs) {
   outputEl.hidden = false;
   outputEl.textContent = "Running…";
   imagesEl.innerHTML = "";
   imagesEl.hidden = true;
   runBtn.disabled = true;
+
+  const queue = [...presetInputs];
 
   try {
     const py = await ensurePyodide();
@@ -165,13 +233,21 @@ async function runProgram(code, outputEl, runBtn, imagesEl) {
     let output = "";
     py.setStdout({ batched: (s) => (output += s + "\n") });
     py.setStderr({ batched: (s) => (output += s + "\n") });
-    py.setStdin(makeStdin("Input requested by the program:"));
+    py.setStdin({
+      stdin: () => {
+        // input() has already written its prompt text to stdout (captured
+        // above) before this runs, so we just need to echo the answer
+        // right after it to keep the transcript looking like a real terminal.
+        const val = queue.length ? queue.shift() : window.prompt("Input requested by the program:") ?? "";
+        output += val + "\n";
+        return val + "\n";
+      },
+    });
 
     // Fresh globals per run so one snippet's variables/imports can't
     // leak into (or collide with) the next one.
     const freshGlobals = py.globals.get("dict")();
 
-    // Best-effort matplotlib setup; harmless if matplotlib isn't used/imported.
     try {
       await py.runPythonAsync(MPL_SETUP, { globals: freshGlobals });
     } catch (_) {
@@ -190,7 +266,9 @@ async function runProgram(code, outputEl, runBtn, imagesEl) {
         output += `Package "${missing}" not found — attempting install...\n`;
         const installed = await tryAutoInstall(py, missing);
         if (installed) {
-          output = ""; // re-run cleanly after install
+          output = "";
+          queue.length = 0;
+          queue.push(...presetInputs);
           await execute();
         } else {
           throw err;
@@ -221,6 +299,29 @@ async function runProgram(code, outputEl, runBtn, imagesEl) {
   } finally {
     runBtn.disabled = false;
   }
+}
+
+/* ---------- Kick off a run: show inline input fields first if needed ---------- */
+function startRun(code, card) {
+  const runBtn = card.querySelector(".run-btn");
+  const outputEl = card.querySelector(".snippet-output");
+  const imagesEl = card.querySelector(".snippet-images");
+  const formEl = card.querySelector(".snippet-stdin-form");
+
+  const prompts = extractInputPrompts(code);
+
+  if (prompts.length === 0) {
+    formEl.hidden = true;
+    runProgram(code, outputEl, runBtn, imagesEl, []);
+    return;
+  }
+
+  outputEl.hidden = true;
+  imagesEl.hidden = true;
+  renderStdinForm(formEl, prompts, (values) => {
+    formEl.hidden = true;
+    runProgram(code, outputEl, runBtn, imagesEl, values);
+  });
 }
 
 /* ---------- Load programs live from Firestore ---------- */
@@ -286,15 +387,14 @@ function renderPrograms() {
       <div class="snippet-actions">
         <button class="btn btn-primary btn-sm run-btn">▶ Run</button>
       </div>
+      <div class="snippet-stdin-form" hidden></div>
       <div class="snippet-images" hidden></div>
       <pre class="snippet-output" hidden></pre>
     `;
     // Set code via textContent to avoid HTML-escaping issues, then let Prism highlight it
     card.querySelector("code").textContent = p.code || "";
     const runBtn = card.querySelector(".run-btn");
-    const outputEl = card.querySelector(".snippet-output");
-    const imagesEl = card.querySelector(".snippet-images");
-    runBtn.addEventListener("click", () => runProgram(p.code || "", outputEl, runBtn, imagesEl));
+    runBtn.addEventListener("click", () => startRun(p.code || "", card));
     snippetContainer.appendChild(card);
   });
 
