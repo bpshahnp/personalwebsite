@@ -92,15 +92,14 @@ function parseCSV(text) {
 }
 
 function downloadTextFile(filename, content, mimeType) {
-  const blob = new Blob([content], { type: mimeType || "text/plain" });
-  const url = URL.createObjectURL(blob);
+  const dataUri = "data:" + (mimeType || "text/plain") + ";charset=utf-8," + encodeURIComponent(content);
   const a = document.createElement("a");
-  a.href = url;
+  a.href = dataUri;
   a.download = filename;
+  a.rel = "noopener";
   document.body.appendChild(a);
   a.click();
   a.remove();
-  URL.revokeObjectURL(url);
 }
 
 // Reads either the chosen file (if any) or the pasted textarea content.
