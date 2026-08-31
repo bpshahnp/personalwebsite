@@ -605,6 +605,40 @@ img { max-width: 100%; display: block; }
 }
 .admin-tab.active { background: var(--navy); color: var(--white); border-color: var(--navy); }
 
+.admin-import {
+  background: var(--cream);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  margin-bottom: 20px;
+}
+.admin-import summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--navy-deep);
+  font-size: 0.92rem;
+}
+.admin-import-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 14px;
+}
+.admin-import-body input[type="file"] {
+  font: inherit;
+  font-size: 0.85rem;
+}
+.admin-import-body textarea {
+  font: inherit;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 0.82rem;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  resize: vertical;
+}
+.admin-import-body a { color: var(--orange-dark); font-weight: 600; }
+
 .admin-form {
   background: var(--white);
   border: 1px solid var(--line);
