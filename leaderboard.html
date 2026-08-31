@@ -22,12 +22,18 @@
       </nav>
       <div class="header-actions">
         <div class="auth-widget">
-          <button class="auth-icon-btn" id="authIconBtn" aria-label="Account">👤</button>
+          <button class="auth-icon-btn" id="authIconBtn" aria-label="Account"></button>
           <div class="auth-dropdown" id="authDropdown" hidden></div>
         </div>
       </div>
       <div class="mobile-header-icons">
-        <button class="nav-toggle" id="navToggle" aria-label="Open menu">☰</button>
+        <div class="auth-widget">
+          <button class="auth-icon-btn" id="authIconBtnMobile" aria-label="Account"></button>
+          <div class="auth-dropdown" id="authDropdownMobile" hidden></div>
+        </div>
+        <button class="nav-toggle" id="navToggle" aria-label="Open menu">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
       </div>
     </div>
   </header>
@@ -40,12 +46,6 @@
       <a href="python.html">Python Hub</a>
       <a href="leaderboard.html" class="active">Leaderboard</a>
     </nav>
-    <div class="drawer-account">
-      <div class="auth-widget">
-        <button class="auth-icon-btn" id="authIconBtnMobile" aria-label="Account">👤</button>
-        <div class="auth-dropdown" id="authDropdownMobile" hidden></div>
-      </div>
-    </div>
   </div>
   <div class="drawer-overlay" id="drawerOverlay"></div>
 
