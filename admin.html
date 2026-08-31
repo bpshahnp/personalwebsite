@@ -59,6 +59,27 @@
 
       <!-- ---- Questions tab ---- -->
       <div class="admin-panel" id="tab-questions">
+        <details class="admin-import">
+          <summary>Bulk import questions</summary>
+          <div class="admin-import-body">
+            <p class="quiz-muted">
+              Upload a CSV or JSON file, or paste content below.
+              <a href="#" id="downloadQuestionCsvTemplate">Download CSV template</a> ·
+              <a href="#" id="downloadQuestionJsonTemplate">Download JSON template</a>
+            </p>
+            <p class="quiz-muted">
+              <strong>CSV columns:</strong> question, option_a, option_b, option_c, option_d, correct (A/B/C/D), explanation, category.<br/>
+              <strong>JSON:</strong> array of <code>{ "question", "options": [4 strings], "correctIndex" (0-3), "explanation", "category" }</code>.
+            </p>
+            <input type="file" id="questionImportFile" accept=".csv,.json,text/csv,application/json" />
+            <textarea id="questionImportText" rows="6" placeholder="...or paste CSV/JSON content here"></textarea>
+            <div class="admin-form-actions">
+              <button type="button" class="btn btn-primary btn-sm" id="questionImportBtn">Import questions</button>
+            </div>
+            <p class="modal-status" id="questionImportStatus"></p>
+          </div>
+        </details>
+
         <form id="questionForm" class="admin-form">
           <input type="hidden" id="questionId" />
           <label>Question <textarea id="qText" rows="2" required></textarea></label>
@@ -91,6 +112,25 @@
 
       <!-- ---- Python Programs tab ---- -->
       <div class="admin-panel" id="tab-python" hidden>
+        <details class="admin-import">
+          <summary>Bulk import programs</summary>
+          <div class="admin-import-body">
+            <p class="quiz-muted">
+              Upload a JSON file, or paste content below (code doesn't fit cleanly in CSV, so JSON only here).
+              <a href="#" id="downloadPythonJsonTemplate">Download JSON template</a>
+            </p>
+            <p class="quiz-muted">
+              <strong>JSON:</strong> array of <code>{ "title", "category", "description", "code" }</code>.
+            </p>
+            <input type="file" id="pythonImportFile" accept=".json,application/json" />
+            <textarea id="pythonImportText" rows="6" placeholder="...or paste JSON content here"></textarea>
+            <div class="admin-form-actions">
+              <button type="button" class="btn btn-primary btn-sm" id="pythonImportBtn">Import programs</button>
+            </div>
+            <p class="modal-status" id="pythonImportStatus"></p>
+          </div>
+        </details>
+
         <form id="pythonForm" class="admin-form">
           <input type="hidden" id="pyId" />
           <label>Title <input type="text" id="pyTitle" required /></label>
