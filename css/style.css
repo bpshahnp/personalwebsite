@@ -81,6 +81,20 @@ img { max-width: 100%; display: block; }
   border-radius: 6px;
   margin-top: 8px;
 }
+.stdin-inline {
+  background: #161b22;
+  border: 1px solid #FFD43B;
+  color: #e6edf3;
+  border-radius: 3px;
+  padding: 1px 4px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: inherit;
+  min-width: 80px;
+}
+.snippet-terminal {
+  white-space: pre-wrap;
+  font-family: "JetBrains Mono", monospace;
+}
 /* ---------- Buttons ---------- */
 .btn {
   display: inline-block;
