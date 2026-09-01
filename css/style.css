@@ -82,14 +82,19 @@ img { max-width: 100%; display: block; }
   margin-top: 8px;
 }
 .stdin-inline {
-  background: #161b22;
-  border: 1px solid #FFD43B;
-  color: #e6edf3;
-  border-radius: 3px;
-  padding: 1px 4px;
-  font-family: "JetBrains Mono", monospace;
-  font-size: inherit;
-  min-width: 80px;
+  background: transparent;
+  border: none;
+  outline: none;
+  box-shadow: none;
+  color: #79c0ff;           /* blue, distinct from prompt/output text */
+  font: inherit;
+  padding: 0;
+  margin: 0;
+  caret-color: #79c0ff;
+  min-width: 1ch;
+}
+.stdin-typed {
+  color: #79c0ff;           /* typed value keeps the blue after Enter, like Thonny */
 }
 .snippet-terminal {
   white-space: pre-wrap;
