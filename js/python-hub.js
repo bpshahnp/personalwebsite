@@ -100,13 +100,22 @@ function runInteractive(code, outputEl, runBtn, imagesEl) {
   }
 
   function showInlineInput() {
+    // Styled to look like plain typed text on the same line as the prompt
+    // (Thonny-style) rather than a boxed form field. See .stdin-inline CSS.
     const input = document.createElement("input");
     input.type = "text";
     input.className = "stdin-inline";
     input.autocomplete = "off";
+    input.spellcheck = false;
+    input.size = 1;
     outputEl.appendChild(input);
     input.focus();
     outputEl.scrollTop = outputEl.scrollHeight;
+
+    // Grow the field to fit what's typed so it reads as inline text, not a box.
+    input.addEventListener("input", () => {
+      input.size = Math.max(1, input.value.length);
+    });
 
     input.addEventListener("keydown", (e) => {
       if (e.key !== "Enter") return;
@@ -114,7 +123,10 @@ function runInteractive(code, outputEl, runBtn, imagesEl) {
       const bytes = new TextEncoder().encode(value).subarray(0, 4096);
       inputBytes.set(bytes);
       Atomics.store(sync, 1, bytes.length);
-      input.replaceWith(document.createTextNode(value + "\n"));
+      const echo = document.createElement("span");
+      echo.className = "stdin-typed";
+      echo.textContent = value;
+      input.replaceWith(echo, document.createTextNode("\n"));
       outputEl.scrollTop = outputEl.scrollHeight;
       Atomics.store(sync, 0, 1);
       Atomics.notify(sync, 0);
