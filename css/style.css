@@ -100,6 +100,30 @@ img { max-width: 100%; display: block; }
   white-space: pre-wrap;
   font-family: "JetBrains Mono", monospace;
 }
+.btn-outline {
+  background: transparent;
+  border: 1px solid #444c56;
+  color: #e6edf3;
+}
+.btn-outline:hover {
+  background: #21262d;
+}
+.code-editor {
+  width: 100%;
+  background: #282c34;
+  color: #abb2bf;
+  border: 1px solid #444c56;
+  border-radius: 6px;
+  padding: 1rem;
+  font-family: "JetBrains Mono", Consolas, Monaco, monospace;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  resize: vertical;
+}
+.code-editor:focus {
+  outline: none;
+  border-color: #FFD43B;
+}
 /* ---------- Buttons ---------- */
 .btn {
   display: inline-block;
