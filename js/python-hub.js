@@ -13,22 +13,22 @@
      order: number
    }
 
-   INTERACTIVE MODE (preferred, Thonny-style):
-   When the page is crossOriginIsolated (see coi-serviceworker.js),
-   code runs in pyodide-worker.js, a Web Worker that genuinely pauses
-   Python execution on input() via Atomics.wait and resumes it with
-   whatever the user types into an inline field that appears right in
-   the output stream — output and input interleave exactly as they
-   would in a real terminal.
+   Input UX matches the PythonHub reference: a single main-thread
+   Pyodide instance, no Worker, no SharedArrayBuffer/service-worker
+   setup required. input() prompts are detected up front, printed into
+   the output box, and answered one at a time via a small inline field
+   that appears right after the prompt — same as the reference.
 
-   FALLBACK MODE:
-   If SharedArrayBuffer / crossOriginIsolated isn't available (e.g. the
-   service worker hasn't installed yet), input() calls are detected up
-   front and collected via a small inline form before running, then the
-   whole transcript is shown at once. Less faithful, but always works.
+   Fix vs. the reference: the reference only reads the FIRST input()
+   prompt and then substitutes that single value into every input()
+   call in the code, which is wrong for snippets with more than one
+   input() (e.g. two numbers to compare — both would get the same
+   value). Here each prompt is collected separately, in order, and fed
+   to Python's real stdin one at a time, so multi-input snippets work
+   correctly too.
 
-   Both modes also handle: missing packages (auto-install via micropip),
-   matplotlib figures (captured as images), fresh globals per run (no
+   Also kept from before: auto-install missing packages via micropip,
+   matplotlib figures captured as images, fresh globals per run (no
    state leaking between snippets), and cleaned-up tracebacks.
    ============================================ */
 
@@ -44,9 +44,6 @@ const loaderBanner = document.getElementById("pyodide-loader");
 let allPrograms = [];
 let activeCategory = "All";
 
-const INTERACTIVE_SUPPORTED =
-  typeof SharedArrayBuffer !== "undefined" && typeof window !== "undefined" && window.crossOriginIsolated;
-
 /* ---------- Mobile sidebar toggle ---------- */
 menuToggle.addEventListener("click", () => {
   sidebar.classList.add("open");
@@ -58,125 +55,11 @@ function closeSidebar() {
   overlay.classList.remove("visible");
 }
 
-/* =====================================================
-   INTERACTIVE MODE — shared worker, blocking stdin
-   ===================================================== */
-
-let sharedWorker = null;
-let workerBusy = false;
-
-function ensureWorker() {
-  if (!sharedWorker) {
-    sharedWorker = new Worker("pyodide-worker.js");
-    loaderBanner.classList.add("visible"); // first run loads the ~10MB runtime
-  }
-  return sharedWorker;
-}
-
-function setAllRunButtonsDisabled(disabled) {
-  document.querySelectorAll(".run-btn").forEach((btn) => (btn.disabled = disabled));
-}
-
-function runInteractive(code, outputEl, runBtn, imagesEl) {
-  if (workerBusy) return; // one run at a time (shared worker/runtime)
-  workerBusy = true;
-  setAllRunButtonsDisabled(true);
-
-  outputEl.hidden = false;
-  outputEl.innerHTML = "";
-  imagesEl.hidden = true;
-  imagesEl.innerHTML = "";
-
-  const sab = new SharedArrayBuffer(8 + 4096);
-  const sync = new Int32Array(sab, 0, 2);
-  const inputBytes = new Uint8Array(sab, 8);
-
-  const w = ensureWorker();
-  loaderBanner.classList.remove("visible");
-
-  function appendText(text) {
-    outputEl.appendChild(document.createTextNode(text));
-    outputEl.scrollTop = outputEl.scrollHeight;
-  }
-
-  function showInlineInput() {
-    // Styled to look like plain typed text on the same line as the prompt
-    // (Thonny-style) rather than a boxed form field. See .stdin-inline CSS.
-    const input = document.createElement("input");
-    input.type = "text";
-    input.className = "stdin-inline";
-    input.autocomplete = "off";
-    input.spellcheck = false;
-    input.size = 1;
-    outputEl.appendChild(input);
-    input.focus();
-    outputEl.scrollTop = outputEl.scrollHeight;
-
-    // Grow the field to fit what's typed so it reads as inline text, not a box.
-    input.addEventListener("input", () => {
-      input.size = Math.max(1, input.value.length);
-    });
-
-    input.addEventListener("keydown", (e) => {
-      if (e.key !== "Enter") return;
-      const value = input.value;
-      const bytes = new TextEncoder().encode(value).subarray(0, 4096);
-      inputBytes.set(bytes);
-      Atomics.store(sync, 1, bytes.length);
-      const echo = document.createElement("span");
-      echo.className = "stdin-typed";
-      echo.textContent = value;
-      input.replaceWith(echo, document.createTextNode("\n"));
-      outputEl.scrollTop = outputEl.scrollHeight;
-      Atomics.store(sync, 0, 1);
-      Atomics.notify(sync, 0);
-    });
-  }
-
-  function cleanup() {
-    w.removeEventListener("message", onMessage);
-    workerBusy = false;
-    setAllRunButtonsDisabled(false);
-  }
-
-  function onMessage(event) {
-    const msg = event.data;
-    if (msg.type === "stdout") {
-      appendText(msg.text);
-    } else if (msg.type === "input-request") {
-      showInlineInput();
-    } else if (msg.type === "done") {
-      cleanup();
-      if (!outputEl.textContent.trim()) appendText("(no output)");
-      if (msg.images && msg.images.length) {
-        imagesEl.hidden = false;
-        msg.images.forEach((b64) => {
-          const img = document.createElement("img");
-          img.src = "data:image/png;base64," + b64;
-          img.className = "snippet-plot";
-          imagesEl.appendChild(img);
-        });
-      }
-    } else if (msg.type === "error") {
-      cleanup();
-      const cleaned = cleanTraceback(msg.message);
-      const hint = friendlyHint(msg.message);
-      appendText("\nError:\n" + cleaned + (hint ? "\n\n" + hint : ""));
-    }
-  }
-
-  w.addEventListener("message", onMessage);
-  w.postMessage({ type: "run", code, sab });
-}
-
-/* =====================================================
-   FALLBACK MODE — main-thread Pyodide, pre-collected inputs
-   ===================================================== */
-
+/* ---------- Load Pyodide lazily (only needed to actually run code) ---------- */
 let pyodideInstance = null;
 let pyodideLoading = null;
 
-function ensurePyodideMainThread() {
+function ensurePyodide() {
   if (pyodideInstance) return Promise.resolve(pyodideInstance);
   if (pyodideLoading) return pyodideLoading;
   loaderBanner.classList.add("visible");
@@ -189,6 +72,10 @@ function ensurePyodideMainThread() {
   return pyodideLoading;
 }
 
+/* ---------- Detect input() calls so we can ask for them inline ----------
+   Best-effort: pulls the literal prompt string out of input("...") /
+   input('...') calls, in source order. Falls back to a generic label
+   when the prompt isn't a plain string literal (e.g. input(some_var)). */
 function extractInputPrompts(code) {
   const re = /input\s*\(\s*(?:f?(['"])((?:\\.|(?!\1).)*)\1)?\s*\)/g;
   const prompts = [];
@@ -201,44 +88,60 @@ function extractInputPrompts(code) {
   return prompts;
 }
 
-function renderStdinForm(formEl, prompts, onSubmit) {
-  formEl.innerHTML = "";
-  formEl.hidden = false;
+/* ---------- One inline field, appended right where the prompt printed ----------
+   Resolves with the typed value on Enter. Styled to blend into the
+   terminal-style output rather than look like a form field. */
+function collectInlineInput(outputEl) {
+  return new Promise((resolve) => {
+    const input = document.createElement("input");
+    input.type = "text";
+    input.className = "stdin-inline";
+    input.autocomplete = "off";
+    input.spellcheck = false;
+    input.size = 1;
+    outputEl.appendChild(input);
+    input.focus();
+    outputEl.scrollTop = outputEl.scrollHeight;
 
-  const fields = prompts.map((label, idx) => {
-    const row = document.createElement("div");
-    row.className = "stdin-row";
-    const lbl = document.createElement("label");
-    lbl.textContent = label.trim() || `Input #${idx + 1}`;
-    lbl.className = "stdin-label";
-    const inp = document.createElement("input");
-    inp.type = "text";
-    inp.className = "stdin-input";
-    inp.autocomplete = "off";
-    row.appendChild(lbl);
-    row.appendChild(inp);
-    formEl.appendChild(row);
-    return inp;
-  });
-
-  const submitBtn = document.createElement("button");
-  submitBtn.type = "button";
-  submitBtn.className = "btn btn-primary btn-sm stdin-submit";
-  submitBtn.textContent = "▶ Run with these inputs";
-  formEl.appendChild(submitBtn);
-
-  const submit = () => onSubmit(fields.map((f) => f.value));
-  submitBtn.addEventListener("click", submit);
-  fields.forEach((f, idx) => {
-    f.addEventListener("keydown", (e) => {
+    input.addEventListener("input", () => {
+      input.size = Math.max(1, input.value.length);
+    });
+    input.addEventListener("keydown", (e) => {
       if (e.key !== "Enter") return;
-      if (idx < fields.length - 1) fields[idx + 1].focus();
-      else submit();
+      const value = input.value;
+      input.remove();
+      resolve(value);
     });
   });
-  if (fields[0]) fields[0].focus();
 }
 
+/* ---------- Turn a raw Pyodide error into something a student can read ---------- */
+function cleanTraceback(rawMessage) {
+  const marker = 'File "<exec>"';
+  const idx = rawMessage.indexOf(marker);
+  if (idx === -1) return rawMessage;
+  const lines = rawMessage.split("\n");
+  const startIdx = lines.findIndex((l) => l.includes(marker));
+  const kept = startIdx > 0 ? [lines[0], ...lines.slice(startIdx)] : lines.slice(startIdx);
+  return kept.join("\n").trim();
+}
+
+function friendlyHint(message) {
+  if (/ModuleNotFoundError|No module named/.test(message)) {
+    return "Hint: this package isn't preloaded — the runner tried to install it automatically. If it still fails, that package may not be available for Pyodide.";
+  }
+  if (/RecursionError/.test(message)) {
+    return "Hint: the function is calling itself too many times without stopping (check the base case).";
+  }
+  return "";
+}
+
+function extractMissingModule(message) {
+  const m = message.match(/No module named ['"]([\w.]+)['"]/);
+  return m ? m[1].split(".")[0] : null;
+}
+
+/* ---------- matplotlib support: capture any open figures as images ---------- */
 const MPL_SETUP = `
 try:
     import matplotlib
@@ -271,37 +174,43 @@ _out
     .toJs();
 }
 
-function extractMissingModule(message) {
-  const m = message.match(/No module named ['"]([\w.]+)['"]/);
-  return m ? m[1].split(".")[0] : null;
-}
-
-async function runProgramFallback(code, outputEl, runBtn, imagesEl, presetInputs) {
+/* ---------- Run a snippet ---------- */
+async function runProgram(code, outputEl, runBtn, imagesEl) {
   outputEl.hidden = false;
-  outputEl.textContent = "Running…";
-  imagesEl.innerHTML = "";
+  outputEl.textContent = "";
   imagesEl.hidden = true;
+  imagesEl.innerHTML = "";
   runBtn.disabled = true;
 
-  const queue = [...presetInputs];
-
   try {
-    const py = await ensurePyodideMainThread();
+    const py = await ensurePyodide();
+
+    // Collect every input() value up front, one field at a time, inline
+    // in the output box — in source order, so multi-input snippets work.
+    const prompts = extractInputPrompts(code);
+    const values = [];
+    for (const label of prompts) {
+      outputEl.textContent += label;
+      const val = await collectInlineInput(outputEl);
+      values.push(val);
+      outputEl.textContent += val + "\n";
+    }
+
+    const queue = [...values];
     let output = "";
     py.setStdout({ batched: (s) => (output += s + "\n") });
     py.setStderr({ batched: (s) => (output += s + "\n") });
-    py.setStdin({
-      stdin: () => {
-        const val = queue.length ? queue.shift() : window.prompt("Input requested by the program:") ?? "";
-        output += val + "\n";
-        return val + "\n";
-      },
-    });
+    py.setStdin({ stdin: () => (queue.length ? queue.shift() : "") + "\n" });
 
+    // Fresh globals per run so one snippet's variables/imports can't
+    // leak into (or collide with) the next one.
     const freshGlobals = py.globals.get("dict")();
+
     try {
       await py.runPythonAsync(MPL_SETUP, { globals: freshGlobals });
-    } catch (_) {}
+    } catch (_) {
+      /* matplotlib not installed — fine, most snippets don't need it */
+    }
 
     async function execute() {
       await py.runPythonAsync(code, { globals: freshGlobals });
@@ -318,7 +227,7 @@ async function runProgramFallback(code, outputEl, runBtn, imagesEl, presetInputs
           await micropip.install(missing);
           output = "";
           queue.length = 0;
-          queue.push(...presetInputs);
+          queue.push(...values);
           await execute();
         } catch (e2) {
           throw err;
@@ -340,66 +249,13 @@ async function runProgramFallback(code, outputEl, runBtn, imagesEl, presetInputs
     }
 
     freshGlobals.destroy();
-    outputEl.textContent = output.trim() || "(no output)";
+    outputEl.textContent += output.trim() || "(no output)";
   } catch (err) {
     const cleaned = cleanTraceback(err.message || String(err));
     const hint = friendlyHint(err.message || "");
-    outputEl.textContent = "Error:\n" + cleaned + (hint ? "\n\n" + hint : "");
+    outputEl.textContent += "\nError:\n" + cleaned + (hint ? "\n\n" + hint : "");
   } finally {
     runBtn.disabled = false;
-  }
-}
-
-/* =====================================================
-   Shared helpers
-   ===================================================== */
-
-function cleanTraceback(rawMessage) {
-  const marker = 'File "<exec>"';
-  const idx = rawMessage.indexOf(marker);
-  if (idx === -1) return rawMessage;
-  const lines = rawMessage.split("\n");
-  const startIdx = lines.findIndex((l) => l.includes(marker));
-  const kept = startIdx > 0 ? [lines[0], ...lines.slice(startIdx)] : lines.slice(startIdx);
-  return kept.join("\n").trim();
-}
-
-function friendlyHint(message) {
-  if (/Errno 29/.test(message) || /OSError/.test(message)) {
-    return "Hint: the program asked for more input() values than were provided.";
-  }
-  if (/ModuleNotFoundError|No module named/.test(message)) {
-    return "Hint: this package isn't preloaded — the runner tried to install it automatically. If it still fails, that package may not be available for Pyodide.";
-  }
-  if (/RecursionError/.test(message)) {
-    return "Hint: the function is calling itself too many times without stopping (check the base case).";
-  }
-  return "";
-}
-
-/* ---------- Kick off a run ---------- */
-function startRun(code, card) {
-  const runBtn = card.querySelector(".run-btn");
-  const outputEl = card.querySelector(".snippet-output");
-  const imagesEl = card.querySelector(".snippet-images");
-  const formEl = card.querySelector(".snippet-stdin-form");
-  formEl.hidden = true;
-
-  if (INTERACTIVE_SUPPORTED) {
-    runInteractive(code, outputEl, runBtn, imagesEl);
-    return;
-  }
-
-  // Fallback: pre-collect inputs via inline form, then run all at once.
-  const prompts = extractInputPrompts(code);
-  if (prompts.length === 0) {
-    runProgramFallback(code, outputEl, runBtn, imagesEl, []);
-  } else {
-    outputEl.hidden = true;
-    renderStdinForm(formEl, prompts, (values) => {
-      formEl.hidden = true;
-      runProgramFallback(code, outputEl, runBtn, imagesEl, values);
-    });
   }
 }
 
@@ -466,13 +322,14 @@ function renderPrograms() {
       <div class="snippet-actions">
         <button class="btn btn-primary btn-sm run-btn">▶ Run</button>
       </div>
-      <div class="snippet-stdin-form" hidden></div>
       <div class="snippet-images" hidden></div>
       <div class="snippet-output snippet-terminal" hidden></div>
     `;
     card.querySelector("code").textContent = p.code || "";
     const runBtn = card.querySelector(".run-btn");
-    runBtn.addEventListener("click", () => startRun(p.code || "", card));
+    const outputEl = card.querySelector(".snippet-output");
+    const imagesEl = card.querySelector(".snippet-images");
+    runBtn.addEventListener("click", () => runProgram(p.code || "", outputEl, runBtn, imagesEl));
     snippetContainer.appendChild(card);
   });
 
