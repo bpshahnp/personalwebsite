@@ -252,9 +252,10 @@ async function runProgram(code, outputEl, runBtn, imagesEl) {
 
     // input() writes its own prompt text to real stdout when it actually
     // runs — we already showed that same prompt during collection above,
-    // so strip the duplicate off the front before displaying the rest.
+    // so remove the duplicate (wherever it landed) before displaying the rest.
     for (const label of prompts) {
-      if (output.startsWith(label)) output = output.slice(label.length);
+      const idx = output.indexOf(label);
+      if (idx !== -1) output = output.slice(0, idx) + output.slice(idx + label.length);
     }
 
     outputEl.textContent += output.trim() || "(no output)";
@@ -326,22 +327,78 @@ function renderPrograms() {
         ${p.category ? `<span class="mcq-category">${escapeHtml(p.category)}</span>` : ""}
       </div>
       ${p.description ? `<p class="snippet-desc">${escapeHtml(p.description)}</p>` : ""}
-      <pre class="line-numbers"><code class="language-python"></code></pre>
+      <div class="snippet-code-wrap">
+        <pre class="line-numbers"><code class="language-python"></code></pre>
+      </div>
       <div class="snippet-actions">
         <button class="btn btn-primary btn-sm run-btn">▶ Run</button>
+        <button class="btn btn-outline btn-sm edit-btn">✏️ Edit</button>
+        <button class="btn btn-outline btn-sm reset-btn" hidden>↺ Reset</button>
       </div>
       <div class="snippet-images" hidden></div>
       <div class="snippet-output snippet-terminal" hidden></div>
     `;
-    card.querySelector("code").textContent = p.code || "";
+
+    const originalCode = p.code || "";
+    let currentCode = originalCode;
+    let editing = false;
+
+    const codeWrap = card.querySelector(".snippet-code-wrap");
     const runBtn = card.querySelector(".run-btn");
+    const editBtn = card.querySelector(".edit-btn");
+    const resetBtn = card.querySelector(".reset-btn");
     const outputEl = card.querySelector(".snippet-output");
     const imagesEl = card.querySelector(".snippet-images");
-    runBtn.addEventListener("click", () => runProgram(p.code || "", outputEl, runBtn, imagesEl));
+
+    function showHighlighted() {
+      codeWrap.innerHTML = `<pre class="line-numbers"><code class="language-python"></code></pre>`;
+      const codeEl = codeWrap.querySelector("code");
+      codeEl.textContent = currentCode;
+      if (window.Prism) Prism.highlightElement(codeEl);
+    }
+
+    function enterEditMode() {
+      const textarea = document.createElement("textarea");
+      textarea.className = "code-editor";
+      textarea.spellcheck = false;
+      textarea.value = currentCode;
+      textarea.rows = Math.max(4, currentCode.split("\n").length);
+      codeWrap.innerHTML = "";
+      codeWrap.appendChild(textarea);
+      textarea.focus();
+      editBtn.textContent = "💾 Save";
+      resetBtn.hidden = false;
+      editing = true;
+    }
+
+    function saveEdits() {
+      const textarea = codeWrap.querySelector("textarea");
+      if (textarea) currentCode = textarea.value;
+      showHighlighted();
+      editBtn.textContent = "✏️ Edit";
+      resetBtn.hidden = true;
+      editing = false;
+    }
+
+    editBtn.addEventListener("click", () => (editing ? saveEdits() : enterEditMode()));
+
+    resetBtn.addEventListener("click", () => {
+      currentCode = originalCode;
+      if (editing) {
+        codeWrap.querySelector("textarea").value = currentCode;
+      } else {
+        showHighlighted();
+      }
+    });
+
+    runBtn.addEventListener("click", () => {
+      if (editing) saveEdits(); // use whatever's currently typed
+      runProgram(currentCode, outputEl, runBtn, imagesEl);
+    });
+
+    showHighlighted();
     snippetContainer.appendChild(card);
   });
-
-  if (window.Prism) Prism.highlightAllUnder(snippetContainer);
 }
 
 searchInput.addEventListener("input", renderPrograms);
