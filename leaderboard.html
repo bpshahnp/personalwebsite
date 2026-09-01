@@ -52,15 +52,17 @@
   <section class="page-hero">
     <div class="container">
       <h1>Leaderboard</h1>
-      <p>Top scorers from the MCQ Hub quiz, ranked by best score. Log in before taking a quiz to appear here.</p>
+      <p>Top scorers from the MCQ Hub quiz, ranked by average score across all attempts. Log in before taking a quiz to appear here.</p>
     </div>
   </section>
 
   <section class="leaderboard-section">
     <div class="container" style="max-width:680px">
+      <div class="your-rank-card" id="yourRankCard" hidden></div>
+
       <div class="leaderboard-table" id="leaderboardTable">
         <div class="leaderboard-row header-row">
-          <span>#</span><span>Player</span><span style="text-align:right">Best score</span>
+          <span>#</span><span>Player</span><span style="text-align:right">Avg score</span>
         </div>
         <p class="updates-loading" style="padding:20px">Loading leaderboard…</p>
       </div>
