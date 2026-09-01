@@ -249,6 +249,14 @@ async function runProgram(code, outputEl, runBtn, imagesEl) {
     }
 
     freshGlobals.destroy();
+
+    // input() writes its own prompt text to real stdout when it actually
+    // runs — we already showed that same prompt during collection above,
+    // so strip the duplicate off the front before displaying the rest.
+    for (const label of prompts) {
+      if (output.startsWith(label)) output = output.slice(label.length);
+    }
+
     outputEl.textContent += output.trim() || "(no output)";
   } catch (err) {
     const cleaned = cleanTraceback(err.message || String(err));
