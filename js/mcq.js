@@ -228,9 +228,11 @@ retryQuizBtn.addEventListener("click", () => {
   quizStart.hidden = false;
 });
 
-/* ---------- Save personal-best score to the leaderboard ----------
-   One document per signed-in user (doc id = uid). Only overwrites
-   if this attempt beats their previous best percentage.
+/* ---------- Save score to the leaderboard ----------
+   One document per signed-in user (doc id = uid), tracking their
+   AVERAGE percentage across every quiz they've taken (not just their
+   best attempt) — that's what the leaderboard ranks by. We also keep
+   their best single attempt for display alongside the average.
 ------------------------------------------------------------------ */
 const leaderboardStatus = document.getElementById("leaderboardStatus");
 
@@ -244,27 +246,33 @@ function saveScoreToLeaderboard(rawScore, total, pct) {
   const category = categorySelect.value;
   const scoreRef = db.collection("scores").doc(user.uid);
 
-  scoreRef
-    .get()
-    .then((doc) => {
-      const isNewBest = !doc.exists || pct > doc.data().percentage || (pct === doc.data().percentage && total > doc.data().total);
-      if (!isNewBest) {
-        leaderboardStatus.innerHTML = `That's below your personal best. Check the <a href="leaderboard.html">Leaderboard</a>.`;
-        return;
-      }
-      return scoreRef
-        .set({
-          name: user.email.split("@")[0],
-          email: user.email,
-          score: rawScore,
-          total,
-          percentage: pct,
-          category: category === "All" ? "" : category,
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-        })
-        .then(() => {
-          leaderboardStatus.innerHTML = `New personal best saved! Check the <a href="leaderboard.html">Leaderboard</a>.`;
-        });
+  db.runTransaction((tx) => {
+    return tx.get(scoreRef).then((doc) => {
+      const prev = doc.exists ? doc.data() : {};
+      const attempts = (prev.attempts || 0) + 1;
+      const percentageSum = (prev.percentageSum || 0) + pct;
+      const averagePercentage = percentageSum / attempts;
+      const isNewBest = pct >= (prev.bestPercentage || 0);
+
+      tx.set(scoreRef, {
+        name: user.email.split("@")[0],
+        email: user.email,
+        attempts,
+        percentageSum,
+        averagePercentage,
+        bestPercentage: isNewBest ? pct : prev.bestPercentage || 0,
+        bestScore: isNewBest ? rawScore : prev.bestScore || 0,
+        bestTotal: isNewBest ? total : prev.bestTotal || 0,
+        lastPercentage: pct,
+        lastCategory: category === "All" ? "" : category,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+
+      return { attempts, averagePercentage };
+    });
+  })
+    .then(({ attempts, averagePercentage }) => {
+      leaderboardStatus.innerHTML = `Saved — your average is now ${Math.round(averagePercentage)}% across ${attempts} attempt${attempts === 1 ? "" : "s"}. Check the <a href="leaderboard.html">Leaderboard</a>.`;
     })
     .catch((err) => {
       leaderboardStatus.textContent = `Could not save score (${err.message}).`;
