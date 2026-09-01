@@ -1119,6 +1119,7 @@ img { max-width: 100%; display: block; }
   border-radius: var(--radius);
   box-shadow: var(--shadow);
 }
+.your-rank-card[hidden] { display: none; }
 .your-rank-card .leaderboard-rank { color: var(--orange); }
 .your-rank-card .leaderboard-name { color: var(--white); }
 .your-rank-card .leaderboard-name::after { content: " (you)"; color: var(--orange); font-weight: 600; font-size: 0.82em; }
