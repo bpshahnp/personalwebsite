@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Video Hub | B. Prasad Shah</title>
+<meta name="description" content="Watch Python and exam-prep tutorials from B. Prasad Shah's Video Hub.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+  /* ---------- Video Hub — additions only, built on style.css tokens ---------- */
+
+  .videos-toolbar { padding: 30px 0 6px; }
+  .videos-toolbar-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .video-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .video-filter-btn {
+    padding: 7px 16px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--white);
+    color: var(--mist);
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  }
+  .video-filter-btn:hover { border-color: var(--navy); color: var(--navy); }
+  .video-filter-btn.active {
+    background: var(--navy);
+    border-color: var(--navy);
+    color: var(--white);
+  }
+
+  .video-section { padding: 30px 0 96px; }
+
+  .video-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+  }
+
+  .video-card {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.15s ease, border-color 0.15s ease;
+  }
+  .video-card:hover { transform: translateY(-3px); border-color: var(--orange); }
+
+  .video-thumb {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    background: var(--navy-deep);
+    overflow: hidden;
+  }
+  .video-thumb img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+  .video-card:hover .video-thumb img { transform: scale(1.05); }
+
+  .video-play {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .video-play span {
+    width: 50px; height: 50px;
+    border-radius: 50%;
+    background: rgba(232, 131, 78, 0.92);
+    color: var(--white);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+    box-shadow: 0 6px 18px rgba(15, 23, 41, 0.35);
+  }
+
+  .video-body { padding: 16px 18px 20px; }
+  .video-category {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--orange-dark);
+    background: rgba(232, 131, 78, 0.12);
+    padding: 3px 10px;
+    border-radius: 999px;
+    margin-bottom: 10px;
+  }
+  .video-card h3 {
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    line-height: 1.35;
+    margin: 0 0 6px;
+    color: var(--navy-deep);
+  }
+  .video-card p {
+    color: var(--mist);
+    font-size: 0.88rem;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .video-empty {
+    display: none;
+    text-align: center;
+    color: var(--mist);
+    padding: 60px 20px;
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+  }
+
+  /* Player modal — reuses .modal / .modal-content, wider variant */
+  .modal.video-modal .modal-content {
+    max-width: 860px;
+    padding: 20px;
+  }
+  .video-modal-frame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #000;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .video-modal-frame iframe { width: 100%; height: 100%; border: 0; }
+  .video-modal-meta { padding: 16px 4px 0; }
+  .video-modal-meta h3 {
+    font-family: var(--font-display);
+    color: var(--navy-deep);
+    margin: 0 0 6px;
+    font-size: 1.15rem;
+  }
+  .video-modal-meta p { color: var(--mist); font-size: 0.9rem; margin: 0; }
+
+  @media (max-width: 600px) {
+    .video-filters { width: 100%; }
+    .filter-input { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <div class="logo">B. Prasad <span>Shah</span></div>
+    <nav class="main-nav">
+      <a href="index.html">Home</a>
+      <a href="mcq.html">MCQ Hub</a>
+      <a href="python.html">Python Hub</a>
+      <a href="videos.html" class="active">Video Hub</a>
+      <a href="leaderboard.html">Leaderboard</a>
+    </nav>
+    <div class="header-actions">
+      <a href="admin.html" class="btn btn-outline btn-sm">Admin</a>
+    </div>
+    <button class="nav-toggle" aria-label="Open menu">&#9776;</button>
+  </div>
+</header>
+
+<section class="page-hero">
+  <div class="container">
+    <h1>Video Hub</h1>
+    <p>Watch tutorials and walkthroughs alongside MCQ Hub and Python Hub — learn at your own pace, then go practice.</p>
+  </div>
+</section>
+
+<section class="videos-toolbar">
+  <div class="container videos-toolbar-inner">
+    <div class="video-filters" id="videoFilters"></div>
+    <input type="text" class="filter-input" id="videoSearch" placeholder="Search videos...">
+  </div>
+</section>
+
+<section class="video-section">
+  <div class="container">
+    <div class="video-grid" id="videoGrid"></div>
+    <div class="video-empty" id="videoEmpty">No videos match your search.</div>
+  </div>
+</section>
+
+<div class="modal video-modal" id="videoModal" hidden>
+  <div class="modal-content">
+    <button class="modal-close" id="videoModalClose">&times;</button>
+    <div class="video-modal-frame" id="videoModalFrame"></div>
+    <div class="video-modal-meta">
+      <h3 id="videoModalTitle"></h3>
+      <p id="videoModalDesc"></p>
+    </div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; <span id="year"></span> B. Prasad Shah — Video Hub</span>
+    <div class="footer-links">
+      <a href="index.html">About Us</a>
+      <a href="index.html#contact">Contact</a>
+      <a href="admin.html">Admin</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* =========================================================
+   ADD YOUR VIDEOS HERE
+   id       -> the YouTube video ID (the part after v= in the URL,
+               e.g. https://www.youtube.com/watch?v=dQw4w9WgXcQ -> "dQw4w9WgXcQ")
+   title    -> shown on the card and in the player
+   desc     -> one or two lines shown under the title
+   category -> used for the filter buttons above the grid (any word you like)
+   ========================================================= */
+const VIDEOS = [
+  {
+    id: "rfscVS0vtbw",
+    title: "Learn Python - Full Course for Beginners",
+    desc: "A full walkthrough of Python fundamentals for anyone starting out.",
+    category: "Python"
+  },
+  {
+    id: "kqtD5dpn9C8",
+    title: "Python for Everybody - Introduction",
+    desc: "Getting comfortable with variables, loops, and functions.",
+    category: "Python"
+  },
+  {
+    id: "WGJJIrtnfpk",
+    title: "How to Study for MCQ-style Exams",
+    desc: "Practical techniques for tackling multiple-choice questions confidently.",
+    category: "MCQ Tips"
+  }
+];
+/* ========================================================= */
+
+const grid = document.getElementById('videoGrid');
+const filtersEl = document.getElementById('videoFilters');
+const searchEl = document.getElementById('videoSearch');
+const emptyEl = document.getElementById('videoEmpty');
+
+const modal = document.getElementById('videoModal');
+const modalFrame = document.getElementById('videoModalFrame');
+const modalTitle = document.getElementById('videoModalTitle');
+const modalDesc = document.getElementById('videoModalDesc');
+const modalClose = document.getElementById('videoModalClose');
+
+document.getElementById('year').textContent = new Date().getFullYear();
+
+let activeCategory = 'All';
+
+function thumbUrl(id) {
+  return `https://i.ytimg.com/vi/${id}/mqdefault.jpg`;
+}
+
+function buildFilters() {
+  const categories = ['All', ...new Set(VIDEOS.map(v => v.category))];
+  filtersEl.innerHTML = categories.map(cat =>
+    `<button class="video-filter-btn${cat === activeCategory ? ' active' : ''}" data-cat="${cat}">${cat}</button>`
+  ).join('');
+
+  filtersEl.querySelectorAll('.video-filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeCategory = btn.dataset.cat;
+      buildFilters();
+      renderGrid();
+    });
+  });
+}
+
+function renderGrid() {
+  const query = searchEl.value.trim().toLowerCase();
+
+  const list = VIDEOS.filter(v => {
+    const matchesCategory = activeCategory === 'All' || v.category === activeCategory;
+    const matchesQuery = !query ||
+      v.title.toLowerCase().includes(query) ||
+      (v.desc || '').toLowerCase().includes(query);
+    return matchesCategory && matchesQuery;
+  });
+
+  grid.innerHTML = list.map(v => `
+    <div class="video-card" data-id="${v.id}">
+      <div class="video-thumb">
+        <img src="${thumbUrl(v.id)}" alt="${v.title}" loading="lazy">
+        <div class="video-play"><span>&#9658;</span></div>
+      </div>
+      <div class="video-body">
+        <span class="video-category">${v.category}</span>
+        <h3>${v.title}</h3>
+        <p>${v.desc || ''}</p>
+      </div>
+    </div>
+  `).join('');
+
+  emptyEl.style.display = list.length ? 'none' : 'block';
+
+  grid.querySelectorAll('.video-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const v = VIDEOS.find(item => item.id === card.dataset.id);
+      openVideo(v);
+    });
+  });
+}
+
+function openVideo(v) {
+  modalFrame.innerHTML = `<iframe
+      src="https://www.youtube.com/embed/${v.id}?autoplay=1&rel=0"
+      title="${v.title}"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      allowfullscreen></iframe>`;
+  modalTitle.textContent = v.title;
+  modalDesc.textContent = v.desc || '';
+  modal.hidden = false;
+}
+
+function closeVideo() {
+  modal.hidden = true;
+  modalFrame.innerHTML = '';
+}
+
+modalClose.addEventListener('click', closeVideo);
+modal.addEventListener('click', (e) => { if (e.target === modal) closeVideo(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeVideo(); });
+searchEl.addEventListener('input', renderGrid);
+
+buildFilters();
+renderGrid();
+</script>
+
+</body>
+</html>
