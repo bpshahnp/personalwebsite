@@ -54,6 +54,8 @@
       <div class="admin-tabs">
         <button class="admin-tab active" data-tab="questions">Questions (MCQ Hub)</button>
         <button class="admin-tab" data-tab="python">Programs (Python Hub)</button>
+        <button class="admin-tab" data-tab="resources">Resources</button>
+        <button class="admin-tab" data-tab="messages">Messages</button>
         <button class="admin-tab" data-tab="updates">Latest Updates</button>
       </div>
 
@@ -150,6 +152,50 @@
 
         <div id="pythonAdminList" class="admin-list">
           <p class="updates-loading">Loading programs…</p>
+        </div>
+      </div>
+
+      <!-- ---- Resources tab ---- -->
+      <div class="admin-panel" id="tab-resources" hidden>
+        <form id="resourceForm" class="admin-form">
+          <input type="hidden" id="resId" />
+          <label>Title <input type="text" id="resTitle" required /></label>
+          <div class="admin-form-grid">
+            <label>File type
+              <select id="resFileType">
+                <option value="PPT">PPT</option>
+                <option value="Word">Word</option>
+                <option value="PDF">PDF</option>
+                <option value="Excel">Excel</option>
+                <option value="Other">Other</option>
+              </select>
+            </label>
+            <label>Category <input type="text" id="resCategory" placeholder="e.g. Class 10 Notes" /></label>
+          </div>
+          <label>Description <textarea id="resDescription" rows="2" placeholder="What this file covers"></textarea></label>
+          <label>Google Drive link
+            <input type="url" id="resDriveUrl" placeholder="https://drive.google.com/file/d/.../view" required />
+          </label>
+          <p class="quiz-muted">Make sure the file's Drive sharing setting is "Anyone with the link" (Viewer) — otherwise visitors can't open it.</p>
+          <div class="admin-form-grid">
+            <label>Order (higher shows first) <input type="number" id="resOrder" value="1" required /></label>
+          </div>
+          <div class="admin-form-actions">
+            <button type="submit" class="btn btn-primary" id="resourceSubmitBtn">Add resource</button>
+            <button type="button" class="btn btn-outline" id="cancelResourceEdit" hidden>Cancel edit</button>
+          </div>
+        </form>
+
+        <div id="resourcesAdminList" class="admin-list">
+          <p class="updates-loading">Loading resources…</p>
+        </div>
+      </div>
+
+      <!-- ---- Messages tab (contact form submissions) ---- -->
+      <div class="admin-panel" id="tab-messages" hidden>
+        <p class="quiz-muted" style="margin-bottom:16px">Messages sent through the Contact page. Reply directly to the sender's email — there's no reply feature here, this is just an inbox.</p>
+        <div id="messagesAdminList" class="admin-list">
+          <p class="updates-loading">Loading messages…</p>
         </div>
       </div>
 
