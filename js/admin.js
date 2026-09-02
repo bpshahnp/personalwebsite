@@ -22,6 +22,8 @@ auth.onAuthStateChanged((user) => {
     hide(signInGate, notAuthorized);
     initQuestionsAdmin();
     initPythonAdmin();
+    initResourcesAdmin();
+    initMessagesAdmin();
     initUpdatesAdmin();
   } else {
     show(notAuthorized);
@@ -54,6 +56,8 @@ document.querySelectorAll(".admin-tab").forEach((tabBtn) => {
     tabBtn.classList.add("active");
     document.getElementById("tab-questions").hidden = tabBtn.dataset.tab !== "questions";
     document.getElementById("tab-python").hidden = tabBtn.dataset.tab !== "python";
+    document.getElementById("tab-resources").hidden = tabBtn.dataset.tab !== "resources";
+    document.getElementById("tab-messages").hidden = tabBtn.dataset.tab !== "messages";
     document.getElementById("tab-updates").hidden = tabBtn.dataset.tab !== "updates";
   });
 });
@@ -476,6 +480,142 @@ function initPythonAdmin() {
    UPDATES — add / edit / delete
    ============================================ */
 let updatesUnsub = null;
+
+/* ============================================
+   RESOURCES — add / edit / delete
+   (title, file type, description, Google Drive link)
+   ============================================ */
+let resourcesUnsub = null;
+
+function initResourcesAdmin() {
+  if (resourcesUnsub) return;
+  const form = document.getElementById("resourceForm");
+  const listEl = document.getElementById("resourcesAdminList");
+  const submitBtn = document.getElementById("resourceSubmitBtn");
+  const cancelBtn = document.getElementById("cancelResourceEdit");
+  const idField = document.getElementById("resId");
+
+  resourcesUnsub = db.collection("resources").orderBy("order", "desc").onSnapshot(
+    (snapshot) => {
+      if (snapshot.empty) {
+        listEl.innerHTML = `<p class="updates-loading">No resources yet — add one above.</p>`;
+        return;
+      }
+      listEl.innerHTML = "";
+      snapshot.forEach((doc) => {
+        const r = doc.data();
+        const row = document.createElement("div");
+        row.className = "admin-row";
+        row.innerHTML = `
+          <div>
+            <strong>${escapeHtml(r.title || "")}</strong>
+            <span class="admin-tag">${escapeHtml(r.fileType || "")}${r.category ? " · " + escapeHtml(r.category) : ""}</span>
+          </div>
+          <div class="admin-row-actions">
+            <button class="btn btn-outline btn-sm" data-action="edit">Edit</button>
+            <button class="btn btn-outline btn-sm btn-danger" data-action="delete">Delete</button>
+          </div>
+        `;
+        row.querySelector('[data-action="edit"]').addEventListener("click", () => {
+          idField.value = doc.id;
+          document.getElementById("resTitle").value = r.title || "";
+          document.getElementById("resFileType").value = r.fileType || "PPT";
+          document.getElementById("resCategory").value = r.category || "";
+          document.getElementById("resDescription").value = r.description || "";
+          document.getElementById("resDriveUrl").value = r.driveUrl || "";
+          document.getElementById("resOrder").value = r.order ?? 1;
+          submitBtn.textContent = "Save changes";
+          cancelBtn.hidden = false;
+          form.scrollIntoView({ behavior: "smooth" });
+        });
+        row.querySelector('[data-action="delete"]').addEventListener("click", () => {
+          if (confirm("Delete this resource?")) db.collection("resources").doc(doc.id).delete();
+        });
+        listEl.appendChild(row);
+      });
+    },
+    (err) => {
+      listEl.innerHTML = `<p class="updates-loading">Could not load resources (${err.message}).</p>`;
+    }
+  );
+
+  cancelBtn.addEventListener("click", () => resetResourceForm());
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const payload = {
+      title: document.getElementById("resTitle").value.trim(),
+      fileType: document.getElementById("resFileType").value,
+      category: document.getElementById("resCategory").value.trim(),
+      description: document.getElementById("resDescription").value.trim(),
+      driveUrl: document.getElementById("resDriveUrl").value.trim(),
+      order: Number(document.getElementById("resOrder").value),
+    };
+    const editingId = idField.value;
+    const savePromise = editingId
+      ? db.collection("resources").doc(editingId).update(payload)
+      : db.collection("resources").add(payload);
+
+    savePromise.then(() => resetResourceForm()).catch((err) => alert(err.message));
+  });
+
+  function resetResourceForm() {
+    form.reset();
+    idField.value = "";
+    document.getElementById("resOrder").value = 1;
+    submitBtn.textContent = "Add resource";
+    cancelBtn.hidden = true;
+  }
+}
+
+/* ============================================
+   MESSAGES — read-only inbox + delete
+   (contact form submissions; no admin write/edit,
+   visitors create these, admin can only view/delete)
+   ============================================ */
+let messagesUnsub = null;
+
+function initMessagesAdmin() {
+  if (messagesUnsub) return;
+  const listEl = document.getElementById("messagesAdminList");
+
+  messagesUnsub = db.collection("messages").orderBy("createdAt", "desc").onSnapshot(
+    (snapshot) => {
+      if (snapshot.empty) {
+        listEl.innerHTML = `<p class="updates-loading">No messages yet.</p>`;
+        return;
+      }
+      listEl.innerHTML = "";
+      snapshot.forEach((doc) => {
+        const m = doc.data();
+        const when = m.createdAt && m.createdAt.toDate ? m.createdAt.toDate().toLocaleString() : "";
+        const row = document.createElement("div");
+        row.className = "admin-row";
+        row.style.alignItems = "flex-start";
+        row.innerHTML = `
+          <div>
+            <strong>${escapeHtml(m.subject || "(no subject)")}</strong>
+            <span class="admin-tag">${escapeHtml(when)}</span>
+            <p style="margin:6px 0 4px;font-size:0.9rem;color:var(--ink)">${escapeHtml(m.message || "")}</p>
+            <p style="margin:0;font-size:0.82rem;color:var(--mist)">
+              From: ${escapeHtml(m.name || "")} — <a href="mailto:${escapeHtml(m.email || "")}">${escapeHtml(m.email || "")}</a>
+            </p>
+          </div>
+          <div class="admin-row-actions">
+            <button class="btn btn-outline btn-sm btn-danger" data-action="delete">Delete</button>
+          </div>
+        `;
+        row.querySelector('[data-action="delete"]').addEventListener("click", () => {
+          if (confirm("Delete this message?")) db.collection("messages").doc(doc.id).delete();
+        });
+        listEl.appendChild(row);
+      });
+    },
+    (err) => {
+      listEl.innerHTML = `<p class="updates-loading">Could not load messages (${err.message}).</p>`;
+    }
+  );
+}
 
 function initUpdatesAdmin() {
   if (updatesUnsub) return;
