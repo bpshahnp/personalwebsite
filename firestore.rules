@@ -35,6 +35,23 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
+    // ---- Additional Resources (Google Drive links) -----------------------
+    // Shown on resources.html. Public read, admin-only write.
+    match /resources/{resourceId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ---- Contact form messages ---------------------------------------------
+    // Submitted from contact.html. Anyone can SEND a message (create), but
+    // only the admin can read the inbox or delete messages — visitors should
+    // never be able to read other people's submissions.
+    match /messages/{messageId} {
+      allow create: if true;
+      allow read, delete: if isAdmin();
+      allow update: if false;
+    }
+
     // ---- MCQ leaderboard --------------------------------------------------
     // Shown on leaderboard.html. One doc per user (doc id = uid), holding
     // their personal-best quiz score. Public read (so the board is visible
