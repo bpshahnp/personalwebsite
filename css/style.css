@@ -1107,6 +1107,110 @@ img { max-width: 100%; display: block; }
   font-size: 0.82em;
 }
 
+/* ---------- Resources ---------- */
+.resources-section { padding: 48px 0 100px; }
+.resource-list { display: flex; flex-direction: column; gap: 16px; margin-top: 20px; }
+.resource-card {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px 22px;
+  box-shadow: var(--shadow);
+}
+.resource-icon {
+  font-size: 1.8rem;
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--cream);
+  border-radius: 10px;
+}
+.resource-body { flex: 1; min-width: 0; }
+.resource-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+.resource-head h3 {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  margin: 0;
+  color: var(--navy-deep);
+}
+.resource-desc { color: var(--mist); font-size: 0.88rem; margin: 0; }
+.resource-download { flex-shrink: 0; width: auto; padding: 10px 18px; }
+
+@media (max-width: 560px) {
+  .resource-card { flex-wrap: wrap; }
+  .resource-download { width: 100%; text-align: center; }
+}
+
+/* ---------- Contact page ---------- */
+.contact-section { padding: 48px 0 100px; }
+.contact-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 32px;
+  align-items: start;
+}
+.profile-card {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 28px 24px;
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+.profile-photo {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin: 0 auto 16px;
+  border: 3px solid var(--cream);
+}
+.profile-card h2 {
+  font-family: var(--font-display);
+  color: var(--navy-deep);
+  margin: 0 0 4px;
+  font-size: 1.3rem;
+}
+.profile-title { color: var(--mist); font-size: 0.88rem; margin: 0 0 18px; min-height: 1em; }
+.contact-details {
+  list-style: none;
+  margin: 0 0 18px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+}
+.contact-details li { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; }
+.contact-icon { flex-shrink: 0; }
+.contact-details a { color: var(--ink); word-break: break-all; }
+.contact-details a:hover { color: var(--orange); }
+.social-links { display: flex; justify-content: center; gap: 14px; }
+.social-links a { font-size: 0.85rem; font-weight: 600; color: var(--orange-dark); }
+
+.contact-form-card {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 28px 26px;
+  box-shadow: var(--shadow);
+}
+.contact-form-card h2 {
+  font-family: var(--font-display);
+  color: var(--navy-deep);
+  margin: 0 0 6px;
+}
+
+@media (max-width: 760px) {
+  .contact-grid { grid-template-columns: 1fr; }
+}
+
 .your-rank-card {
   display: grid;
   grid-template-columns: 48px 1fr auto;
