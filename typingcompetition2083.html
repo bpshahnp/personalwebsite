@@ -351,6 +351,39 @@
     text-align: center;
   }
 
+  .stats-row {
+    display: none;
+    gap: 12px;
+    margin-top: 14px;
+  }
+
+  .state-selected .stats-row { display: flex; }
+
+  .stat-chip {
+    flex: 1;
+    background: white;
+    border: 2px solid #c6f6d5;
+    border-radius: 10px;
+    padding: 10px 12px;
+    text-align: center;
+  }
+
+  .stat-value {
+    display: block;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--dark-green);
+  }
+
+  .stat-name {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 2px;
+  }
+
   /* ---------- footer notice ---------- */
 
   .notice {
@@ -450,6 +483,16 @@
             <div class="answer-label" id="resultLabel"></div>
             <div class="answer-solution" id="resultBody"></div>
           </div>
+          <div class="stats-row" id="statsRow">
+            <div class="stat-chip">
+              <span class="stat-value" id="statAccuracy"></span>
+              <span class="stat-name">Accuracy</span>
+            </div>
+            <div class="stat-chip">
+              <span class="stat-value" id="statSpeed"></span>
+              <span class="stat-name">WPM</span>
+            </div>
+          </div>
           <span class="result-reg" id="resultReg"></span>
         </div>
       </div>
@@ -468,22 +511,151 @@
 
 <script>
   /*
-   * -----------------------------------------------------------------
-   * RESULT DATA
-   * -----------------------------------------------------------------
-   * Add each selected student as a "registration number": "name" pair
-   * below. The numbers and names here are placeholder examples only —
-   * replace them with the real selected students once the list is
-   * finalized. Matching on the registration number ignores case and
-   * extra spaces.
-   * -----------------------------------------------------------------
+   * Each entry is keyed by the student's registration number (their
+   * Student ID from the typing test) and holds their name, accuracy
+   * (%), and typing speed (WPM). This is the actual selection-round
+   * data — update or extend it here as new rounds are scored.
    */
   const selectedStudents = {
-    "2345": "Aashna Gurung",
-    "2361": "Bibek Thapa",
-    "2379": "Sristi Koirala",
-    "2402": "Prabin Adhikari",
-    "2418": "Manisha Rai"
+    "2734": { name: "Sankalpa Pandit", accuracy: 99, speed: 30 },
+    "1224": { name: "Alice Adhikari", accuracy: 99, speed: 25 },
+    "2939": { name: "Netya Gautam", accuracy: 99, speed: 21 },
+    "2204": { name: "Sadikshya Joshi", accuracy: 98, speed: 32 },
+    "2727": { name: "Samriddhi Shrestha", accuracy: 98, speed: 30 },
+    "2672": { name: "Simran Bhusal", accuracy: 98, speed: 29 },
+    "3999": { name: "Prinsika G.C", accuracy: 98, speed: 28 },
+    "2632": { name: "Aarjan Bastakoti", accuracy: 98, speed: 27 },
+    "240": { name: "Samrat Devkota", accuracy: 98, speed: 26 },
+    "2390": { name: "Apsara Adhikari", accuracy: 98, speed: 26 },
+    "415": { name: "Chahana Sigdel", accuracy: 98, speed: 23 },
+    "3528": { name: "Diya Poudel", accuracy: 98, speed: 22 },
+    "3979": { name: "Nirdesh Pandey", accuracy: 98, speed: 22 },
+    "2284": { name: "Samyukta Bhandari", accuracy: 97, speed: 30 },
+    "962": { name: "Arnav Rai", accuracy: 97, speed: 29 },
+    "535": { name: "Aarohi Gautam", accuracy: 97, speed: 28 },
+    "638": { name: "Shreyam Bhattarai", accuracy: 97, speed: 25 },
+    "1058": { name: "Prabesh Acharya", accuracy: 97, speed: 24 },
+    "3997": { name: "Icchaya Giri", accuracy: 97, speed: 21 },
+    "2277": { name: "Saman Bhatta", accuracy: 97, speed: 20 },
+    "260": { name: "Anix Rai", accuracy: 97, speed: 20 },
+    "491": { name: "Aarogya Joshi", accuracy: 96, speed: 35 },
+    "614": { name: "Samman Paudel", accuracy: 96, speed: 33 },
+    "2690": { name: "Aayub Raj", accuracy: 96, speed: 32 },
+    "1606": { name: "Amson Joshi", accuracy: 96, speed: 31 },
+    "2283": { name: "Samyak Bhandari", accuracy: 96, speed: 30 },
+    "271": { name: "Aaliash Ale", accuracy: 96, speed: 29 },
+    "2161": { name: "Sadik Shrestha", accuracy: 96, speed: 29 },
+    "350": { name: "Samrat Chandra", accuracy: 96, speed: 27 },
+    "1541": { name: "Jyoti Chapagain", accuracy: 96, speed: 26 },
+    "3046": { name: "Tenissa Poudel", accuracy: 96, speed: 24 },
+    "2673": { name: "Arbin Koirala", accuracy: 96, speed: 24 },
+    "3256": { name: "Rushil Rana", accuracy: 96, speed: 24 },
+    "1214": { name: "Nirsika Acharya", accuracy: 96, speed: 24 },
+    "264": { name: "Mandip Shrestha", accuracy: 96, speed: 23 },
+    "850": { name: "Neon Bhattarai", accuracy: 96, speed: 23 },
+    "2793": { name: "Aarav Piya", accuracy: 96, speed: 22 },
+    "1782": { name: "Swastik Gupta", accuracy: 96, speed: 21 },
+    "2359": { name: "Samyog Thapa", accuracy: 96, speed: 20 },
+    "2659": { name: "Deviyani Arati", accuracy: 96, speed: 20 },
+    "3307": { name: "Bison Sitaula", accuracy: 95, speed: 43 },
+    "2269": { name: "Pranish Koirala", accuracy: 95, speed: 35 },
+    "593": { name: "Aaratrika Paudel", accuracy: 95, speed: 34 },
+    "282": { name: "Siddhartha Gurung", accuracy: 95, speed: 32 },
+    "1208": { name: "Sulav Thapa", accuracy: 95, speed: 30 },
+    "2985": { name: "Shlok Baral", accuracy: 95, speed: 27 },
+    "2431": { name: "Dina Thapa", accuracy: 95, speed: 27 },
+    "3554": { name: "Ashmi Adhikari", accuracy: 95, speed: 26 },
+    "2039": { name: "Priyansu Sharma", accuracy: 95, speed: 26 },
+    "3143": { name: "Khushi Chhetri", accuracy: 95, speed: 24 },
+    "3361": { name: "Greesma Paudel", accuracy: 95, speed: 23 },
+    "2123": { name: "Yunisha Bhat", accuracy: 95, speed: 21 },
+    "4107": { name: "Simran Bhandari", accuracy: 95, speed: 21 },
+    "3300": { name: "Prajjwal Tiwari", accuracy: 95, speed: 21 },
+    "3895": { name: "Pramisha Budhathoki", accuracy: 95, speed: 20 },
+    "490": { name: "Krishav Shah", accuracy: 95, speed: 20 },
+    "3929": { name: "Shreyeen Rana", accuracy: 95, speed: 20 },
+    "2064": { name: "Jenish Gurung", accuracy: 94, speed: 52 },
+    "2675": { name: "Prasanna Dip", accuracy: 94, speed: 38 },
+    "438": { name: "Ciyana Shrestha", accuracy: 94, speed: 33 },
+    "3178": { name: "Jenith Ramdam", accuracy: 94, speed: 29 },
+    "2791": { name: "Suzyan Bista", accuracy: 94, speed: 28 },
+    "2920": { name: "Divyan Bikram", accuracy: 94, speed: 26 },
+    "550": { name: "Riyan Kandel", accuracy: 94, speed: 25 },
+    "2191": { name: "Kristina Adhikari", accuracy: 94, speed: 25 },
+    "3397": { name: "Pallabi Raut", accuracy: 94, speed: 25 },
+    "1674": { name: "Dikshya Pokhrel", accuracy: 94, speed: 24 },
+    "1529": { name: "Kritika Poudel", accuracy: 94, speed: 24 },
+    "2108": { name: "Izzma Poudel", accuracy: 94, speed: 24 },
+    "1803": { name: "Prasamsha Regmi", accuracy: 94, speed: 24 },
+    "1519": { name: "Aarbins Lamichhane", accuracy: 94, speed: 24 },
+    "459": { name: "Aarushi Mishra", accuracy: 94, speed: 23 },
+    "452": { name: "Samar Sapkota", accuracy: 94, speed: 23 },
+    "767": { name: "Divanya Gurung", accuracy: 94, speed: 23 },
+    "683": { name: "Sumnima Adhikari", accuracy: 94, speed: 22 },
+    "2796": { name: "Sonisha Lama", accuracy: 94, speed: 22 },
+    "2902": { name: "Shaan Adhikari", accuracy: 94, speed: 20 },
+    "3308": { name: "Satish Rimal", accuracy: 94, speed: 20 },
+    "261": { name: "Shubham Neupane", accuracy: 94, speed: 20 },
+    "2145": { name: "Satkar Adhikari", accuracy: 94, speed: 20 },
+    "2765": { name: "Prasna Kandel", accuracy: 94, speed: 20 },
+    "3522": { name: "Rhythm Baniya", accuracy: 93, speed: 37 },
+    "2991": { name: "Yashna Regmi", accuracy: 93, speed: 35 },
+    "578": { name: "Pankaj Pandit", accuracy: 93, speed: 31 },
+    "440": { name: "Adhya Pokhrel", accuracy: 93, speed: 29 },
+    "2200": { name: "Raman Kandel", accuracy: 93, speed: 27 },
+    "604": { name: "Sonish Kharel", accuracy: 93, speed: 25 },
+    "3936": { name: "Pranik Khadka", accuracy: 93, speed: 25 },
+    "1982": { name: "Rehaan Tamang", accuracy: 93, speed: 24 },
+    "787": { name: "Pragya Pandit", accuracy: 93, speed: 23 },
+    "2720": { name: "Kasis Poudel", accuracy: 93, speed: 23 },
+    "2325": { name: "Nixon Bhattarai", accuracy: 93, speed: 21 },
+    "2687": { name: "Pranish Man", accuracy: 93, speed: 21 },
+    "1034": { name: "Shadit Sapkota", accuracy: 93, speed: 21 },
+    "572": { name: "Pranish Shrestha", accuracy: 93, speed: 21 },
+    "1059": { name: "Prateek Acharya", accuracy: 93, speed: 20 },
+    "2052": { name: "Arpan Singh", accuracy: 92, speed: 36 },
+    "2230": { name: "Ashim Chhetri", accuracy: 92, speed: 29 },
+    "349": { name: "Ishan Chandra", accuracy: 92, speed: 29 },
+    "615": { name: "Sampanna Adhikari", accuracy: 92, speed: 26 },
+    "3559": { name: "Amiz Gautam", accuracy: 92, speed: 25 },
+    "248": { name: "Rayn Shrestha", accuracy: 92, speed: 23 },
+    "575": { name: "Shashwat Neupane", accuracy: 92, speed: 22 },
+    "1829": { name: "Sarbani Godar", accuracy: 92, speed: 22 },
+    "3558": { name: "Smriti Poudel", accuracy: 92, speed: 22 },
+    "2126": { name: "Biplov Shrestha", accuracy: 92, speed: 21 },
+    "3893": { name: "Sanskar Babu", accuracy: 92, speed: 21 },
+    "2639": { name: "Payod Lama", accuracy: 92, speed: 21 },
+    "1764": { name: "Shrijan Kandel", accuracy: 92, speed: 20 },
+    "3268": { name: "Bishika Dhungana", accuracy: 92, speed: 20 },
+    "393": { name: "Prabesh Jung", accuracy: 92, speed: 20 },
+    "649": { name: "Agraj Kharal", accuracy: 91, speed: 35 },
+    "1716": { name: "Nayandip Sapkota", accuracy: 91, speed: 29 },
+    "2691": { name: "Prasiddha Shrestha", accuracy: 91, speed: 27 },
+    "451": { name: "Samriddhi Sapkota", accuracy: 91, speed: 26 },
+    "1445": { name: "Ankrit Shrestha", accuracy: 91, speed: 25 },
+    "3430": { name: "Aaron Pathak", accuracy: 91, speed: 24 },
+    "1623": { name: "Aarav Gurung", accuracy: 91, speed: 23 },
+    "2821": { name: "Abiran Khand", accuracy: 91, speed: 23 },
+    "2696": { name: "Ishanvi Pandey", accuracy: 91, speed: 23 },
+    "2981": { name: "Aarab Adhikari", accuracy: 91, speed: 23 },
+    "2929": { name: "Atif Raza", accuracy: 91, speed: 22 },
+    "2870": { name: "Swopnil Giri", accuracy: 91, speed: 22 },
+    "2860": { name: "Sanskar Dulal", accuracy: 91, speed: 21 },
+    "631": { name: "Prekshya Thapa", accuracy: 91, speed: 21 },
+    "2335": { name: "Kripal Mishra", accuracy: 91, speed: 20 },
+    "2071": { name: "Sanyog M.C", accuracy: 91, speed: 20 },
+    "2038": { name: "Priyas Sharma", accuracy: 91, speed: 20 },
+    "3312": { name: "Somiya Rana", accuracy: 91, speed: 20 },
+    "2265": { name: "Shubhab Jung", accuracy: 90, speed: 30 },
+    "546": { name: "Renee Shrestha", accuracy: 90, speed: 28 },
+    "2536": { name: "Subigya Parajuli", accuracy: 90, speed: 25 },
+    "2199": { name: "Evan Adhikari", accuracy: 90, speed: 24 },
+    "2762": { name: "Ayura Shrestha", accuracy: 90, speed: 24 },
+    "338": { name: "Ishani Regmi", accuracy: 90, speed: 22 },
+    "2578": { name: "Bipashwi Chaulagain", accuracy: 90, speed: 22 },
+    "2958": { name: "Alisha Dhakal", accuracy: 90, speed: 21 },
+    "2343": { name: "Sijan Devkota", accuracy: 90, speed: 20 },
+    "3357": { name: "Aayan Giri", accuracy: 90, speed: 20 }
   };
 
   const FINAL_ROUND_DATE = "26th of Bhadra";
@@ -503,6 +675,8 @@
   const resultLabel = document.getElementById("resultLabel");
   const resultBody = document.getElementById("resultBody");
   const resultReg = document.getElementById("resultReg");
+  const statAccuracy = document.getElementById("statAccuracy");
+  const statSpeed = document.getElementById("statSpeed");
 
   function showEmpty(){
     resultBox.classList.remove("state-selected", "state-not");
@@ -510,7 +684,7 @@
     answerSection.classList.remove("show");
   }
 
-  function showAnswer(state, labelText, bodyHTML, regText){
+  function showAnswer(state, labelText, bodyHTML, regText, stats){
     resultBox.classList.remove("state-selected", "state-not");
     resultBox.classList.add(state);
     emptyNote.style.display = "none";
@@ -523,6 +697,11 @@
     resultLabel.textContent = labelText;
     resultBody.innerHTML = bodyHTML;
     resultReg.textContent = "Registration number: " + regText;
+
+    if(stats){
+      statAccuracy.textContent = stats.accuracy + "%";
+      statSpeed.textContent = stats.speed;
+    }
   }
 
   function checkResult(){
@@ -536,19 +715,21 @@
     }
 
     if(clean in selectedByReg){
-      const name = selectedByReg[clean];
+      const student = selectedByReg[clean];
       showAnswer(
         "state-selected",
         "Selected",
-        "<span class=\"congrats\">Congratulations,</span> <b>" + name + "</b> — you've been selected for the final round of the Typing Competition, on " + FINAL_ROUND_DATE + ". Venue and time will be shared with the full name list.",
-        raw.trim()
+        "<span class=\"congrats\">Congratulations,</span> <b>" + student.name + "</b> — you've been selected for the final round of the Typing Competition, on " + FINAL_ROUND_DATE + ". Venue and time will be shared with the full name list.",
+        raw.trim(),
+        student
       );
     } else {
       showAnswer(
         "state-not",
         "Not selected",
         "Sorry — this registration number wasn't selected for the final round this time. Thank you for taking part in the competition.",
-        raw.trim()
+        raw.trim(),
+        null
       );
     }
   }
