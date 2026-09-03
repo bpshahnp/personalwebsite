@@ -406,7 +406,25 @@
     color: rgba(255,255,255,0.75);
     font-size: 0.82rem;
   }
+  .practice-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 24px;
+  background: #0284c7;
+  color: #ffffff;
+  text-decoration: none;
+  border-radius: 8px;
+  font-family: inherit;
+  font-weight: 600;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: background 0.2s ease, transform 0.1s ease;
+}
 
+.practice-btn:hover {
+  background: #0369a1;
+  transform: translateY(-1px);
+}
   /* ---------- responsive ---------- */
 
   @media (max-width: 768px) {
@@ -456,7 +474,7 @@
     </div>
     <div class="competition-section">
       <div class="competition-title">Typing Competition 2083</div>
-      <p class="page-sub">Selection round result</p>
+      <h3>Selection round result</h3>
     </div>
   </header>
 
@@ -501,10 +519,9 @@
         <p>The full list of selected students' names will be published here soon.</p>
         <p>Students advancing to the final round should note it will be held on the 26th of Bhadra. Venue and reporting time will be announced with the name list.</p>
       </div>
-
     </div>
   </div>
-
+  
   <footer>Om Shanti Academy &middot; Bharatpur&#8209;10, Chitwan</footer>
 
 </div>
