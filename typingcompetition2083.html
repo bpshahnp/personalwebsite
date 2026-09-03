@@ -198,6 +198,172 @@
     padding: 28px;
     border: 2px solid var(--border-gray);
     box-shadow: var(--shadow-lg);
+    margin-bottom: 30px;
+  }
+
+  .students-list-section {
+    background: rgba(255, 255, 255, 0.97);
+    border-radius: 15px;
+    padding: 28px;
+    border: 2px solid var(--border-gray);
+    box-shadow: var(--shadow-lg);
+    margin-top: 20px;
+  }
+
+  .students-list-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 20px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+  }
+
+  .students-list-title::before {
+    content: "📋";
+    font-size: 1.8rem;
+  }
+
+  .students-table-wrapper {
+    overflow-x: auto;
+    border-radius: 10px;
+    border: 1px solid var(--border-gray);
+  }
+
+  .students-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+  }
+
+  .students-table thead {
+    background: linear-gradient(135deg, var(--primary-blue), #2c5282);
+    color: white;
+    position: sticky;
+    top: 0;
+  }
+
+  .students-table th {
+    padding: 16px;
+    text-align: left;
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+    transition: var(--transition-standard);
+  }
+
+  .students-table th:hover {
+    background: rgba(0, 0, 0, 0.1);
+  }
+
+  .students-table th.sortable::after {
+    content: " ⇅";
+    opacity: 0.5;
+  }
+
+  .students-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border-gray);
+    color: var(--text-medium);
+  }
+
+  .students-table tbody tr:hover {
+    background-color: #f7fafc;
+  }
+
+  .students-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .reg-column {
+    color: var(--primary-blue);
+    font-weight: 600;
+  }
+
+  .name-column {
+    font-weight: 500;
+    color: var(--text-dark);
+  }
+
+  .accuracy-column {
+    text-align: center;
+    font-weight: 600;
+  }
+
+  .speed-column {
+    text-align: center;
+    font-weight: 600;
+  }
+
+  .accuracy-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .accuracy-99plus {
+    background-color: #c6f6d5;
+    color: #22543d;
+  }
+
+  .accuracy-98 {
+    background-color: #bee3f8;
+    color: #2c5282;
+  }
+
+  .accuracy-97 {
+    background-color: #feebc8;
+    color: #7c2d12;
+  }
+
+  .accuracy-96 {
+    background-color: #fed7d7;
+    color: #742a2a;
+  }
+
+  .accuracy-default {
+    background-color: #e2e8f0;
+    color: #2d3748;
+  }
+
+  .speed-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background-color: #edf2f7;
+    color: #2d3748;
+  }
+
+  .students-count {
+    text-align: center;
+    color: var(--text-light);
+    font-size: 0.9rem;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-gray);
+  }
+
+  @media (max-width: 768px) {
+    .students-table {
+      font-size: 0.85rem;
+    }
+
+    .students-table th,
+    .students-table td {
+      padding: 10px 8px;
+    }
+
+    .students-list-title {
+      font-size: 1.2rem;
+    }
+
   }
 
   .field-label {
@@ -521,6 +687,30 @@
         <p>Note: Username and Password is your registration number.</p>
       </div>
     </div>
+
+    <!-- Students List Section -->
+    <div class="students-list-section">
+      <div class="students-list-title">Selected Students for Final Round</div>
+      
+      <div class="students-table-wrapper">
+        <table class="students-table">
+          <thead>
+            <tr>
+              <th class="sortable" onclick="sortTable(0)">Registration #</th>
+              <th class="sortable" onclick="sortTable(1)">Name</th>
+              <th class="sortable" onclick="sortTable(2)">Accuracy</th>
+              <th class="sortable" onclick="sortTable(3)">WPM</th>
+            </tr>
+          </thead>
+          <tbody id="studentTableBody">
+          </tbody>
+        </table>
+      </div>
+
+      <div class="students-count">
+        Total Selected Students: <span id="totalCount">0</span>
+      </div>
+    </div>
   </div>
   
   <footer>Om Shanti Academy &middot; Bharatpur&#8209;10, Chitwan</footer>
@@ -756,6 +946,97 @@
   input.addEventListener("keydown", (e) => {
     if(e.key === "Enter") checkResult();
   });
+
+  // ========== STUDENTS LIST FUNCTIONALITY ==========
+  let studentsData = [];
+  let filteredStudents = [];
+  let sortColumn = -1;
+  let sortDirection = 'asc';
+
+  // Initialize students list
+  function initializeStudentsList() {
+    studentsData = Object.entries(selectedStudents).map(([reg, data]) => ({
+      registration: reg,
+      name: data.name,
+      accuracy: data.accuracy,
+      speed: data.speed
+    }));
+
+    filteredStudents = [...studentsData];
+    sortByColumn(1); // Sort by name initially
+    renderStudentsTable();
+    document.getElementById("totalCount").textContent = studentsData.length;
+  }
+
+  // Get accuracy badge class
+  function getAccuracyBadgeClass(accuracy) {
+    if (accuracy >= 99) return "accuracy-99plus";
+    if (accuracy === 98) return "accuracy-98";
+    if (accuracy === 97) return "accuracy-97";
+    if (accuracy === 96) return "accuracy-96";
+    return "accuracy-default";
+  }
+
+  // Render the table
+  function renderStudentsTable() {
+    const tbody = document.getElementById("studentTableBody");
+    tbody.innerHTML = "";
+
+    filteredStudents.forEach((student) => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td class="reg-column">${student.registration}</td>
+        <td class="name-column">${student.name}</td>
+        <td class="accuracy-column">
+          <span class="accuracy-badge ${getAccuracyBadgeClass(student.accuracy)}">
+            ${student.accuracy}%
+          </span>
+        </td>
+        <td class="speed-column">
+          <span class="speed-badge">${student.speed} WPM</span>
+        </td>
+      `;
+      tbody.appendChild(row);
+    });
+  }
+
+  // Sort table by column
+  function sortByColumn(columnIndex) {
+    if (sortColumn === columnIndex) {
+      sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      sortColumn = columnIndex;
+      sortDirection = 'asc';
+    }
+
+    const columnNames = ['registration', 'name', 'accuracy', 'speed'];
+    const columnName = columnNames[columnIndex];
+
+    filteredStudents.sort((a, b) => {
+      let aVal = a[columnName];
+      let bVal = b[columnName];
+
+      if (typeof aVal === 'string') {
+        aVal = aVal.toLowerCase();
+        bVal = bVal.toLowerCase();
+      }
+
+      if (sortDirection === 'asc') {
+        return aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
+      } else {
+        return aVal > bVal ? -1 : aVal < bVal ? 1 : 0;
+      }
+    });
+
+    renderStudentsTable();
+  }
+
+  function sortTable(columnIndex) {
+    sortByColumn(columnIndex);
+  }
+
+  // Initialize on page load
+  window.addEventListener("DOMContentLoaded", initializeStudentsList);
 </script>
 
 </body>
