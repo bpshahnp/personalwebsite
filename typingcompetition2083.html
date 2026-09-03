@@ -736,15 +736,15 @@
       const student = selectedByReg[clean];
       showAnswer(
         "state-selected",
-        "Selected",
-        "<span class=\"congrats\">Congratulations,</span> <b>" + student.name + "</b> — you've been selected for the final round of the Typing Competition, on " + FINAL_ROUND_DATE + ". Venue and time will be shared with the full name list.",
+        "Qualified",
+        "<span class=\"congrats\">Congratulations,</span> <b>" + student.name + "</b> — you've been selected for the final round of the Typing Competition, on " + FINAL_ROUND_DATE + ". Best of Luck for the final round.",
         raw.trim(),
         student
       );
     } else {
       showAnswer(
         "state-not",
-        "Not selected",
+        "Disqualified",
         "Sorry — this registration number wasn't selected for the final round this time. Thank you for taking part in the competition.",
         raw.trim(),
         null
