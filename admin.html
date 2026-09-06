@@ -70,8 +70,9 @@
               <a href="#" id="downloadQuestionJsonTemplate">Download JSON template</a>
             </p>
             <p class="quiz-muted">
-              <strong>CSV columns:</strong> question, option_a, option_b, option_c, option_d, correct (A/B/C/D), explanation, category.<br/>
-              <strong>JSON:</strong> array of <code>{ "question", "options": [4 strings], "correctIndex" (0-3), "explanation", "category" }</code>.
+              <strong>CSV columns:</strong> question, option_a, option_b, option_c, option_d, correct (A/B/C/D), explanation, category, class (8/9/10).<br/>
+              <strong>JSON:</strong> array of <code>{ "question", "options": [4 strings], "correctIndex" (0-3), "explanation", "category", "classLevel" }</code>.<br/>
+              The <code>class</code> column and <code>classLevel</code> field are optional — anything left blank imports as <strong>Class 10</strong>, so older files still work unchanged.
             </p>
             <input type="file" id="questionImportFile" accept=".csv,.json,text/csv,application/json" />
             <textarea id="questionImportText" rows="6" placeholder="...or paste CSV/JSON content here"></textarea>
@@ -100,12 +101,33 @@
             </select>
           </label>
           <label>Explanation <textarea id="qExplanation" rows="2"></textarea></label>
-          <label>Category <input type="text" id="qCategory" placeholder="e.g. Python Basics" /></label>
+          <div class="admin-form-grid">
+            <label>Class
+              <select id="qClass" required>
+                <option value="8">Class 8</option>
+                <option value="9">Class 9</option>
+                <option value="10" selected>Class 10</option>
+              </select>
+            </label>
+            <label>Category <input type="text" id="qCategory" placeholder="e.g. Python Basics" /></label>
+          </div>
           <div class="admin-form-actions">
             <button type="submit" class="btn btn-primary" id="questionSubmitBtn">Add question</button>
             <button type="button" class="btn btn-outline" id="cancelQuestionEdit" hidden>Cancel edit</button>
           </div>
         </form>
+
+        <div class="admin-list-filter">
+          <label>Show
+            <select id="questionClassFilter">
+              <option value="All">All classes</option>
+              <option value="8">Class 8</option>
+              <option value="9">Class 9</option>
+              <option value="10">Class 10</option>
+            </select>
+          </label>
+          <span class="quiz-muted" id="questionCountLabel"></span>
+        </div>
 
         <div id="questionsAdminList" class="admin-list">
           <p class="updates-loading">Loading questions…</p>

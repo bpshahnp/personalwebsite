@@ -8,12 +8,12 @@ Updates" section stays in sync across every device automatically.
 ```
 bprasadshah/
 ├── index.html            → home page
-├── mcq.html              → MCQ Hub — full quiz with live scoring, from Firestore
+├── mcq.html              → MCQ Hub — full quiz with live scoring, from Firestore, filtered by class
 ├── python.html           → Python Hub — searchable, runnable Python programs
-├── leaderboard.html      → Leaderboard — top MCQ quiz scores, ranked live
+├── leaderboard.html      → Leaderboard — top MCQ quiz scores, ranked live, per class
 ├── admin.html            → Admin Panel — add/edit/delete questions, programs & updates
 ├── firestore.rules        → security rules (see step 5)
-├── firestore.indexes.json → composite index needed for leaderboard sorting
+├── firestore.indexes.json → Firestore index config (no composite index needed — see Leaderboard)
 ├── css/style.css          → all styling
 ├── js/firebase-config.js  → connects to YOUR Firebase project + admin allowlist
 ├── js/auth-widget.js      → shared account icon + login/logout dropdown (all pages)
@@ -68,7 +68,8 @@ security rules — see step 5 below.
 ## How MCQ Hub works
 
 `mcq.html` is a real quiz, not a static list:
-- Visitor picks a category and number of questions, then **Start Quiz**.
+- Visitor picks a **class** (8, 9 or 10), a category, and a number of
+  questions, then **Start Quiz**.
 - Each question is scored immediately on click, with the running score
   shown live at the top (`Score: X / Y`) and a progress bar.
 - At the end, a results screen shows the final score/percentage and a
@@ -77,7 +78,25 @@ security rules — see step 5 below.
 
 Send me your question set whenever you're ready and I'll load it in —
 or add them yourself any time via **Admin → Questions**, one at a time
-(question text, 4 options, correct option, explanation, category).
+(question text, 4 options, correct option, explanation, category, class).
+
+### Classes
+
+Every question carries a `classLevel` field of `"8"`, `"9"` or `"10"`.
+
+- **Class comes first, category second.** The Category dropdown rebuilds
+  itself from whatever the chosen class actually contains, so you can't
+  land on a combination with zero questions. The class dropdown shows a
+  live count next to each class.
+- **Untagged questions are Class 10.** Anything saved before classes
+  existed has no `classLevel`, and every page reads a missing or
+  unrecognised value as Class 10. Nothing had to be migrated in Firebase —
+  the original question bank simply *is* Class 10. Re-saving an old
+  question through the admin form writes the field properly.
+- **Adding a class later** (say Class 11) means adding it to `CLASS_LEVELS`
+  in both `js/mcq.js` and `js/admin.js`, plus an `<option>` in the class
+  selects in `mcq.html`, `admin.html` and `leaderboard.html`.
+
 
 ## How Python Hub works
 
@@ -105,25 +124,34 @@ shared file, `js/auth-widget.js`, wired into every page's header.
 
 ## How the Leaderboard works
 
-`leaderboard.html` shows the top MCQ quiz scores, best score first,
-with medal icons for the top 3.
+`leaderboard.html` shows the top MCQ quiz scores, best average first,
+with medal icons for the top 3 and a class filter across the top.
 
 - Firestore collection: `scores`, **one document per user** (the doc
-  ID is their Firebase Auth UID), holding their personal best.
-- When someone finishes a quiz on `mcq.html`, if they're logged in
-  their score is compared to their existing best and only saved if
-  it's an improvement — so retaking a quiz doesn't spam duplicate
-  entries, it just updates their rank.
-- If they're not logged in, the result screen tells them to log in
+  ID is their Firebase Auth UID).
+- The document's top-level totals (`attempts`, `averagePercentage`,
+  `bestPercentage`) cover every attempt the user has made and drive the
+  **All classes** board.
+- A `classStats` map holds the same figures per class —
+  `classStats["9"].averagePercentage` and so on — and drives the **Class
+  8 / 9 / 10** boards. A user appears on a class board only once they've
+  taken a quiz set to that class.
+- A quiz taken with Class = *All classes* is a mixed bag, so it counts
+  towards the overall board only and is deliberately left out of every
+  per-class average. The results screen says as much.
+- If someone isn't logged in, the result screen tells them to log in
   (via the account icon) to save the score — a guest can still take
   the quiz, they just won't appear on the board unless signed in.
 - Security rule: anyone can read the leaderboard, but a user can only
   write to their own document (`request.auth.uid == uid`), so no one
   can edit someone else's score.
-- `firestore.indexes.json` defines the composite index the leaderboard
-  query needs (sorting by percentage, then raw score). Deploying with
-  `firebase deploy --only firestore:indexes` (or the general `firebase
-  deploy`) creates it automatically — no manual step in the console.
+- **Ranking happens in the browser.** The page pulls the score documents
+  once and sorts them client-side, which is why switching class is
+  instant and costs no extra reads — and why `firestore.indexes.json`
+  needs no composite index at all. If the user base ever outgrows a few
+  hundred, move sorting back into Firestore with `orderBy()` and add one
+  composite index per class.
+
 
 ## 3. Add your first "Latest Update"
 

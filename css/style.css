@@ -1232,8 +1232,75 @@ img { max-width: 100%; display: block; }
 .your-rank-card a { color: var(--orange); font-weight: 600; }
 .your-rank-card p { margin: 0; font-size: 0.9rem; grid-column: 1 / -1; }
 
+/* ---------- Class badges + class filters ---------- */
+/* Shown next to the category badge on each quiz question. */
+.mcq-class {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--navy-deep);
+  background: rgba(15, 23, 41, 0.08);
+  padding: 3px 10px;
+  border-radius: 999px;
+  margin: 0 6px 10px 0;
+}
+
+/* Leaderboard: All classes / Class 8 / 9 / 10 chips. Deliberately sits
+   OUTSIDE .leaderboard-table — the medal colours key off nth-child. */
+.board-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.board-chip {
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--mist);
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.board-chip:hover { color: var(--navy-deep); border-color: var(--navy-deep); }
+.board-chip.active {
+  background: var(--navy-deep);
+  border-color: var(--navy-deep);
+  color: var(--white);
+}
+.board-chip:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+
+/* Admin: class filter sitting above the question list. */
+.admin-list-filter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 22px 0 12px;
+}
+.admin-list-filter label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--mist);
+}
+.admin-list-filter select {
+  font: inherit;
+  padding: 7px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--ink);
+  font-weight: 400;
+}
+
 @media (max-width: 640px) {
   .admin-form-grid { grid-template-columns: 1fr; }
+  .board-chip { padding: 7px 13px; font-size: 0.8rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {

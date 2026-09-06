@@ -3,6 +3,19 @@
    for "questions" and "updates" Firestore collections.
    ============================================ */
 
+/* Class levels used by the MCQ Hub. A question with no recognisable class
+   is treated as Class 10 — the original question bank predates classes, so
+   untagged questions are Class 10 by definition. This mirrors
+   normalizeClass() in js/mcq.js; keep the two in step. */
+const CLASS_LEVELS = ["8", "9", "10"];
+const DEFAULT_CLASS = "10";
+
+function normalizeClass(value) {
+  const digits = String(value ?? "").match(/\d+/);
+  const found = digits ? digits[0] : "";
+  return CLASS_LEVELS.includes(found) ? found : DEFAULT_CLASS;
+}
+
 const signInGate = document.getElementById("signInGate");
 const notAuthorized = document.getElementById("notAuthorized");
 const dashboard = document.getElementById("dashboard");
@@ -143,6 +156,7 @@ function parseQuestionsInput(text) {
         correctIndex: Number(q.correctIndex) || 0,
         explanation: q.explanation ? String(q.explanation).trim() : "",
         category: q.category ? String(q.category).trim() : "",
+        classLevel: normalizeClass(q.classLevel ?? q.class),
       };
     });
   }
@@ -156,7 +170,9 @@ function parseQuestionsInput(text) {
   for (let i = startIdx; i < rows.length; i++) {
     const r = rows[i];
     if (!r[0] || !r[0].trim()) continue;
-    const [question, a, b, c, d, correct, explanation, category] = r;
+    // `class` is the last column and optional, so CSVs exported before
+    // classes existed still import cleanly (they all become Class 10).
+    const [question, a, b, c, d, correct, explanation, category, classLevel] = r;
     if (!a || !b || !c || !d) {
       throw new Error(`Row ${i + 1}: needs question + 4 options (columns 2-5).`);
     }
@@ -172,6 +188,7 @@ function parseQuestionsInput(text) {
       correctIndex,
       explanation: (explanation || "").trim(),
       category: (category || "").trim(),
+      classLevel: normalizeClass(classLevel),
     });
   }
   if (!results.length) throw new Error("No valid question rows found.");
@@ -202,52 +219,85 @@ function initQuestionsAdmin() {
   const submitBtn = document.getElementById("questionSubmitBtn");
   const cancelBtn = document.getElementById("cancelQuestionEdit");
   const idField = document.getElementById("questionId");
+  const classFilter = document.getElementById("questionClassFilter");
+  const countLabel = document.getElementById("questionCountLabel");
+
+  let allQuestions = []; // latest snapshot, newest first, class already normalised
+
+  classFilter.addEventListener("change", renderQuestionList);
 
   questionsUnsub = db.collection("questions").orderBy("order", "desc").onSnapshot(
     (snapshot) => {
-      if (snapshot.empty) {
-        listEl.innerHTML = `<p class="updates-loading">No questions yet — add one above.</p>`;
-        return;
-      }
-      listEl.innerHTML = "";
-      snapshot.forEach((doc) => {
-        const q = doc.data();
-        const row = document.createElement("div");
-        row.className = "admin-row";
-        row.innerHTML = `
-          <div>
-            <strong>${escapeHtml(q.question || "")}</strong>
-            ${q.category ? `<span class="admin-tag">${escapeHtml(q.category)}</span>` : ""}
-          </div>
-          <div class="admin-row-actions">
-            <button class="btn btn-outline btn-sm" data-action="edit">Edit</button>
-            <button class="btn btn-outline btn-sm btn-danger" data-action="delete">Delete</button>
-          </div>
-        `;
-        row.querySelector('[data-action="edit"]').addEventListener("click", () => {
-          idField.value = doc.id;
-          document.getElementById("qText").value = q.question || "";
-          document.getElementById("opt0").value = (q.options || [])[0] || "";
-          document.getElementById("opt1").value = (q.options || [])[1] || "";
-          document.getElementById("opt2").value = (q.options || [])[2] || "";
-          document.getElementById("opt3").value = (q.options || [])[3] || "";
-          document.getElementById("correctIndex").value = q.correctIndex ?? 0;
-          document.getElementById("qExplanation").value = q.explanation || "";
-          document.getElementById("qCategory").value = q.category || "";
-          submitBtn.textContent = "Save changes";
-          cancelBtn.hidden = false;
-          form.scrollIntoView({ behavior: "smooth" });
-        });
-        row.querySelector('[data-action="delete"]').addEventListener("click", () => {
-          if (confirm("Delete this question?")) db.collection("questions").doc(doc.id).delete();
-        });
-        listEl.appendChild(row);
+      allQuestions = snapshot.docs.map((doc) => {
+        const data = doc.data();
+        return { id: doc.id, ...data, classLevel: normalizeClass(data.classLevel ?? data.class) };
       });
+      renderQuestionList();
     },
     (err) => {
       listEl.innerHTML = `<p class="updates-loading">Could not load questions (${err.message}).</p>`;
     }
   );
+
+  function renderQuestionList() {
+    const filter = classFilter.value;
+    const visible =
+      filter === "All" ? allQuestions : allQuestions.filter((q) => q.classLevel === filter);
+
+    const perClass = CLASS_LEVELS.map(
+      (lvl) => `Class ${lvl}: ${allQuestions.filter((q) => q.classLevel === lvl).length}`
+    ).join(" · ");
+    countLabel.textContent = allQuestions.length
+      ? `${allQuestions.length} total — ${perClass}`
+      : "";
+
+    if (!visible.length) {
+      listEl.innerHTML = `<p class="updates-loading">${
+        allQuestions.length
+          ? "No questions in this class yet — add one above."
+          : "No questions yet — add one above."
+      }</p>`;
+      return;
+    }
+
+    listEl.innerHTML = "";
+    visible.forEach((q) => {
+      const row = document.createElement("div");
+      row.className = "admin-row";
+      row.innerHTML = `
+        <div>
+          <strong>${escapeHtml(q.question || "")}</strong>
+          <span class="admin-tag">Class ${escapeHtml(q.classLevel)}</span>
+          ${q.category ? `<span class="admin-tag">${escapeHtml(q.category)}</span>` : ""}
+        </div>
+        <div class="admin-row-actions">
+          <button class="btn btn-outline btn-sm" data-action="edit">Edit</button>
+          <button class="btn btn-outline btn-sm btn-danger" data-action="delete">Delete</button>
+        </div>
+      `;
+      row.querySelector('[data-action="edit"]').addEventListener("click", () => startEdit(q));
+      row.querySelector('[data-action="delete"]').addEventListener("click", () => {
+        if (confirm("Delete this question?")) db.collection("questions").doc(q.id).delete();
+      });
+      listEl.appendChild(row);
+    });
+  }
+
+  function startEdit(q) {
+    idField.value = q.id;
+    document.getElementById("qText").value = q.question || "";
+    document.getElementById("opt0").value = (q.options || [])[0] || "";
+    document.getElementById("opt1").value = (q.options || [])[1] || "";
+    document.getElementById("opt2").value = (q.options || [])[2] || "";
+    document.getElementById("opt3").value = (q.options || [])[3] || "";
+    document.getElementById("correctIndex").value = q.correctIndex ?? 0;
+    document.getElementById("qExplanation").value = q.explanation || "";
+    document.getElementById("qCategory").value = q.category || "";
+    document.getElementById("qClass").value = q.classLevel;
+    submitBtn.textContent = "Save changes";
+    cancelBtn.hidden = false;
+    form.scrollIntoView({ behavior: "smooth" });
+  }
 
   cancelBtn.addEventListener("click", () => resetQuestionForm());
 
@@ -264,6 +314,7 @@ function initQuestionsAdmin() {
       correctIndex: Number(document.getElementById("correctIndex").value),
       explanation: document.getElementById("qExplanation").value.trim(),
       category: document.getElementById("qCategory").value.trim(),
+      classLevel: normalizeClass(document.getElementById("qClass").value),
     };
 
     const editingId = idField.value;
@@ -277,6 +328,7 @@ function initQuestionsAdmin() {
   function resetQuestionForm() {
     form.reset();
     idField.value = "";
+    document.getElementById("qClass").value = DEFAULT_CLASS;
     submitBtn.textContent = "Add question";
     cancelBtn.hidden = true;
   }
@@ -317,9 +369,9 @@ function initQuestionsAdmin() {
   document.getElementById("downloadQuestionCsvTemplate").addEventListener("click", (e) => {
     e.preventDefault();
     const csv =
-      "question,option_a,option_b,option_c,option_d,correct,explanation,category\n" +
-      '"What does len() return for a list?","Its length","Its type","Its memory address","Nothing",A,"len() returns the number of items in a list.","Python Basics"\n' +
-      '"Which keyword defines a function in Python?","func","define","def","function",C,"Functions are defined with the def keyword.","Python Basics"\n';
+      "question,option_a,option_b,option_c,option_d,correct,explanation,category,class\n" +
+      '"What does len() return for a list?","Its length","Its type","Its memory address","Nothing",A,"len() returns the number of items in a list.","Python Basics",10\n' +
+      '"Which keyword defines a function in Python?","func","define","def","function",C,"Functions are defined with the def keyword.","Python Basics",9\n';
     downloadTextFile("questions-template.csv", csv, "text/csv");
   });
 
@@ -333,6 +385,15 @@ function initQuestionsAdmin() {
           correctIndex: 0,
           explanation: "len() returns the number of items in a list.",
           category: "Python Basics",
+          classLevel: "10",
+        },
+        {
+          question: "Which symbol starts a comment in Python?",
+          options: ["//", "#", "/*", "--"],
+          correctIndex: 1,
+          explanation: "Python comments begin with #.",
+          category: "Python Basics",
+          classLevel: "8",
         },
       ],
       null,

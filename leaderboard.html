@@ -52,12 +52,19 @@
   <section class="page-hero">
     <div class="container">
       <h1>Leaderboard</h1>
-      <p>Top scorers from the MCQ Hub quiz, ranked by average score across all attempts. Log in before taking a quiz to appear here.</p>
+      <p>Top scorers from the MCQ Hub quiz, ranked by average score across all attempts. Pick a class to see that class's board. Log in before taking a quiz to appear here.</p>
     </div>
   </section>
 
   <section class="leaderboard-section">
     <div class="container" style="max-width:680px">
+      <div class="board-filter" id="boardFilter" role="group" aria-label="Filter leaderboard by class">
+        <button type="button" class="board-chip active" data-class="All">All classes</button>
+        <button type="button" class="board-chip" data-class="8">Class 8</button>
+        <button type="button" class="board-chip" data-class="9">Class 9</button>
+        <button type="button" class="board-chip" data-class="10">Class 10</button>
+      </div>
+
       <div class="your-rank-card" id="yourRankCard" hidden></div>
 
       <div class="leaderboard-table" id="leaderboardTable">

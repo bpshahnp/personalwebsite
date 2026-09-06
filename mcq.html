@@ -65,6 +65,16 @@
         <p class="quiz-muted" id="questionBankStatus">Loading question bank…</p>
 
         <label class="quiz-field">
+          Class
+          <select id="classSelect">
+            <option value="All">All classes</option>
+            <option value="8">Class 8</option>
+            <option value="9">Class 9</option>
+            <option value="10" selected>Class 10</option>
+          </select>
+        </label>
+
+        <label class="quiz-field">
           Category
           <select id="categorySelect">
             <option value="All">All categories</option>
@@ -92,6 +102,7 @@
         </div>
         <div class="quiz-progress-track"><div class="quiz-progress-fill" id="quizProgressFill"></div></div>
 
+        <span class="mcq-class" id="quizQuestionClass" hidden></span>
         <span class="mcq-category" id="quizQuestionCategory" hidden></span>
         <h3 id="quizQuestionText"></h3>
         <div class="mcq-options" id="quizOptions"></div>
