@@ -23,19 +23,44 @@ const FETCH_LIMIT = 500;   // safety valve on how many score docs we pull
 const leaderboardTable = document.getElementById("leaderboardTable");
 const yourRankCard = document.getElementById("yourRankCard");
 const boardFilter = document.getElementById("boardFilter");
+const timeFilter = document.getElementById("timeFilter");
 
 let scoreDocs = [];        // raw { id, ...data } from Firestore
-let selectedClass = "All";
+let selectedClass = "8";
+let selectedTime = "day";  // day, week, month, all
 let loadError = "";
 
-/* ---------- Class filter chips ---------- */
+// Helper to generate bucket keys matching mcq.js
+function getBucketKey(time) {
+  const d = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  if (time === "day") return `day_${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  if (time === "month") return `month_${d.getFullYear()}-${pad(d.getMonth()+1)}`;
+  if (time === "week") {
+    const d1 = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    const dayNum = d1.getUTCDay() || 7;
+    d1.setUTCDate(d1.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(d1.getUTCFullYear(),0,1));
+    const weekNo = Math.ceil((((d1 - yearStart) / 86400000) + 1)/7);
+    return `week_${d1.getUTCFullYear()}-W${pad(weekNo)}`;
+  }
+  return "all_time";
+}
+
+/* ---------- Filters ---------- */
 boardFilter.addEventListener("click", (e) => {
   const chip = e.target.closest(".board-chip");
   if (!chip) return;
   selectedClass = chip.dataset.class;
-  boardFilter
-    .querySelectorAll(".board-chip")
-    .forEach((c) => c.classList.toggle("active", c === chip));
+  boardFilter.querySelectorAll(".board-chip").forEach((c) => c.classList.toggle("active", c === chip));
+  render();
+});
+
+timeFilter.addEventListener("click", (e) => {
+  const chip = e.target.closest(".board-chip");
+  if (!chip) return;
+  selectedTime = chip.dataset.time;
+  timeFilter.querySelectorAll(".board-chip").forEach((c) => c.classList.toggle("active", c === chip));
   render();
 });
 
@@ -54,45 +79,36 @@ db.collection("scores")
     }
   );
 
-// Re-render when the signed-in user changes, so the "you" highlight and the
-// your-rank card follow login/logout without a page refresh.
+// Re-render when the signed-in user changes
 document.addEventListener("authchange", render);
 
-/* Pull out the stats that apply to the selected board.
-   Returns null when this player has nothing on this board. */
+/* Pull out the points that apply to the selected board + time bucket.
+   Returns null when this player has 0 points on this board. */
 function statsFor(doc) {
-  if (selectedClass === "All") {
-    const attempts = doc.attempts || 0;
-    if (!attempts) return null;
-    return {
-      attempts,
-      average: doc.averagePercentage || 0,
-      best: doc.bestPercentage || 0,
-      note: doc.lastCategory || "",
-    };
-  }
+  const bucketKey = getBucketKey(selectedTime);
+  const p = doc.points || {};
+  
+  const classGroup = p[selectedClass] || {};
+  const points = classGroup[bucketKey] || 0;
+  
+  if (points === 0) return null;
 
-  const c = (doc.classStats || {})[selectedClass];
-  const attempts = c && c.attempts ? c.attempts : 0;
-  if (!attempts) return null;
   return {
-    attempts,
-    average: c.averagePercentage || 0,
-    best: c.bestPercentage || 0,
-    note: `Class ${selectedClass}`,
+    attempts: doc.attempts || 0, // Fallback to global attempts for ties
+    points: points,
+    note: selectedClass === "All" ? (doc.lastCategory || "") : `Class ${selectedClass}`,
   };
 }
 
-/* Everyone on the current board, best average first. Ties break on the
-   number of attempts (more attempts = more proven), then on name so the
-   order stays stable between renders. */
+/* Everyone on the current board, highest points first. Ties break on the
+   number of attempts (more attempts = more proven), then on name. */
 function rankedPlayers() {
   return scoreDocs
     .map((doc) => ({ doc, stats: statsFor(doc) }))
     .filter((row) => row.stats)
     .sort(
       (a, b) =>
-        b.stats.average - a.stats.average ||
+        b.stats.points - a.stats.points ||
         b.stats.attempts - a.stats.attempts ||
         (a.doc.name || "").localeCompare(b.doc.name || "")
     );
@@ -116,11 +132,7 @@ function render() {
 
   if (!ranked.length) {
     leaderboardTable.appendChild(
-      messageEl(
-        selectedClass === "All"
-          ? "No scores yet — be the first to take a quiz on the MCQ Hub!"
-          : `No Class ${selectedClass} scores yet — take a Class ${selectedClass} quiz on the MCQ Hub to open this board.`
-      )
+      messageEl(`No Class ${selectedClass} scores yet — take a Class ${selectedClass} quiz on the MCQ Hub to open this board.`)
     );
     renderYourRank(ranked);
     return;
@@ -139,13 +151,23 @@ function playerRow({ doc, stats }, rank, isYou) {
   row.className = "leaderboard-row";
   if (isYou) row.classList.add("is-you");
   const medal = rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : rank;
+  
+  let freshness = "";
+  if (doc.updatedAt) {
+    const ms = Date.now() - doc.updatedAt.toMillis();
+    const days = Math.floor(ms / (1000 * 60 * 60 * 24));
+    if (days === 0) freshness = " · today";
+    else if (days === 1) freshness = " · yesterday";
+    else freshness = ` · ${days}d ago`;
+  }
+
   row.innerHTML = `
     <span class="leaderboard-rank">${medal}</span>
     <span>
       <span class="leaderboard-name">${escapeHtml(doc.name || "Anonymous")}</span><br/>
-      <span class="leaderboard-meta">${stats.attempts} attempt${stats.attempts === 1 ? "" : "s"} · best ${Math.round(stats.best)}%</span>
+      <span class="leaderboard-meta">${stats.attempts} attempt${stats.attempts === 1 ? "" : "s"}${freshness}</span>
     </span>
-    <span class="leaderboard-score">${Math.round(stats.average)}% avg<br/><span class="leaderboard-meta">${escapeHtml(stats.note || "Mixed")}</span></span>
+    <span class="leaderboard-score" style="font-size:1.15rem; font-weight:700">${stats.points} pts</span>
   `;
   return row;
 }
@@ -171,10 +193,7 @@ function renderYourRank(ranked) {
   yourRankCard.hidden = false;
 
   if (index === -1) {
-    yourRankCard.innerHTML =
-      selectedClass === "All"
-        ? `<p>You haven't taken a quiz yet — <a href="mcq.html">take one now</a> to get on the board!</p>`
-        : `<p>You haven't taken a Class ${selectedClass} quiz yet — <a href="mcq.html">take one now</a> to appear on this board.</p>`;
+    yourRankCard.innerHTML = `<p>You haven't earned any Class ${selectedClass} points here yet — <a href="mcq.html">take a quiz</a>!</p>`;
     return;
   }
 
@@ -183,9 +202,9 @@ function renderYourRank(ranked) {
     <span class="leaderboard-rank">#${index + 1}</span>
     <span>
       <span class="leaderboard-name">${escapeHtml(doc.name || "You")}</span><br/>
-      <span class="leaderboard-meta">${stats.attempts} attempt${stats.attempts === 1 ? "" : "s"} · best ${Math.round(stats.best)}%</span>
+      <span class="leaderboard-meta">${stats.attempts} attempt${stats.attempts === 1 ? "" : "s"}</span>
     </span>
-    <span class="leaderboard-score">${Math.round(stats.average)}% avg</span>
+    <span class="leaderboard-score" style="font-size:1.15rem; font-weight:700">${stats.points} pts</span>
   `;
 }
 

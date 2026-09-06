@@ -18,7 +18,16 @@
         <a href="index.html">Home</a>
         <a href="mcq.html">MCQ Hub</a>
         <a href="python.html">Python Hub</a>
+        <a href="video.html">Video Hub</a>
         <a href="leaderboard.html" class="active">Leaderboard</a>
+        <div class="dropdown">
+          <button class="dropdown-toggle">See More Options ▾</button>
+          <div class="dropdown-menu">
+            <a href="resources.html">Additional Resources</a>
+            <a href="contact.html">Contact</a>
+            <a href="admin.html">Admin Panel</a>
+          </div>
+        </div>
       </nav>
       <div class="header-actions">
         <div class="auth-widget">
@@ -44,7 +53,16 @@
       <a href="index.html">Home</a>
       <a href="mcq.html">MCQ Hub</a>
       <a href="python.html">Python Hub</a>
+      <a href="video.html">Video Hub</a>
       <a href="leaderboard.html" class="active">Leaderboard</a>
+      <div class="dropdown">
+        <button class="dropdown-toggle">See More Options ▾</button>
+        <div class="dropdown-menu">
+          <a href="resources.html">Additional Resources</a>
+          <a href="contact.html">Contact</a>
+          <a href="admin.html">Admin Panel</a>
+        </div>
+      </div>
     </nav>
   </div>
   <div class="drawer-overlay" id="drawerOverlay"></div>
@@ -52,15 +70,21 @@
   <section class="page-hero">
     <div class="container">
       <h1>Leaderboard</h1>
-      <p>Top scorers from the MCQ Hub quiz, ranked by average score across all attempts. Pick a class to see that class's board. Log in before taking a quiz to appear here.</p>
+      <p>Top scorers from the MCQ Hub quiz. <strong>Ranked by total points. Earn 1 point for every correct answer!</strong></p>
+      <p style="margin-top:8px; font-size:0.9rem; color:var(--mist)">Filter by time and class. Log in before taking a quiz to appear here.</p>
     </div>
   </section>
 
   <section class="leaderboard-section">
     <div class="container" style="max-width:680px">
+      <div class="board-filter" id="timeFilter" role="group" aria-label="Filter leaderboard by time" style="margin-bottom:12px;">
+        <button type="button" class="board-chip active" data-time="day">Today</button>
+        <button type="button" class="board-chip" data-time="week">This Week</button>
+        <button type="button" class="board-chip" data-time="month">This Month</button>
+        <button type="button" class="board-chip" data-time="all">All Time</button>
+      </div>
       <div class="board-filter" id="boardFilter" role="group" aria-label="Filter leaderboard by class">
-        <button type="button" class="board-chip active" data-class="All">All classes</button>
-        <button type="button" class="board-chip" data-class="8">Class 8</button>
+        <button type="button" class="board-chip active" data-class="8">Class 8</button>
         <button type="button" class="board-chip" data-class="9">Class 9</button>
         <button type="button" class="board-chip" data-class="10">Class 10</button>
       </div>
@@ -69,7 +93,7 @@
 
       <div class="leaderboard-table" id="leaderboardTable">
         <div class="leaderboard-row header-row">
-          <span>#</span><span>Player</span><span style="text-align:right">Avg score</span>
+          <span>#</span><span>Player</span><span style="text-align:right">Points</span>
         </div>
         <p class="updates-loading" style="padding:20px">Loading leaderboard…</p>
       </div>
@@ -78,7 +102,7 @@
 
   <footer class="site-footer">
     <div class="container footer-inner">
-      <p>&copy; <span id="year"></span> B. Prasad Shah — Python Hub</p>
+      <p>&copy; <span id="year"></span> B. Prasad Shah</p>
       <div class="footer-links">
         <a href="index.html">Home</a>
         <a href="admin.html">Admin</a>

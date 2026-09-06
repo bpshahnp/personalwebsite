@@ -697,17 +697,27 @@ retryQuizBtn.addEventListener("click", () => {
   refreshStatus();
 });
 
-/* ---------- Save score to the leaderboard ----------
-   One document per signed-in user (doc id = uid), tracking their
-   AVERAGE percentage across every quiz they've taken (not just their
-   best attempt) — that's what the leaderboard ranks by. We also keep
-   their best single attempt for display alongside the average.
+function getTimeBuckets() {
+  const d = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  const day = `day_${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  const month = `month_${d.getFullYear()}-${pad(d.getMonth()+1)}`;
+  
+  // ISO Week
+  const d1 = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const dayNum = d1.getUTCDay() || 7;
+  d1.setUTCDate(d1.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d1.getUTCFullYear(),0,1));
+  const weekNo = Math.ceil((((d1 - yearStart) / 86400000) + 1)/7);
+  const week = `week_${d1.getUTCFullYear()}-W${pad(weekNo)}`;
 
-   The same figures are tracked per class under `classStats`, keyed by
-   class level ("8" / "9" / "10"), which is what the leaderboard's class
-   filter ranks by. A quiz taken with Class = "All classes" is a mixed
-   bag, so it counts towards the overall board only and is deliberately
-   left out of every per-class average.
+  return { day, week, month, all: "all_time" };
+}
+
+/* ---------- Save score to the leaderboard ----------
+   One document per signed-in user (doc id = uid). We track cumulative
+   POINTS (1 point = 1 correct answer) inside time buckets:
+   Daily, Weekly, Monthly, All-time.
 ------------------------------------------------------------------ */
 function saveScoreToLeaderboard(rawScore, total, pct) {
   const user = auth.currentUser;
@@ -723,58 +733,44 @@ function saveScoreToLeaderboard(rawScore, total, pct) {
   db.runTransaction((tx) => {
     return tx.get(scoreRef).then((doc) => {
       const prev = doc.exists ? doc.data() : {};
-      const attempts = (prev.attempts || 0) + 1;
-      const percentageSum = (prev.percentageSum || 0) + pct;
-      const averagePercentage = percentageSum / attempts;
-      const isNewBest = pct >= (prev.bestPercentage || 0);
+      const buckets = getTimeBuckets();
+      const points = prev.points || {};
+      
+      // Initialize groups if missing
+      if (!points["All"]) points["All"] = {};
+      if (cls !== "All" && !points[cls]) points[cls] = {};
 
-      // Per-class running totals. Untouched classes carry over as-is.
-      const classStats = { ...(prev.classStats || {}) };
+      // 1. Add points to "All classes" (Overall)
+      points["All"][buckets.day] = (points["All"][buckets.day] || 0) + rawScore;
+      points["All"][buckets.week] = (points["All"][buckets.week] || 0) + rawScore;
+      points["All"][buckets.month] = (points["All"][buckets.month] || 0) + rawScore;
+      points["All"][buckets.all] = (points["All"][buckets.all] || 0) + rawScore;
+
+      // 2. Add points to specific Class board (if not mixed)
       if (cls !== "All") {
-        const prevC = classStats[cls] || {};
-        const cAttempts = (prevC.attempts || 0) + 1;
-        const cSum = (prevC.percentageSum || 0) + pct;
-        const cIsNewBest = pct >= (prevC.bestPercentage || 0);
-        classStats[cls] = {
-          attempts: cAttempts,
-          percentageSum: cSum,
-          averagePercentage: cSum / cAttempts,
-          bestPercentage: cIsNewBest ? pct : prevC.bestPercentage || 0,
-          bestScore: cIsNewBest ? rawScore : prevC.bestScore || 0,
-          bestTotal: cIsNewBest ? total : prevC.bestTotal || 0,
-        };
+        points[cls][buckets.day] = (points[cls][buckets.day] || 0) + rawScore;
+        points[cls][buckets.week] = (points[cls][buckets.week] || 0) + rawScore;
+        points[cls][buckets.month] = (points[cls][buckets.month] || 0) + rawScore;
+        points[cls][buckets.all] = (points[cls][buckets.all] || 0) + rawScore;
       }
 
+      const attempts = (prev.attempts || 0) + 1;
+
       tx.set(scoreRef, {
-        name: user.email.split("@")[0],
+        name: user.displayName || user.email.split("@")[0],
         email: user.email,
-        attempts,
-        percentageSum,
-        averagePercentage,
-        bestPercentage: isNewBest ? pct : prev.bestPercentage || 0,
-        bestScore: isNewBest ? rawScore : prev.bestScore || 0,
-        bestTotal: isNewBest ? total : prev.bestTotal || 0,
-        lastPercentage: pct,
+        attempts: attempts,
+        points: points,
         lastCategory: category === "All" ? "" : category,
         lastClass: cls === "All" ? "" : cls,
-        classStats,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-      });
+      }, { merge: true }); // Merge keeps backward compatibility with old data fields just in case
 
-      return {
-        attempts,
-        averagePercentage,
-        classAverage: cls === "All" ? null : classStats[cls].averagePercentage,
-      };
+      return { earned: rawScore, newTotal: points["All"][buckets.all] };
     });
   })
-    .then(({ attempts, averagePercentage, classAverage }) => {
-      const overall = `your overall average is now ${Math.round(averagePercentage)}% across ${attempts} attempt${attempts === 1 ? "" : "s"}`;
-      const perClass =
-        classAverage === null
-          ? ` Mixed-class quizzes only count towards the overall board.`
-          : ` Your Class ${cls} average is ${Math.round(classAverage)}%.`;
-      leaderboardStatus.innerHTML = `Saved — ${overall}.${perClass} Check the <a href="leaderboard.html">Leaderboard</a>.`;
+    .then(({ earned, newTotal }) => {
+      leaderboardStatus.innerHTML = `Saved! You earned <strong>${earned} points</strong>. All-time total: ${newTotal}. Check the <a href="leaderboard.html">Leaderboard</a>.`;
     })
     .catch((err) => {
       leaderboardStatus.textContent = `Could not save score (${err.message}).`;

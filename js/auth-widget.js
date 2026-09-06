@@ -16,11 +16,22 @@ const ACCOUNT_ICON_SVG =
 
 function renderAuthDropdown(dropdown, user) {
   if (user) {
+    const displayName = user.displayName || user.email;
     dropdown.innerHTML = `
-      <p class="auth-email">${escapeHtmlAuth(user.email)}</p>
+      <p class="auth-email">${escapeHtmlAuth(displayName)}</p>
+      <button class="btn btn-outline btn-sm auth-name-btn" style="width:100%;text-align:center;display:block;margin-bottom:8px">Change Name</button>
       <a href="leaderboard.html" class="btn btn-outline btn-sm" style="width:100%;text-align:center;display:block;margin-bottom:8px">View Leaderboard</a>
       <button class="btn btn-outline btn-sm auth-signout-btn" style="width:100%">Logout</button>
     `;
+    dropdown.querySelector(".auth-name-btn").addEventListener("click", () => {
+      const newName = prompt("Enter your display name (this will appear on the leaderboard):", user.displayName || "");
+      if (newName && newName.trim() !== "") {
+        user.updateProfile({ displayName: newName.trim() }).then(() => {
+          // Force a quick refresh of the UI by re-triggering the state
+          auth.updateCurrentUser(user);
+        });
+      }
+    });
     dropdown.querySelector(".auth-signout-btn").addEventListener("click", () => {
       auth.signOut();
       dropdown.hidden = true;
@@ -28,8 +39,9 @@ function renderAuthDropdown(dropdown, user) {
   } else {
     dropdown.innerHTML = `
       <form class="auth-form">
-        <input type="email" class="auth-email-input" placeholder="Email" required autocomplete="email" />
-        <input type="password" class="auth-password-input" placeholder="Password" required minlength="6" autocomplete="current-password" />
+        <input type="text" class="auth-name-input" placeholder="Display Name" style="display:none; width:100%; margin-bottom:8px; padding:8px; border:1px solid var(--border); border-radius:4px" />
+        <input type="email" class="auth-email-input" placeholder="Email" required autocomplete="email" style="width:100%; margin-bottom:8px; padding:8px; border:1px solid var(--border); border-radius:4px" />
+        <input type="password" class="auth-password-input" placeholder="Password" required minlength="6" autocomplete="current-password" style="width:100%; margin-bottom:8px; padding:8px; border:1px solid var(--border); border-radius:4px" />
         <button type="submit" class="btn btn-primary btn-sm auth-submit-btn" style="width:100%">Login</button>
         <p class="auth-alt"><a href="#" class="auth-toggle-mode">Need an account? Sign up</a></p>
         <p class="auth-status"></p>
@@ -38,9 +50,13 @@ function renderAuthDropdown(dropdown, user) {
     let isSignup = false;
     const submitBtn = dropdown.querySelector(".auth-submit-btn");
     const toggleLink = dropdown.querySelector(".auth-toggle-mode");
+    const nameInput = dropdown.querySelector(".auth-name-input");
     toggleLink.addEventListener("click", (e) => {
       e.preventDefault();
       isSignup = !isSignup;
+      nameInput.style.display = isSignup ? "block" : "none";
+      if (isSignup) nameInput.required = true;
+      else nameInput.required = false;
       submitBtn.textContent = isSignup ? "Sign Up" : "Login";
       toggleLink.textContent = isSignup ? "Have an account? Login" : "Need an account? Sign up";
     });
@@ -48,10 +64,18 @@ function renderAuthDropdown(dropdown, user) {
       e.preventDefault();
       const email = dropdown.querySelector(".auth-email-input").value;
       const password = dropdown.querySelector(".auth-password-input").value;
+      const name = nameInput.value;
       const status = dropdown.querySelector(".auth-status");
+      
       const action = isSignup
-        ? auth.createUserWithEmailAndPassword(email, password)
+        ? auth.createUserWithEmailAndPassword(email, password).then(cred => {
+            if (name.trim() !== "") {
+              return cred.user.updateProfile({ displayName: name.trim() }).then(() => cred);
+            }
+            return cred;
+          })
         : auth.signInWithEmailAndPassword(email, password);
+        
       action
         .then(() => (dropdown.hidden = true))
         .catch((err) => (status.textContent = err.message));
