@@ -45,85 +45,13 @@ a { color: inherit; text-decoration: none; }
 
 img { max-width: 100%; display: block; }
 
-/* ---------- python-hub --------- */
-.snippet-stdin-form {
-  background: #0d1117;
-  border-radius: 6px;
-  padding: 12px;
-  margin: 10px 0;
-}
-.stdin-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-.stdin-label {
-  color: #FFD43B;
-  font-family: "JetBrains Mono", monospace;
-  font-size: 0.9rem;
-  white-space: nowrap;
-}
-.stdin-input {
-  flex: 1;
-  background: #161b22;
-  border: 1px solid #30363d;
-  color: #e6edf3;
-  border-radius: 4px;
-  padding: 6px 8px;
-  font-family: "JetBrains Mono", monospace;
-}
-.stdin-submit {
-  margin-top: 4px;
-}
-.snippet-plot {
-  max-width: 100%;
-  border-radius: 6px;
-  margin-top: 8px;
-}
-.stdin-inline {
-  background: transparent;
-  border: none;
-  outline: none;
-  box-shadow: none;
-  color: #79c0ff;           /* blue, distinct from prompt/output text */
-  font: inherit;
-  padding: 0;
-  margin: 0;
-  caret-color: #79c0ff;
-  min-width: 1ch;
-}
-.stdin-typed {
-  color: #79c0ff;           /* typed value keeps the blue after Enter, like Thonny */
-}
-.snippet-terminal {
-  white-space: pre-wrap;
-  font-family: "JetBrains Mono", monospace;
-}
-.btn-outline {
-  background: transparent;
-  border: 1px solid #444c56;
-  color: #e6edf3;
-}
-.btn-outline:hover {
-  background: #21262d;
-}
-.code-editor {
-  width: 100%;
-  background: #282c34;
-  color: #abb2bf;
-  border: 1px solid #444c56;
-  border-radius: 6px;
-  padding: 1rem;
-  font-family: "JetBrains Mono", Consolas, Monaco, monospace;
-  font-size: 0.95rem;
-  line-height: 1.5;
-  resize: vertical;
-}
-.code-editor:focus {
-  outline: none;
-  border-color: #FFD43B;
-}
+/* The UA rule for [hidden] is display:none, but any author rule that sets a
+   display value beats it — which quietly broke every el.hidden = true in the
+   scripts (nav badges, the quiz's Next button). Make the attribute win. */
+[hidden] { display: none !important; }
+
+/* Python Hub styles live in one block further down, under "Python Hub". */
+
 /* ---------- Buttons ---------- */
 .btn {
   display: inline-block;
@@ -607,17 +535,7 @@ img { max-width: 100%; display: block; }
   width: 220px;
 }
 
-/* ---------- MCQ cards ---------- */
-.mcq-section { padding: 48px 0 88px; }
-.mcq-list { display: flex; flex-direction: column; gap: 18px; }
-
-.mcq-card {
-  background: var(--white);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 22px 24px;
-  box-shadow: var(--shadow);
-}
+/* ---------- Category badge (resource cards + the quiz question strip) ---------- */
 .mcq-category {
   display: inline-block;
   font-size: 0.75rem;
@@ -627,35 +545,6 @@ img { max-width: 100%; display: block; }
   padding: 3px 10px;
   border-radius: 999px;
   margin-bottom: 10px;
-}
-.mcq-card h3 {
-  font-family: var(--font-display);
-  font-size: 1.1rem;
-  margin: 0 0 14px;
-  color: var(--navy-deep);
-}
-.mcq-options { display: grid; gap: 10px; }
-.mcq-option {
-  text-align: left;
-  padding: 11px 14px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--cream);
-  font: inherit;
-  cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease;
-}
-.mcq-option:hover { border-color: var(--navy); }
-.mcq-option.correct { background: #e4f6e9; border-color: #3fa15c; font-weight: 600; }
-.mcq-option.incorrect { background: #fbe7e4; border-color: #d1483a; }
-.mcq-explanation {
-  margin: 14px 0 0;
-  padding: 12px 14px;
-  background: var(--cream);
-  border-left: 3px solid var(--orange);
-  border-radius: 4px;
-  font-size: 0.92rem;
-  color: var(--ink);
 }
 
 /* ---------- Admin ---------- */
@@ -773,155 +662,466 @@ img { max-width: 100%; display: block; }
 .btn-danger { border-color: #d1483a; color: #d1483a; }
 .btn-danger:hover { background: #d1483a; color: var(--white); }
 
-/* ---------- Python Hub ---------- */
-.pyhub-toolbar {
+/* ============================================
+   Python Hub
+   A light program rail beside one dark editor window. The dark is
+   built from this site's own navy rather than a borrowed editor
+   theme, and Prism's token colours are defined here for the same
+   reason — the code panel should look like it belongs to the site.
+   ============================================ */
+:root {
+  --py-void: #0a1120;  /* behind the window: gutter well, output bar */
+  --py-deep: #0f1a2e;  /* code and terminal surface */
+  --py-lift: #16213e;  /* window bar and raised controls (the site navy) */
+  --py-edge: #24314f;  /* hairlines inside the dark */
+  --py-fore: #e9edf7;  /* code and output text */
+  --py-mute: #8f9cba;  /* line numbers, labels, comments */
+  --py-blue: #8fb8ff;  /* numbers, and values typed into a running program */
+  --py-leaf: #93d3a2;  /* strings */
+  --py-flare: #ff8a7a; /* tracebacks */
+
+  --py-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Consolas, monospace;
+  --pyhub-top: 66px;   /* height of the sticky site header */
+}
+
+.pyhub-bar {
   background: var(--white);
   border-bottom: 1px solid var(--line);
 }
-.pyhub-toolbar-inner {
+.pyhub-bar-inner {
   display: flex;
   align-items: center;
-  gap: 20px;
-  padding: 18px 24px;
+  gap: 16px;
+  padding: 14px 24px;
 }
-.pyhub-toolbar-inner h1 {
+.pyhub-bar-inner h1 {
   font-family: var(--font-display);
-  font-size: 1.3rem;
+  font-weight: 500;
+  font-size: 1.15rem;
   margin: 0;
   color: var(--navy-deep);
-  white-space: nowrap;
 }
-.search-box { flex: 1; max-width: 420px; }
-.search-box input {
-  width: 100%;
-  padding: 9px 14px;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  font: inherit;
-}
-.menu-toggle {
+.rail-toggle {
   display: none;
-  flex-direction: column;
-  gap: 4px;
+  margin-left: auto;
+  align-items: center;
+  gap: 8px;
   background: none;
-  border: none;
-  cursor: pointer;
-  padding: 6px;
-}
-.menu-toggle span { width: 22px; height: 2px; background: var(--navy); display: block; }
-
-.loader-banner {
-  display: none;
-  text-align: center;
-  background: var(--navy);
-  color: var(--white);
-  font-size: 0.85rem;
-  padding: 10px;
-}
-.loader-banner.visible { display: block; }
-
-.pyhub-container {
-  display: grid;
-  grid-template-columns: 220px 1fr;
-  gap: 32px;
-  padding: 40px 24px 88px;
-}
-
-.sidebar h3 {
-  font-family: var(--font-display);
-  font-size: 1rem;
-  color: var(--navy-deep);
-  margin: 0 0 12px;
-}
-.sidebar ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
-.sidebar li {
-  padding: 8px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  color: var(--mist);
-}
-.sidebar li:hover { background: var(--cream); }
-.sidebar li.active { background: var(--navy); color: var(--white); }
-
-.snippet-card {
-  background: var(--white);
   border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 22px 24px;
-  box-shadow: var(--shadow);
-  margin-bottom: 20px;
+  border-radius: 6px;
+  padding: 7px 12px;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--navy);
+  cursor: pointer;
 }
-.snippet-head {
+
+/* ---------- Layout ---------- */
+.pyhub-layout {
+  display: grid;
+  grid-template-columns: 264px minmax(0, 1fr);
+  align-items: start;
+  padding: 0 24px 88px;
+}
+
+/* ---------- Program rail ---------- */
+.pyhub-rail {
+  position: sticky;
+  top: var(--pyhub-top);
+  max-height: calc(100vh - var(--pyhub-top));
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
-  margin-bottom: 6px;
+  border-right: 1px solid var(--line);
+  padding: 22px 20px 20px 0;
+  margin-right: 28px;
 }
-.snippet-category {
-  display: inline-block;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  color: var(--orange-dark);
-  background: rgba(232, 131, 78, 0.12);
-  padding: 3px 10px;
-  border-radius: 999px;
-  white-space: nowrap;
+.rail-head { flex: none; }
+.rail-search {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 0 11px;
+  color: var(--mist);
 }
-.snippet-head h3 {
+.rail-search:focus-within {
+  border-color: var(--orange);
+  box-shadow: 0 0 0 3px rgba(232, 131, 78, 0.15);
+}
+.rail-search input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: none;
+  padding: 9px 0;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--ink);
+}
+.rail-search input:focus { outline: none; }
+.rail-search input::-webkit-search-cancel-button { -webkit-appearance: none; }
+.rail-count { margin: 10px 0 2px; font-size: 0.76rem; color: var(--mist); }
+
+.rail-list {
+  flex: 1;
+  overflow-y: auto;
+  margin: 0 -8px;
+  padding: 8px 8px 0;
+}
+.rail-group + .rail-group { margin-top: 20px; }
+.rail-group-title {
   font-family: var(--font-display);
-  font-size: 1.15rem;
-  line-height: 1.35;
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: var(--navy-deep);
+  margin: 0 0 7px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--line);
+}
+.rail-items { list-style: none; margin: 0; padding: 0; }
+.rail-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  border-left: 2px solid transparent;
+  border-radius: 0 6px 6px 0;
+  padding: 7px 10px 7px 12px;
+  font: inherit;
+  font-size: 0.89rem;
+  color: var(--ink);
+  cursor: pointer;
+}
+.rail-item:hover { background: var(--white); }
+.rail-item.active {
+  background: var(--white);
+  border-left-color: var(--orange);
+  color: var(--navy-deep);
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(15, 23, 41, 0.07);
+}
+.rail-empty { margin: 4px 0 0; font-size: 0.86rem; color: var(--mist); }
+.rail-clear {
+  display: block;
+  margin-top: 8px;
+  padding: 0;
+  background: none;
+  border: none;
+  font: inherit;
+  font-size: 0.86rem;
+  color: var(--orange-dark);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* ---------- Workspace ---------- */
+.pyhub-workspace { min-width: 0; padding-top: 26px; }
+.workspace-note { color: var(--mist); font-size: 0.92rem; }
+.workspace-note a { color: var(--orange-dark); text-decoration: underline; }
+.workspace-head { margin-bottom: 16px; }
+.workspace-head h2 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1.6rem;
+  line-height: 1.25;
   margin: 0;
   color: var(--navy-deep);
 }
-.snippet-desc { color: var(--mist); font-size: 0.9rem; margin: 0 0 14px; }
-.snippet-card pre[class*="language-"] { border-radius: 8px; margin: 0 0 14px; font-size: 0.85rem; }
-.snippet-actions { display: flex; }
-.snippet-output {
-  background: var(--navy-deep);
-  color: #d7f7dc;
-  padding: 12px 14px;
+.workspace-head p {
+  margin: 7px 0 0;
+  max-width: 62ch;
+  font-size: 0.93rem;
+  color: var(--mist);
+}
+
+/* ---------- The window ---------- */
+.code-window {
+  background: var(--py-deep);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: 0 14px 34px rgba(15, 23, 41, 0.16);
+}
+.window-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--py-lift);
+  border-bottom: 1px solid var(--py-edge);
+  padding: 9px 12px 9px 16px;
+}
+.window-file {
+  flex: 1;
+  min-width: 0;
+  margin-right: auto;
+  font-family: var(--py-mono);
+  font-size: 0.8rem;
+  color: var(--py-mute);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.window-actions {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.win-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: transparent;
+  border: 1px solid transparent;
   border-radius: 6px;
-  font-family: monospace;
+  padding: 6px 11px;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--py-mute);
+  cursor: pointer;
+}
+.win-btn:hover { background: rgba(255, 255, 255, 0.07); color: var(--py-fore); }
+.win-btn kbd {
+  font-family: var(--py-mono);
+  font-size: 0.7rem;
+  background: rgba(0, 0, 0, 0.24);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+.win-run {
+  background: var(--orange);
+  color: var(--white);
+  font-weight: 600;
+}
+.win-run:hover { background: var(--orange-dark); color: var(--white); }
+.win-run:disabled { background: var(--orange); opacity: 0.5; cursor: default; }
+.win-copy.done { color: var(--py-leaf); }
+
+/* ---------- Code, with a gutter that stays in step ---------- */
+.code-body {
+  display: flex;
+  align-items: stretch;
+  max-height: 56vh;
+  overflow-y: auto;
+  font-family: var(--py-mono);
+  font-size: 0.855rem;
+  line-height: 1.65;
+}
+.code-gutter {
+  flex: none;
+  padding: 14px 12px 14px 16px;
+  background: var(--py-void);
+  color: var(--py-mute);
+  opacity: 0.55;
+  text-align: right;
+  white-space: pre;
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+}
+
+.code-view {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding: 14px 18px;
+  background: none;
+  color: var(--py-fore);
+  font: inherit;
+  white-space: pre;
+  overflow-x: auto;
+}
+.code-view code {
+  font: inherit;
+  background: none;
+  color: inherit;
+  white-space: pre;
+}
+.code-editor {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding: 14px 18px;
+  border: none;
+  background: rgba(255, 255, 255, 0.025);
+  color: var(--py-fore);
+  font: inherit;
+  white-space: pre;
+  overflow-x: auto;
+  resize: none;
+  caret-color: var(--orange);
+  tab-size: 4;
+}
+.code-editor:focus { outline: 2px solid var(--orange); outline-offset: -2px; }
+
+/* Four hues only: keywords, strings, numbers, comments. Function and class
+   names get weight instead of another colour. */
+.code-window .token.comment,
+.code-window .token.prolog,
+.code-window .token.doctype,
+.code-window .token.cdata { color: var(--py-mute); font-style: italic; }
+.code-window .token.punctuation,
+.code-window .token.operator { color: #a9b6d4; }
+.code-window .token.keyword,
+.code-window .token.builtin,
+.code-window .token.boolean,
+.code-window .token.none { color: var(--orange); }
+.code-window .token.string,
+.code-window .token.triple-quoted-string,
+.code-window .token.char { color: var(--py-leaf); }
+.code-window .token.number { color: var(--py-blue); }
+.code-window .token.function,
+.code-window .token.class-name,
+.code-window .token.decorator { color: var(--py-fore); font-weight: 700; }
+
+/* ---------- Output ---------- */
+.window-out { border-top: 1px solid var(--py-edge); }
+.out-bar {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 18px;
+  background: var(--py-void);
+}
+.out-label { font-size: 0.78rem; font-weight: 600; color: var(--py-mute); }
+.out-time {
+  font-family: var(--py-mono);
+  font-size: 0.74rem;
+  color: var(--py-mute);
+  opacity: 0.8;
+}
+.out-body {
+  margin: 0;
+  padding: 14px 18px 18px;
+  max-height: 34vh;
+  overflow: auto;
+  font-family: var(--py-mono);
   font-size: 0.85rem;
+  line-height: 1.6;
   white-space: pre-wrap;
-  margin-top: 14px;
+  color: var(--py-fore);
+}
+.out-error { color: var(--py-flare); }
+.out-hint {
+  display: block;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--py-edge);
+  font-family: var(--font-body);
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: var(--py-mute);
+  white-space: normal;
+}
+.stdin-inline {
+  background: transparent;
+  border: none;
+  outline: none;
+  box-shadow: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: var(--py-blue);
+  caret-color: var(--orange);
+  min-width: 1ch;
+}
+
+.window-images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 14px 18px;
+  background: var(--py-void);
+  border-top: 1px solid var(--py-edge);
+}
+.snippet-plot {
+  max-width: 100%;
+  border-radius: 6px;
+  background: var(--white);
+}
+
+/* ---------- Focus, always visible ---------- */
+.rail-item:focus-visible,
+.rail-clear:focus-visible,
+.rail-toggle:focus-visible,
+.code-view:focus-visible {
+  outline: 2px solid var(--orange);
+  outline-offset: 2px;
+}
+.win-btn:focus-visible {
+  outline: 2px solid var(--orange);
+  outline-offset: 1px;
 }
 
 .overlay {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(15,23,41,0.5);
-  z-index: 40;
+  background: rgba(15, 23, 41, 0.5);
+  z-index: 55;
 }
 .overlay.visible { display: block; }
 
-@media (max-width: 880px) {
-  .pyhub-container { grid-template-columns: 1fr; }
-  .menu-toggle { display: flex; }
-  .sidebar {
-    position: fixed;
-    top: 0; left: 0; bottom: 0;
-    width: 240px;
-    background: var(--white);
-    padding: 24px;
-    transform: translateX(-100%);
-    transition: transform 0.2s ease;
-    z-index: 50;
-    overflow-y: auto;
+/* ---------- Phones and small tablets: the rail becomes a drawer ---------- */
+@media (max-width: 900px) {
+  .pyhub-layout {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 0 24px 72px;
   }
-  .sidebar.open { transform: translateX(0); }
-  .search-box { max-width: none; }
+  .rail-toggle { display: inline-flex; }
+  .pyhub-rail {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: min(310px, 84vw);
+    max-height: none;
+    margin: 0;
+    padding: 20px;
+    background: var(--cream);
+    transform: translateX(-100%);
+    transition: transform 0.22s ease;
+    z-index: 60;
+  }
+  .pyhub-rail.open { transform: translateX(0); }
+  .pyhub-workspace { padding-top: 22px; }
+  .workspace-head h2 { font-size: 1.35rem; }
+  .code-body { max-height: 48vh; font-size: 0.8rem; }
+  .window-bar { flex-wrap: wrap; }
+  .window-file { flex: 1 0 100%; margin-right: 0; }
+  .window-actions { margin-left: auto; }
 }
 
-/* ---------- Quiz (MCQ Hub) ---------- */
-.quiz-section { padding: 48px 0 100px; }
-.quiz-container { max-width: 640px; }
+@media (max-width: 520px) {
+  .win-btn kbd { display: none; }
+  .win-btn { padding: 6px 9px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pyhub-rail { transition: none; }
+}
+
+
+
+/* ---------- Quiz (MCQ Hub) ----------
+   The question is the loud element here; everything around it stays quiet.
+   Right/wrong never rests on colour alone — the row grows a tick or a cross
+   drawn in CSS, and a worded verdict lands in a live region below. */
+.quiz-section {
+  padding: 48px 0 100px;
+  --q-right: #2f7c46;
+  --q-right-tint: #eef8f1;
+  --q-right-line: #c3e0cd;
+  --q-wrong: #b8382c;
+  --q-wrong-tint: #fdf0ee;
+  --q-wrong-line: #f0cdc8;
+}
+.quiz-container { max-width: 660px; }
 .quiz-card {
   background: var(--white);
   border: 1px solid var(--line);
@@ -934,6 +1134,14 @@ img { max-width: 100%; display: block; }
   color: var(--navy-deep);
   margin-top: 0;
 }
+.card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.card-head h2 { margin-bottom: 6px; }
+
 .quiz-muted { color: var(--mist); font-size: 0.9rem; }
 .quiz-field {
   display: flex;
@@ -953,21 +1161,106 @@ img { max-width: 100%; display: block; }
   font-weight: 400;
 }
 
+/* Class / question-count pickers: real radios, so arrow keys and screen
+   readers work for free, with the input itself taken out of the paint. */
+.pick { border: 0; margin: 0 0 18px; padding: 0; }
+.pick legend {
+  padding: 0;
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--mist);
+}
+.pick-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.pick-opt { display: inline-flex; }
+.pick-opt input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+}
+.pick-opt span {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--mist);
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 15px;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+.pick-opt:hover span { color: var(--navy-deep); border-color: var(--navy-deep); }
+.pick-opt input:checked + span {
+  background: var(--navy-deep);
+  border-color: var(--navy-deep);
+  color: var(--white);
+}
+.pick-opt input:focus-visible + span { outline: 2px solid var(--orange); outline-offset: 2px; }
+.pick-opt input:disabled + span,
+.pick-opt:hover input:disabled + span {
+  color: var(--mist);
+  border-color: var(--line);
+  background: var(--cream);
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.pick-count {
+  font-style: normal;
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+  background: rgba(15, 23, 41, 0.09);
+  border-radius: 999px;
+  padding: 1px 7px;
+  margin-left: 8px;
+}
+.pick-opt input:checked + span .pick-count { background: rgba(255, 255, 255, 0.22); }
+.btn-block { width: 100%; text-align: center; }
+/* Quiet buttons: the sound toggle and the way out of a quiz. */
+.sound-btn,
+.ghost-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--navy-deep);
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 13px;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+.sound-btn:hover,
+.ghost-btn:hover { border-color: var(--navy-deep); background: var(--cream); }
+.sound-btn:focus-visible,
+.ghost-btn:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+.sound-btn.is-off { color: var(--mist); }
+.sound-btn svg { flex: none; }
+
+/* ---------- Quiz in progress ---------- */
 .quiz-status-bar {
   display: flex;
   justify-content: space-between;
+  gap: 12px;
   font-size: 0.85rem;
   color: var(--mist);
   margin-bottom: 10px;
 }
-.quiz-score { font-weight: 700; color: var(--navy-deep); }
+.quiz-score { font-weight: 700; color: var(--navy-deep); font-variant-numeric: tabular-nums; }
 
 .quiz-progress-track {
-  height: 6px;
+  height: 5px;
   background: var(--cream);
+  border: 1px solid var(--line);
   border-radius: 999px;
   overflow: hidden;
-  margin-bottom: 22px;
+  margin-bottom: 18px;
 }
 .quiz-progress-fill {
   height: 100%;
@@ -975,32 +1268,266 @@ img { max-width: 100%; display: block; }
   transition: width 0.25s ease;
   width: 0%;
 }
+.stage-tools {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.stage-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.stage-tags .mcq-class,
+.stage-tags .mcq-category { margin: 0; }
+.stage-actions { display: flex; gap: 8px; }
 
+/* The one loud thing on the page. */
 .quiz-card h3 { font-family: var(--font-display); color: var(--navy-deep); margin: 4px 0 16px; }
-.quiz-nav { margin-top: 20px; display: flex; justify-content: flex-end; }
+.stage-question {
+  font-size: clamp(1.25rem, 3.2vw, 1.7rem);
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  margin: 2px 0 20px;
+}
 
+/* ---------- Options ---------- */
+.mcq-options { display: grid; gap: 10px; }
+.mcq-option {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) 20px;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  padding: 12px 14px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-left-width: 3px;
+  border-radius: 8px;
+  font: inherit;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.mcq-option:hover:not(:disabled) { background: var(--cream); border-color: var(--navy); }
+.mcq-option:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+.mcq-option:disabled { cursor: default; opacity: 1; }
+.opt-key {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--cream);
+  font-size: 0.82rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--mist);
+}
+.opt-text { line-height: 1.45; }
+.opt-mark { position: relative; width: 20px; height: 20px; }
+
+/* Answered states. Three signals, any one of which is enough on its own:
+   the left edge takes a colour, the number chip fills in, and the mark on
+   the right becomes a tick or a cross. */
+.mcq-option.correct {
+  background: var(--q-right-tint);
+  border-color: var(--q-right-line);
+  border-left-color: var(--q-right);
+}
+.mcq-option.incorrect {
+  background: var(--q-wrong-tint);
+  border-color: var(--q-wrong-line);
+  border-left-color: var(--q-wrong);
+}
+/* The rows that were never in contention step back but stay readable. */
+.mcq-option.faded { opacity: 0.5; }
+
+.mcq-option.correct .opt-key {
+  background: var(--q-right);
+  border-color: var(--q-right);
+  color: var(--white);
+}
+.mcq-option.incorrect .opt-key {
+  background: var(--q-wrong);
+  border-color: var(--q-wrong);
+  color: var(--white);
+}
+
+/* Tick and cross are drawn here rather than pulled from an icon font or a
+   glyph: one rotated corner for the tick, two crossed bars for the cross,
+   so the shape is pixel-identical everywhere and costs no extra request. */
+.mcq-option.correct .opt-mark::before,
+.mcq-option.incorrect .opt-mark::before,
+.mcq-option.incorrect .opt-mark::after {
+  content: "";
+  position: absolute;
+}
+.mcq-option.correct .opt-mark::before {
+  left: 3px;
+  top: 4px;
+  width: 13px;
+  height: 7px;
+  border-left: 2.5px solid var(--q-right);
+  border-bottom: 2.5px solid var(--q-right);
+  transform: rotate(-45deg);
+}
+.mcq-option.incorrect .opt-mark::before,
+.mcq-option.incorrect .opt-mark::after {
+  left: 2px;
+  top: 9px;
+  width: 16px;
+  height: 2.5px;
+  border-radius: 2px;
+  background: var(--q-wrong);
+}
+.mcq-option.incorrect .opt-mark::before { transform: rotate(45deg); }
+.mcq-option.incorrect .opt-mark::after { transform: rotate(-45deg); }
+/* ---------- Keyboard hint ---------- */
+.key-hint {
+  margin: 14px 0 0;
+  font-size: 0.8rem;
+  color: var(--mist);
+}
+.key-hint kbd {
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--navy-deep);
+  background: var(--cream);
+  border: 1px solid var(--line);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  padding: 1px 6px;
+}
+
+/* ---------- The verdict, and why ----------
+   One live region, so a screen reader announces the result and the reason
+   as a single message instead of two. Empty between questions, and an
+   empty box shouldn't reserve space. */
+.answer-report:empty { display: none; }
+.answer-report { margin-top: 18px; }
+.answer-verdict {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+.answer-verdict.is-right { color: var(--q-right); }
+.answer-verdict.is-wrong { color: var(--q-wrong); }
+.mcq-explanation {
+  margin: 9px 0 0;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--ink);
+  background: var(--cream);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 11px 13px;
+}
+/* ---------- Leaving mid-quiz ----------
+   Inline rather than a modal: the question stays visible behind the
+   question being asked, which is usually enough to change someone's mind. */
+.leave-confirm {
+  background: var(--cream);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--orange);
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 18px;
+}
+.leave-confirm p { margin: 0 0 12px; font-size: 0.9rem; }
+.leave-confirm-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+
+/* A floor under the playing card, so the page doesn't jump between a
+   one-line question and a four-line one. */
+.quiz-stage { min-height: 440px; }
+.sound-label { white-space: nowrap; }
+
+.quiz-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+/* ---------- Results ---------- */
 .quiz-final-score {
   font-family: var(--font-display);
-  font-size: 1.6rem;
+  font-size: clamp(1.35rem, 4vw, 1.9rem);
+  line-height: 1.2;
   color: var(--navy-deep);
-  margin: 4px 0 12px;
+  margin: 0 0 10px;
 }
 
-.review-list { display: flex; flex-direction: column; gap: 16px; margin-top: 24px; }
-.review-item { border-top: 1px solid var(--line); padding-top: 14px; }
-.review-question { font-weight: 600; margin: 0 0 6px; }
-.review-tag {
-  display: inline-block;
-  font-size: 0.72rem;
-  font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 999px;
-  margin-left: 8px;
-  vertical-align: middle;
+/* Two-column result header: score text on the left, ring on the right.
+   Stacks to a column on narrow viewports. */
+.result-top {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
 }
-.review-correct { background: #e4f6e9; color: #2f7c46; }
-.review-incorrect { background: #fbe7e4; color: #b8382c; }
-.review-answer { font-size: 0.88rem; margin: 2px 0; color: var(--mist); }
+.result-facts { flex: 1 1 220px; min-width: 0; }
+.result-facts h2 { margin-bottom: 4px; }
+.quiz-grade-msg {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--navy-deep);
+  margin: 4px 0 10px;
+}
+.score-ring {
+  position: relative;
+  flex: none;
+  width: 128px;
+  height: 128px;
+}
+.score-ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+.ring-track {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 9;
+}
+.ring-value {
+  fill: none;
+  stroke: var(--orange);
+  stroke-width: 9;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.8s ease, stroke 0.3s ease;
+}
+.score-ring.band-high .ring-value { stroke: var(--q-right); }
+.score-ring.band-low .ring-value { stroke: var(--q-wrong); }
+.ring-center {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  line-height: 1.15;
+}
+.ring-pct {
+  font-family: var(--font-display);
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: var(--navy-deep);
+  font-variant-numeric: tabular-nums;
+}
+.ring-fraction {
+  font-size: 0.74rem;
+  color: var(--mist);
+  font-variant-numeric: tabular-nums;
+}
+/* Hide the keyboard shortcut hint on touch/pointer-coarse devices where
+   number keys and Enter don't apply. */
+@media (pointer: coarse) {
+  .key-hint { display: none; }
+}
+
 
 /* ---------- Code textarea (admin) ---------- */
 .code-textarea { font-family: "SFMono-Regular", Consolas, monospace; font-size: 0.88rem; }

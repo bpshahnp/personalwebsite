@@ -18,7 +18,16 @@
         <a href="index.html">Home</a>
         <a href="mcq.html" class="active">MCQ Hub</a>
         <a href="python.html">Python Hub</a>
+        <a href="video.html">Video Hub</a>
         <a href="leaderboard.html">Leaderboard</a>
+        <div class="dropdown">
+          <button class="dropdown-toggle">See More Options ▾</button>
+          <div class="dropdown-menu">
+            <a href="resources.html">Additional Resources</a>
+            <a href="contact.html">Contact</a>
+            <a href="admin.html">Admin Panel</a>
+          </div>
+        </div>
       </nav>
       <div class="header-actions">
         <div class="auth-widget">
@@ -44,7 +53,16 @@
       <a href="index.html">Home</a>
       <a href="mcq.html" class="active">MCQ Hub</a>
       <a href="python.html">Python Hub</a>
+      <a href="video.html">Video Hub</a>
       <a href="leaderboard.html">Leaderboard</a>
+      <div class="dropdown">
+        <button class="dropdown-toggle">See More Options ▾</button>
+        <div class="dropdown-menu">
+          <a href="resources.html">Additional Resources</a>
+          <a href="contact.html">Contact</a>
+          <a href="admin.html">Admin Panel</a>
+        </div>
+      </div>
     </nav>
   </div>
   <div class="drawer-overlay" id="drawerOverlay"></div>
@@ -61,18 +79,33 @@
 
       <!-- ===== Start screen ===== -->
       <div id="quizStart" class="quiz-card">
-        <h2>Set up your quiz</h2>
+        <div class="card-head">
+          <h2>Set up your quiz</h2>
+          <button type="button" class="sound-btn js-sound-toggle"></button>
+        </div>
         <p class="quiz-muted" id="questionBankStatus">Loading question bank…</p>
 
-        <label class="quiz-field">
-          Class
-          <select id="classSelect">
-            <option value="All">All classes</option>
-            <option value="8">Class 8</option>
-            <option value="9">Class 9</option>
-            <option value="10" selected>Class 10</option>
-          </select>
-        </label>
+        <fieldset class="pick" id="classPick">
+          <legend>Class</legend>
+          <div class="pick-row">
+            <label class="pick-opt">
+              <input type="radio" name="quizClass" value="All" />
+              <span>All classes<em class="pick-count" data-count-for="All"></em></span>
+            </label>
+            <label class="pick-opt">
+              <input type="radio" name="quizClass" value="8" />
+              <span>Class 8<em class="pick-count" data-count-for="8"></em></span>
+            </label>
+            <label class="pick-opt">
+              <input type="radio" name="quizClass" value="9" />
+              <span>Class 9<em class="pick-count" data-count-for="9"></em></span>
+            </label>
+            <label class="pick-opt">
+              <input type="radio" name="quizClass" value="10" checked />
+              <span>Class 10<em class="pick-count" data-count-for="10"></em></span>
+            </label>
+          </div>
+        </fieldset>
 
         <label class="quiz-field">
           Category
@@ -81,50 +114,95 @@
           </select>
         </label>
 
-        <label class="quiz-field">
-          Number of questions
-          <select id="countSelect">
-            <option value="5">5</option>
-            <option value="10" selected>10</option>
-            <option value="20">20</option>
-            <option value="all">All available</option>
-          </select>
-        </label>
+        <fieldset class="pick" id="countPick">
+          <legend>How many questions</legend>
+          <div class="pick-row">
+            <label class="pick-opt"><input type="radio" name="quizCount" value="5" /><span>5</span></label>
+            <label class="pick-opt"><input type="radio" name="quizCount" value="10" checked /><span>10</span></label>
+            <label class="pick-opt"><input type="radio" name="quizCount" value="20" /><span>20</span></label>
+            <label class="pick-opt"><input type="radio" name="quizCount" value="all" /><span>All available</span></label>
+          </div>
+        </fieldset>
 
-        <button class="btn btn-primary" id="startQuizBtn" style="width:100%" disabled>Start Quiz</button>
+        <button class="btn btn-primary btn-block" id="startQuizBtn" disabled>Start quiz</button>
       </div>
-
       <!-- ===== Quiz in progress ===== -->
-      <div id="quizPlay" class="quiz-card" hidden>
+      <div id="quizPlay" class="quiz-card quiz-stage" hidden>
         <div class="quiz-status-bar">
           <span id="quizProgress">Question 1 of 10</span>
-          <span id="quizScore" class="quiz-score">Score: 0 / 0</span>
+          <span id="quizScore" class="quiz-score"></span>
         </div>
         <div class="quiz-progress-track"><div class="quiz-progress-fill" id="quizProgressFill"></div></div>
 
-        <span class="mcq-class" id="quizQuestionClass" hidden></span>
-        <span class="mcq-category" id="quizQuestionCategory" hidden></span>
-        <h3 id="quizQuestionText"></h3>
+        <div class="stage-tools">
+          <div class="stage-tags">
+            <span class="mcq-class" id="quizQuestionClass" hidden></span>
+            <span class="mcq-category" id="quizQuestionCategory" hidden></span>
+          </div>
+          <div class="stage-actions">
+            <button type="button" class="sound-btn js-sound-toggle"></button>
+            <button type="button" class="ghost-btn" id="leaveQuizBtn">Leave quiz</button>
+          </div>
+        </div>
+
+        <div class="leave-confirm" id="leaveConfirm" hidden>
+          <p>Leave this attempt? Nothing is scored or saved.</p>
+          <div class="leave-confirm-actions">
+            <button type="button" class="btn btn-primary btn-sm" id="leaveCancelBtn">Keep going</button>
+            <button type="button" class="btn btn-outline btn-sm" id="leaveConfirmBtn">Leave quiz</button>
+          </div>
+        </div>
+
+        <h3 id="quizQuestionText" class="stage-question"></h3>
         <div class="mcq-options" id="quizOptions"></div>
-        <p class="mcq-explanation" id="quizExplanation" hidden></p>
+        <p class="key-hint">Press <kbd>1</kbd>–<kbd>4</kbd> to answer, <kbd>Enter</kbd> to move on.</p>
+
+        <div class="answer-report" id="answerReport" aria-live="polite" aria-atomic="true"></div>
 
         <div class="quiz-nav">
-          <button class="btn btn-primary" id="nextQuestionBtn" hidden>Next Question →</button>
+          <button class="btn btn-primary" id="nextQuestionBtn" hidden>Next question</button>
         </div>
       </div>
 
       <!-- ===== Result screen ===== -->
       <div id="quizResult" class="quiz-card" hidden>
-        <h2>Quiz complete!</h2>
-        <p class="quiz-final-score" id="finalScoreText">You scored 0 / 0</p>
-        <div class="quiz-progress-track"><div class="quiz-progress-fill" id="finalScoreFill"></div></div>
-        <p class="quiz-muted" id="leaderboardStatus"></p>
+        <div class="result-top">
+          <div class="result-facts">
+            <h2 style="margin-top:0;">Quiz complete</h2>
+            <p class="quiz-final-score" id="finalScoreText">You scored 0 / 0</p>
+            <p class="quiz-grade-msg" id="gradeMsg"></p>
+            <p class="quiz-muted" id="elapsedText"></p>
+            <p class="quiz-muted" id="leaderboardStatus"></p>
+          </div>
+          <!-- Score ring — animated in JS via stroke-dashoffset -->
+          <div class="score-ring" id="scoreRing">
+            <svg viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="ring-track" cx="60" cy="60" r="50"/>
+              <circle class="ring-value" id="ringValue" cx="60" cy="60" r="50"
+                stroke-dasharray="314" stroke-dashoffset="314"/>
+            </svg>
+            <div class="ring-center">
+              <span class="ring-pct" id="ringPct">0%</span>
+              <span class="ring-fraction" id="ringFraction">0 / 0</span>
+            </div>
+          </div>
+        </div>
+        <!-- Hidden progress bar kept for the JS that fills it (ring reads same value) -->
+        <div hidden><div class="quiz-progress-fill" id="finalScoreFill"></div></div>
 
+        <div class="review-head">
+          <h3>Your answers</h3>
+          <label class="review-filter">
+            <input type="checkbox" id="wrongOnlyToggle" />
+            <span id="wrongOnlyLabel">Only the ones I missed</span>
+          </label>
+        </div>
         <div id="reviewList" class="review-list"></div>
+        <p class="quiz-muted" id="reviewEmpty" hidden>Every answer was right — nothing to review here.</p>
 
         <div class="quiz-nav">
-          <a href="leaderboard.html" class="btn btn-outline">View Leaderboard</a>
-          <button class="btn btn-primary" id="retryQuizBtn">Take Another Quiz</button>
+          <a href="leaderboard.html" class="btn btn-outline">View leaderboard</a>
+          <button class="btn btn-primary" id="retryQuizBtn">Take another quiz</button>
         </div>
       </div>
 
@@ -133,7 +211,7 @@
 
   <footer class="site-footer">
     <div class="container footer-inner">
-      <p>&copy; <span id="year"></span> B. Prasad Shah — Python Hub</p>
+      <p>&copy; <span id="year"></span> B. Prasad Shah — MCQ Hub</p>
       <div class="footer-links">
         <a href="index.html">Home</a>
         <a href="admin.html">Admin</a>

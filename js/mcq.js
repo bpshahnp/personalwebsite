@@ -14,10 +14,17 @@
    classLevel is normalised on read: any question saved before
    classes existed (missing or blank classLevel) is treated as
    Class 10, so the original question bank needs no migration.
+
+   Options are shuffled per question, so `correctIndex` is always
+   an index into the ORIGINAL options array and never into what the
+   learner sees. Every button carries both: data-index (original,
+   used for scoring) and data-position (what's on screen, used for
+   the 1–4 number keys and the "the answer is 3" feedback line).
    ============================================ */
 
 const CLASS_LEVELS = ["8", "9", "10"];
 const DEFAULT_CLASS = "10";
+const SOUND_KEY = "mcqSound";
 
 /* Accepts "10", 10, "Class 10", "class-10" → "10".
    Anything unrecognised (including missing/blank) → DEFAULT_CLASS. */
@@ -32,14 +39,20 @@ function questionClass(q) {
   return normalizeClass(q.classLevel ?? q.class);
 }
 
+/* Human label for a class picker value. */
+function classLabel(value) {
+  return value === "All" ? "All classes" : `Class ${value}`;
+}
+
+/* ---------- Elements ---------- */
 const quizStart = document.getElementById("quizStart");
 const quizPlay = document.getElementById("quizPlay");
 const quizResult = document.getElementById("quizResult");
 
 const questionBankStatus = document.getElementById("questionBankStatus");
-const classSelect = document.getElementById("classSelect");
+const classRadios = [...document.querySelectorAll('input[name="quizClass"]')];
+const countRadios = [...document.querySelectorAll('input[name="quizCount"]')];
 const categorySelect = document.getElementById("categorySelect");
-const countSelect = document.getElementById("countSelect");
 const startQuizBtn = document.getElementById("startQuizBtn");
 
 const quizProgress = document.getElementById("quizProgress");
@@ -49,60 +62,208 @@ const quizQuestionClass = document.getElementById("quizQuestionClass");
 const quizQuestionCategory = document.getElementById("quizQuestionCategory");
 const quizQuestionText = document.getElementById("quizQuestionText");
 const quizOptions = document.getElementById("quizOptions");
-const quizExplanation = document.getElementById("quizExplanation");
+const answerReport = document.getElementById("answerReport");
 const nextQuestionBtn = document.getElementById("nextQuestionBtn");
+
+const leaveQuizBtn = document.getElementById("leaveQuizBtn");
+const leaveConfirm = document.getElementById("leaveConfirm");
+const leaveConfirmBtn = document.getElementById("leaveConfirmBtn");
+const leaveCancelBtn = document.getElementById("leaveCancelBtn");
+const soundToggles = [...document.querySelectorAll(".js-sound-toggle")];
 
 const finalScoreText = document.getElementById("finalScoreText");
 const finalScoreFill = document.getElementById("finalScoreFill");
+const elapsedText = document.getElementById("elapsedText");
 const reviewList = document.getElementById("reviewList");
+const reviewEmpty = document.getElementById("reviewEmpty");
+const wrongOnlyToggle = document.getElementById("wrongOnlyToggle");
+const wrongOnlyLabel = document.getElementById("wrongOnlyLabel");
 const retryQuizBtn = document.getElementById("retryQuizBtn");
+const leaderboardStatus = document.getElementById("leaderboardStatus");
 
+// Score ring elements
+const scoreRingEl = document.getElementById("scoreRing");
+const ringValue   = document.getElementById("ringValue");
+const ringPct     = document.getElementById("ringPct");
+const ringFraction= document.getElementById("ringFraction");
+const gradeMsg    = document.getElementById("gradeMsg");
+
+/* ---------- State ---------- */
 let questionBank = [];
 let quizQuestions = [];
 let currentIndex = 0;
 let score = 0;
-let activeClass = DEFAULT_CLASS;   // class this attempt was set up for ("All" = mixed)
+let answered = false;
+let userAnswers = []; // { question, options, correctIndex, chosenIndex, explanation }
+let displayOrder = []; // original option indices, in the order now on screen
+let startedAt = 0;
+let activeClass = DEFAULT_CLASS; // class this attempt was set up for ("All" = mixed)
 let activeCategory = "All";
 
-/* ---------- Sound effects (no audio files needed — synthesized tones) ---------- */
-let audioCtx;
+/* ---------- Sound preference ----------
+   Remembered between visits. localStorage throws in a few situations
+   (private browsing, a page opened straight off the file system), and a
+   muted quiz is not worth a broken page, so both ends are wrapped. */
+let soundOn = readSoundPref();
+
+function readSoundPref() {
+  try {
+    return localStorage.getItem(SOUND_KEY) !== "off";
+  } catch (err) {
+    return true;
+  }
+}
+
+function writeSoundPref(on) {
+  try {
+    localStorage.setItem(SOUND_KEY, on ? "on" : "off");
+  } catch (err) {
+    /* Preference just won't survive the visit. */
+  }
+}
+
+/* Icons are built node by node rather than as an HTML string: an <svg>
+   assigned through innerHTML needs the SVG namespace to be inferred,
+   and createElementNS is the version that always works. */
+const SVG_NS = "http://www.w3.org/2000/svg";
+const SPEAKER_PATH = "M4 9v6h3l5 4V5L7 9H4z";
+const WAVE_PATH = "M16.5 8.6a4.8 4.8 0 0 1 0 6.8";
+const MUTE_PATH = "M17 9.5l4.5 5M21.5 9.5l-4.5 5";
+
+function svgIcon(paths) {
+  const svg = document.createElementNS(SVG_NS, "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("width", "15");
+  svg.setAttribute("height", "15");
+  svg.setAttribute("fill", "none");
+  svg.setAttribute("stroke", "currentColor");
+  svg.setAttribute("stroke-width", "1.8");
+  svg.setAttribute("stroke-linecap", "round");
+  svg.setAttribute("stroke-linejoin", "round");
+  svg.setAttribute("aria-hidden", "true");
+  paths.forEach((d) => {
+    const path = document.createElementNS(SVG_NS, "path");
+    path.setAttribute("d", d);
+    svg.appendChild(path);
+  });
+  return svg;
+}
+
+/* The toggle appears twice — on the setup card and in the quiz strip —
+   so one render keeps both in step. */
+function renderSoundToggles() {
+  soundToggles.forEach((btn) => {
+    btn.innerHTML = "";
+    btn.appendChild(svgIcon(soundOn ? [SPEAKER_PATH, WAVE_PATH] : [SPEAKER_PATH, MUTE_PATH]));
+    const label = document.createElement("span");
+    label.className = "sound-label";
+    label.textContent = soundOn ? "Sound on" : "Sound off";
+    btn.appendChild(label);
+    btn.setAttribute("aria-pressed", soundOn ? "true" : "false");
+    btn.title = soundOn ? "Mute the answer sounds" : "Turn the answer sounds back on";
+    btn.classList.toggle("is-off", !soundOn);
+  });
+}
+
+soundToggles.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    soundOn = !soundOn;
+    writeSoundPref(soundOn);
+    renderSoundToggles();
+    // A short blip proves the sound actually works, which a silent
+    // toggle can't. Nothing plays when switching off, obviously.
+    if (soundOn) playNote({ freq: 784, dur: 0.12, type: "triangle", gain: 0.1 });
+  });
+});
+
+renderSoundToggles();
+
+/* ---------- Sound effects ----------
+   Synthesized, so there are no audio files to host. Safari and iOS hand
+   back a context stuck in "suspended" until a user gesture resumes it —
+   without the resume() below the quiz is silent on every iPhone. */
+let audioCtx = null;
+
 function getAudioCtx() {
-  if (!audioCtx) {
-    const AC = window.AudioContext || window.webkitAudioContext;
-    if (AC) audioCtx = new AC();
+  if (audioCtx) return audioCtx;
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return null;
+  try {
+    audioCtx = new AC();
+  } catch (err) {
+    audioCtx = null;
   }
   return audioCtx;
 }
 
-function playTone(freq, duration, type, delay) {
+function primeAudio() {
   const ctx = getAudioCtx();
+  if (ctx && ctx.state === "suspended" && ctx.resume) ctx.resume();
+  return ctx;
+}
+
+/* One note. `to` glides the pitch, `cutoff` puts a lowpass in front of the
+   output — that filter is what turns a raw tone into something soft rather
+   than buzzy. Gain never reaches 0 because exponential ramps can't. */
+function playNote(opts) {
+  if (!soundOn) return;
+  const ctx = primeAudio();
   if (!ctx) return;
+
+  const start = ctx.currentTime + (opts.delay || 0);
+  const dur = opts.dur || 0.2;
+  const peak = opts.gain || 0.13;
+
   const osc = ctx.createOscillator();
+  osc.type = opts.type || "sine";
+  osc.frequency.setValueAtTime(opts.freq, start);
+  if (opts.to) osc.frequency.exponentialRampToValueAtTime(opts.to, start + dur * 0.9);
+
   const gain = ctx.createGain();
-  osc.type = type || "sine";
-  osc.frequency.value = freq;
-  const startAt = ctx.currentTime + (delay || 0);
-  gain.gain.setValueAtTime(0.001, startAt);
-  gain.gain.exponentialRampToValueAtTime(0.18, startAt + 0.015);
-  gain.gain.exponentialRampToValueAtTime(0.001, startAt + duration);
+  gain.gain.setValueAtTime(0.0001, start);
+  gain.gain.exponentialRampToValueAtTime(peak, start + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.0001, start + dur);
+
   osc.connect(gain);
-  gain.connect(ctx.destination);
-  osc.start(startAt);
-  osc.stop(startAt + duration + 0.02);
+  let tail = gain;
+  if (opts.cutoff && ctx.createBiquadFilter) {
+    const filter = ctx.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.setValueAtTime(opts.cutoff, start);
+    gain.connect(filter);
+    tail = filter;
+  }
+  tail.connect(ctx.destination);
+
+  osc.start(start);
+  osc.stop(start + dur + 0.05);
 }
 
+/* Warm rising fifth — D5 then A5, triangle waves with the top end filtered off. */
 function playCorrectSound() {
-  // short, bright two-note "ding-ding" rising tone
-  playTone(660, 0.12, "sine", 0);
-  playTone(880, 0.16, "sine", 0.1);
+  playNote({ freq: 587.33, dur: 0.17, type: "triangle", gain: 0.12, cutoff: 2400 });
+  playNote({ freq: 880, dur: 0.34, type: "triangle", gain: 0.1, delay: 0.11, cutoff: 2400 });
 }
 
+/* Soft low thud: a sine dropping in pitch under a heavy lowpass. Not a buzz —
+   getting an answer wrong shouldn't feel like setting off an alarm. */
 function playIncorrectSound() {
-  // short low buzz
-  playTone(180, 0.22, "sawtooth", 0);
+  playNote({ freq: 196, to: 110, dur: 0.28, type: "sine", gain: 0.16, cutoff: 480 });
 }
-let answered = false;
-let userAnswers = []; // { question, options, correctIndex, chosenIndex }
+
+/* Four rising notes at the end of the attempt. */
+function playFinishSound() {
+  [523.25, 659.25, 783.99, 1046.5].forEach((freq, i) => {
+    playNote({
+      freq,
+      dur: i === 3 ? 0.42 : 0.18,
+      type: "triangle",
+      gain: 0.1,
+      delay: i * 0.1,
+      cutoff: 3000,
+    });
+  });
+}
 
 /* ---------- Load question bank once ---------- */
 db.collection("questions")
@@ -126,6 +287,16 @@ db.collection("questions")
     questionBankStatus.textContent = `Could not load questions (${err.message}).`;
   });
 
+/* Value of the checked radio in a group. */
+function pickedValue(radios, fallback) {
+  const hit = radios.find((r) => r.checked);
+  return hit ? hit.value : fallback;
+}
+
+function selectedClass() {
+  return pickedValue(classRadios, DEFAULT_CLASS);
+}
+
 /* Questions in a given class ("All" = every class). */
 function questionsInClass(classValue) {
   return classValue === "All"
@@ -137,32 +308,38 @@ function questionsInClass(classValue) {
    Always a fresh array — the caller shuffles it in place. */
 function currentPool() {
   const category = categorySelect.value;
-  const pool = questionsInClass(classSelect.value);
+  const pool = questionsInClass(selectedClass());
   return category === "All" ? [...pool] : pool.filter((q) => q.category === category);
 }
 
-/* Class dropdown, annotated with how many questions each class holds so an
-   empty class is obvious before you pick it. */
+/* Class picker: each choice carries its own question count, so an empty
+   class is visible before you pick it — and unpickable, rather than
+   letting someone select Class 9 and find nothing there. */
 function refreshClassOptions() {
-  const preferred = classSelect.value || DEFAULT_CLASS;
-  const opts = [`<option value="All">All classes (${questionBank.length})</option>`];
-  CLASS_LEVELS.forEach((level) => {
-    const count = questionsInClass(level).length;
-    opts.push(`<option value="${level}">Class ${level} (${count})</option>`);
+  classRadios.forEach((radio) => {
+    const count = questionsInClass(radio.value).length;
+    const chip = document.querySelector(`.pick-count[data-count-for="${radio.value}"]`);
+    if (chip) chip.textContent = String(count);
+    radio.disabled = radio.value !== "All" && count === 0;
+    radio.setAttribute(
+      "aria-label",
+      `${classLabel(radio.value)}, ${count} question${count === 1 ? "" : "s"}`
+    );
   });
-  classSelect.innerHTML = opts.join("");
 
-  // Keep the current choice if it has questions; otherwise fall back to a
-  // class that does, so the page never opens on an empty selection.
-  const hasPreferred = questionsInClass(preferred).length > 0;
-  classSelect.value = hasPreferred ? preferred : "All";
+  // Never open on a class that has nothing in it.
+  const checked = classRadios.find((r) => r.checked);
+  if (!checked || checked.disabled) {
+    const fallback = classRadios.find((r) => !r.disabled);
+    if (fallback) fallback.checked = true;
+  }
 }
 
 /* Category dropdown, scoped to the classes currently in play — picking
    Class 8 shouldn't offer a category that only exists in Class 10. */
 function refreshCategoryOptions() {
   const previous = categorySelect.value;
-  const pool = questionsInClass(classSelect.value);
+  const pool = questionsInClass(selectedClass());
   const categories = [...new Set(pool.map((q) => q.category).filter(Boolean))].sort((a, b) =>
     a.localeCompare(b)
   );
@@ -179,7 +356,8 @@ function refreshCategoryOptions() {
 /* Status line under the heading + Start button availability. */
 function refreshStatus() {
   const available = currentPool().length;
-  const label = classSelect.value === "All" ? "across all classes" : `in Class ${classSelect.value}`;
+  const chosen = selectedClass();
+  const label = chosen === "All" ? "across all classes" : `in Class ${chosen}`;
 
   if (!available) {
     questionBankStatus.textContent = `No questions ${label} yet${
@@ -191,19 +369,23 @@ function refreshStatus() {
   startQuizBtn.disabled = available === 0;
 }
 
-classSelect.addEventListener("change", () => {
-  refreshCategoryOptions();
-  refreshStatus();
+classRadios.forEach((radio) => {
+  radio.addEventListener("change", () => {
+    refreshCategoryOptions();
+    refreshStatus();
+  });
 });
 categorySelect.addEventListener("change", refreshStatus);
 
 /* ---------- Start quiz ---------- */
 startQuizBtn.addEventListener("click", () => {
-  const countValue = countSelect.value;
+  // The click is the user gesture Safari waits for before it will let a
+  // page make any sound at all, so the context gets woken up here.
+  primeAudio();
 
   // Snapshot what this attempt is for, so the score write later can't be
-  // thrown off by the dropdowns changing.
-  activeClass = classSelect.value;
+  // thrown off by the setup screen changing.
+  activeClass = selectedClass();
   activeCategory = categorySelect.value;
 
   const pool = currentPool();
@@ -213,13 +395,16 @@ startQuizBtn.addEventListener("click", () => {
   }
   shuffle(pool);
 
+  const countValue = pickedValue(countRadios, "10");
   const count = countValue === "all" ? pool.length : Math.min(Number(countValue), pool.length);
   quizQuestions = pool.slice(0, count);
 
   currentIndex = 0;
   score = 0;
   userAnswers = [];
+  startedAt = Date.now();
   leaderboardStatus.textContent = "";
+  hideLeaveConfirm();
 
   quizStart.hidden = true;
   quizResult.hidden = true;
@@ -227,13 +412,15 @@ startQuizBtn.addEventListener("click", () => {
   renderQuestion();
 });
 
+/* ---------- Play ---------- */
 function renderQuestion() {
   answered = false;
   const q = quizQuestions[currentIndex];
+  const total = quizQuestions.length;
 
-  quizProgress.textContent = `Question ${currentIndex + 1} of ${quizQuestions.length}`;
-  quizScore.textContent = `Score: ${score} / ${currentIndex}`;
-  quizProgressFill.style.width = `${(currentIndex / quizQuestions.length) * 100}%`;
+  quizProgress.textContent = `Question ${currentIndex + 1} of ${total}`;
+  quizScore.textContent = currentIndex ? `${score} of ${currentIndex} right` : "";
+  quizProgressFill.style.width = `${(currentIndex / total) * 100}%`;
 
   if (q.classLevel) {
     quizQuestionClass.textContent = `Class ${q.classLevel}`;
@@ -250,44 +437,73 @@ function renderQuestion() {
   }
 
   quizQuestionText.textContent = q.question || "";
-  quizExplanation.hidden = true;
+  answerReport.innerHTML = "";
   nextQuestionBtn.hidden = true;
-  nextQuestionBtn.textContent =
-    currentIndex === quizQuestions.length - 1 ? "See Results →" : "Next Question →";
+  nextQuestionBtn.textContent = currentIndex === total - 1 ? "See results" : "Next question";
+  hideLeaveConfirm();
 
+  // Fresh order every time the question is shown, so a repeat attempt can't
+  // be answered from memory of where the right one sat.
+  const options = q.options || [];
+  displayOrder = shuffle(options.map((_, i) => i));
   quizOptions.innerHTML = "";
-  (q.options || []).forEach((opt, i) => {
-    const btn = document.createElement("button");
-    btn.className = "mcq-option";
-    btn.textContent = opt;
-    btn.dataset.index = i;
-    btn.addEventListener("click", () => selectAnswer(i, btn));
-    quizOptions.appendChild(btn);
+  displayOrder.forEach((originalIndex, position) => {
+    quizOptions.appendChild(buildOption(options[originalIndex], originalIndex, position));
   });
 }
 
-function selectAnswer(chosenIndex, btnEl) {
-  if (answered) return;
+function buildOption(text, originalIndex, position) {
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "mcq-option";
+  btn.dataset.index = originalIndex;
+  btn.dataset.position = position;
+
+  const key = document.createElement("span");
+  key.className = "opt-key";
+  key.textContent = String(position + 1);
+
+  const label = document.createElement("span");
+  label.className = "opt-text";
+  label.textContent = text;
+
+  // Filled by CSS with a tick or a cross once the answer is in, so the
+  // result never rests on colour alone.
+  const mark = document.createElement("span");
+  mark.className = "opt-mark";
+  mark.setAttribute("aria-hidden", "true");
+
+  btn.appendChild(key);
+  btn.appendChild(label);
+  btn.appendChild(mark);
+  btn.addEventListener("click", () => selectAnswer(originalIndex));
+  return btn;
+}
+
+function selectAnswer(chosenIndex) {
+  if (answered || quizPlay.hidden) return;
   answered = true;
+
   const q = quizQuestions[currentIndex];
   const correct = chosenIndex === q.correctIndex;
   if (correct) score++;
 
+  [...quizOptions.children].forEach((btn) => {
+    const i = Number(btn.dataset.index);
+    btn.disabled = true;
+    if (i === q.correctIndex) btn.classList.add("correct");
+    else if (i === chosenIndex) btn.classList.add("incorrect");
+    else btn.classList.add("faded");
+  });
+
   if (correct) playCorrectSound();
   else playIncorrectSound();
 
-  [...quizOptions.children].forEach((b) => {
-    const i = Number(b.dataset.index);
-    if (i === q.correctIndex) b.classList.add("correct");
-    else if (i === chosenIndex) b.classList.add("incorrect");
-  });
+  // Position, not the stored index — the number quoted has to match the
+  // number chip the learner can actually see on the row.
+  reportAnswer(correct, displayOrder.indexOf(q.correctIndex) + 1, q.options, q);
 
-  if (q.explanation) {
-    quizExplanation.textContent = q.explanation;
-    quizExplanation.hidden = false;
-  }
-
-  quizScore.textContent = `Score: ${score} / ${currentIndex + 1}`;
+  quizScore.textContent = `${score} of ${currentIndex + 1} right`;
   nextQuestionBtn.hidden = false;
 
   userAnswers.push({
@@ -299,16 +515,101 @@ function selectAnswer(chosenIndex, btnEl) {
   });
 }
 
-nextQuestionBtn.addEventListener("click", () => {
-  currentIndex++;
-  if (currentIndex >= quizQuestions.length) {
-    showResults();
-  } else {
-    renderQuestion();
+/* The verdict and the explanation go into one live region, together, so a
+   screen reader announces the result once instead of twice. */
+function reportAnswer(correct, correctPosition, options, q) {
+  answerReport.innerHTML = "";
+
+  const verdict = document.createElement("p");
+  verdict.className = `answer-verdict ${correct ? "is-right" : "is-wrong"}`;
+  const answerText = (options || [])[q.correctIndex];
+  verdict.textContent = correct
+    ? "Correct."
+    : `Not quite — the answer is ${correctPosition}${answerText ? `, ${answerText}` : ""}.`;
+  answerReport.appendChild(verdict);
+
+  if (q.explanation) {
+    const note = document.createElement("p");
+    note.className = "mcq-explanation";
+    note.textContent = q.explanation;
+    answerReport.appendChild(note);
   }
+}
+
+function goNext() {
+  if (quizPlay.hidden || !answered) return;
+  currentIndex++;
+  if (currentIndex >= quizQuestions.length) showResults();
+  else renderQuestion();
+}
+
+nextQuestionBtn.addEventListener("click", goNext);
+
+/* ---------- Keyboard: 1–4 answers, Enter moves on ----------
+   Bound to the document so it works without hunting for focus first, and
+   inert everywhere except a quiz in progress. */
+document.addEventListener("keydown", (e) => {
+  if (quizPlay.hidden || e.repeat || e.metaKey || e.ctrlKey || e.altKey) return;
+
+  if (e.key === "Escape") {
+    if (!leaveConfirm.hidden) hideLeaveConfirm();
+    return;
+  }
+
+  const tag = e.target && e.target.tagName;
+  if (tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA") return;
+
+  if (e.key === "Enter") {
+    // A focused button already turns Enter into a click; stepping in here
+    // as well would advance two questions at once.
+    if (e.target === nextQuestionBtn) return;
+    if (!nextQuestionBtn.hidden) {
+      e.preventDefault();
+      goNext();
+    }
+    return;
+  }
+
+  if (answered) return;
+  const position = Number(e.key);
+  if (!Number.isInteger(position) || position < 1 || position > 4) return;
+  const btn = quizOptions.querySelector(`.mcq-option[data-position="${position - 1}"]`);
+  if (!btn) return;
+  e.preventDefault();
+  btn.click();
 });
 
+/* ---------- Leaving mid-quiz ---------- */
+function hideLeaveConfirm() {
+  leaveConfirm.hidden = true;
+}
+
+leaveQuizBtn.addEventListener("click", () => {
+  leaveConfirm.hidden = false;
+  leaveCancelBtn.focus();
+});
+
+leaveCancelBtn.addEventListener("click", () => {
+  hideLeaveConfirm();
+  leaveQuizBtn.focus();
+});
+
+leaveConfirmBtn.addEventListener("click", () => {
+  hideLeaveConfirm();
+  quizQuestions = [];
+  userAnswers = [];
+  currentIndex = 0;
+  score = 0;
+  answered = false;
+  quizPlay.hidden = true;
+  quizResult.hidden = true;
+  quizStart.hidden = false;
+  refreshStatus();
+});
+
+/* ---------- Results ---------- */
 function showResults() {
+  const elapsed = Date.now() - startedAt;
   quizPlay.hidden = true;
   quizResult.hidden = false;
 
@@ -316,17 +617,67 @@ function showResults() {
   const pct = total ? Math.round((score / total) * 100) : 0;
   finalScoreText.textContent = `You scored ${score} / ${total} (${pct}%)`;
   finalScoreFill.style.width = `${pct}%`;
+  elapsedText.textContent = `Finished in ${formatDuration(elapsed)}. Timing is just for you — the leaderboard ranks on score.`;
 
+  // ---- Score ring ----
+  // Circumference of r=50 circle: 2π×50 ≈ 314.16
+  const CIRCUMFERENCE = 314;
+  const offset = CIRCUMFERENCE * (1 - pct / 100);
+  // Small delay so the CSS transition fires after the card becomes visible
+  setTimeout(() => {
+    ringValue.style.strokeDashoffset = String(offset);
+  }, 60);
+  ringPct.textContent = `${pct}%`;
+  ringFraction.textContent = `${score} / ${total}`;
+
+  // Colour band: green ≥ 70%, red < 40%, orange in between
+  scoreRingEl.classList.remove("band-high", "band-low");
+  if (pct >= 70) scoreRingEl.classList.add("band-high");
+  else if (pct < 40) scoreRingEl.classList.add("band-low");
+
+  // ---- Grade message ----
+  let grade;
+  if (pct === 100)       grade = "🏆 Perfect score — outstanding!";
+  else if (pct >= 90)    grade = "🌟 Excellent work!";
+  else if (pct >= 70)    grade = "👍 Great job — keep it up!";
+  else if (pct >= 50)    grade = "📚 Good effort — review the ones you missed.";
+  else if (pct >= 30)    grade = "💪 Keep practising — you'll get there!";
+  else                   grade = "🔁 Don't give up — try again!";
+  gradeMsg.textContent = grade;
+
+  playFinishSound();
   saveScoreToLeaderboard(score, total, pct);
 
+  const missed = userAnswers.filter((a) => a.chosenIndex !== a.correctIndex).length;
+  wrongOnlyToggle.checked = false;
+  wrongOnlyToggle.disabled = missed === 0;
+  wrongOnlyLabel.textContent =
+    missed === 0
+      ? "Only the ones I missed (none)"
+      : missed === 1
+        ? "Only the one I missed"
+        : `Only the ${missed} I missed`;
+
+  renderReview();
+}
+
+/* Numbering stays with the attempt, so filtering down to the misses still
+   shows "3." and "7." rather than renumbering them 1 and 2. */
+function renderReview() {
+  const wrongOnly = wrongOnlyToggle.checked;
   reviewList.innerHTML = "";
+  let shown = 0;
+
   userAnswers.forEach((a, idx) => {
     const isCorrect = a.chosenIndex === a.correctIndex;
+    if (wrongOnly && isCorrect) return;
+    shown++;
+
     const item = document.createElement("div");
     item.className = "review-item";
     item.innerHTML = `
       <p class="review-question">${idx + 1}. ${escapeHtml(a.question)}
-        <span class="review-tag ${isCorrect ? "review-correct" : "review-incorrect"}">${isCorrect ? "Correct" : "Incorrect"}</span>
+        <span class="review-tag ${isCorrect ? "review-correct" : "review-incorrect"}">${isCorrect ? "Correct" : "Missed"}</span>
       </p>
       <p class="review-answer">Your answer: <strong>${escapeHtml(a.options[a.chosenIndex] ?? "—")}</strong></p>
       ${!isCorrect ? `<p class="review-answer">Correct answer: <strong>${escapeHtml(a.options[a.correctIndex] ?? "—")}</strong></p>` : ""}
@@ -334,11 +685,16 @@ function showResults() {
     `;
     reviewList.appendChild(item);
   });
+
+  reviewEmpty.hidden = shown > 0;
 }
+
+wrongOnlyToggle.addEventListener("change", renderReview);
 
 retryQuizBtn.addEventListener("click", () => {
   quizResult.hidden = true;
   quizStart.hidden = false;
+  refreshStatus();
 });
 
 /* ---------- Save score to the leaderboard ----------
@@ -353,8 +709,6 @@ retryQuizBtn.addEventListener("click", () => {
    bag, so it counts towards the overall board only and is deliberately
    left out of every per-class average.
 ------------------------------------------------------------------ */
-const leaderboardStatus = document.getElementById("leaderboardStatus");
-
 function saveScoreToLeaderboard(rawScore, total, pct) {
   const user = auth.currentUser;
   if (!user) {
@@ -427,11 +781,23 @@ function saveScoreToLeaderboard(rawScore, total, pct) {
     });
 }
 
+/* ---------- Utilities ---------- */
+/* Shuffles in place and hands the array back, so it can be used inline. */
 function shuffle(arr) {
   for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [arr[i], arr[j]] = [arr[j], arr[i]];
   }
+  return arr;
+}
+
+function formatDuration(ms) {
+  const seconds = Math.max(0, Math.round(ms / 1000));
+  const mins = Math.floor(seconds / 60);
+  const rest = seconds % 60;
+  if (!mins) return `${rest} second${rest === 1 ? "" : "s"}`;
+  if (!rest) return `${mins} minute${mins === 1 ? "" : "s"}`;
+  return `${mins} minute${mins === 1 ? "" : "s"} ${rest} second${rest === 1 ? "" : "s"}`;
 }
 
 function escapeHtml(str) {

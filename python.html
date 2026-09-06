@@ -7,14 +7,12 @@
   <link rel="stylesheet" href="css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
 
-  <!-- Prism.js Syntax Highlighter -->
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
-
-  <!-- Pyodide Python Interpreter (runs Python in-browser) -->
+  <!-- Pyodide: runs Python in the browser, main thread, loaded on first Run -->
   <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
-  <script src="coi-serviceworker.js"></script>
+  <!-- Prism tokenises the code; the token colours live in css/style.css so the
+       editor matches this site's navy instead of a borrowed theme. -->
 </head>
 <body>
 
@@ -56,35 +54,30 @@
   </div>
   <div class="drawer-overlay" id="drawerOverlay"></div>
 
-  <!-- ===== .py hub toolbar ===== -->
-  <div class="pyhub-toolbar">
-    <div class="container pyhub-toolbar-inner">
-      <h1>.py hub</h1>
-      <div class="search-box">
-        <input type="text" id="search-input" placeholder="Search programs (e.g. list, binary)..." aria-label="Search programs">
-      </div>
-      <button id="menu-toggle" class="menu-toggle" aria-label="Toggle categories">
-        <span></span><span></span><span></span>
+  <div class="pyhub-bar">
+    <div class="container pyhub-bar-inner">
+      <h1>Python Hub</h1>
+      <button class="rail-toggle" id="railToggle" aria-controls="programRail" aria-expanded="false">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><circle cx="3.5" cy="6" r="1.2" fill="currentColor" stroke="none"></circle><circle cx="3.5" cy="12" r="1.2" fill="currentColor" stroke="none"></circle><circle cx="3.5" cy="18" r="1.2" fill="currentColor" stroke="none"></circle></svg>
+        Programs
       </button>
     </div>
   </div>
 
-  <!-- Loading banner for the in-browser Python engine -->
-  <div id="pyodide-loader" class="loader-banner">Loading Python environment (only needed to run code, this may take a moment)…</div>
-
-  <div class="container pyhub-container">
-    <aside class="sidebar" id="sidebar">
-      <h3>Categories</h3>
-      <ul id="category-list">
-        <!-- Categories injected by js/python-hub.js -->
-      </ul>
+  <div class="container pyhub-layout">
+    <aside class="pyhub-rail" id="programRail" aria-label="Program list">
+      <div class="rail-head">
+        <label class="rail-search">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><line x1="15.5" y1="15.5" x2="21" y2="21"></line></svg>
+          <input type="search" id="search-input" placeholder="Search programs" aria-label="Search programs" autocomplete="off" spellcheck="false">
+        </label>
+        <p class="rail-count" id="rail-count" aria-live="polite">Loading…</p>
+      </div>
+      <div class="rail-list" id="rail-list"></div>
     </aside>
 
-    <main class="content">
-      <h2 id="current-category">All Programs</h2>
-      <div id="snippet-container">
-        <p class="updates-loading">Loading programs…</p>
-      </div>
+    <main class="pyhub-workspace" id="workspace">
+      <p class="workspace-note">Loading programs…</p>
     </main>
   </div>
 
@@ -100,7 +93,6 @@
     </div>
   </footer>
 
-  <!-- Prism.js Core + Python grammar -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
 
@@ -114,5 +106,6 @@
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
   </script>
+
 </body>
 </html>
