@@ -21,6 +21,14 @@
 
   --radius: 10px;
   --shadow: 0 8px 24px rgba(15, 23, 41, 0.08);
+
+  /* Quiz right/wrong colours — used across MCQ Hub */
+  --q-right: #2f7c46;
+  --q-right-tint: #eef8f1;
+  --q-right-line: #c3e0cd;
+  --q-wrong: #b8382c;
+  --q-wrong-tint: #fdf0ee;
+  --q-wrong-line: #f0cdc8;
 }
 
 * { box-sizing: border-box; }
@@ -329,9 +337,24 @@ img { max-width: 100%; display: block; }
 }
 
 .hero-inner {
-  max-width: 620px;
+  max-width: 680px;
   position: relative;
   z-index: 1;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  background: rgba(232, 131, 78, 0.2);
+  border: 1px solid rgba(232, 131, 78, 0.4);
+  border-radius: 999px;
+  color: var(--orange);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  margin-bottom: 16px;
 }
 
 .hero h1 {
@@ -343,25 +366,98 @@ img { max-width: 100%; display: block; }
 
 .hero p {
   font-size: 1.08rem;
-  color: rgba(255, 255, 255, 0.8);
-  margin: 0 0 32px;
-  max-width: 480px;
+  color: rgba(255, 255, 255, 0.82);
+  margin: 0 0 28px;
+  max-width: 540px;
+  line-height: 1.6;
 }
 
-/* ---------- Section title ---------- */
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 40px;
+}
+
+.btn-hero-secondary {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: var(--white);
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+.btn-hero-secondary:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: var(--white);
+  color: var(--white);
+  transform: translateY(-1px);
+}
+
+.hero-stats {
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  gap: 24px 36px;
+  padding-top: 28px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  max-width: 580px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-number {
+  font-family: var(--font-display);
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: var(--white);
+  line-height: 1.15;
+}
+
+.stat-label {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.65);
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+/* ---------- Section Titles & Headings ---------- */
+.section-head {
+  margin-bottom: 32px;
+}
+.section-head.text-center {
+  text-align: center;
+}
+.section-head.text-center .section-subtitle {
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .section-title {
   font-family: var(--font-display);
   font-size: 1.9rem;
-  margin: 0 0 28px;
+  margin: 0 0 6px;
   color: var(--navy-deep);
 }
 
+.section-subtitle {
+  font-size: 0.96rem;
+  color: var(--mist);
+  margin: 0;
+  max-width: 540px;
+}
+
 /* ---------- Hubs ---------- */
-.hubs { padding: 72px 0 24px; }
+.hubs { padding: 68px 0 32px; }
 
 .hub-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 24px;
 }
 
@@ -373,36 +469,155 @@ img { max-width: 100%; display: block; }
   box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  position: relative;
+}
+.hub-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 34px rgba(15, 23, 41, 0.12);
+  border-color: #d6cfc2;
 }
 
 .hub-icon {
-  font-size: 1.8rem;
   width: 52px;
   height: 52px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--cream);
-  border-radius: 10px;
-  margin-bottom: 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  margin-bottom: 14px;
+  color: var(--navy-deep);
+  transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+.hub-card:hover .hub-icon {
+  transform: scale(1.05);
+  background: var(--white);
+  border-color: var(--orange);
+  color: var(--orange-dark);
+}
+.hub-icon svg {
+  display: block;
+}
+
+.hub-pill {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--orange-dark);
+  background: rgba(232, 131, 78, 0.12);
+  padding: 3px 9px;
+  border-radius: 999px;
+  margin-bottom: 10px;
+  align-self: flex-start;
 }
 
 .hub-card h3 {
   font-family: var(--font-display);
   margin: 0 0 8px;
-  font-size: 1.2rem;
+  font-size: 1.25rem;
   color: var(--navy-deep);
 }
 
 .hub-card p {
   color: var(--mist);
   font-size: 0.92rem;
-  margin: 0 0 20px;
+  line-height: 1.5;
+  margin: 0 0 22px;
   flex: 1;
 }
 
+/* ---------- How It Works ---------- */
+.how-it-works {
+  padding: 48px 0;
+  background: linear-gradient(180deg, transparent 0%, rgba(231, 226, 216, 0.35) 100%);
+}
+
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.step-card {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 30px 24px;
+  box-shadow: 0 4px 16px rgba(15, 23, 41, 0.05);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.step-num {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--navy);
+  color: var(--white);
+  font-weight: 700;
+  font-size: 1.05rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.step-card h3 {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  margin: 0 0 8px;
+  color: var(--navy-deep);
+}
+
+.step-card p {
+  font-size: 0.9rem;
+  color: var(--mist);
+  margin: 0;
+  line-height: 1.55;
+}
+
+/* ---------- Call To Action Banner ---------- */
+.cta-banner {
+  padding: 32px 0 48px;
+}
+
+.cta-inner {
+  background: linear-gradient(135deg, var(--navy-deep) 0%, var(--navy) 100%);
+  border-radius: var(--radius);
+  padding: 42px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 24px;
+  box-shadow: var(--shadow);
+  color: var(--white);
+}
+
+.cta-content h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 3vw, 1.9rem);
+  margin: 0 0 6px;
+}
+
+.cta-content p {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.95rem;
+  margin: 0;
+  max-width: 480px;
+}
+
+.cta-actions {
+  flex-shrink: 0;
+}
+
 /* ---------- Updates ---------- */
-.updates { padding: 56px 0 88px; }
+.updates { padding: 32px 0 88px; }
 
 .updates-list {
   list-style: none;
@@ -412,22 +627,32 @@ img { max-width: 100%; display: block; }
   border: 1px solid var(--line);
   border-radius: var(--radius);
   overflow: hidden;
+  box-shadow: 0 4px 16px rgba(15, 23, 41, 0.04);
 }
 
 .updates-list li {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   gap: 16px;
   padding: 16px 22px;
   border-bottom: 1px solid var(--line);
   font-size: 0.94rem;
+  transition: background 0.15s ease;
+}
+.updates-list li:hover:not(.updates-loading) {
+  background: var(--cream);
 }
 .updates-list li:last-child { border-bottom: none; }
 
 .updates-list .update-date {
   color: var(--mist);
-  font-size: 0.85rem;
+  font-size: 0.84rem;
+  font-weight: 500;
   white-space: nowrap;
+  background: rgba(15, 23, 41, 0.05);
+  padding: 3px 9px;
+  border-radius: 999px;
 }
 
 .updates-loading { color: var(--mist); font-style: italic; }
@@ -506,11 +731,20 @@ img { max-width: 100%; display: block; }
 /* ---------- Responsive ---------- */
 @media (max-width: 880px) {
   .hub-grid { grid-template-columns: 1fr; }
+  .steps-grid { grid-template-columns: 1fr; }
+  .hero-stats { grid-template-columns: repeat(2, 1fr); gap: 18px; }
+  .cta-inner { padding: 30px 24px; }
 
   .main-nav, .header-actions { display: none !important; }
   .mobile-header-icons { display: flex; }
   .search-toggle { display: inline-flex; align-items: center; justify-content: center; }
   .nav-toggle { display: inline-flex; align-items: center; justify-content: center; }
+}
+
+@media (max-width: 520px) {
+  .hero-stats { grid-template-columns: 1fr; }
+  .hero-actions { flex-direction: column; align-items: stretch; }
+  .hero-actions .btn { text-align: center; }
 }
 
 
@@ -1112,16 +1346,8 @@ img { max-width: 100%; display: block; }
    The question is the loud element here; everything around it stays quiet.
    Right/wrong never rests on colour alone — the row grows a tick or a cross
    drawn in CSS, and a worded verdict lands in a live region below. */
-.quiz-section {
-  padding: 48px 0 100px;
-  --q-right: #2f7c46;
-  --q-right-tint: #eef8f1;
-  --q-right-line: #c3e0cd;
-  --q-wrong: #b8382c;
-  --q-wrong-tint: #fdf0ee;
-  --q-wrong-line: #f0cdc8;
-}
-.quiz-container { max-width: 660px; }
+/* Quiz colours live in :root so they work inside the split-screen layout. */
+.quiz-container { max-width: 920px; }
 .quiz-card {
   background: var(--white);
   border: 1px solid var(--line);
@@ -1166,13 +1392,28 @@ img { max-width: 100%; display: block; }
    at least one wrong answer (amber "!"), fully correct on the best
    attempt (green check). Lives right in the quiz setup card — no need
    for a separate screen or split layout, it's just another list. */
-.topic-progress {
-  background: var(--cream);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 12px 14px;
-  margin-bottom: 16px;
+.topic-progress-rail {
+  flex: 1;
+  overflow-y: auto;
+  margin: 0 -8px 12px;
+  padding: 4px 8px 0;
 }
+.topic-progress-rail .topic-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: none;
+  overflow-y: visible;
+}
+.topic-progress-rail .topic-row {
+  border-radius: 6px;
+  padding: 6px 8px;
+  transition: background 0.15s ease;
+}
+.topic-progress-rail .topic-row:hover {
+  background: var(--white);
+}
+
 .topic-progress-label {
   font-size: 0.78rem;
   font-weight: 700;
@@ -1182,9 +1423,9 @@ img { max-width: 100%; display: block; }
   margin: 0 0 8px;
 }
 .topic-progress-login {
-  font-size: 0.85rem;
+  font-size: 0.84rem;
   color: var(--mist);
-  margin: 0 0 16px;
+  margin: 10px 4px;
 }
 .topic-progress-login a { color: var(--orange-dark); font-weight: 600; cursor: pointer; }
 .topic-list {
@@ -1515,7 +1756,7 @@ img { max-width: 100%; display: block; }
 
 /* A floor under the playing card, so the page doesn't jump between a
    one-line question and a four-line one. */
-.quiz-stage { min-height: 440px; }
+/* min-height applied to .quiz-card-play via media query for desktop only */
 .sound-label { white-space: nowrap; }
 
 .quiz-nav {
@@ -1601,6 +1842,310 @@ img { max-width: 100%; display: block; }
 @media (pointer: coarse) {
   .key-hint { display: none; }
 }
+
+/* ============================================================
+   MCQ Hub — Python Hub–Style Split-Screen Layout
+   ============================================================ */
+
+.mcqhub-bar {
+  background: var(--white);
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 66px; /* Below site header */
+  z-index: 40;
+}
+.mcqhub-bar-inner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 24px;
+}
+.mcqhub-bar-inner h1 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1.15rem;
+  margin: 0;
+  color: var(--navy-deep);
+}
+.mcqhub-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+.mcqhub-bar-actions[hidden] { display: none; }
+.mcqhub-bar-actions .quiz-score {
+  font-weight: 700;
+  color: var(--navy-deep);
+  font-size: 0.9rem;
+  margin-right: 8px;
+}
+
+.mcqhub-layout {
+  display: grid;
+  grid-template-columns: 264px minmax(0, 1fr);
+  align-items: start;
+  padding: 0 24px 88px;
+}
+
+/* ── Program rail ── */
+.mcqhub-rail {
+  position: sticky;
+  top: calc(66px + 54px); /* site header + mcqhub bar */
+  max-height: calc(100vh - 66px - 54px);
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--line);
+  padding: 22px 20px 20px 0;
+  margin-right: 28px;
+}
+.mcqhub-rail[hidden] { display: none; }
+
+.rail-footer {
+  flex: none;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+.rail-progress-text {
+  font-size: 0.82rem;
+  color: var(--mist);
+  margin: 0 0 8px;
+  font-weight: 600;
+}
+.rail-progress-track {
+  height: 6px;
+  background: var(--cream);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.rail-progress-fill {
+  height: 100%;
+  background: var(--orange);
+  transition: width 0.3s ease;
+  width: 0%;
+}
+
+.mcqhub-workspace {
+  min-width: 0;
+  padding-top: 26px;
+}
+
+/* Phones and small tablets: rail becomes a drawer */
+@media (max-width: 900px) {
+  .mcqhub-layout {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 0 24px 72px;
+  }
+  .rail-toggle { display: inline-flex; }
+  .rail-toggle[hidden] { display: none !important; }
+  
+  .mcqhub-bar { top: 0; z-index: 60; } /* Overlaps site header on mobile if needed, or stays below */
+  .mcqhub-bar-actions { margin-left: 0; margin-right: 12px; }
+
+  .mcqhub-rail {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: min(310px, 84vw);
+    max-height: none;
+    margin: 0;
+    padding: 20px;
+    background: var(--cream);
+    transform: translateX(-100%);
+    transition: transform 0.22s ease;
+    z-index: 60;
+  }
+  .mcqhub-rail.open { transform: translateX(0); }
+  
+  .mcqhub-workspace { padding-top: 22px; }
+}
+
+/* Custom rail items for MCQ */
+.rail-list {
+  flex: 1;
+  overflow-y: auto;
+  margin: 0 -8px;
+  padding: 8px 8px 0;
+}
+.rail-group-title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: var(--navy-deep);
+  margin: 0 0 7px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--line);
+}
+.rail-empty { margin: 4px 0 0; font-size: 0.86rem; color: var(--mist); }
+
+.rail-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  border-left: 2px solid transparent;
+  border-radius: 0 6px 6px 0;
+  padding: 7px 10px 7px 12px;
+  font: inherit;
+  font-size: 0.89rem;
+  color: var(--ink);
+  cursor: pointer;
+}
+.rail-item:hover { background: var(--white); }
+.rail-item.active {
+  background: var(--white);
+  border-left-color: var(--orange);
+  color: var(--navy-deep);
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(15, 23, 41, 0.07);
+}
+.rail-item-status {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+}
+.rail-item.is-correct .rail-item-status {
+  background: var(--q-right);
+  color: var(--white);
+}
+.rail-item.is-incorrect .rail-item-status {
+  background: var(--q-wrong);
+  color: var(--white);
+}
+.rail-item.is-unanswered .rail-item-status {
+  background: var(--line);
+}
+.rail-item-status svg {
+  width: 10px;
+  height: 10px;
+  stroke: currentColor;
+  stroke-width: 3;
+}
+.rail-item-num {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--cream);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--mist);
+}
+.rail-item.active .rail-item-num {
+  background: var(--orange);
+  border-color: var(--orange);
+  color: var(--white);
+}
+.rail-item.is-correct .rail-item-num {
+  background: var(--q-right);
+  border-color: var(--q-right);
+  color: var(--white);
+}
+.rail-item.is-incorrect .rail-item-num {
+  background: var(--q-wrong);
+  border-color: var(--q-wrong);
+  color: var(--white);
+}
+.rail-item-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.83rem;
+  color: var(--mist);
+}
+.rail-item.active .rail-item-label { color: var(--navy-deep); }
+.rail-item.is-correct .rail-item-label,
+.rail-item.is-incorrect .rail-item-label { color: var(--ink); }
+
+/* The question card keeps a comfortable floor so short questions don't make the page jump */
+.quiz-card-play { min-height: 420px; }
+@media (max-width: 800px) {
+  .quiz-card-play { min-height: 0; }
+}
+
+   Review panel (answer list shown on the results screen)
+   These classes are written by JS but were missing from CSS.
+   ────────────────────────────────────────────────────────── */
+.review-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+.review-head h3 {
+  font-family: var(--font-display);
+  color: var(--navy-deep);
+  margin: 0;
+  font-size: 1.1rem;
+}
+.review-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--mist);
+  cursor: pointer;
+}
+.review-filter input { cursor: pointer; accent-color: var(--orange); }
+.review-list { display: flex; flex-direction: column; gap: 14px; }
+.review-item {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+.review-question {
+  margin: 0 0 8px;
+  font-size: 0.93rem;
+  font-weight: 600;
+  color: var(--navy-deep);
+  line-height: 1.4;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+}
+.review-tag {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 2px 9px;
+  flex-shrink: 0;
+}
+.review-correct {
+  background: rgba(47, 124, 70, 0.12);
+  color: var(--q-right);
+}
+.review-incorrect {
+  background: rgba(184, 56, 44, 0.12);
+  color: var(--q-wrong);
+}
+.review-answer {
+  margin: 4px 0 0;
+  font-size: 0.88rem;
+  color: var(--mist);
+}
+.review-answer strong { color: var(--ink); }
 
 
 /* ---------- Code textarea (admin) ---------- */

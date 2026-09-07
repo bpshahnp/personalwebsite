@@ -97,38 +97,150 @@
   <section class="hero" id="home">
     <div class="hero-bg" aria-hidden="true"></div>
     <div class="container hero-inner">
-      <h1>Master Your<br />Knowledge</h1>
-      <p>Access MCQ Hub, Python Hub, and more educational resources — built to help you learn faster and retain more.</p>
-      <a href="#mcq-hub" class="btn btn-primary">Explore</a>
+      <span class="hero-badge">Interactive Learning Platform</span>
+      <h1>Master Your<br />Knowledge &amp; Code</h1>
+      <p>Your complete educational ecosystem — practice curriculum-aligned MCQs, experiment with runnable Python programs, watch video lessons, and track your rank.</p>
+      
+      <div class="hero-actions">
+        <a href="mcq.html" class="btn btn-primary">Start MCQ Quiz</a>
+        <a href="python.html" class="btn btn-hero-secondary">Explore Python Hub</a>
+      </div>
+
+      <div class="hero-stats">
+        <div class="stat-item">
+          <span class="stat-number">340+</span>
+          <span class="stat-label">MCQ Questions</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">50+</span>
+          <span class="stat-label">Python Programs</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">Classes 8–10</span>
+          <span class="stat-label">Curriculum Covered</span>
+        </div>
+      </div>
     </div>
   </section>
 
   <!-- ===== Featured Hubs ===== -->
   <section class="hubs" id="hubs">
     <div class="container">
-      <h2 class="section-title">Featured Hubs</h2>
+      <div class="section-head">
+        <h2 class="section-title">Explore Hubs</h2>
+        <p class="section-subtitle">Choose a category to start practicing, coding, or studying.</p>
+      </div>
 
       <div class="hub-grid">
         <article class="hub-card" id="mcq-hub">
-          <div class="hub-icon" data-icon="mcq">📋</div>
+          <div class="hub-icon" data-icon="mcq">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M9 11l3 3L22 4"></path>
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+            </svg>
+          </div>
+          <span class="hub-pill">Interactive Quiz</span>
           <h3>MCQ Hub</h3>
-          <p>Practice diverse multiple-choice questions with detailed explanations.</p>
-          <a href="mcq.html" class="btn btn-secondary">Go to MCQ Hub</a>
+          <p>Practice diverse multiple-choice questions with instant scoring, feedback, and topic completion tracking.</p>
+          <a href="mcq.html" class="btn btn-secondary">Open MCQ Hub</a>
         </article>
 
         <article class="hub-card" id="python-hub">
-          <div class="hub-icon" data-icon="python">🐍</div>
+          <div class="hub-icon" data-icon="python">
+            <svg viewBox="0 0 128 128" width="28" height="28" aria-hidden="true">
+              <path fill="#387eb8" d="M63.59 4.08c-6.85.03-13.43.62-19.16 1.72-16.74 3.19-19.78 9.87-19.78 22.19v16.28h39.56v5.42H24.65c-12.35 0-23.16 7.37-23.16 21.41 0 14.07 9.85 22.47 22.19 22.47h8.44v-11.44c0-8.59 7.37-16.03 16.03-16.03h39.44c7.09 0 12.87-5.81 12.87-12.91V27.99c0-6.89-5.96-12.18-12.87-13.43-7.79-1.42-16.9-2.07-24-2.15zM45.72 13.91c2.81 0 5.12 2.32 5.12 5.16s-2.31 5.12-5.12 5.12-5.16-2.28-5.16-5.12c0-2.84 2.35-5.16 5.16-5.16z"></path>
+              <path fill="#ffe052" d="M64.41 123.92c6.85-.03 13.43-.62 19.16-1.72 16.74-3.19 19.78-9.87 19.78-22.19V83.73H63.79v-5.42h39.56c12.35 0 23.16-7.37 23.16-21.41 0-14.07-9.85-22.47-22.19-22.47h-8.44v11.44c0 8.59-7.37 16.03-16.03 16.03H40.41c-7.09 0-12.87 5.81-12.87 12.91v35.88c0 6.89 5.96 12.18 12.87 13.43 7.79 1.42 16.9 2.07 24 2.15zM82.28 114.09c-2.81 0-5.12-2.32-5.12-5.16s2.31-5.12 5.12-5.12 5.16 2.28 5.16 5.12c0 2.84-2.35 5.16-5.16 5.16z"></path>
+            </svg>
+          </div>
+          <span class="hub-pill">Live Code Editor</span>
           <h3>Python Hub</h3>
-          <p>Learn Python programming from basics to advanced, with hands-on examples.</p>
-          <a href="python.html" class="btn btn-secondary">Go to Python Hub</a>
+          <p>Read, edit, and execute Python scripts directly in your browser using Pyodide — zero installation required.</p>
+          <a href="python.html" class="btn btn-secondary">Open Python Hub</a>
+        </article>
+
+        <article class="hub-card" id="video-hub">
+          <div class="hub-icon" data-icon="video">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polygon points="23 7 16 12 23 17 23 7"></polygon>
+              <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+            </svg>
+          </div>
+          <span class="hub-pill">Video Lessons</span>
+          <h3>Video Hub</h3>
+          <p>Watch step-by-step programming tutorials, conceptual breakdowns, and exam preparation walkthroughs.</p>
+          <a href="video.html" class="btn btn-secondary">Watch Videos</a>
+        </article>
+
+        <article class="hub-card" id="leaderboard-hub">
+          <div class="hub-icon" data-icon="trophy">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+              <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+              <path d="M4 22h16"></path>
+              <path d="M10 14.66V17c0 .55-.45 1-1 1H7v4h10v-4h-2c-.55 0-1-.45-1-1v-2.34"></path>
+              <path d="M18 2H6v7a6 6 0 0 0 12 0V2z"></path>
+            </svg>
+          </div>
+          <span class="hub-pill">Rankings &amp; Stats</span>
+          <h3>Leaderboard</h3>
+          <p>Compete with peers, track your daily and all-time scores, and climb the ranks across different classes.</p>
+          <a href="leaderboard.html" class="btn btn-secondary">View Leaderboard</a>
         </article>
 
         <article class="hub-card" id="resources">
-          <div class="hub-icon" data-icon="folder">📁</div>
+          <div class="hub-icon" data-icon="folder">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+            </svg>
+          </div>
+          <span class="hub-pill">Study Materials</span>
           <h3>Additional Resources</h3>
-          <p>Explore upcoming categories, notes, and study materials.</p>
-          <a href="resources.html" class="btn btn-secondary">View More</a>
+          <p>Explore supplementary notes, downloadable files, typing competitions, and reference materials.</p>
+          <a href="resources.html" class="btn btn-secondary">Browse Resources</a>
         </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== How It Works ===== -->
+  <section class="how-it-works">
+    <div class="container">
+      <div class="section-head text-center">
+        <h2 class="section-title">How It Works</h2>
+        <p class="section-subtitle">Everything you need to master your studies in three simple steps.</p>
+      </div>
+
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-num">1</div>
+          <h3>Pick Your Topic</h3>
+          <p>Select your class (8, 9, or 10) and targeted topic in the MCQ Hub or browse the Python programs catalog.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">2</div>
+          <h3>Practice &amp; Run Code</h3>
+          <p>Answer questions with real-time explanations, or test and edit Python scripts right on the page.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">3</div>
+          <h3>Track Mastery</h3>
+          <p>Save your progress, mark topics completed, and climb the leaderboard as your knowledge grows.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Call to Action Banner ===== -->
+  <section class="cta-banner">
+    <div class="container">
+      <div class="cta-inner">
+        <div class="cta-content">
+          <h2>Ready to test your knowledge?</h2>
+          <p>Take a 5-minute quiz now and see where you stand on the leaderboard.</p>
+        </div>
+        <div class="cta-actions">
+          <a href="mcq.html" class="btn btn-primary">Start a Quiz</a>
+        </div>
       </div>
     </div>
   </section>
@@ -136,7 +248,10 @@
   <!-- ===== Latest Updates (pulled live from Firebase) ===== -->
   <section class="updates" id="updates">
     <div class="container">
-      <h2 class="section-title">Latest Updates</h2>
+      <div class="section-head">
+        <h2 class="section-title">Latest Updates</h2>
+        <p class="section-subtitle">Announcements, new question sets, and recent platform additions.</p>
+      </div>
       <ul class="updates-list" id="updatesList">
         <li class="updates-loading">Loading latest updates…</li>
       </ul>
@@ -149,7 +264,7 @@
       <p>&copy; <span id="year"></span> B. Prasad Shah</p>
       <div class="footer-links">
         <a href="#home">About Us</a>
-        <a href="#contact">Contact</a>
+        <a href="contact.html">Contact</a>
         <a href="admin.html">Admin</a>
       </div>
     </div>

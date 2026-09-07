@@ -68,16 +68,49 @@
   </div>
   <div class="drawer-overlay" id="drawerOverlay"></div>
 
-  <section class="page-hero">
-    <div class="container">
+  <div class="mcqhub-bar">
+    <div class="container mcqhub-bar-inner">
       <h1>MCQ Hub</h1>
-      <p>Take a quiz, get scored live as you go, and review your answers at the end.</p>
+      <div class="mcqhub-bar-actions" id="mcqhubBarActions" hidden>
+        <span class="quiz-score" id="quizScoreTop"></span>
+        <button type="button" class="ghost-btn" id="leaveQuizBtnTop">Leave quiz</button>
+      </div>
+      <button class="rail-toggle" id="railToggle" aria-controls="mcqRail" aria-expanded="false">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><circle cx="3.5" cy="6" r="1.2" fill="currentColor" stroke="none"></circle><circle cx="3.5" cy="12" r="1.2" fill="currentColor" stroke="none"></circle><circle cx="3.5" cy="18" r="1.2" fill="currentColor" stroke="none"></circle></svg>
+        Progress
+      </button>
     </div>
-  </section>
+  </div>
 
-  <section class="quiz-section">
-    <div class="container quiz-container">
+  <div class="container mcqhub-layout">
+    <aside class="mcqhub-rail" id="mcqRail" aria-label="Question list">
+      <div class="rail-head">
+        <h2 class="rail-group-title" id="railTitle">Topic Progress</h2>
+      </div>
 
+      <!-- Before quiz: Topic completion progress -->
+      <div class="topic-progress-rail" id="topicProgress">
+        <div class="topic-list" id="topicList"></div>
+        <p class="topic-progress-login" id="topicProgressLogin" hidden>
+          <a href="#" id="topicProgressLoginLink">Log in</a> to track which topics you've completed.
+        </p>
+      </div>
+
+      <!-- During quiz: Question checklist -->
+      <div class="rail-list" id="mcqRailList" hidden>
+        <p class="rail-empty" id="railEmptyState">Start a quiz to see your progress here.</p>
+      </div>
+
+      <!-- Progress bar at the bottom of the left rail -->
+      <div class="rail-footer" id="mcqRailFooter" hidden>
+        <p class="rail-progress-text" id="railProgressText"></p>
+        <div class="rail-progress-track">
+          <div class="rail-progress-fill" id="railProgressFill"></div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="mcqhub-workspace" id="mcqWorkspace">
       <!-- ===== Start screen ===== -->
       <div id="quizStart" class="quiz-card">
         <div class="card-head">
@@ -115,14 +148,6 @@
           </select>
         </label>
 
-        <div class="topic-progress" id="topicProgress" hidden>
-          <p class="topic-progress-label">Your progress</p>
-          <div class="topic-list" id="topicList"></div>
-        </div>
-        <p class="topic-progress-login" id="topicProgressLogin" hidden>
-          <a href="#" id="topicProgressLoginLink">Log in</a> to track which topics you've completed.
-        </p>
-
         <fieldset class="pick" id="countPick">
           <legend>How many questions</legend>
           <div class="pick-row">
@@ -135,14 +160,9 @@
 
         <button class="btn btn-primary btn-block" id="startQuizBtn" disabled>Start quiz</button>
       </div>
-      <!-- ===== Quiz in progress ===== -->
-      <div id="quizPlay" class="quiz-card quiz-stage" hidden>
-        <div class="quiz-status-bar">
-          <span id="quizProgress">Question 1 of 10</span>
-          <span id="quizScore" class="quiz-score"></span>
-        </div>
-        <div class="quiz-progress-track"><div class="quiz-progress-fill" id="quizProgressFill"></div></div>
 
+      <!-- ===== Quiz in progress ===== -->
+      <div id="quizPlay" class="quiz-card quiz-card-play" hidden>
         <div class="stage-tools">
           <div class="stage-tags">
             <span class="mcq-class" id="quizQuestionClass" hidden></span>
@@ -196,8 +216,6 @@
             </div>
           </div>
         </div>
-        <!-- Hidden progress bar kept for the JS that fills it (ring reads same value) -->
-        <div hidden><div class="quiz-progress-fill" id="finalScoreFill"></div></div>
 
         <div class="review-head">
           <h3>Your answers</h3>
@@ -214,9 +232,9 @@
           <button class="btn btn-primary" id="retryQuizBtn">Take another quiz</button>
         </div>
       </div>
-
-    </div>
-  </section>
+    </main>
+  </div>
+  <div class="overlay" id="overlay"></div>
 
   <footer class="site-footer">
     <div class="container footer-inner">

@@ -76,9 +76,36 @@ const topicList = document.getElementById("topicList");
 const topicProgressLogin = document.getElementById("topicProgressLogin");
 const topicProgressLoginLink = document.getElementById("topicProgressLoginLink");
 
-const quizProgress = document.getElementById("quizProgress");
-const quizScore = document.getElementById("quizScore");
-const quizProgressFill = document.getElementById("quizProgressFill");
+// Top bar elements
+const mcqhubBarActions = document.getElementById("mcqhubBarActions");
+const quizScoreTop = document.getElementById("quizScoreTop");
+const railToggle = document.getElementById("railToggle");
+const overlay = document.getElementById("overlay");
+
+// Rail elements
+const mcqRail = document.getElementById("mcqRail");
+const railTitle = document.getElementById("railTitle");
+const mcqRailList = document.getElementById("mcqRailList");
+const mcqRailFooter = document.getElementById("mcqRailFooter");
+const railProgressText = document.getElementById("railProgressText");
+const railProgressFill = document.getElementById("railProgressFill");
+
+/* ---------- Rail as a drawer (small screens) ---------- */
+function openRail() {
+  mcqRail.classList.add("open");
+  overlay.classList.add("visible");
+  railToggle.setAttribute("aria-expanded", "true");
+}
+function closeRail() {
+  mcqRail.classList.remove("open");
+  overlay.classList.remove("visible");
+  railToggle.setAttribute("aria-expanded", "false");
+}
+railToggle.addEventListener("click", () =>
+  mcqRail.classList.contains("open") ? closeRail() : openRail()
+);
+overlay.addEventListener("click", closeRail);
+
 const quizQuestionClass = document.getElementById("quizQuestionClass");
 const quizQuestionCategory = document.getElementById("quizQuestionCategory");
 const quizQuestionText = document.getElementById("quizQuestionText");
@@ -86,14 +113,14 @@ const quizOptions = document.getElementById("quizOptions");
 const answerReport = document.getElementById("answerReport");
 const nextQuestionBtn = document.getElementById("nextQuestionBtn");
 
-const leaveQuizBtn = document.getElementById("leaveQuizBtn");
+const leaveQuizBtns = [...document.querySelectorAll("#leaveQuizBtn, #leaveQuizBtnTop")];
 const leaveConfirm = document.getElementById("leaveConfirm");
 const leaveConfirmBtn = document.getElementById("leaveConfirmBtn");
 const leaveCancelBtn = document.getElementById("leaveCancelBtn");
 const soundToggles = [...document.querySelectorAll(".js-sound-toggle")];
 
 const finalScoreText = document.getElementById("finalScoreText");
-const finalScoreFill = document.getElementById("finalScoreFill");
+// finalScoreFill removed — the score ring handles result display
 const elapsedText = document.getElementById("elapsedText");
 const reviewList = document.getElementById("reviewList");
 const reviewEmpty = document.getElementById("reviewEmpty");
@@ -515,11 +542,100 @@ startQuizBtn.addEventListener("click", () => {
   leaderboardStatus.textContent = "";
   hideLeaveConfirm();
 
+  // Populate the rail with a numbered list of questions
+  buildRailItems();
+
+  // Switch rail to quiz question checklist
+  if (topicProgress) topicProgress.hidden = true;
+  if (railTitle) railTitle.textContent = "Quiz Progress";
+  mcqRailList.hidden = false;
+
+  // Show the rail toggle (mobile) and footer progress bar
+  railToggle.hidden = false;
+  mcqRailFooter.hidden = false;
+  mcqhubBarActions.hidden = false;
+
   quizStart.hidden = true;
   quizResult.hidden = true;
   quizPlay.hidden = false;
   renderQuestion();
 });
+
+/* ---------- Rail: question list ----------
+   Builds a numbered list of questions in the left sidebar when a quiz starts,
+   mirroring the way Python Hub shows a program list in its rail. */
+function buildRailItems() {
+  mcqRailList.innerHTML = "";
+  quizQuestions.forEach((q, idx) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "rail-item is-unanswered";
+    btn.dataset.index = idx;
+
+    const num = document.createElement("span");
+    num.className = "rail-item-num";
+    num.textContent = String(idx + 1);
+
+    const text = document.createElement("span");
+    text.className = "rail-item-label";
+    // Truncate long questions to keep rail tidy
+    text.textContent = (q.question || "").length > 42
+      ? (q.question || "").slice(0, 42) + "…"
+      : (q.question || "");
+
+    const statusIcon = document.createElement("span");
+    statusIcon.className = "rail-item-status";
+    statusIcon.setAttribute("aria-hidden", "true");
+
+    btn.appendChild(num);
+    btn.appendChild(text);
+    btn.appendChild(statusIcon);
+
+    // Clicking a rail item does nothing during a quiz (read-only progress view),
+    // but closes the drawer on mobile so the question is visible.
+    btn.addEventListener("click", () => closeRail());
+
+    mcqRailList.appendChild(btn);
+  });
+}
+
+/* Moves the .active class to the rail button at the given index. */
+function highlightRailItem(index) {
+  [...mcqRailList.querySelectorAll(".rail-item")].forEach((btn, i) => {
+    btn.classList.toggle("active", i === index);
+  });
+}
+
+/* Marks a rail item as correct or incorrect after it's been answered. */
+function updateRailItem(index, correct) {
+  const btn = mcqRailList.querySelectorAll(".rail-item")[index];
+  if (!btn) return;
+  btn.classList.remove("is-unanswered");
+  btn.classList.add(correct ? "is-correct" : "is-incorrect");
+
+  // Draw a tiny tick or cross inside the status dot
+  const statusEl = btn.querySelector(".rail-item-status");
+  if (statusEl) {
+    const svg = document.createElementNS(SVG_NS, "svg");
+    svg.setAttribute("viewBox", "0 0 10 10");
+    svg.setAttribute("width", "10");
+    svg.setAttribute("height", "10");
+    svg.setAttribute("fill", "none");
+    svg.setAttribute("stroke", "currentColor");
+    svg.setAttribute("stroke-width", "2");
+    svg.setAttribute("stroke-linecap", "round");
+    svg.setAttribute("aria-hidden", "true");
+    const path = document.createElementNS(SVG_NS, "path");
+    if (correct) {
+      path.setAttribute("d", "M1.5 5l2.5 2.5 4.5-4.5");
+    } else {
+      path.setAttribute("d", "M2 2l6 6M8 2l-6 6");
+    }
+    svg.appendChild(path);
+    statusEl.innerHTML = "";
+    statusEl.appendChild(svg);
+  }
+}
 
 /* ---------- Play ---------- */
 function renderQuestion() {
@@ -527,9 +643,19 @@ function renderQuestion() {
   const q = quizQuestions[currentIndex];
   const total = quizQuestions.length;
 
-  quizProgress.textContent = `Question ${currentIndex + 1} of ${total}`;
-  quizScore.textContent = currentIndex ? `${score} of ${currentIndex} right` : "";
-  quizProgressFill.style.width = `${(currentIndex / total) * 100}%`;
+  const progressText = `Question ${currentIndex + 1} of ${total}`;
+  const scoreText = currentIndex ? `${score} of ${currentIndex} right` : "";
+  const pct = Math.round(((currentIndex + 1) / total) * 100);
+
+  // Left rail progress bar and text
+  if (railProgressText) railProgressText.textContent = progressText;
+  if (railProgressFill) railProgressFill.style.width = `${pct}%`;
+
+  // Top bar score
+  if (quizScoreTop) quizScoreTop.textContent = scoreText;
+
+  // Highlight the active question in the rail
+  highlightRailItem(currentIndex);
 
   if (q.classLevel) {
     quizQuestionClass.textContent = `Class ${q.classLevel}`;
@@ -612,8 +738,12 @@ function selectAnswer(chosenIndex) {
   // number chip the learner can actually see on the row.
   reportAnswer(correct, displayOrder.indexOf(q.correctIndex) + 1, q.options, q);
 
-  quizScore.textContent = `${score} of ${currentIndex + 1} right`;
+  const liveScore = `${score} of ${currentIndex + 1} right`;
+  if (quizScoreTop) quizScoreTop.textContent = liveScore;
   nextQuestionBtn.hidden = false;
+
+  // Mark rail item as correct or incorrect
+  updateRailItem(currentIndex, correct);
 
   userAnswers.push({
     question: q.question,
@@ -623,6 +753,7 @@ function selectAnswer(chosenIndex) {
     explanation: q.explanation,
   });
 }
+
 
 /* The verdict and the explanation go into one live region, together, so a
    screen reader announces the result once instead of twice. */
@@ -693,14 +824,18 @@ function hideLeaveConfirm() {
   leaveConfirm.hidden = true;
 }
 
-leaveQuizBtn.addEventListener("click", () => {
-  leaveConfirm.hidden = false;
-  leaveCancelBtn.focus();
+leaveQuizBtns.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    leaveConfirm.hidden = false;
+    leaveCancelBtn.focus();
+  });
 });
 
 leaveCancelBtn.addEventListener("click", () => {
   hideLeaveConfirm();
-  leaveQuizBtn.focus();
+  // Focus the first available leave button (typically the top one)
+  const visibleLeaveBtn = leaveQuizBtns.find(b => b.offsetWidth > 0);
+  if (visibleLeaveBtn) visibleLeaveBtn.focus();
 });
 
 leaveConfirmBtn.addEventListener("click", () => {
@@ -713,6 +848,14 @@ leaveConfirmBtn.addEventListener("click", () => {
   quizPlay.hidden = true;
   quizResult.hidden = true;
   quizStart.hidden = false;
+  mcqhubBarActions.hidden = true;
+  mcqRailFooter.hidden = true;
+  if (railProgressFill) railProgressFill.style.width = "0%";
+  if (railProgressText) railProgressText.textContent = "";
+  if (railTitle) railTitle.textContent = "Topic Progress";
+  mcqRailList.hidden = true;
+  mcqRailList.innerHTML = '<p class="rail-empty" id="railEmptyState">Start a quiz to see your progress here.</p>';
+  renderTopicProgress();
   refreshStatus();
 });
 
@@ -725,7 +868,7 @@ function showResults() {
   const total = quizQuestions.length;
   const pct = total ? Math.round((score / total) * 100) : 0;
   finalScoreText.textContent = `You scored ${score} / ${total} (${pct}%)`;
-  finalScoreFill.style.width = `${pct}%`;
+  // Score is shown by the ring — no separate fill bar needed
   elapsedText.textContent = `Finished in ${formatDuration(elapsed)}. Timing is just for you — the leaderboard ranks on score.`;
 
   // ---- Score ring ----
@@ -803,6 +946,15 @@ wrongOnlyToggle.addEventListener("change", renderReview);
 retryQuizBtn.addEventListener("click", () => {
   quizResult.hidden = true;
   quizStart.hidden = false;
+  // Reset rail to idle state
+  mcqhubBarActions.hidden = true;
+  mcqRailFooter.hidden = true;
+  if (railProgressFill) railProgressFill.style.width = "0%";
+  if (railProgressText) railProgressText.textContent = "";
+  if (railTitle) railTitle.textContent = "Topic Progress";
+  mcqRailList.hidden = true;
+  mcqRailList.innerHTML = '<p class="rail-empty" id="railEmptyState">Start a quiz to see your progress here.</p>';
+  renderTopicProgress();
   refreshStatus();
 });
 
