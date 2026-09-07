@@ -439,8 +439,12 @@ document.addEventListener("authchange", (e) => watchMyTopics(e.detail.user));
 if (topicProgressLoginLink) {
   topicProgressLoginLink.addEventListener("click", (e) => {
     e.preventDefault();
-    const btn = document.getElementById("authIconBtn") || document.getElementById("authIconBtnMobile");
-    if (btn) btn.click();
+    if (typeof window.openMcqAuthModal === "function") {
+      window.openMcqAuthModal();
+    } else {
+      const btn = document.getElementById("authIconBtn") || document.getElementById("authIconBtnMobile");
+      if (btn) btn.click();
+    }
   });
 }
 
@@ -514,11 +518,7 @@ classRadios.forEach((radio) => {
 categorySelect.addEventListener("change", refreshStatus);
 
 /* ---------- Start quiz ---------- */
-startQuizBtn.addEventListener("click", () => {
-  // The click is the user gesture Safari waits for before it will let a
-  // page make any sound at all, so the context gets woken up here.
-  primeAudio();
-
+function startQuizEngine() {
   // Snapshot what this attempt is for, so the score write later can't be
   // thrown off by the setup screen changing.
   activeClass = selectedClass();
@@ -559,6 +559,29 @@ startQuizBtn.addEventListener("click", () => {
   quizResult.hidden = true;
   quizPlay.hidden = false;
   renderQuestion();
+}
+
+startQuizBtn.addEventListener("click", () => {
+  // The click is the user gesture Safari waits for before it will let a
+  // page make any sound at all, so the context gets woken up here.
+  primeAudio();
+
+  const isGuest = typeof window.isMcqGuestMode === "function" && window.isMcqGuestMode();
+  if (!auth.currentUser && !isGuest && typeof window.openMcqAuthModal === "function") {
+    window.openMcqAuthModal({
+      title: "Save Your Progress",
+      subtitle: "Sign up or log in to record your scores on the Leaderboard and track completed topics, or continue as a guest.",
+      onSuccess: () => {
+        startQuizEngine();
+      },
+      onGuest: () => {
+        startQuizEngine();
+      }
+    });
+    return;
+  }
+
+  startQuizEngine();
 });
 
 /* ---------- Rail: question list ----------

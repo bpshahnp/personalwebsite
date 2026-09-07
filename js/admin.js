@@ -19,17 +19,17 @@ function normalizeClass(value) {
 const signInGate = document.getElementById("signInGate");
 const notAuthorized = document.getElementById("notAuthorized");
 const dashboard = document.getElementById("dashboard");
-const signOutBtn = document.getElementById("signOutBtn");
+const signOutBtns = document.querySelectorAll("#signOutBtn, #signOutBtnMobile");
 
 /* ---------- Auth gate ---------- */
 auth.onAuthStateChanged((user) => {
   if (!user) {
     show(signInGate);
     hide(notAuthorized, dashboard);
-    signOutBtn.hidden = true;
+    signOutBtns.forEach((b) => (b.hidden = true));
     return;
   }
-  signOutBtn.hidden = false;
+  signOutBtns.forEach((b) => (b.hidden = false));
   if (ADMIN_EMAILS.includes(user.email)) {
     show(dashboard);
     hide(signInGate, notAuthorized);
@@ -57,7 +57,7 @@ document.getElementById("adminLoginForm").addEventListener("submit", (e) => {
     });
 });
 
-signOutBtn.addEventListener("click", () => auth.signOut());
+signOutBtns.forEach((b) => b.addEventListener("click", () => auth.signOut()));
 
 function show(...els) { els.forEach((el) => (el.hidden = false)); }
 function hide(...els) { els.forEach((el) => (el.hidden = true)); }

@@ -59,6 +59,59 @@ db.collection("updates")
     }
   );
 
+/* ---------- Live Hero Stats from Firestore ----------
+   Automatically updates MCQ Question count, Python Program count,
+   and Curriculum Class Range whenever questions/programs are added or deleted.
+------------------------------------------------------------- */
+const statMcqCount = document.getElementById("statMcqCount");
+const statPythonCount = document.getElementById("statPythonCount");
+const statClassRange = document.getElementById("statClassRange");
+
+if (typeof db !== "undefined") {
+  if (statMcqCount || statClassRange) {
+    db.collection("questions").onSnapshot(
+      (snapshot) => {
+        const total = snapshot.size;
+        if (total > 0 && statMcqCount) {
+          statMcqCount.textContent = `${total}+`;
+        }
+
+        if (statClassRange) {
+          const classesSet = new Set();
+          snapshot.forEach((doc) => {
+            const data = doc.data();
+            const digits = String(data.classLevel ?? data.class ?? "").match(/\d+/);
+            const cls = digits ? parseInt(digits[0], 10) : 10;
+            classesSet.add(cls);
+          });
+
+          if (classesSet.size > 0) {
+            const sorted = Array.from(classesSet).sort((a, b) => a - b);
+            if (sorted.length === 1) {
+              statClassRange.textContent = `Class ${sorted[0]}`;
+            } else {
+              statClassRange.textContent = `Classes ${sorted[0]}–${sorted[sorted.length - 1]}`;
+            }
+          }
+        }
+      },
+      (err) => console.error("Error fetching questions stats:", err)
+    );
+  }
+
+  if (statPythonCount) {
+    db.collection("pythonPrograms").onSnapshot(
+      (snapshot) => {
+        const total = snapshot.size;
+        if (total > 0) {
+          statPythonCount.textContent = `${total}+`;
+        }
+      },
+      (err) => console.error("Error fetching python programs stats:", err)
+    );
+  }
+}
+
 function escapeHtml(str) {
   const div = document.createElement("div");
   div.textContent = str;
