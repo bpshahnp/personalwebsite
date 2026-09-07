@@ -1,0 +1,290 @@
+﻿<!DOCTYPE html>
+<html lang=en>
+<head>
+  <meta charset=UTF-8 />
+  <link rel=icon type=image/svg+xml href=favicon.svg />
+  <meta name=viewport content=width=device-width, initial-scale=1.0 />
+  <title>Live Weekly Quiz | B. Prasad Shah</title>
+  <link rel=stylesheet href=css/style.css />
+  <link rel=preconnect href=https://fonts.googleapis.com />
+  <link rel=preconnect href=https://fonts.gstatic.com crossorigin />
+  <link href=https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap rel=stylesheet />
+</head>
+<body>
+
+  <!-- ===== Site Header ===== -->
+  <header class=site-header>
+    <div class=container header-inner>
+      <a href=index.html class=logo>B. <span>Prasad Shah</span></a>
+
+      <nav class=main-nav id=mainNav>
+        <a href=index.html>Home</a>
+        <a href=live-quiz.html class=active nav-live-link>
+          Live Quiz <span class=nav-live-dot aria-hidden=true></span>
+        </a>
+        <a href=mcq.html>MCQ Hub</a>
+        <a href=python.html>Python Hub</a>
+        <a href=video.html>Video Hub</a>
+        <a href=leaderboard.html>Leaderboard</a>
+        <div class=dropdown>
+          <button class=dropdown-toggle type=button>See More Options ▾</button>
+          <div class=dropdown-menu>
+            <a href=resources.html>Additional Resources</a>
+            <a href=contact.html>Contact</a>
+            <a href=admin.html>Admin Panel</a>
+          </div>
+        </div>
+      </nav>
+
+      <div class=header-actions>
+        <div class=auth-widget>
+          <button class=auth-icon-btn id=authIconBtn aria-label=Account></button>
+          <div class=auth-dropdown id=authDropdown hidden></div>
+        </div>
+      </div>
+
+      <div class=mobile-header-icons>
+        <button class=nav-toggle id=navToggle aria-label=Open menu>
+          <svg viewBox=0 0 24 24 width=22 height=22 fill=none stroke=currentColor stroke-width=2 stroke-linecap=round><line x1=3 y1=6 x2=21 y2=6></line><line x1=3 y1=12 x2=21 y2=12></line><line x1=3 y1=18 x2=21 y2=18></line></svg>
+        </button>
+        <div class=auth-widget>
+          <button class=auth-icon-btn id=authIconBtnMobile aria-label=Account></button>
+          <div class=auth-dropdown id=authDropdownMobile hidden></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== Mobile Nav Drawer ===== -->
+  <div class=nav-drawer id=navDrawer>
+    <button class=drawer-close id=drawerClose aria-label=Close menu>&times;</button>
+    <nav class=drawer-nav>
+      <a href=index.html>Home</a>
+      <a href=live-quiz.html class=active>Live Quiz 🔴</a>
+      <a href=mcq.html>MCQ Hub</a>
+      <a href=python.html>Python Hub</a>
+      <a href=video.html>Video Hub</a>
+      <a href=leaderboard.html>Leaderboard</a>
+      <div class=dropdown>
+        <button class=dropdown-toggle type=button>See More Options ▾</button>
+        <div class=dropdown-menu>
+          <a href=resources.html>Additional Resources</a>
+          <a href=contact.html>Contact</a>
+          <a href=admin.html>Admin Panel</a>
+        </div>
+      </div>
+    </nav>
+  </div>
+  <div class=drawer-overlay id=drawerOverlay></div>
+
+  <!-- ===== Hero Banner: 7-Day Cycle & Live Status ===== -->
+  <section class=live-hero>
+    <div class=container>
+      <div class=live-hero-inner>
+        <div class=live-badge-wrap>
+          <span class=live-pill><span class=live-dot></span> LIVE WEEKLY CHALLENGE</span>
+          <span class=live-week-tag id=liveWeekLabel>Week --</span>
+        </div>
+        <h1 class=live-hero-title>7-Day Live Quiz Tournament</h1>
+        <p class=live-hero-subtitle>
+          A fresh set of timed questions every single day for 7 days. Answer fast to earn speed bonus points and compete for the weekly championship!
+        </p>
+
+        <!-- Renewal Countdown -->
+        <div class=live-renewal-clock>
+          <span class=renewal-label>Next day's questions unlock in:</span>
+          <span class=renewal-timer id=renewalCountdown>--:--:--</span>
+        </div>
+      </div>
+
+      <!-- 7-Day Interactive Road-Map -->
+      <div class=days-stepper id=daysStepper aria-label=7-Day Cycle Progress>
+        <!-- Dynamically rendered Day 1 to Day 7 cards -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Main Live Quiz Container ===== -->
+  <main class=container live-quiz-container>
+    <!-- Stage 1: Setup / Intro Screen -->
+    <div class=quiz-card live-card id=liveIntroCard>
+      <div class=card-head>
+        <div>
+          <span class=live-day-tag id=todayDayTag>Today: Day --</span>
+          <h2 id=todayTitle>Today's Timed Challenge</h2>
+        </div>
+        <button type=button class=sound-btn js-sound-toggle id=liveSoundBtn title=Toggle audio></button>
+      </div>
+
+      <div class=live-rules-grid>
+        <div class=rule-box>
+          <div class=rule-icon>⏱️</div>
+          <div>
+            <strong>25s per Question</strong>
+            <p>A fast-paced countdown. Questions auto-advance on timeout.</p>
+          </div>
+        </div>
+        <div class=rule-box>
+          <div class=rule-icon>⚡</div>
+          <div>
+            <strong>Speed Bonus</strong>
+            <p>Earn up to +50 bonus points for answering quickly.</p>
+          </div>
+        </div>
+        <div class=rule-box>
+          <div class=rule-icon>🔄</div>
+          <div>
+            <strong>Daily Reset</strong>
+            <p>A new question set unlocks every 24 hours for 7 days.</p>
+          </div>
+        </div>
+        <div class=rule-box>
+          <div class=rule-icon>🏆</div>
+          <div>
+            <strong>Weekly Crown</strong>
+            <p>Points accumulate across the 7 days for the weekly championship.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Class Preference for Questions -->
+      <div class=live-class-selector id=liveClassSelector>
+        <span class=selector-label>Select Your Class:</span>
+        <div class=class-chips id=liveClassChips>
+          <button type=button class=class-chip active data-class=All>All Classes</button>
+          <button type=button class=class-chip data-class=8>Class 8</button>
+          <button type=button class=class-chip data-class=9>Class 9</button>
+          <button type=button class=class-chip data-class=10>Class 10</button>
+        </div>
+      </div>
+
+      <div class=live-start-action>
+        <button type=button class=btn btn-primary btn-lg id=startLiveQuizBtn>
+          Start Today's Live Quiz &rarr;
+        </button>
+        <p class=quiz-muted id=liveQuizStatusText>Loading today's challenge…</p>
+      </div>
+    </div>
+
+    <!-- Stage 2: Active Timed Quiz Stage -->
+    <div class=quiz-card live-card id=liveActiveCard hidden>
+      <!-- Timer bar on top -->
+      <div class=live-timer-header>
+        <div class=live-q-tracker>
+          <span class=live-q-badge id=liveQIndex>Question 1 of 10</span>
+          <span class=live-score-pill id=liveRunningPoints>0 pts</span>
+        </div>
+        <div class=live-timer-badge id=liveTimerSeconds>
+          <svg viewBox=0 0 24 24 width=16 height=16 fill=none stroke=currentColor stroke-width=2><circle cx=12 cy=12 r=10></circle><polyline points=12 6 12 12 16 14></polyline></svg>
+          <span id=timerText>25s</span>
+        </div>
+      </div>
+
+      <!-- Linear progress bar that shrinks -->
+      <div class=live-timer-track>
+        <div class=live-timer-fill id=liveTimerFill></div>
+      </div>
+
+      <!-- Question Text -->
+      <div class=live-question-body>
+        <span class=mcq-category id=liveQCategory>General</span>
+        <h3 class=live-q-text id=liveQText>Loading question…</h3>
+      </div>
+
+      <!-- Options -->
+      <div class=mcq-opts id=liveOptsGrid>
+        <!-- 4 Option buttons rendered dynamically -->
+      </div>
+
+      <!-- Explanation & Next strip -->
+      <div class=live-feedback-bar id=liveFeedbackBar hidden>
+        <p class=live-feedback-text id=liveFeedbackText></p>
+        <button type=button class=btn btn-primary btn-sm id=liveNextBtn>Next Question &rarr;</button>
+      </div>
+    </div>
+
+    <!-- Stage 3: Results & Celebration Screen -->
+    <div class=quiz-card live-card id=liveResultsCard hidden>
+      <div class=results-celebration>
+        <div class=trophy-badge id=resultTrophy>🏆</div>
+        <h2 id=resultHeadline>Day Challenge Complete!</h2>
+        <p class=quiz-muted id=resultSubline>Great effort! Your score has been added to this week's leaderboard.</p>
+      </div>
+
+      <div class=result-stats-grid>
+        <div class=result-stat-box>
+          <span class=stat-big id=resultScore>0/10</span>
+          <span class=stat-desc>Correct Answers</span>
+        </div>
+        <div class=result-stat-box>
+          <span class=stat-big id=resultPoints>0</span>
+          <span class=stat-desc>Total Points Earned</span>
+        </div>
+        <div class=result-stat-box>
+          <span class=stat-big id=resultSpeedBonus>+0</span>
+          <span class=stat-desc>Speed Bonus</span>
+        </div>
+        <div class=result-stat-box>
+          <span class=stat-big id=resultDayStreak>Day 1</span>
+          <span class=stat-desc>7-Day Progress</span>
+        </div>
+      </div>
+
+      <div class=results-actions>
+        <a href=#weeklyLeaderboardSection class=btn btn-primary id=viewRankBtn>View Weekly Leaderboard &darr;</a>
+        <button type=button class=btn btn-outline id=retakePracticeBtn>Practice Again (Unranked)</button>
+      </div>
+    </div>
+
+    <!-- ===== Weekly Live Championship Leaderboard ===== -->
+    <section class=live-leaderboard-section id=weeklyLeaderboardSection>
+      <div class=section-head text-center>
+        <span class=hero-badge>CURRENT STANDINGS</span>
+        <h2 class=section-title>Weekly Live Championship</h2>
+        <p class=quiz-muted>Rankings update in real-time as learners complete each day's quiz. Resets every 7 days!</p>
+      </div>
+
+      <!-- Scope filter: Today vs Full Week -->
+      <div class=live-board-filters>
+        <button type=button class=board-chip active id=filterTodayBtn>Today's Standings</button>
+        <button type=button class=board-chip id=filterWeekBtn>Full Week Championship</button>
+      </div>
+
+      <div class=leaderboard-table id=liveLeaderboardTable>
+        <div class=leaderboard-row header-row>
+          <span>Rank</span>
+          <span>Learner</span>
+          <span>Days Played</span>
+          <span>Points</span>
+        </div>
+        <div id=liveLeaderboardRows>
+          <p class=updates-loading>Loading live leaderboard…</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===== Footer ===== -->
+  <footer class=site-footer>
+    <div class=container footer-inner>
+      <p>&copy; 2026 B. Prasad Shah. All rights reserved.</p>
+      <div class=footer-links>
+        <a href=index.html>Home</a>
+        <a href=live-quiz.html>Live Quiz</a>
+        <a href=mcq.html>MCQ Hub</a>
+        <a href=python.html>Python Hub</a>
+        <a href=leaderboard.html>Leaderboard</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Firebase & Scripts -->
+  <script src=https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js></script>
+  <script src=https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js></script>
+  <script src=https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js></script>
+  <script src=js/firebase-config.js></script>
+  <script src=js/auth-widget.js></script>
+  <script src=js/nav-drawer.js></script>
+  <script src=js/live-quiz.js></script>
+</body>
+</html>

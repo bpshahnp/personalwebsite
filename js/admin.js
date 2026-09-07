@@ -38,6 +38,7 @@ auth.onAuthStateChanged((user) => {
     initResourcesAdmin();
     initMessagesAdmin();
     initUpdatesAdmin();
+    initLiveQuizAdmin();
   } else {
     show(notAuthorized);
     hide(signInGate, dashboard);
@@ -72,6 +73,7 @@ document.querySelectorAll(".admin-tab").forEach((tabBtn) => {
     document.getElementById("tab-resources").hidden = tabBtn.dataset.tab !== "resources";
     document.getElementById("tab-messages").hidden = tabBtn.dataset.tab !== "messages";
     document.getElementById("tab-updates").hidden = tabBtn.dataset.tab !== "updates";
+    document.getElementById("tab-livequiz").hidden = tabBtn.dataset.tab !== "livequiz";
   });
 });
 
@@ -755,3 +757,115 @@ function escapeHtml(str) {
   div.textContent = str;
   return div.innerHTML;
 }
+
+/* ============================================
+   LIVE QUIZ SCHEDULE ADMIN
+   ============================================ */
+function initLiveQuizAdmin() {
+  const daySelect = document.getElementById("adminLiveDaySelect");
+  const weekInput = document.getElementById("adminLiveWeekInput");
+  const customJson = document.getElementById("adminLiveCustomJson");
+  const saveBtn = document.getElementById("saveLiveDayQuestionsBtn");
+  const clearBtn = document.getElementById("clearLiveDayQuestionsBtn");
+  const statusEl = document.getElementById("adminLiveStatus");
+
+  if (!daySelect || !weekInput || !saveBtn) return;
+
+  function getISOWeekKey() {
+    const d = new Date();
+    const target = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    const dayNr = target.getUTCDay() || 7;
+    target.setUTCDate(target.getUTCDate() + 4 - dayNr);
+    const yearStart = new Date(Date.UTC(target.getUTCFullYear(), 0, 1));
+    const weekNo = Math.ceil((((target - yearStart) / 86400000) + 1) / 7);
+    const pad = (n) => String(n).padStart(2, "0");
+    return `${target.getUTCFullYear()}-W${pad(weekNo)}`;
+  }
+
+  const d = new Date();
+  const currentDayNr = d.getUTCDay() || 7;
+  daySelect.value = String(currentDayNr);
+  weekInput.value = getISOWeekKey();
+
+  async function loadSelectedDayQuestions() {
+    statusEl.textContent = "Checking schedule…";
+    statusEl.style.color = "var(--mist)";
+    const week = weekInput.value.trim();
+    const day = daySelect.value;
+    const docId = `${week}_day_${day}`;
+
+    try {
+      const snap = await db.collection("liveQuizQuestions").doc(docId).get();
+      if (snap.exists && Array.isArray(snap.data().questions) && snap.data().questions.length > 0) {
+        customJson.value = JSON.stringify(snap.data().questions, null, 2);
+        statusEl.textContent = `Custom questions active for ${week} Day ${day} (${snap.data().questions.length} questions).`;
+        statusEl.style.color = "var(--orange)";
+      } else {
+        customJson.value = "";
+        statusEl.textContent = `Automated smart selection is active for ${week} Day ${day}.`;
+        statusEl.style.color = "var(--mist)";
+      }
+    } catch (err) {
+      statusEl.textContent = err.message;
+      statusEl.style.color = "crimson";
+    }
+  }
+
+  daySelect.addEventListener("change", loadSelectedDayQuestions);
+  weekInput.addEventListener("change", loadSelectedDayQuestions);
+  loadSelectedDayQuestions();
+
+  saveBtn.addEventListener("click", async () => {
+    const week = weekInput.value.trim();
+    const day = daySelect.value;
+    const docId = `${week}_day_${day}`;
+    const raw = customJson.value.trim();
+
+    if (!raw) {
+      statusEl.textContent = "Please enter JSON array of questions, or click Reset.";
+      statusEl.style.color = "crimson";
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed) || parsed.length === 0) {
+        throw new Error("Questions must be a non-empty JSON array.");
+      }
+
+      statusEl.textContent = "Saving questions…";
+      await db.collection("liveQuizQuestions").doc(docId).set({
+        weekKey: week,
+        dayIndex: Number(day),
+        questions: parsed,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      statusEl.textContent = `Saved ${parsed.length} custom questions for ${week} Day ${day}!`;
+      statusEl.style.color = "#10b981";
+    } catch (err) {
+      statusEl.textContent = `JSON Error: ${err.message}`;
+      statusEl.style.color = "crimson";
+    }
+  });
+
+  clearBtn.addEventListener("click", async () => {
+    const week = weekInput.value.trim();
+    const day = daySelect.value;
+    const docId = `${week}_day_${day}`;
+
+    if (!confirm(`Reset ${week} Day ${day} back to automated daily question selection?`)) return;
+
+    try {
+      statusEl.textContent = "Resetting…";
+      await db.collection("liveQuizQuestions").doc(docId).delete();
+      customJson.value = "";
+      statusEl.textContent = `Reset successful! ${week} Day ${day} will now use automated smart question selection.`;
+      statusEl.style.color = "#10b981";
+    } catch (err) {
+      statusEl.textContent = err.message;
+      statusEl.style.color = "crimson";
+    }
+  });
+}
+
