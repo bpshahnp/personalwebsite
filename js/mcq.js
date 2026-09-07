@@ -44,6 +44,23 @@ function classLabel(value) {
   return value === "All" ? "All classes" : `Class ${value}`;
 }
 
+/* One entry per (class, category) pair in the "topics" map on the
+   user's score doc. Firestore map keys can't contain a dot, so any
+   category with one gets it swapped for an underscore. */
+function topicKey(cls, category) {
+  return `${cls}::${category}`.replace(/\./g, "_");
+}
+
+/* Distinct categories present in a given class ("All" = every class),
+   alphabetised — same list refreshCategoryOptions() shows in the
+   dropdown, reused here so the progress list always matches it. */
+function categoriesInClass(classValue) {
+  const pool = questionsInClass(classValue);
+  return [...new Set(pool.map((q) => q.category).filter(Boolean))].sort((a, b) =>
+    a.localeCompare(b)
+  );
+}
+
 /* ---------- Elements ---------- */
 const quizStart = document.getElementById("quizStart");
 const quizPlay = document.getElementById("quizPlay");
@@ -54,6 +71,10 @@ const classRadios = [...document.querySelectorAll('input[name="quizClass"]')];
 const countRadios = [...document.querySelectorAll('input[name="quizCount"]')];
 const categorySelect = document.getElementById("categorySelect");
 const startQuizBtn = document.getElementById("startQuizBtn");
+const topicProgress = document.getElementById("topicProgress");
+const topicList = document.getElementById("topicList");
+const topicProgressLogin = document.getElementById("topicProgressLogin");
+const topicProgressLoginLink = document.getElementById("topicProgressLoginLink");
 
 const quizProgress = document.getElementById("quizProgress");
 const quizScore = document.getElementById("quizScore");
@@ -339,10 +360,7 @@ function refreshClassOptions() {
    Class 8 shouldn't offer a category that only exists in Class 10. */
 function refreshCategoryOptions() {
   const previous = categorySelect.value;
-  const pool = questionsInClass(selectedClass());
-  const categories = [...new Set(pool.map((q) => q.category).filter(Boolean))].sort((a, b) =>
-    a.localeCompare(b)
-  );
+  const categories = categoriesInClass(selectedClass());
 
   categorySelect.innerHTML = [
     `<option value="All">All categories</option>`,
@@ -351,6 +369,97 @@ function refreshCategoryOptions() {
 
   categorySelect.value = categories.includes(previous) ? previous : "All";
   categorySelect.disabled = categories.length === 0;
+
+  renderTopicProgress();
+}
+
+/* ---------- Topic progress ----------
+   Shows, per category in the selected class, whether the signed-in
+   learner has never attempted it, attempted it but missed something,
+   or nailed every question on their best attempt. Purely a read of
+   the "topics" map already being written in saveScoreToLeaderboard —
+   no extra collection, no extra writes. */
+let myTopics = null; // null = not loaded yet (logged out, or still loading)
+let myTopicsUnsub = null;
+
+function watchMyTopics(user) {
+  if (myTopicsUnsub) {
+    myTopicsUnsub();
+    myTopicsUnsub = null;
+  }
+  if (!user) {
+    myTopics = null;
+    renderTopicProgress();
+    return;
+  }
+  myTopicsUnsub = db
+    .collection("scores")
+    .doc(user.uid)
+    .onSnapshot(
+      (doc) => {
+        myTopics = (doc.exists && doc.data().topics) || {};
+        renderTopicProgress();
+      },
+      () => {
+        myTopics = {};
+        renderTopicProgress();
+      }
+    );
+}
+
+document.addEventListener("authchange", (e) => watchMyTopics(e.detail.user));
+
+if (topicProgressLoginLink) {
+  topicProgressLoginLink.addEventListener("click", (e) => {
+    e.preventDefault();
+    const btn = document.getElementById("authIconBtn") || document.getElementById("authIconBtnMobile");
+    if (btn) btn.click();
+  });
+}
+
+function renderTopicProgress() {
+  if (!topicProgress) return;
+
+  if (myTopics === null) {
+    topicProgress.hidden = true;
+    topicProgressLogin.hidden = false;
+    return;
+  }
+  topicProgressLogin.hidden = true;
+
+  const cls = selectedClass();
+  const classesToShow = cls === "All" ? CLASS_LEVELS : [cls];
+  const rows = [];
+  classesToShow.forEach((c) => {
+    categoriesInClass(c).forEach((category) => {
+      const entry = myTopics[topicKey(c, category)];
+      rows.push({
+        label: cls === "All" ? `Class ${c}: ${category}` : category,
+        entry,
+      });
+    });
+  });
+
+  if (!rows.length) {
+    topicProgress.hidden = true;
+    return;
+  }
+  topicProgress.hidden = false;
+
+  topicList.innerHTML = rows
+    .map(({ label, entry }) => {
+      const status = !entry ? "new" : entry.bestPercentage >= 100 ? "complete" : "attempted";
+      const icon = status === "complete" ? "✓" : status === "attempted" ? "!" : "";
+      const meta = entry ? `${Math.round(entry.bestPercentage)}% best` : "";
+      return `
+        <div class="topic-row is-${status}">
+          <span class="topic-icon" aria-hidden="true">${icon}</span>
+          <span class="topic-name">${escapeHtml(label)}</span>
+          <span class="topic-meta">${meta}</span>
+        </div>
+      `;
+    })
+    .join("");
 }
 
 /* Status line under the heading + Start button availability. */
@@ -735,7 +844,7 @@ function saveScoreToLeaderboard(rawScore, total, pct) {
       const prev = doc.exists ? doc.data() : {};
       const buckets = getTimeBuckets();
       const points = prev.points || {};
-      
+
       // Initialize groups if missing
       if (!points["All"]) points["All"] = {};
       if (cls !== "All" && !points[cls]) points[cls] = {};
@@ -754,6 +863,23 @@ function saveScoreToLeaderboard(rawScore, total, pct) {
         points[cls][buckets.all] = (points[cls][buckets.all] || 0) + rawScore;
       }
 
+      // 3. Per-topic completion — only meaningful when a specific class
+      // AND category were picked. "All categories" mixes topics together
+      // in one attempt, so there's nothing single to mark complete.
+      const topics = prev.topics || {};
+      if (cls !== "All" && category !== "All") {
+        const key = topicKey(cls, category);
+        const existing = topics[key] || { attempts: 0, bestPercentage: 0 };
+        topics[key] = {
+          category,
+          classLevel: cls,
+          attempts: existing.attempts + 1,
+          bestPercentage: Math.max(existing.bestPercentage, pct),
+          lastPercentage: pct,
+          lastAttemptAt: firebase.firestore.FieldValue.serverTimestamp(),
+        };
+      }
+
       const attempts = (prev.attempts || 0) + 1;
 
       tx.set(scoreRef, {
@@ -761,6 +887,7 @@ function saveScoreToLeaderboard(rawScore, total, pct) {
         email: user.email,
         attempts: attempts,
         points: points,
+        topics: topics,
         lastCategory: category === "All" ? "" : category,
         lastClass: cls === "All" ? "" : cls,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp(),

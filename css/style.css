@@ -1161,6 +1161,80 @@ img { max-width: 100%; display: block; }
   font-weight: 400;
 }
 
+/* ---------- Topic progress (per class/category completion) ----------
+   Three states per topic: not attempted (hollow ring), attempted with
+   at least one wrong answer (amber "!"), fully correct on the best
+   attempt (green check). Lives right in the quiz setup card — no need
+   for a separate screen or split layout, it's just another list. */
+.topic-progress {
+  background: var(--cream);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+}
+.topic-progress-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--mist);
+  margin: 0 0 8px;
+}
+.topic-progress-login {
+  font-size: 0.85rem;
+  color: var(--mist);
+  margin: 0 0 16px;
+}
+.topic-progress-login a { color: var(--orange-dark); font-weight: 600; cursor: pointer; }
+.topic-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+.topic-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 4px;
+  font-size: 0.87rem;
+  color: var(--ink);
+}
+.topic-icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1;
+}
+.topic-row.is-new .topic-icon {
+  border: 2px solid var(--line);
+  color: transparent;
+}
+.topic-row.is-attempted .topic-icon {
+  background: #fbe9d5;
+  color: #b8730f;
+}
+.topic-row.is-complete .topic-icon {
+  background: #dcf3e3;
+  color: #2f7c46;
+}
+.topic-row.is-complete .topic-name { color: var(--ink); }
+.topic-row.is-new .topic-name { color: var(--mist); }
+.topic-meta {
+  margin-left: auto;
+  font-size: 0.76rem;
+  color: var(--mist);
+  flex-shrink: 0;
+}
+
 /* Class / question-count pickers: real radios, so arrow keys and screen
    readers work for free, with the input itself taken out of the paint. */
 .pick { border: 0; margin: 0 0 18px; padding: 0; }

@@ -164,20 +164,59 @@
 
 <header class="site-header">
   <div class="container header-inner">
-    <div class="logo">B. Prasad <span>Shah</span></div>
+    <a href="index.html" class="logo">B. <span>Prasad Shah</span></a>
     <nav class="main-nav">
       <a href="index.html">Home</a>
       <a href="mcq.html">MCQ Hub</a>
       <a href="python.html">Python Hub</a>
-      <a href="videos.html" class="active">Video Hub</a>
+      <a href="video.html" class="active">Video Hub</a>
       <a href="leaderboard.html">Leaderboard</a>
+      <div class="dropdown">
+        <button class="dropdown-toggle">See More Options ▾</button>
+        <div class="dropdown-menu">
+          <a href="resources.html">Additional Resources</a>
+          <a href="contact.html">Contact</a>
+          <a href="admin.html">Admin Panel</a>
+        </div>
+      </div>
     </nav>
     <div class="header-actions">
-      <a href="admin.html" class="btn btn-outline btn-sm">Admin</a>
+      <div class="auth-widget">
+        <button class="auth-icon-btn" id="authIconBtn" aria-label="Account"></button>
+        <div class="auth-dropdown" id="authDropdown" hidden></div>
+      </div>
     </div>
-    <button class="nav-toggle" aria-label="Open menu">&#9776;</button>
+    <div class="mobile-header-icons">
+      <button class="nav-toggle" id="navToggle" aria-label="Open menu">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+      </button>
+      <div class="auth-widget">
+        <button class="auth-icon-btn" id="authIconBtnMobile" aria-label="Account"></button>
+        <div class="auth-dropdown" id="authDropdownMobile" hidden></div>
+      </div>
+    </div>
   </div>
 </header>
+
+<div class="nav-drawer" id="navDrawer">
+  <button class="drawer-close" id="drawerClose" aria-label="Close menu">&times;</button>
+  <nav class="drawer-nav">
+    <a href="index.html">Home</a>
+    <a href="mcq.html">MCQ Hub</a>
+    <a href="python.html">Python Hub</a>
+    <a href="video.html" class="active">Video Hub</a>
+    <a href="leaderboard.html">Leaderboard</a>
+    <div class="dropdown">
+      <button class="dropdown-toggle">See More Options ▾</button>
+      <div class="dropdown-menu">
+        <a href="resources.html">Additional Resources</a>
+        <a href="contact.html">Contact</a>
+        <a href="admin.html">Admin Panel</a>
+      </div>
+    </div>
+  </nav>
+</div>
+<div class="drawer-overlay" id="drawerOverlay"></div>
 
 <section class="page-hero">
   <div class="container">
@@ -213,14 +252,21 @@
 
 <footer class="site-footer">
   <div class="container footer-inner">
-    <span>&copy; <span id="year"></span> B. Prasad Shah — Video Hub</span>
+    <p>&copy; <span id="year"></span> B. Prasad Shah — Video Hub</p>
     <div class="footer-links">
-      <a href="index.html">About Us</a>
-      <a href="index.html#contact">Contact</a>
+      <a href="index.html">Home</a>
       <a href="admin.html">Admin</a>
     </div>
   </div>
 </footer>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/auth-widget.js"></script>
+<script src="js/nav-drawer.js"></script>
+<script>document.getElementById("year").textContent = new Date().getFullYear();</script>
 
 <script>
 /* =========================================================
