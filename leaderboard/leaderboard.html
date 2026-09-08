@@ -1,1 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Leaderboard | B. Prasad Shah</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="index.html" class="logo">B. <span>Prasad Shah</span></a>
+      <nav class="main-nav">
+        <a href="index.html">Home</a>
+        <a href="live-quiz.html" class="nav-live-link">Live Quiz <span class="nav-live-dot" aria-hidden="true"></span></a>
+        <a href="mcq.html">MCQ Hub</a>
+        <a href="python.html">Python Hub</a>
+        <a href="video.html">Video Hub</a>
+        <a href="leaderboard.html" class="active">Leaderboard</a>
+        <div class="dropdown">
+          <button class="dropdown-toggle">See More Options ▾</button>
+          <div class="dropdown-menu">
+            <a href="resources.html">Additional Resources</a>
+            <a href="contact.html">Contact</a>
+            <a href="admin.html">Admin Panel</a>
+          </div>
+        </div>
+      </nav>
+      <div class="header-actions">
+        <div class="auth-widget">
+          <button class="auth-icon-btn" id="authIconBtn" aria-label="Account"></button>
+          <div class="auth-dropdown" id="authDropdown" hidden></div>
+        </div>
+      </div>
+      <div class="mobile-header-icons">
+        <button class="nav-toggle" id="navToggle" aria-label="Open menu">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+        <div class="auth-widget">
+          <button class="auth-icon-btn" id="authIconBtnMobile" aria-label="Account"></button>
+          <div class="auth-dropdown" id="authDropdownMobile" hidden></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="nav-drawer" id="navDrawer">
+    <button class="drawer-close" id="drawerClose" aria-label="Close menu">&times;</button>
+    <nav class="drawer-nav">
+      <a href="index.html">Home</a>
+      <a href="live-quiz.html">Live Quiz 🔴</a>
+      <a href="mcq.html">MCQ Hub</a>
+      <a href="python.html">Python Hub</a>
+      <a href="video.html">Video Hub</a>
+      <a href="leaderboard.html" class="active">Leaderboard</a>
+      <div class="dropdown">
+        <button class="dropdown-toggle">See More Options ▾</button>
+        <div class="dropdown-menu">
+          <a href="resources.html">Additional Resources</a>
+          <a href="contact.html">Contact</a>
+          <a href="admin.html">Admin Panel</a>
+        </div>
+      </div>
+    </nav>
+  </div>
+  <div class="drawer-overlay" id="drawerOverlay"></div>
+
+  <section class="page-hero">
+    <div class="container">
+      <h1>Leaderboard</h1>
+      <p>Top scorers from the MCQ Hub quiz. <strong>Ranked by total points. Earn 1 point for every correct answer!</strong></p>
+      <p style="margin-top:8px; font-size:0.9rem; color:var(--mist)">Filter by time and class. Log in before taking a quiz to appear here.</p>
+    </div>
+  </section>
+
+  <section class="leaderboard-section">
+    <div class="container" style="max-width:680px">
+      <div class="board-filter" id="timeFilter" role="group" aria-label="Filter leaderboard by time" style="margin-bottom:12px;">
+        <button type="button" class="board-chip active" data-time="day">Today</button>
+        <button type="button" class="board-chip" data-time="week">This Week</button>
+        <button type="button" class="board-chip" data-time="month">This Month</button>
+        <button type="button" class="board-chip" data-time="all">All Time</button>
+      </div>
+      <div class="board-filter" id="boardFilter" role="group" aria-label="Filter leaderboard by class">
+        <button type="button" class="board-chip active" data-class="All">All Classes</button>
+        <button type="button" class="board-chip" data-class="8">Class 8</button>
+        <button type="button" class="board-chip" data-class="9">Class 9</button>
+        <button type="button" class="board-chip" data-class="10">Class 10</button>
+      </div>
+
+      <div class="your-rank-card" id="yourRankCard" hidden></div>
+
+      <div class="leaderboard-table" id="leaderboardTable">
+        <div class="leaderboard-row header-row">
+          <span>#</span><span>Player</span><span style="text-align:right">Points</span>
+        </div>
+        <p class="updates-loading" style="padding:20px">Loading leaderboard…</p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>&copy; <span id="year"></span> B. Prasad Shah</p>
+      <div class="footer-links">
+        <a href="index.html">Home</a>
+        <a href="admin.html">Admin</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/auth-widget.js"></script>
+  <script src="js/nav-drawer.js"></script>
+  <script src="js/leaderboard.js"></script>
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
 
