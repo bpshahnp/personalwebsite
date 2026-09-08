@@ -106,8 +106,9 @@ img { max-width: 100%; display: block; }
 .header-inner {
   display: flex;
   align-items: center;
-  gap: clamp(14px, 2vw, 24px);
-  padding: 14px 24px;
+  flex-wrap: nowrap;
+  gap: clamp(10px, 1.5vw, 20px);
+  padding: 14px 20px;
 }
 
 .logo {
@@ -123,10 +124,11 @@ img { max-width: 100%; display: block; }
 .main-nav {
   display: flex;
   align-items: center;
-  gap: clamp(12px, 1.4vw, 20px);
+  gap: clamp(8px, 1.1vw, 16px);
   flex: 1;
+  min-width: 0;
   font-weight: 500;
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   white-space: nowrap;
 }
 .main-nav a {
@@ -176,6 +178,8 @@ img { max-width: 100%; display: block; }
   display: flex;
   align-items: center;
   gap: 14px;
+  flex-shrink: 0;
+  margin-left: auto;
 }
 
 .search-form {
@@ -910,7 +914,7 @@ img { max-width: 100%; display: block; }
 }
 
 /* ---------- Responsive ---------- */
-@media (max-width: 1040px) {
+@media (max-width: 1120px) {
   .main-nav, .header-actions { display: none !important; }
   .mobile-header-icons { display: flex; }
   .search-toggle { display: inline-flex; align-items: center; justify-content: center; }
@@ -2804,25 +2808,24 @@ img { max-width: 100%; display: block; }
   pointer-events: none;
 }
 
-/* Theme toggle at the end of nav bar (desktop) */
-.main-nav .theme-toggle-btn {
-  margin-left: 6px;
+/* Theme toggle in .header-actions (desktop) */
+.header-actions .theme-toggle-btn {
   background: transparent;
   border-color: var(--line);
   color: var(--ink);
 }
-.main-nav .theme-toggle-btn:hover {
+.header-actions .theme-toggle-btn:hover {
   background: rgba(232, 131, 78, 0.12);
   border-color: var(--orange);
   color: var(--orange);
   transform: scale(1.08);
 }
-[data-theme="dark"] .main-nav .theme-toggle-btn {
+[data-theme="dark"] .header-actions .theme-toggle-btn {
   background: #1e293b;
   border-color: var(--line);
   color: #fbbf24;
 }
-[data-theme="dark"] .main-nav .theme-toggle-btn:hover {
+[data-theme="dark"] .header-actions .theme-toggle-btn:hover {
   background: #334155;
   border-color: #fbbf24;
   color: #fbbf24;
@@ -3676,3 +3679,251 @@ img { max-width: 100%; display: block; }
 }
 
 
+
+/* ============================================
+   Shared Quiz Components
+   (quiz-card, mcq-opts / mcq-opt, board-chip, quiz-muted)
+   Used by live-quiz.html and mcq.html
+   ============================================ */
+
+/* Quiz card wrapper */
+.quiz-card {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+}
+
+/* Card header row: title + icon button side-by-side */
+.card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.card-head h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 2.5vw, 1.6rem);
+  color: var(--ink);
+}
+
+/* Muted helper text */
+.quiz-muted {
+  font-size: 0.88rem;
+  color: var(--mist);
+  margin: 0;
+}
+
+/* Sound toggle button */
+.sound-btn {
+  background: var(--cream);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.sound-btn:hover { background: var(--line); }
+
+/* MCQ option grid */
+.mcq-opts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+@media (max-width: 580px) {
+  .mcq-opts { grid-template-columns: 1fr; }
+}
+
+/* Individual MCQ option button */
+.mcq-opt {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--cream);
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.95rem;
+  color: var(--ink);
+  text-align: left;
+  line-height: 1.4;
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
+}
+.mcq-opt:hover:not(:disabled) {
+  border-color: var(--orange);
+  background: rgba(232, 131, 78, 0.06);
+  transform: translateY(-1px);
+}
+.mcq-opt:disabled { cursor: default; transform: none; }
+
+/* Option number badge */
+.opt-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.07);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--ink);
+  flex-shrink: 0;
+}
+
+/* Correct answer state */
+.mcq-opt.is-correct {
+  background: var(--q-right-tint);
+  border-color: var(--q-right-line);
+  color: #064e30;
+}
+.mcq-opt.is-correct .opt-num {
+  background: var(--q-right);
+  color: #ffffff;
+}
+
+/* Wrong answer state */
+.mcq-opt.is-wrong {
+  background: var(--q-wrong-tint);
+  border-color: var(--q-wrong-line);
+  color: #7f1d1d;
+}
+.mcq-opt.is-wrong .opt-num {
+  background: var(--q-wrong);
+  color: #ffffff;
+}
+
+/* MCQ category tag (small label above question) */
+.mcq-category {
+  display: inline-block;
+  font-size: 0.73rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--orange);
+  margin-bottom: 4px;
+}
+
+/* Board / filter chip buttons */
+.board-chip {
+  padding: 8px 18px;
+  border-radius: 999px;
+  border: 1.5px solid var(--line);
+  background: var(--cream);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--mist);
+  transition: all 0.15s ease;
+}
+.board-chip:hover { border-color: var(--orange); color: var(--orange); }
+.board-chip.active {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: #ffffff;
+}
+
+/* Leaderboard shared styles */
+.leaderboard-table {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.leaderboard-row {
+  display: grid;
+  grid-template-columns: 60px 1fr 100px 100px;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+  gap: 8px;
+  font-size: 0.9rem;
+}
+.leaderboard-row:last-child { border-bottom: none; }
+.leaderboard-row.header-row {
+  background: var(--cream);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--mist);
+}
+@media (max-width: 540px) {
+  .leaderboard-row { grid-template-columns: 44px 1fr 72px 72px; padding: 10px 12px; }
+}
+
+/* Section title and hero badge (reused from index) */
+.section-head { margin-bottom: 32px; }
+.section-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  color: var(--ink);
+  margin: 8px 0 10px;
+}
+.text-center { text-align: center; }
+.hero-badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--orange);
+  background: rgba(232, 131, 78, 0.1);
+  border: 1px solid rgba(232, 131, 78, 0.25);
+  padding: 4px 12px;
+  border-radius: 999px;
+}
+
+/* Loading placeholder */
+.updates-loading {
+  text-align: center;
+  padding: 28px;
+  color: var(--mist);
+  font-size: 0.9rem;
+}
+
+/* ---- Dark Theme Overrides for Shared Quiz Components ---- */
+[data-theme="dark"] .quiz-card {
+  background: #1e293b;
+  border-color: var(--line);
+}
+[data-theme="dark"] .mcq-opt {
+  background: #0f172a;
+  border-color: var(--line);
+  color: var(--ink);
+}
+[data-theme="dark"] .mcq-opt:hover:not(:disabled) {
+  background: rgba(232, 131, 78, 0.1);
+  border-color: var(--orange);
+}
+[data-theme="dark"] .opt-num { background: rgba(255,255,255,0.1); color: #e2e8f0; }
+[data-theme="dark"] .mcq-opt.is-correct {
+  background: #14532d;
+  border-color: #166534;
+  color: #bbf7d0;
+}
+[data-theme="dark"] .mcq-opt.is-correct .opt-num { background: #16a34a; }
+[data-theme="dark"] .mcq-opt.is-wrong {
+  background: #450a0a;
+  border-color: #7f1d1d;
+  color: #fecaca;
+}
+[data-theme="dark"] .mcq-opt.is-wrong .opt-num { background: #b91c1c; }
+[data-theme="dark"] .sound-btn { background: #0f172a; border-color: var(--line); color: var(--ink); }
+[data-theme="dark"] .board-chip { background: #0f172a; border-color: var(--line); color: var(--mist); }
+[data-theme="dark"] .board-chip.active { background: var(--orange); border-color: var(--orange); color: #fff; }
+[data-theme="dark"] .leaderboard-table { border-color: var(--line); }
+[data-theme="dark"] .leaderboard-row { border-color: var(--line); }
+[data-theme="dark"] .leaderboard-row.header-row { background: #0f172a; }

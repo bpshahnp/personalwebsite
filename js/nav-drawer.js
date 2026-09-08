@@ -80,13 +80,15 @@
     const isDark = theme === "dark";
     const title = isDark ? "Switch to light theme" : "Switch to dark theme";
 
-    document.querySelectorAll(".main-nav .theme-toggle-btn").forEach((btn) => {
+    // Desktop toggle sits in .header-actions
+    document.querySelectorAll(".header-actions .theme-toggle-btn").forEach((btn) => {
       btn.innerHTML = isDark ? SUN_SVG : MOON_SVG;
       btn.title = title;
       btn.setAttribute("aria-label", title);
       btn.setAttribute("aria-pressed", String(isDark));
     });
 
+    // Mobile toggle sits in .drawer-nav
     document.querySelectorAll(".drawer-nav .theme-toggle-btn").forEach((btn) => {
       btn.innerHTML = `${isDark ? SUN_SVG : MOON_SVG} <span>${isDark ? "Light Theme" : "Dark Theme"}</span>`;
       btn.title = title;
@@ -111,11 +113,12 @@
   }
 
   function setupToggles() {
-    // Desktop: inject at the end of the main nav bar (.main-nav)
-    document.querySelectorAll(".main-nav").forEach((nav) => {
-      if (!nav.querySelector(".theme-toggle-btn")) {
+    // Desktop: inject into .header-actions (before the auth-widget), NOT .main-nav
+    document.querySelectorAll(".header-actions").forEach((actions) => {
+      if (!actions.querySelector(".theme-toggle-btn")) {
         const btn = makeToggleBtn();
-        nav.appendChild(btn);
+        // Prepend so it appears before the auth widget
+        actions.insertBefore(btn, actions.firstChild);
       }
     });
 
@@ -127,8 +130,8 @@
       }
     });
 
-    // Remove any toggles from header-actions or mobile-header-icons
-    document.querySelectorAll(".header-actions .theme-toggle-btn, .mobile-header-icons .theme-toggle-btn").forEach((btn) => {
+    // Remove any stale toggles from .main-nav or .mobile-header-icons
+    document.querySelectorAll(".main-nav .theme-toggle-btn, .mobile-header-icons .theme-toggle-btn").forEach((btn) => {
       btn.remove();
     });
 
