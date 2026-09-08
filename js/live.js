@@ -66,6 +66,9 @@
   const filterTodayBtn = document.getElementById("filterTodayBtn");
   const filterWeekBtn = document.getElementById("filterWeekBtn");
 
+  // Class filter chips (optional element — not present in Live Quiz, so may be null)
+  const liveClassChips = document.getElementById("liveClassChips");
+
   /* ---------- Date & 7-Day Cycle Calculation ---------- */
   function getISOWeekData(d = new Date()) {
     const target = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
