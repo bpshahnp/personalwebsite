@@ -28,12 +28,14 @@
   let currentDayKey = "";
   let leaderboardDocs = [];
   let activeLeaderboardFilter = "today"; // "today" or "week"
+  let isPracticeMode = false;
 
   // DOM Elements
   const liveIntroCard = document.getElementById("liveIntroCard");
   const liveActiveCard = document.getElementById("liveActiveCard");
   const liveResultsCard = document.getElementById("liveResultsCard");
   const startLiveQuizBtn = document.getElementById("startLiveQuizBtn");
+  const startWarmupBtn = document.getElementById("startWarmupBtn");
   const liveQuizStatusText = document.getElementById("liveQuizStatusText");
   const daysStepper = document.getElementById("daysStepper");
   const liveWeekLabel = document.getElementById("liveWeekLabel");
@@ -59,6 +61,7 @@
   const resultPoints = document.getElementById("resultPoints");
   const resultSpeedBonus = document.getElementById("resultSpeedBonus");
   const resultDayStreak = document.getElementById("resultDayStreak");
+  const resultSubline = document.getElementById("resultSubline");
   const retakePracticeBtn = document.getElementById("retakePracticeBtn");
 
   // Leaderboard DOM
@@ -66,15 +69,31 @@
   const filterTodayBtn = document.getElementById("filterTodayBtn");
   const filterWeekBtn = document.getElementById("filterWeekBtn");
 
+  // Class filter chips (optional element — not present in Live Quiz, so may be null)
+  const liveClassChips = document.getElementById("liveClassChips");
+
   /* ---------- Date & 7-Day Cycle Calculation ---------- */
-  function getISOWeekData(d = new Date()) {
-    const target = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-    const dayNr = target.getUTCDay() || 7; // 1 = Mon, ..., 7 = Sun
-    target.setUTCDate(target.getUTCDate() + 4 - dayNr);
-    const yearStart = new Date(Date.UTC(target.getUTCFullYear(), 0, 1));
+  // The 7-Day tournament runs strictly Monday (Day 1) to Sunday (Day 7).
+  // Official Launch: Monday, September 14, 2026 00:00:00 local time.
+  const TOURNAMENT_LAUNCH_DATE = new Date(2026, 8, 14, 0, 0, 0); // Sep 14, 2026
+
+  function isBeforeTournamentLaunch() {
+    return new Date() < TOURNAMENT_LAUNCH_DATE;
+  }
+
+  function getTournamentWeekData(d = new Date()) {
+    // 1 = Monday (Day 1) through 7 = Sunday (Day 7)
+    const localDay = d.getDay();
+    const dayNr = localDay === 0 ? 7 : localDay;
+
+    // ISO week number calculation based on the current Thursday
+    const target = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    target.setDate(target.getDate() + 4 - dayNr);
+    const yearStart = new Date(target.getFullYear(), 0, 1);
     const weekNo = Math.ceil((((target - yearStart) / 86400000) + 1) / 7);
-    const year = target.getUTCFullYear();
+    const year = target.getFullYear();
     const pad = (n) => String(n).padStart(2, "0");
+
     return {
       weekKey: `${year}-W${pad(weekNo)}`,
       weekNumber: weekNo,
@@ -83,51 +102,109 @@
     };
   }
 
+  const DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
   function initCycleInfo() {
-    const data = getISOWeekData();
+    const isComingSoon = isBeforeTournamentLaunch();
+    const data = getTournamentWeekData(isComingSoon ? TOURNAMENT_LAUNCH_DATE : new Date());
     currentWeekKey = data.weekKey;
-    currentDayIndex = data.dayIndex;
+    currentDayIndex = isComingSoon ? 1 : data.dayIndex;
     currentDayKey = `day_${currentDayIndex}`;
 
-    if (liveWeekLabel) liveWeekLabel.textContent = `Week ${data.weekNumber} · ${data.year}`;
-    if (todayDayTag) todayDayTag.textContent = `Today: Day ${currentDayIndex} of 7`;
+    const renewalLabelEl = document.querySelector(".renewal-label");
+    const livePillEl = document.querySelector(".live-pill");
+    const todayTitleEl = document.getElementById("todayTitle");
 
-    renderDaysStepper();
-    startMidnightCountdown();
-  }
-
-  /* ---------- Midnight Countdown Clock ---------- */
-  function startMidnightCountdown() {
-    function updateClock() {
-      const now = new Date();
-      const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
-      const diffMs = tomorrow - now;
-
-      if (diffMs <= 0) {
-        initCycleInfo();
-        loadDailyQuestions();
-        return;
+    if (isComingSoon) {
+      if (livePillEl) {
+        livePillEl.innerHTML = `<span class="live-dot" style="background:#fbbf24"></span> COMING SOON`;
       }
-
-      const hrs = Math.floor(diffMs / 3600000);
-      const mins = Math.floor((diffMs % 3600000) / 60000);
-      const secs = Math.floor((diffMs % 60000) / 1000);
-      const pad = (n) => String(n).padStart(2, "0");
-
-      if (renewalCountdown) {
-        renewalCountdown.textContent = `${pad(hrs)}:${pad(mins)}:${pad(secs)}`;
+      if (liveWeekLabel) {
+        liveWeekLabel.textContent = `Starts Mon, Sep 14`;
+      }
+      if (todayDayTag) {
+        todayDayTag.textContent = `Day 1 Starts This Monday`;
+      }
+      if (todayTitleEl) {
+        todayTitleEl.textContent = `7-Day Live Tournament Coming Soon`;
+      }
+      if (renewalLabelEl) {
+        renewalLabelEl.textContent = `Tournament kicks off in:`;
+      }
+    } else {
+      if (livePillEl) {
+        livePillEl.innerHTML = `<span class="live-dot"></span> LIVE WEEKLY CHALLENGE`;
+      }
+      if (liveWeekLabel) {
+        liveWeekLabel.textContent = `Week ${data.weekNumber} · ${data.year}`;
+      }
+      if (todayDayTag) {
+        todayDayTag.textContent = `Today: Day ${currentDayIndex} of 7 (${DAY_NAMES[currentDayIndex - 1]})`;
+      }
+      if (todayTitleEl) {
+        todayTitleEl.textContent = `Today's Timed Challenge`;
+      }
+      if (renewalLabelEl) {
+        renewalLabelEl.textContent = currentDayIndex === 7 ? `Weekly tournament ends in:` : `Next day's questions unlock in:`;
       }
     }
+
+    renderDaysStepper();
+    startCountdownClock();
+  }
+
+  /* ---------- Countdown Clock (Launch Countdown OR Daily Reset) ---------- */
+  function startCountdownClock() {
+    function updateClock() {
+      const now = new Date();
+      const pad = (n) => String(n).padStart(2, "0");
+
+      if (isBeforeTournamentLaunch()) {
+        const diffMs = TOURNAMENT_LAUNCH_DATE - now;
+        if (diffMs <= 0) {
+          initCycleInfo();
+          loadDailyQuestions();
+          return;
+        }
+
+        const days = Math.floor(diffMs / 86400000);
+        const hrs = Math.floor((diffMs % 86400000) / 3600000);
+        const mins = Math.floor((diffMs % 3600000) / 60000);
+        const secs = Math.floor((diffMs % 60000) / 1000);
+
+        if (renewalCountdown) {
+          renewalCountdown.textContent = `${days}d ${pad(hrs)}:${pad(mins)}:${pad(secs)}`;
+        }
+      } else {
+        // Active tournament: counts down to next day's midnight
+        const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
+        const diffMs = tomorrow - now;
+
+        if (diffMs <= 0) {
+          initCycleInfo();
+          loadDailyQuestions();
+          return;
+        }
+
+        const hrs = Math.floor(diffMs / 3600000);
+        const mins = Math.floor((diffMs % 3600000) / 60000);
+        const secs = Math.floor((diffMs % 60000) / 1000);
+
+        if (renewalCountdown) {
+          renewalCountdown.textContent = `${pad(hrs)}:${pad(mins)}:${pad(secs)}`;
+        }
+      }
+    }
+
     updateClock();
     setInterval(updateClock, 1000);
   }
 
   /* ---------- Render 7-Day Road-Map Stepper ---------- */
-  const DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-
   function renderDaysStepper() {
     if (!daysStepper) return;
     daysStepper.innerHTML = "";
+    const isComingSoon = isBeforeTournamentLaunch();
 
     for (let i = 1; i <= 7; i++) {
       const dayCard = document.createElement("div");
@@ -137,18 +214,36 @@
       let statusLabel = "Locked";
       let icon = "🔒";
 
-      if (i < currentDayIndex) {
-        status = "past";
-        statusLabel = "Completed";
-        icon = "✓";
-        dayCard.classList.add("is-past");
-      } else if (i === currentDayIndex) {
-        status = "active";
-        statusLabel = "Today";
-        icon = "⚡";
-        dayCard.classList.add("is-today");
+      if (isComingSoon) {
+        if (i === 1) {
+          // Day 1 (Monday) is the upcoming launch day!
+          status = "active";
+          statusLabel = "Starts Mon";
+          icon = "🚀";
+          dayCard.classList.add("is-today");
+        } else {
+          status = "locked";
+          statusLabel = "Locked";
+          icon = "🔒";
+          dayCard.classList.add("is-locked");
+        }
       } else {
-        dayCard.classList.add("is-locked");
+        if (i < currentDayIndex) {
+          status = "past";
+          statusLabel = "Completed";
+          icon = "✓";
+          dayCard.classList.add("is-past");
+        } else if (i === currentDayIndex) {
+          status = "active";
+          statusLabel = "Today";
+          icon = "⚡";
+          dayCard.classList.add("is-today");
+        } else {
+          status = "locked";
+          statusLabel = "Locked";
+          icon = "🔒";
+          dayCard.classList.add("is-locked");
+        }
       }
 
       dayCard.innerHTML = `
@@ -162,6 +257,14 @@
 
       daysStepper.appendChild(dayCard);
     }
+
+    // On mobile, automatically scroll the active "Today" day into center view
+    setTimeout(() => {
+      const todayEl = daysStepper.querySelector(".is-today");
+      if (todayEl && window.innerWidth <= 600) {
+        todayEl.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+      }
+    }, 100);
   }
 
   /* ---------- Sound Synthesis ---------- */
@@ -295,9 +398,33 @@
   }
 
   function onQuestionsReady() {
-    if (startLiveQuizBtn) startLiveQuizBtn.disabled = false;
-    if (liveQuizStatusText) {
-      liveQuizStatusText.textContent = `${currentQuestions.length} live challenge questions ready for Day ${currentDayIndex}!`;
+    const isComingSoon = isBeforeTournamentLaunch();
+    if (isComingSoon) {
+      if (startLiveQuizBtn) {
+        startLiveQuizBtn.disabled = true;
+        startLiveQuizBtn.textContent = "Tournament Starts This Monday (Day 1) 🚀";
+        startLiveQuizBtn.style.opacity = "0.75";
+        startLiveQuizBtn.style.cursor = "not-allowed";
+      }
+      if (startWarmupBtn) {
+        startWarmupBtn.hidden = false;
+      }
+      if (liveQuizStatusText) {
+        liveQuizStatusText.innerHTML = `🏁 <strong>The 7-Day Challenge officially starts on Monday, Sep 14.</strong> Try an unranked warm-up quiz above to test your speed!`;
+      }
+    } else {
+      if (startLiveQuizBtn) {
+        startLiveQuizBtn.disabled = false;
+        startLiveQuizBtn.textContent = `Start Day ${currentDayIndex} Live Quiz →`;
+        startLiveQuizBtn.style.opacity = "";
+        startLiveQuizBtn.style.cursor = "pointer";
+      }
+      if (startWarmupBtn) {
+        startWarmupBtn.hidden = true;
+      }
+      if (liveQuizStatusText) {
+        liveQuizStatusText.textContent = `${currentQuestions.length} live challenge questions ready for Day ${currentDayIndex} (${DAY_NAMES[currentDayIndex - 1]})!`;
+      }
     }
   }
 
@@ -316,14 +443,18 @@
   /* ---------- Start Quiz Trigger ---------- */
   if (startLiveQuizBtn) {
     startLiveQuizBtn.addEventListener("click", () => {
-      // Anyone can play — score is saved to Firestore only when logged in.
-      startLiveQuiz();
+      if (isBeforeTournamentLaunch()) return;
+      startLiveQuiz(false);
     });
   }
 
-  function startLiveQuiz() {
+  // startWarmupBtn is now an <a href="mcq.html"> link — no JS handler needed.
+
+
+  function startLiveQuiz(practice = false) {
     if (currentQuestions.length === 0) return;
 
+    isPracticeMode = practice || isBeforeTournamentLaunch();
     currentQuestionIndex = 0;
     correctCount = 0;
     totalPointsEarned = 0;
@@ -495,43 +626,164 @@
     }
   });
 
+  // Helper to compute time buckets for the main leaderboard
+  function getTimeBuckets() {
+    const d = new Date();
+    const pad = (n) => String(n).padStart(2, "0");
+    const day = `day_${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    const month = `month_${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
+    const d1 = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    const dayNum = d1.getUTCDay() || 7;
+    d1.setUTCDate(d1.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(d1.getUTCFullYear(), 0, 1));
+    const weekNo = Math.ceil((((d1 - yearStart) / 86400000) + 1) / 7);
+    const week = `week_${d1.getUTCFullYear()}-W${pad(weekNo)}`;
+    return { day, week, month, all: "all_time" };
+  }
+
+  /* ---------- Save Score to Firestore ---------- */
+  async function saveScoreToDatabase(user, pointsEarned, correctCnt, speedBonus) {
+    if (!user || !db) return false;
+
+    try {
+      // 1. Save to liveQuizScores for the 7-Day Live Tournament leaderboard
+      const scoreDocRef = db.collection("liveQuizScores").doc(`${user.uid}_${currentWeekKey}`);
+      let prevDayPoints = 0;
+      let prevDayCorrect = 0;
+
+      try {
+        const existingDoc = await scoreDocRef.get();
+        if (existingDoc.exists) {
+          const d = existingDoc.data();
+          const prevDay = d.days ? d.days[currentDayKey] : (d[`days.${currentDayKey}`] || null);
+          if (prevDay) {
+            prevDayPoints = Number(prevDay.points || 0);
+            prevDayCorrect = Number(prevDay.score || 0);
+          }
+        }
+      } catch (readErr) {
+        console.warn("Could not read previous day score:", readErr);
+      }
+
+      // Only add point difference if replaying today's challenge
+      const deltaPoints = Math.max(0, pointsEarned - prevDayPoints);
+      const deltaCorrect = Math.max(0, correctCnt - prevDayCorrect);
+
+      await scoreDocRef.set({
+        userId: user.uid,
+        userName: user.displayName || user.email.split("@")[0] || "Learner",
+        userEmail: user.email || "",
+        weekKey: currentWeekKey,
+        days: {
+          [currentDayKey]: {
+            score: Math.max(correctCnt, prevDayCorrect),
+            totalQuestions: currentQuestions.length || QUIZ_SIZE,
+            points: Math.max(pointsEarned, prevDayPoints),
+            speedBonus: speedBonus,
+            completedAt: firebase.firestore.FieldValue.serverTimestamp()
+          }
+        },
+        lastPlayedDay: currentDayIndex,
+        totalPoints: firebase.firestore.FieldValue.increment(deltaPoints),
+        totalCorrect: firebase.firestore.FieldValue.increment(deltaCorrect),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+
+      // 2. Also save to main 'scores' collection so leaderboard.html updates!
+      try {
+        const mainScoreRef = db.collection("scores").doc(user.uid);
+        const buckets = getTimeBuckets();
+        await db.runTransaction(async (tx) => {
+          const doc = await tx.get(mainScoreRef);
+          const prev = doc.exists ? doc.data() : {};
+          const points = prev.points || {};
+          if (!points["All"]) points["All"] = {};
+
+          points["All"][buckets.day] = (points["All"][buckets.day] || 0) + deltaPoints;
+          points["All"][buckets.week] = (points["All"][buckets.week] || 0) + deltaPoints;
+          points["All"][buckets.month] = (points["All"][buckets.month] || 0) + deltaPoints;
+          points["All"][buckets.all] = (points["All"][buckets.all] || 0) + deltaPoints;
+
+          const attempts = (prev.attempts || 0) + 1;
+          tx.set(mainScoreRef, {
+            name: user.displayName || user.email.split("@")[0] || "Learner",
+            email: user.email || "",
+            lastCategory: "Live Tournament",
+            lastScore: pointsEarned,
+            attempts: attempts,
+            points: points,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          }, { merge: true });
+        });
+      } catch (mainErr) {
+        console.warn("Could not sync with main leaderboard:", mainErr);
+      }
+
+      console.log("Live tournament and main leaderboard scores saved successfully!");
+      return true;
+    } catch (err) {
+      console.error("Error saving live quiz score:", err);
+      return false;
+    }
+  }
+
   /* ---------- Finish Quiz & Save Results ---------- */
   async function finishQuiz() {
     clearInterval(timerInterval);
     liveActiveCard.hidden = true;
     liveResultsCard.hidden = false;
 
+    const resultHeadline = document.getElementById("resultHeadline");
     resultScore.textContent = `${correctCount}/${currentQuestions.length}`;
     resultPoints.textContent = totalPointsEarned.toLocaleString();
     resultSpeedBonus.textContent = `+${speedBonusTotal}`;
+
+    if (isPracticeMode) {
+      if (resultHeadline) resultHeadline.textContent = "Warm-up Practice Complete!";
+      resultDayStreak.textContent = "Practice Round";
+      if (resultSubline) {
+        resultSubline.innerHTML = `Great warm-up! You scored <strong>${totalPointsEarned} pts</strong> (${correctCount}/${currentQuestions.length} correct). The official 7-Day Tournament kicks off <strong>this Monday (Day 1)</strong>!`;
+      }
+      return; // Do not submit practice scores to tournament leaderboard
+    }
+
+    if (resultHeadline) resultHeadline.textContent = "Day Challenge Complete!";
     resultDayStreak.textContent = `Day ${currentDayIndex} of 7`;
 
-    // Save to Firestore if user is authenticated
     const user = auth.currentUser;
-    if (user && db) {
+    if (user) {
+      if (resultSubline) {
+        resultSubline.innerHTML = `Saving your score of <strong>${totalPointsEarned} pts</strong> to the leaderboard…`;
+      }
+      const saved = await saveScoreToDatabase(user, totalPointsEarned, correctCount, speedBonusTotal);
+      if (saved && resultSubline) {
+        resultSubline.innerHTML = `🎉 Great effort! Your score of <strong>${totalPointsEarned} pts</strong> has been added to the leaderboard.`;
+      } else if (!saved && resultSubline) {
+        resultSubline.innerHTML = `⚠️ Score calculated, but could not sync with leaderboard. Check your network or permissions.`;
+      }
+    } else {
+      // Guest user — store score temporarily and show login callout
       try {
-        const scoreDocRef = db.collection("liveQuizScores").doc(`${user.uid}_${currentWeekKey}`);
-        await scoreDocRef.set({
-          userId: user.uid,
-          userName: user.displayName || user.email.split("@")[0] || "Learner",
-          userEmail: user.email || "",
+        sessionStorage.setItem("pendingLiveScore", JSON.stringify({
+          points: totalPointsEarned,
+          correct: correctCount,
+          bonus: speedBonusTotal,
           weekKey: currentWeekKey,
-          [`days.${currentDayKey}`]: {
-            score: correctCount,
-            totalQuestions: currentQuestions.length,
-            points: totalPointsEarned,
-            speedBonus: speedBonusTotal,
-            completedAt: firebase.firestore.FieldValue.serverTimestamp()
-          },
-          lastPlayedDay: currentDayIndex,
-          totalPoints: firebase.firestore.FieldValue.increment(totalPointsEarned),
-          totalCorrect: firebase.firestore.FieldValue.increment(correctCount),
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge: true });
+          dayKey: currentDayKey,
+          timestamp: Date.now()
+        }));
+      } catch (e) {}
 
-        console.log("Live quiz score saved successfully!");
-      } catch (err) {
-        console.error("Error saving live quiz score:", err);
+      if (resultSubline) {
+        resultSubline.innerHTML = `⚠️ <strong>Playing as Guest:</strong> <a href="#" id="resultLoginLink" style="color:var(--orange);font-weight:700;text-decoration:underline;">Log in or Sign up (top-right 👤)</a> to save your <strong>${totalPointsEarned} pts</strong> to the Leaderboard!`;
+        const link = document.getElementById("resultLoginLink");
+        if (link) {
+          link.addEventListener("click", (e) => {
+            e.preventDefault();
+            const btn = document.getElementById("authIconBtn");
+            if (btn) btn.click();
+          });
+        }
       }
     }
   }
@@ -567,10 +819,23 @@
     if (!liveLeaderboardRows) return;
 
     let items = leaderboardDocs.map((doc) => {
-      const dayData = doc.days ? doc.days[currentDayKey] : null;
+      // Support both nested map doc.days.day_X and legacy dotted keys doc["days.day_X"]
+      let dayData = null;
+      if (doc.days && doc.days[currentDayKey]) {
+        dayData = doc.days[currentDayKey];
+      } else if (doc[`days.${currentDayKey}`]) {
+        dayData = doc[`days.${currentDayKey}`];
+      }
+
       const dayPoints = dayData ? Number(dayData.points || 0) : 0;
       const weekPoints = Number(doc.totalPoints || 0);
-      const daysCount = doc.days ? Object.keys(doc.days).length : 0;
+
+      let daysCount = 0;
+      if (doc.days && typeof doc.days === "object") {
+        daysCount = Object.keys(doc.days).length;
+      } else {
+        daysCount = Object.keys(doc).filter((k) => k.startsWith("days.day_")).length;
+      }
 
       return {
         userId: doc.userId,
@@ -584,7 +849,7 @@
     if (activeLeaderboardFilter === "today") {
       items = items.filter((x) => x.dayPoints > 0).sort((a, b) => b.dayPoints - a.dayPoints);
     } else {
-      items.sort((a, b) => b.weekPoints - a.weekPoints);
+      items = items.filter((x) => x.weekPoints > 0).sort((a, b) => b.weekPoints - a.weekPoints);
     }
 
     if (items.length === 0) {
@@ -643,6 +908,30 @@
       renderLeaderboard();
     });
   }
+
+  // Listen for auth state changes (login / logout)
+  document.addEventListener("authchange", async (e) => {
+    const user = e.detail ? e.detail.user : auth.currentUser;
+    renderLeaderboard();
+
+    // If guest just logged in and had a pending score from this session, save it immediately!
+    const pendingRaw = sessionStorage.getItem("pendingLiveScore");
+    if (user && pendingRaw) {
+      try {
+        const pending = JSON.parse(pendingRaw);
+        sessionStorage.removeItem("pendingLiveScore");
+        if (resultSubline) {
+          resultSubline.innerHTML = `Saving pending score of <strong>${pending.points} pts</strong> for <strong>${user.displayName || user.email}</strong>…`;
+        }
+        const saved = await saveScoreToDatabase(user, pending.points, pending.correct, pending.bonus);
+        if (saved && resultSubline) {
+          resultSubline.innerHTML = `🎉 Score of <strong>${pending.points} pts</strong> saved to the leaderboard as <strong>${user.displayName || user.email}</strong>!`;
+        }
+      } catch (err) {
+        console.error("Error auto-saving pending score on login:", err);
+      }
+    }
+  });
 
   /* ---------- Initialize on Load ---------- */
   initCycleInfo();

@@ -62,6 +62,20 @@ service cloud.firestore {
       allow write: if request.auth != null && request.auth.uid == uid;
     }
 
+    // ---- Live Quiz weekly scores -------------------------------------------
+    // Shown on live.html / live-quiz.html. Public read, write by authenticated user.
+    match /liveQuizScores/{scoreId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // ---- Live Quiz custom questions ----------------------------------------
+    // Public read, admin-only write.
+    match /liveQuizQuestions/{questionId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
     // ---- Everything else: locked by default ------------------------------
     // Deny-by-default so a future collection isn't accidentally left open.
     match /{document=**} {

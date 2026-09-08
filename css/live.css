@@ -1,4 +1,4 @@
-﻿/* ============================================
+/* ============================================
    live.css — Dedicated Styles for Live Quiz
    Contains full standalone styling for live-quiz.html / live.html
    ============================================ */
@@ -115,58 +115,77 @@
 /* 7-Day Stepper Road-Map */
 .days-stepper {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: clamp(6px, 1vw, 12px);
   width: 100%;
 }
-@media (max-width: 860px) {
+@media (max-width: 600px) {
   .days-stepper {
     display: flex;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    padding-bottom: 8px;
+    scroll-snap-type: x mandatory;
+    padding: 2px 4px 10px;
+    gap: 10px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
   }
-  .days-stepper::-webkit-scrollbar { display: none; }
+  .days-stepper::-webkit-scrollbar {
+    height: 4px;
+    display: block;
+  }
+  .days-stepper::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 99px;
+  }
+  .days-stepper::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 99px;
+  }
   .day-chip {
-    flex: 0 0 120px;
+    flex: 0 0 105px;
+    scroll-snap-align: start;
   }
 }
 .day-chip {
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 10px;
-  padding: 12px 14px;
+  padding: clamp(8px, 1vw, 12px) clamp(6px, 0.9vw, 12px);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
+  min-width: 0;
   transition: transform 0.15s ease, border-color 0.15s ease;
 }
 .day-chip-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 4px;
 }
 .day-num {
-  font-size: 0.82rem;
+  font-size: clamp(0.74rem, 0.95vw, 0.82rem);
   font-weight: 700;
   color: rgba(255, 255, 255, 0.85);
+  white-space: nowrap;
 }
 .day-icon {
-  font-size: 0.85rem;
+  font-size: clamp(0.75rem, 0.95vw, 0.85rem);
 }
 .day-name {
-  font-size: 0.78rem;
+  font-size: clamp(0.7rem, 0.85vw, 0.78rem);
   color: rgba(255, 255, 255, 0.55);
 }
 .day-status-pill {
-  font-size: 0.7rem;
+  font-size: clamp(0.62rem, 0.8vw, 0.7rem);
   font-weight: 600;
-  padding: 3px 8px;
+  padding: 2px clamp(5px, 0.7vw, 8px);
   border-radius: 999px;
   text-align: center;
   width: fit-content;
-  margin-top: 4px;
+  margin-top: 3px;
+  white-space: nowrap;
 }
 .day-status-pill.past {
   background: rgba(74, 222, 128, 0.18);

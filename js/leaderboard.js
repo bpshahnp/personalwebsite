@@ -26,7 +26,7 @@ const boardFilter = document.getElementById("boardFilter");
 const timeFilter = document.getElementById("timeFilter");
 
 let scoreDocs = [];        // raw { id, ...data } from Firestore
-let selectedClass = "8";
+let selectedClass = "All"; // Default to All classes so all players appear immediately
 let selectedTime = "day";  // day, week, month, all
 let loadError = "";
 
@@ -131,8 +131,9 @@ function render() {
   const ranked = rankedPlayers();
 
   if (!ranked.length) {
+    const classLabel = selectedClass === "All" ? "any class" : `Class ${selectedClass}`;
     leaderboardTable.appendChild(
-      messageEl(`No Class ${selectedClass} scores yet — take a Class ${selectedClass} quiz on the MCQ Hub to open this board.`)
+      messageEl(`No scores yet for ${classLabel} (${selectedTime}) — take a quiz on MCQ Hub or Live Challenge to appear here!`)
     );
     renderYourRank(ranked);
     return;
