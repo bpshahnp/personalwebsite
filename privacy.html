@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1694584663544438" crossorigin="anonymous"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy | B. Prasad Shah</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    .legal-section { padding: 48px 0 100px; }
+    .legal-content { max-width: 760px; background: var(--white); border: 1px solid var(--line); border-radius: var(--radius); padding: 36px 40px; box-shadow: var(--shadow); }
+    .legal-content h2 { font-family: var(--font-display); color: var(--navy-deep); margin: 32px 0 10px; font-size: 1.25rem; }
+    .legal-content h2:first-child { margin-top: 0; }
+    .legal-content p, .legal-content li { color: var(--ink); font-size: 0.95rem; line-height: 1.7; }
+    .legal-content ul { padding-left: 20px; margin: 10px 0; }
+    .legal-updated { color: var(--mist); font-size: 0.85rem; margin-bottom: 28px; }
+    @media (max-width: 640px) { .legal-content { padding: 24px 22px; } }
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="index.html" class="logo">B. <span>Prasad Shah</span></a>
+      <nav class="main-nav">
+        <a href="index.html">Home</a>
+        <a href="live-quiz.html" class="nav-live-link">Live Quiz <span class="nav-live-dot" aria-hidden="true"></span></a>
+        <a href="mcq.html">MCQ Hub</a>
+        <a href="python.html">Python Hub</a>
+        <a href="video.html">Video Hub</a>
+        <a href="leaderboard.html">Leaderboard</a>
+        <div class="dropdown">
+          <button class="dropdown-toggle">See More Options ▾</button>
+          <div class="dropdown-menu">
+            <a href="resources.html">Additional Resources</a>
+            <a href="contact.html">Contact</a>
+            <a href="admin.html">Admin Panel</a>
+          </div>
+        </div>
+      </nav>
+      <div class="header-actions">
+        <div class="auth-widget">
+          <button class="auth-icon-btn" id="authIconBtn" aria-label="Account"></button>
+          <div class="auth-dropdown" id="authDropdown" hidden></div>
+        </div>
+      </div>
+      <div class="mobile-header-icons">
+        <button class="nav-toggle" id="navToggle" aria-label="Open menu">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+        <div class="auth-widget">
+          <button class="auth-icon-btn" id="authIconBtnMobile" aria-label="Account"></button>
+          <div class="auth-dropdown" id="authDropdownMobile" hidden></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="nav-drawer" id="navDrawer">
+    <button class="drawer-close" id="drawerClose" aria-label="Close menu">&times;</button>
+    <nav class="drawer-nav">
+      <a href="index.html">Home</a>
+      <a href="live-quiz.html">Live Quiz 🔴</a>
+      <a href="mcq.html">MCQ Hub</a>
+      <a href="python.html">Python Hub</a>
+      <a href="video.html">Video Hub</a>
+      <a href="leaderboard.html">Leaderboard</a>
+      <div class="dropdown">
+        <button class="dropdown-toggle">See More Options ▾</button>
+        <div class="dropdown-menu">
+          <a href="resources.html">Additional Resources</a>
+          <a href="contact.html">Contact</a>
+          <a href="admin.html">Admin Panel</a>
+        </div>
+      </div>
+    </nav>
+  </div>
+  <div class="drawer-overlay" id="drawerOverlay"></div>
+
+  <section class="page-hero">
+    <div class="container">
+      <h1>Privacy Policy</h1>
+      <p>What we collect, why, and how it's used across MCQ Hub, Python Hub, and the rest of this site.</p>
+    </div>
+  </section>
+
+  <section class="legal-section">
+    <div class="container">
+      <div class="legal-content">
+        <p class="legal-updated">Last updated: <span id="lastUpdated"></span></p>
+
+        <h2>Who this site is for</h2>
+        <p>This website is an educational resource built primarily for school students (Class 8–10) practicing multiple-choice questions, Python programming, and related study material. If you are a parent or guardian and have questions about your child's use of this site, please reach out via the <a href="contact.html">Contact page</a>.</p>
+
+        <h2>Information we collect</h2>
+        <ul>
+          <li><strong>Account information:</strong> if you log in (via Firebase Authentication), we store your email address and a display name derived from it, used to save your quiz results and show your name on the Leaderboard.</li>
+          <li><strong>Quiz activity:</strong> your scores, attempts, and per-topic progress on MCQ Hub, so you can track what you've completed and compete on the Leaderboard.</li>
+          <li><strong>Contact form submissions:</strong> if you send a message via the Contact page, we store your name, email, and message so we can reply.</li>
+          <li><strong>Basic usage data:</strong> standard technical information (like browser type and pages visited) may be collected automatically by our hosting and analytics providers.</li>
+        </ul>
+
+        <h2>How this data is used</h2>
+        <p>Your information is used only to operate the site's features — showing your leaderboard rank, tracking which topics you've completed, and letting the site admin respond to your messages. We do not sell your personal information to anyone.</p>
+
+        <h2>Where data is stored</h2>
+        <p>Data is stored using Google Firebase (Firestore Database and Firebase Authentication), a third-party service. Firebase's own privacy practices govern how that infrastructure handles data at the hosting level; you can read more at <a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">firebase.google.com/support/privacy</a>.</p>
+
+        <h2>Advertising</h2>
+        <p>This site may display ads served by Google AdSense. Because this site is intended for a general and school-age audience, ads shown here are served in a manner appropriate for that audience — we do not enable personalized/interest-based advertising or ad tracking aimed at children. Google may still use non-personalized advertising cookies to serve and measure ads; you can learn more or adjust your ad settings at <a href="https://adssettings.google.com" target="_blank" rel="noopener">adssettings.google.com</a>, and more about how Google uses data from partner sites at <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener">policies.google.com/technologies/partner-sites</a>.</p>
+
+        <h2>Cookies and local storage</h2>
+        <p>We use minimal cookies/local storage needed to keep you logged in between visits. If advertising is enabled, Google's ad services may set their own cookies as described above.</p>
+
+        <h2>Children's privacy</h2>
+        <p>We do not knowingly collect more information from a child than is necessary to provide the educational features of this site (an email address for login, and quiz results). We encourage parents and guardians to supervise their children's online activity and to contact us with any concerns.</p>
+
+        <h2>Your choices</h2>
+        <p>You can stop using your account at any time. To request that your account data (scores, progress, contact messages) be deleted, email us using the address on the <a href="contact.html">Contact page</a>.</p>
+
+        <h2>Changes to this policy</h2>
+        <p>We may update this policy as the site changes. Continued use of the site after an update means you accept the revised policy.</p>
+
+        <h2>Contact</h2>
+        <p>Questions about this policy? Reach out via the <a href="contact.html">Contact page</a>.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>&copy; <span id="year"></span> B. Prasad Shah — Python Hub</p>
+      <div class="footer-links">
+        <a href="index.html">Home</a>
+        <a href="privacy.html" class="active">Privacy Policy</a>
+        <a href="admin.html">Admin</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/auth-widget.js"></script>
+  <script src="js/nav-drawer.js"></script>
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+    document.getElementById("lastUpdated").textContent = new Date().toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
+  </script>
+</body>
+</html>

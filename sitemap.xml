@@ -23,4 +23,9 @@
   <url>
   <loc>https://bholaprasadshah.com.np/video.html</loc>
   </url>
+  <url>
+    <loc>https://bholaprasadshah.com.np/privacy.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
 </urlset>
