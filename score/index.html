@@ -1,1 +1,1754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Competition Scorer</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- External CSS -->
+    <link rel="stylesheet" href="style.css">
+    
+    <style>
+        /* Page-specific styles */
+        body {
+            background: linear-gradient(135deg, #3182ce 0%, #2c5282 100%);
+            overflow-y: auto;
+            height: auto;
+            min-height: 100vh;
+        }
 
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .quiz-icon {
+            position: absolute;
+            font-size: 2rem;
+            opacity: 0.15;
+            animation: float 10s infinite ease-in-out;
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .quiz-icon:nth-child(1) { left: 10%; top: 20%; animation-delay: 0s; }
+        .quiz-icon:nth-child(2) { left: 80%; top: 40%; animation-delay: 2s; }
+        .quiz-icon:nth-child(3) { left: 20%; top: 60%; animation-delay: 4s; }
+        .quiz-icon:nth-child(4) { left: 70%; top: 80%; animation-delay: 1s; }
+        .quiz-icon:nth-child(5) { left: 50%; top: 10%; animation-delay: 3s; }
+        .quiz-icon:nth-child(6) { left: 90%; top: 70%; animation-delay: 5s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-30px) rotate(10deg); }
+        }
+
+        .main-wrapper {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            padding-bottom: 3rem;
+        }
+ .home-btn:focus {
+            outline: 3px solid #4299e1;
+            outline-offset: 2px;
+        }
+        
+        .home-icon { font-size: 2rem; }
+        
+        
+        /* Home Button & Legend */
+        .home-btn {
+            position: fixed; 
+            top: 10px; 
+            left: 10px; 
+            background: linear-gradient(135deg, #3182ce, #2d3748);
+            color: white; 
+            width: 60px; 
+            height: 60px; 
+            border-radius: 50%; 
+            cursor: pointer;
+            z-index: 1000; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            text-decoration: none;
+            transition: transform 0.2s ease;
+        }
+        
+        .home-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .home-btn:focus {
+            outline: 3px solid #4299e1;
+            outline-offset: 2px;
+        }
+        
+        .home-icon { font-size: 2rem; }
+        /* Navigation */
+        .nav-wrapper {
+            max-width: 1400px;
+            margin: 0 auto 2rem; /* Adjusted top margin for better sticking */
+            padding: 1rem;       /* Added padding for spacing */
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+            
+            /* STICKY HEADER FIX */
+            position: sticky;
+            top: 0;
+            z-index: 1000;       /* Ensures it stays above other content */
+            background: rgba(255, 255, 255, 0.15); /* Semi-transparent background */
+            backdrop-filter: blur(12px);           /* Blurs content behind the bar */
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Subtle border */
+            border-radius: 0 0 15px 15px;          /* Rounds the bottom corners */
+        }
+
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            flex: 1;
+        }
+
+        .nav-button {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: var(--text-dark);
+            padding: 1.25rem;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .nav-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            border-color: var(--primary-blue);
+        }
+
+        .nav-button.active {
+            background: linear-gradient(135deg, var(--primary-blue), #2c5282);
+            color: white;
+            border-color: var(--primary-blue);
+        }
+
+        /* Locked nav buttons (editing pages, shown when not signed in) */
+        .nav-button.nav-locked {
+            opacity: 0.55;
+            filter: grayscale(0.3);
+            position: relative;
+        }
+
+        .nav-button.nav-locked::after {
+            content: '🔒';
+            font-size: 0.85rem;
+            margin-left: 4px;
+        }
+
+        .nav-button.nav-locked:hover {
+            transform: none;
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .reset-button {
+            background: linear-gradient(135deg, var(--primary-red), var(--dark-red));
+            border: none;
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            font-weight: 700;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(229, 62, 62, 0.4);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .reset-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .reset-button:hover::before {
+            left: 100%;
+        }
+
+        .reset-button:hover {
+            transform: translateY(-3px) scale(1.1);
+            box-shadow: 0 6px 20px rgba(229, 62, 62, 0.5);
+        }
+
+        .reset-icon {
+            display: inline-block;
+            font-size: 1.4rem;
+        }
+
+        /* Container */
+        .content-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 1rem 3rem;
+        }
+
+        /* Page sections */
+        .page {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cards */
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            margin-bottom: 2rem;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        /* Leader Banner */
+        .leader-banner {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 25px rgba(251, 191, 36, 0.4);
+            display: none;
+        }
+
+        .leader-banner.show {
+            display: block;
+        }
+
+        .leader-banner h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+        }
+
+        /* Standings Grid */
+        .standings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .group-card {
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            padding: 2rem;
+            border-radius: 16px;
+            text-align: center;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .group-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .group-card.leading {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: white;
+            border-color: #d97706;
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(251, 191, 36, 0.4);
+        }
+
+        .group-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .group-score {
+            font-size: 3.5rem;
+            font-weight: 900;
+            color: var(--primary-blue);
+            margin: 0.5rem 0;
+        }
+
+        .group-card.leading .group-score {
+            color: white;
+        }
+
+        .leader-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.3);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+
+        /* Table */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Mobile one-round-at-a-time switcher (shown instead of the wide table on small screens) */
+        .round-switcher {
+            display: none;
+        }
+
+        .round-tabs {
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            padding: 0.25rem 0.1rem 0.75rem;
+            margin-bottom: 1rem;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+            border-bottom: 2px solid var(--border-gray);
+        }
+
+        .round-tab {
+            flex-shrink: 0;
+            background: rgba(255, 255, 255, 0.8);
+            border: 2px solid var(--border-gray);
+            color: var(--text-dark);
+            padding: 0.55rem 1rem;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+            font-family: 'Poppins', sans-serif;
+            text-align: center;
+        }
+
+        .round-tab .round-tab-max {
+            display: block;
+            font-size: 0.68rem;
+            opacity: 0.75;
+            font-weight: 500;
+            margin-top: 1px;
+        }
+
+        .round-tab.active {
+            background: linear-gradient(135deg, var(--primary-blue), #2c5282);
+            color: white;
+            border-color: var(--primary-blue);
+            box-shadow: 0 4px 12px rgba(49, 130, 206, 0.4);
+        }
+
+        .round-groups-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .round-group-card {
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid var(--border-gray);
+            border-radius: 12px;
+            padding: 0.85rem 1rem;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .round-group-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+        }
+
+        .round-group-name {
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: var(--text-dark);
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .round-group-score {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--primary-blue);
+            min-width: 2.4rem;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .round-group-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .round-group-controls .btn-score {
+            flex: 1;
+            padding: 0.7rem 0.4rem;
+            font-size: 0.95rem;
+        }
+
+        .round-empty-state {
+            text-align: center;
+            color: var(--text-light);
+            padding: 2.5rem 1rem;
+            font-size: 0.95rem;
+        }
+
+        @media (max-width: 768px) {
+            .table-container {
+                display: none;
+            }
+
+            .round-switcher {
+                display: block;
+            }
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        thead {
+            background: linear-gradient(135deg, var(--primary-blue), #2c5282);
+        }
+
+        th {
+            padding: 1rem;
+            text-align: center;
+            font-weight: 700;
+            color: white;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 1rem;
+            text-align: center;
+            border-bottom: 1px solid var(--border-gray);
+        }
+
+        th:first-child,
+        td:first-child {
+            position: sticky;
+            left: 0;
+            background: rgba(255, 255, 255, 0.95);
+            z-index: 10;
+            border-right: 2px solid var(--border-gray);
+            font-weight: 700;
+            text-align: left;
+            min-width: 200px;
+        }
+
+        thead th:first-child {
+            background: linear-gradient(135deg, var(--primary-blue), #2c5282);
+        }
+
+        .score-cell {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .score-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--primary-blue);
+        }
+
+        .score-controls {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn-score {
+            padding: 0.5rem 0.75rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .btn-plus {
+            background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+            color: white;
+        }
+
+        .btn-plus:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(72, 187, 120, 0.4);
+        }
+
+        .btn-minus {
+            background: linear-gradient(135deg, var(--primary-red), var(--dark-red));
+            color: white;
+        }
+
+        .btn-minus:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(229, 62, 62, 0.4);
+        }
+
+        .btn-score:active {
+            transform: scale(0.95);
+        }
+
+        .total-row {
+            background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+            font-weight: 800;
+        }
+
+        .total-row td {
+            font-size: 1.75rem;
+            color: var(--primary-blue);
+            padding: 1.5rem 1rem;
+        }
+
+        /* Form Controls */
+        .form-row {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            background: rgba(49, 130, 206, 0.1);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-top: 1.5rem;
+            border: 2px solid rgba(49, 130, 206, 0.2);
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-dark);
+            font-size: 0.9rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border-gray);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-blue), #2c5282);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(49, 130, 206, 0.3);
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(49, 130, 206, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--primary-red), var(--dark-red));
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.85rem;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .btn-danger:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(229, 62, 62, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.85rem;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .btn-success:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(72, 187, 120, 0.4);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .nav-wrapper {
+                flex-wrap: wrap;
+            }
+            
+            .nav-grid {
+                grid-template-columns: repeat(2, 1fr);
+                width: 100%;
+            }
+            
+            .reset-button {
+                margin: 0 auto;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .standings-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .card {
+                padding: 1.5rem;
+            }
+
+            .card-title {
+                font-size: 1.5rem;
+            }
+
+            .group-score {
+                font-size: 2.5rem;
+            }
+
+            .school-info h1 {
+                font-size: 1.8rem;
+            }
+
+            .competition-title {
+                font-size: 1.4rem;
+                padding: 12px 20px;
+                letter-spacing: 1px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .school-info h1 {
+                font-size: 1.5rem;
+                letter-spacing: 1px;
+            }
+
+            .competition-title {
+                font-size: 1.2rem;
+                padding: 10px 15px;
+            }
+        }
+
+        /* Sign-in trigger button (top-right, shown when logged out) */
+        .signin-trigger-btn {
+            background: linear-gradient(135deg, var(--primary-blue), #2c5282);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(49, 130, 206, 0.4);
+            font-family: 'Poppins', sans-serif;
+            transition: transform 0.2s ease;
+        }
+
+        .signin-trigger-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Sign-in modal overlay */
+        .signin-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(20, 30, 48, 0.55);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .signin-overlay.show {
+            display: flex;
+        }
+
+        .signin-modal {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 16px;
+            padding: 2rem;
+            width: 100%;
+            max-width: 340px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            position: relative;
+            animation: fadeIn 0.25s ease;
+        }
+
+        .signin-modal-close {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            line-height: 1;
+            cursor: pointer;
+            color: var(--text-light);
+            padding: 4px 8px;
+        }
+
+        .signin-modal-close:hover {
+            color: var(--text-dark);
+        }
+
+        .signin-modal h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+            color: var(--text-dark);
+            text-align: center;
+        }
+
+        .signin-modal .form-input {
+            margin-bottom: 1rem;
+        }
+
+        .signin-modal .btn-primary {
+            width: 100%;
+            padding: 0.85rem;
+        }
+
+        @media (max-width: 480px) {
+            .signin-modal {
+                padding: 1.5rem;
+            }
+        }
+
+        /* Mobile hamburger navigation */
+        .nav-top-row {
+            display: contents; /* on desktop, hamburger/undo/reset sit as normal siblings of nav-grid */
+        }
+
+        .nav-hamburger {
+            display: none;
+            align-items: center;
+            gap: 0.6rem;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: var(--text-dark);
+            padding: 0.85rem 1.1rem;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            font-family: 'Poppins', sans-serif;
+            width: 100%;
+            text-align: left;
+        }
+
+        .nav-hamburger .hamburger-icon {
+            font-size: 1.25rem;
+            flex-shrink: 0;
+            transition: transform 0.25s ease;
+        }
+
+        .nav-hamburger[aria-expanded="true"] .hamburger-icon {
+            transform: rotate(90deg);
+        }
+
+        #hamburgerLabel {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 768px) {
+            .nav-wrapper {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.75rem;
+            }
+
+            .nav-top-row {
+                display: flex;
+                gap: 0.6rem;
+                align-items: center;
+                width: 100%;
+            }
+
+            .nav-hamburger {
+                display: flex;
+                flex: 1;
+            }
+
+            .undo-button,
+            .reset-button {
+                width: 48px;
+                height: 48px;
+                flex-shrink: 0;
+                margin: 0;
+            }
+
+            .nav-grid {
+                display: none;
+                grid-template-columns: 1fr !important;
+                width: 100%;
+                gap: 0.6rem;
+            }
+
+            .nav-grid.mobile-open {
+                display: grid;
+                animation: fadeIn 0.2s ease;
+            }
+        }
+
+        /* Undo button (next to reset) */
+        .undo-button {
+            background: linear-gradient(135deg, #718096, #4a5568);
+            border: none;
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            font-weight: 700;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(74, 85, 104, 0.4);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .undo-button:hover:not(:disabled) {
+            transform: translateY(-3px) scale(1.1);
+            box-shadow: 0 6px 20px rgba(74, 85, 104, 0.5);
+        }
+
+        .undo-button:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Undo toast/snackbar */
+        .undo-toast {
+            position: fixed;
+            left: 50%;
+            bottom: 24px;
+            transform: translateX(-50%) translateY(20px);
+            background: #1a202c;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            z-index: 3000;
+            font-size: 0.95rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease, transform 0.25s ease;
+            max-width: 90vw;
+        }
+
+        .undo-toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+            pointer-events: auto;
+        }
+
+        .undo-toast .undo-toast-text {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .undo-toast .undo-toast-btn {
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            flex-shrink: 0;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .undo-toast .undo-toast-btn:hover {
+            filter: brightness(1.15);
+        }
+
+        /* Flash highlight on the score that just changed */
+        @keyframes scoreFlashUp {
+            0%   { background: rgba(72, 187, 120, 0.55); transform: scale(1.15); }
+            100% { background: transparent; transform: scale(1); }
+        }
+
+        @keyframes scoreFlashDown {
+            0%   { background: rgba(229, 62, 62, 0.55); transform: scale(1.15); }
+            100% { background: transparent; transform: scale(1); }
+        }
+
+        .score-value.flash-up,
+        .flash-up {
+            animation: scoreFlashUp 1.1s ease-out;
+            border-radius: 8px;
+        }
+
+        .score-value.flash-down,
+        .flash-down {
+            animation: scoreFlashDown 1.1s ease-out;
+            border-radius: 8px;
+        }
+    </style>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBf8Hvh6y-brtQcHRo6DesVj4i2SrgdnMg",
+            authDomain: "osaquiz.firebaseapp.com",
+            databaseURL: "https://osaquiz-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "osaquiz",
+            storageBucket: "osaquiz.firebasestorage.app",
+            messagingSenderId: "427866798589",
+            appId: "1:427866798589:web:2183a19405707fa6cc8194"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+    </script>
+</head>
+<body>
+    <a href="I:\My Drive\Inter-House Quiz Competition 2083\otherwebpages\index.html" class="home-btn" aria-label="Go to home page">
+        <span class="home-icon" aria-hidden="true">⌂</span>
+    </a>
+
+    <!-- Sign-in control -->
+    <div id="authBox" style="position:fixed; top:10px; right:10px; z-index:1000;">
+        <button id="loginTriggerBtn" onclick="openLoginModal()" class="signin-trigger-btn">Sign In</button>
+        <button id="logoutBtn" onclick="doLogout()" class="reset-button" style="display:none; width:auto; height:auto; border-radius:8px; padding:8px 14px; font-size:0.9rem;">Sign Out</button>
+    </div>
+
+    <!-- Sign-in modal (shown over blurred background) -->
+    <div id="loginOverlay" class="signin-overlay" onclick="if(event.target===this) closeLoginModal()">
+        <div class="signin-modal">
+            <button type="button" class="signin-modal-close" onclick="closeLoginModal()" aria-label="Close">&times;</button>
+            <h3>Sign In</h3>
+            <div id="loginForm">
+                <input id="loginEmail" type="email" placeholder="Email" class="form-input" autocomplete="username">
+                <input id="loginPass" type="password" placeholder="Password" class="form-input" autocomplete="current-password">
+                <button onclick="doLogin()" class="btn-primary">Sign In</button>
+            </div>
+        </div>
+    </div>
+    <div class="bg-animation">
+        <div class="quiz-icon">🧠</div>
+        <div class="quiz-icon">❓</div>
+        <div class="quiz-icon">💡</div>
+        <div class="quiz-icon">📚</div>
+        <div class="quiz-icon">🏆</div>
+        <div class="quiz-icon">⚡</div>
+    </div>
+
+    <div class="main-wrapper">
+        <header class="header">
+            <div class="header-top">
+                <div class="left-section">
+                    <div class="school-logo">
+                        <img src="https://bpshahnp.github.io/quizscore/abc.png" width="100" height="100" alt="Om Shanti Academy Logo" />
+                    </div>
+                    <div class="school-info">
+                        <h1>OM SHANTI ACADEMY</h1>
+                        <div class="school-tagline">"An activity based school"</div>
+                    </div>
+                </div>
+            </div>
+            <div class="competition-section">
+                <div class="competition-title">Quiz Competition Scorer 2083</div>
+            </div>
+        </header>
+
+        <div class="nav-wrapper">
+            <div class="nav-top-row">
+                <button class="nav-hamburger" id="navHamburger" onclick="toggleMobileNav()" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="navGrid">
+                    <span class="hamburger-icon">☰</span>
+                    <span id="hamburgerLabel">📊 Live Standings</span>
+                </button>
+                <button class="undo-button" id="undoButton" onclick="undoLastScore()" title="No changes to undo" disabled>
+                    <span class="reset-icon">↩</span>
+                </button>
+                <button class="reset-button" onclick="resetSystem()" title="Reset All Data">
+                    <span class="reset-icon">↻</span>
+                </button>
+            </div>
+            <div class="nav-grid" id="navGrid">
+                <button class="nav-button active" data-page="standings" onclick="showPage('standings')">
+                    📊 Live Standings
+                </button>
+                <button class="nav-button" data-page="scoreboard" onclick="showPage('scoreboard')">
+                    🎯 Scoreboard
+                </button>
+                <button class="nav-button" data-page="rounds" onclick="showPage('rounds')">
+                    ➕ Manage Rounds
+                </button>
+                <button class="nav-button" data-page="groups" onclick="showPage('groups')">
+                    ✏️ Manage Groups
+                </button>
+            </div>
+        </div>
+
+        <!-- Undo toast (appears after every score change) -->
+        <div id="undoToast" class="undo-toast">
+            <span class="undo-toast-text" id="undoToastText"></span>
+            <button class="undo-toast-btn" onclick="undoLastScore()">Undo</button>
+        </div>
+
+        <div class="content-container">
+            
+            <!-- LIVE STANDINGS PAGE -->
+            <div id="standingsPage" class="page active">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Live Standings</h2>
+                    </div>
+
+                    <div id="leaderBanner" class="leader-banner">
+                        <h3>🏆 Current Leader: <span id="leaderName">-</span> with <span id="leaderScore">0</span> points</h3>
+                    </div>
+
+                    <div class="standings-grid" id="standingsGrid"></div>
+                </div>
+            </div>
+
+            <!-- SCOREBOARD PAGE -->
+            <div id="scoreboardPage" class="page">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Detailed Scoreboard</h2>
+                    </div>
+                    <div class="table-container">
+                        <table id="scoreTable"></table>
+                    </div>
+                    <!-- Mobile view: one round at a time, all groups clearly listed, tap a tab to switch rounds -->
+                    <div class="round-switcher" id="roundSwitcher">
+                        <div class="round-tabs" id="roundTabs"></div>
+                        <div class="round-groups-list" id="roundGroupsList"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MANAGE ROUNDS PAGE -->
+            <div id="roundsPage" class="page">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Manage Rounds</h2>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Round Name</label>
+                            <input type="text" id="roundName" class="form-input" placeholder="e.g., Visual Round">
+                        </div>
+                        <div class="form-group" style="flex: 0 0 150px;">
+                            <label class="form-label">Max Marks</label>
+                            <input type="number" id="roundMax" class="form-input" value="10">
+                        </div>
+                        <button class="btn-primary" onclick="addRound()">Add Round</button>
+                    </div>
+
+                    <div class="table-container" style="margin-top: 2rem;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Round Name</th>
+                                    <th>Max Marks</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="roundsList"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MANAGE GROUPS PAGE -->
+            <div id="groupsPage" class="page">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Manage Group Names</h2>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Group Number</th>
+                                    <th>Group Name</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="groupsList"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // App State
+        let groups = ['Group 1', 'Group 2', 'Group 3', 'Group 4', 'Group 5', 'Group 6', 'Group 7', 'Group 8'];
+        let rounds = [];
+        let scores = {};
+        const defaultRounds = [
+           
+        ];
+
+        // Auth
+        let isEditor = false;
+
+        function openLoginModal() {
+            document.getElementById('loginOverlay').classList.add('show');
+            document.getElementById('loginEmail').focus();
+        }
+
+        function closeLoginModal() {
+            document.getElementById('loginOverlay').classList.remove('show');
+        }
+
+        function doLogin() {
+            const email = document.getElementById('loginEmail').value;
+            const pass = document.getElementById('loginPass').value;
+            firebase.auth().signInWithEmailAndPassword(email, pass)
+                .then(() => closeLoginModal())
+                .catch(err => alert('Login failed: ' + err.message));
+        }
+
+        function doLogout() {
+            firebase.auth().signOut();
+        }
+
+        // Allow pressing Enter inside the modal to submit
+        document.addEventListener('DOMContentLoaded', () => {
+            ['loginEmail', 'loginPass'].forEach(id => {
+                document.getElementById(id).addEventListener('keydown', e => {
+                    if (e.key === 'Enter') doLogin();
+                });
+            });
+            document.addEventListener('keydown', e => {
+                if (e.key === 'Escape') closeLoginModal();
+            });
+        });
+
+        firebase.auth().onAuthStateChanged(user => {
+            isEditor = !!user;
+            document.getElementById('loginTriggerBtn').style.display = user ? 'none' : 'inline-block';
+            document.getElementById('logoutBtn').style.display = user ? 'block' : 'none';
+            if (user) closeLoginModal();
+            enforcePageAccess();
+            render();
+        });
+
+        // Initialize
+        async function init() {
+            await loadData();
+            render();
+            initBackgroundAnimation();
+
+            // Live sync: reflect changes made from other devices in real time
+            db.ref('quizData').on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (!data) return;
+                groups = data.groups || groups;
+                rounds = data.rounds || rounds;
+                scores = data.scores || scores;
+                render();
+            });
+        }
+
+        function initBackgroundAnimation() {
+            const bgIcons = document.querySelectorAll('.quiz-icon');
+            bgIcons.forEach(icon => {
+                icon.style.animationDuration = (6 + Math.random() * 6) + 's';
+                icon.style.animationDelay = (Math.random() * 2) + 's';
+            });
+        }
+
+        async function loadData() {
+            try {
+                const snapshot = await db.ref('quizData').once('value');
+                const data = snapshot.val();
+                if (data) {
+                    groups = data.groups || groups;
+                    rounds = data.rounds || [...defaultRounds];
+                    scores = data.scores || {};
+                    if (!data.rounds) initScores();
+                    return;
+                }
+            } catch (e) {
+                console.warn('Firebase unavailable, falling back to localStorage', e);
+            }
+
+            // Fallback: local cache (offline, or first run before any Firebase data exists)
+            const savedGroups = localStorage.getItem('groups');
+            const savedRounds = localStorage.getItem('rounds');
+            const savedScores = localStorage.getItem('scores');
+
+            if (savedGroups) groups = JSON.parse(savedGroups);
+            if (savedRounds) {
+                rounds = JSON.parse(savedRounds);
+                scores = JSON.parse(savedScores || '{}');
+            } else {
+                rounds = [...defaultRounds];
+                initScores();
+            }
+        }
+
+        function initScores() {
+            scores = {};
+            groups.forEach(group => {
+                scores[group] = {};
+                rounds.forEach(round => {
+                    scores[group][round.id] = 0;
+                });
+            });
+        }
+
+        function saveData() {
+            localStorage.setItem('groups', JSON.stringify(groups));
+            localStorage.setItem('rounds', JSON.stringify(rounds));
+            localStorage.setItem('scores', JSON.stringify(scores));
+            db.ref('quizData').set({ groups, rounds, scores })
+                .catch(e => console.error('Firebase save failed', e));
+        }
+
+        // Navigation
+        function showPage(pageName) {
+            // Scoreboard / Manage Rounds / Manage Groups are editing pages —
+            // keep them locked until the user signs in.
+            if (pageName !== 'standings' && !isEditor) {
+                openLoginModal();
+                return;
+            }
+
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-button').forEach(b => b.classList.remove('active'));
+            
+            document.getElementById(pageName + 'Page').classList.add('active');
+            const navBtn = document.querySelector(`.nav-button[data-page="${pageName}"]`);
+            navBtn.classList.add('active');
+
+            // Reflect the current page on the mobile hamburger, then close the dropdown
+            const label = document.getElementById('hamburgerLabel');
+            if (label) label.textContent = navBtn.textContent.trim();
+            closeMobileNav();
+            
+            render();
+        }
+
+        // Mobile hamburger menu (Scoreboard / Manage Rounds / Manage Groups collapse under this on small screens)
+        function toggleMobileNav() {
+            const grid = document.getElementById('navGrid');
+            const hamburger = document.getElementById('navHamburger');
+            if (!grid || !hamburger) return;
+            const isOpen = grid.classList.toggle('mobile-open');
+            hamburger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        }
+
+        function closeMobileNav() {
+            const grid = document.getElementById('navGrid');
+            const hamburger = document.getElementById('navHamburger');
+            if (grid) grid.classList.remove('mobile-open');
+            if (hamburger) hamburger.setAttribute('aria-expanded', 'false');
+        }
+
+        // Tapping anywhere outside the nav closes the mobile dropdown
+        document.addEventListener('click', (e) => {
+            const wrapper = document.querySelector('.nav-wrapper');
+            const grid = document.getElementById('navGrid');
+            if (grid && grid.classList.contains('mobile-open') && wrapper && !wrapper.contains(e.target)) {
+                closeMobileNav();
+            }
+        });
+
+        // Gray out + lock the editing-page nav buttons for anyone not signed in
+        function updateNavAccess() {
+            document.querySelectorAll('.nav-button[data-page]').forEach(btn => {
+                const page = btn.getAttribute('data-page');
+                const restricted = page !== 'standings';
+                if (restricted && !isEditor) {
+                    btn.classList.add('nav-locked');
+                    btn.setAttribute('aria-disabled', 'true');
+                    btn.title = 'Sign in to access';
+                } else {
+                    btn.classList.remove('nav-locked');
+                    btn.removeAttribute('aria-disabled');
+                    btn.removeAttribute('title');
+                }
+            });
+        }
+
+        // If someone signs out while viewing a restricted page, bounce them back to Live Standings
+        function enforcePageAccess() {
+            if (isEditor) return;
+            const activePage = document.querySelector('.page.active');
+            if (activePage && activePage.id !== 'standingsPage') {
+                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                document.querySelectorAll('.nav-button').forEach(b => b.classList.remove('active'));
+                document.getElementById('standingsPage').classList.add('active');
+                const standingsBtn = document.querySelector('.nav-button[data-page="standings"]');
+                standingsBtn.classList.add('active');
+                const label = document.getElementById('hamburgerLabel');
+                if (label) label.textContent = standingsBtn.textContent.trim();
+                closeMobileNav();
+            }
+        }
+
+        // Scoring
+        let scoreHistory = [];      // stack of past changes, for undo
+        let lastChanged = null;     // {group, roundId, direction} used to flash the cell that just changed
+        let undoToastTimer = null;
+
+        function updateScore(group, roundId, delta) {
+            if (!isEditor) return alert('Sign in to edit scores.');
+            if (!scores[group]) scores[group] = {};
+            if (!scores[group][roundId]) scores[group][roundId] = 0;
+
+            const prevValue = scores[group][roundId];
+
+            scores[group][roundId] += delta;
+            if (scores[group][roundId] < 0) scores[group][roundId] = 0;
+
+            const round = rounds.find(r => r.id === roundId);
+
+            // Remember this change so it can be undone
+            scoreHistory.push({
+                group,
+                roundId,
+                prevValue,
+                newValue: scores[group][roundId],
+                delta,
+                roundName: round ? round.name : 'Round'
+            });
+            if (scoreHistory.length > 30) scoreHistory.shift();
+
+            lastChanged = { group, roundId, direction: delta > 0 ? 'up' : 'down' };
+
+            saveData();
+            render();
+            updateUndoButton();
+            showUndoToast(`${group}: ${delta > 0 ? '+' : ''}${delta} in "${round ? round.name : 'round'}" (now ${scores[group][roundId]})`);
+        }
+
+        function undoLastScore() {
+            if (scoreHistory.length === 0) return;
+            const last = scoreHistory.pop();
+
+            if (!scores[last.group]) scores[last.group] = {};
+            scores[last.group][last.roundId] = last.prevValue;
+
+            lastChanged = null; // don't re-flash on undo
+            saveData();
+            render();
+            updateUndoButton();
+            hideUndoToast();
+        }
+
+        function updateUndoButton() {
+            const btn = document.getElementById('undoButton');
+            if (!btn) return;
+            if (scoreHistory.length === 0) {
+                btn.disabled = true;
+                btn.title = 'No changes to undo';
+            } else {
+                const last = scoreHistory[scoreHistory.length - 1];
+                btn.disabled = false;
+                btn.title = `Undo: ${last.group} ${last.delta > 0 ? '+' : ''}${last.delta} (${last.roundName})`;
+            }
+        }
+
+        function showUndoToast(message) {
+            const toast = document.getElementById('undoToast');
+            const text = document.getElementById('undoToastText');
+            if (!toast || !text) return;
+
+            text.textContent = message;
+            toast.classList.add('show');
+
+            clearTimeout(undoToastTimer);
+            undoToastTimer = setTimeout(() => hideUndoToast(), 4500);
+        }
+
+        function hideUndoToast() {
+            const toast = document.getElementById('undoToast');
+            if (toast) toast.classList.remove('show');
+            clearTimeout(undoToastTimer);
+        }
+
+        function getTotal(group) {
+            if (!scores[group]) return 0;
+            return Object.values(scores[group]).reduce((sum, val) => sum + val, 0);
+        }
+
+        function getLeaderboard() {
+            return groups.map(g => ({
+                name: g,
+                total: getTotal(g)
+            })).sort((a, b) => b.total - a.total);
+        }
+
+        // Round Management
+        function addRound() {
+            if (!isEditor) return alert('Sign in to edit.');
+            const name = document.getElementById('roundName').value.trim();
+            const max = parseInt(document.getElementById('roundMax').value);
+            
+            if (!name) return alert('Please enter a round name');
+            
+            const id = Date.now();
+            rounds.push({ id, name, max });
+            
+            groups.forEach(g => {
+                if (!scores[g]) scores[g] = {};
+                scores[g][id] = 0;
+            });
+            
+            document.getElementById('roundName').value = '';
+            saveData();
+            render();
+            alert('Round added successfully!');
+        }
+
+        function deleteRound(id) {
+            if (!isEditor) return alert('Sign in to edit.');
+            if (!confirm('Delete this round? All scores will be lost.')) return;
+            
+            rounds = rounds.filter(r => r.id !== id);
+            groups.forEach(g => {
+                if (scores[g]) delete scores[g][id];
+            });
+
+            // Drop any undo history pointing at the deleted round
+            scoreHistory = scoreHistory.filter(h => h.roundId !== id);
+            if (lastChanged && lastChanged.roundId === id) lastChanged = null;
+
+            saveData();
+            render();
+        }
+
+        // Group Management
+        function updateGroup(index, newName) {
+            if (!isEditor) return alert('Sign in to edit.');
+            const name = newName.trim();
+            if (!name) return alert('Group name cannot be empty');
+            
+            const oldName = groups[index];
+            groups[index] = name;
+            
+            if (scores[oldName]) {
+                scores[name] = scores[oldName];
+                delete scores[oldName];
+            }
+            
+            saveData();
+            render();
+            alert('Group name updated!');
+        }
+
+        // Reset
+        function resetSystem() {
+            if (!isEditor) return alert('Sign in to edit.');
+            const confirm1 = confirm('🚨 RESET ALL DATA?\n\n⚠️ This will permanently delete:\n• All scores\n• All custom rounds\n• All group names\n\nThis action CANNOT be undone!\n\nAre you absolutely sure?');
+            if (!confirm1) return;
+            
+            const confirm2 = confirm('⚠️ FINAL WARNING\n\nYou are about to erase everything.\nClick OK to proceed with reset.');
+            if (!confirm2) return;
+            
+            scoreHistory = [];
+            lastChanged = null;
+            localStorage.clear();
+            db.ref('quizData').remove()
+                .finally(() => location.reload());
+        }
+
+        // Rendering
+        function render() {
+            renderStandings();
+            renderScoreboard();
+            renderRoundSwitcher();
+            renderRounds();
+            renderGroups();
+            updateUndoButton();
+            updateNavAccess();
+        }
+
+        function renderStandings() {
+            const leaderboard = getLeaderboard();
+            const grid = document.getElementById('standingsGrid');
+            const banner = document.getElementById('leaderBanner');
+            
+            const maxScore = leaderboard[0].total;
+            const leaders = leaderboard.filter(item => item.total === maxScore && maxScore > 0);
+            
+            if (leaders.length > 0) {
+                banner.classList.add('show');
+                if (leaders.length === 1) {
+                    document.getElementById('leaderName').textContent = leaders[0].name;
+                } else {
+                    document.getElementById('leaderName').textContent = leaders.map(l => l.name).join(', ');
+                }
+                document.getElementById('leaderScore').textContent = maxScore;
+            } else {
+                banner.classList.remove('show');
+            }
+            
+            grid.innerHTML = leaderboard.map((item) => `
+                <div class="group-card ${item.total === maxScore && maxScore > 0 ? 'leading' : ''}">
+                    <div class="group-name">${item.name}</div>
+                    <div class="group-score">${item.total}</div>
+                    ${item.total === maxScore && maxScore > 0 ? '<span class="leader-badge">👑 Leader</span>' : ''}
+                </div>
+            `).join('');
+        }
+
+        function renderScoreboard() {
+            const table = document.getElementById('scoreTable');
+            let html = '<thead><tr><th>Round</th>';
+            
+            groups.forEach(g => html += `<th>${g}</th>`);
+            html += '</tr></thead><tbody>';
+            
+            rounds.forEach(r => {
+                html += `<tr><td>${r.name}<br><small style="opacity:0.6">Max: ${r.max}</small></td>`;
+                groups.forEach(g => {
+                    const score = scores[g]?.[r.id] || 0;
+                    const isChanged = lastChanged && lastChanged.group === g && lastChanged.roundId === r.id;
+                    const flashClass = isChanged ? (lastChanged.direction === 'up' ? ' flash-up' : ' flash-down') : '';
+                    html += `
+                        <td>
+                            <div class="score-value${flashClass}">${score}</div>
+                                <div class="score-controls">
+                                    <button class="btn-score btn-plus" onclick="updateScore('${g}', ${r.id}, 1)">+1</button>
+                                    <button class="btn-score btn-plus" onclick="updateScore('${g}', ${r.id}, 5)">+5</button>
+                                    <button class="btn-score btn-minus" onclick="updateScore('${g}', ${r.id}, -1)">-1</button>
+                                    <button class="btn-score btn-minus" onclick="updateScore('${g}', ${r.id}, -5)">-5</button>
+                                </div>
+                            </div>
+                        </td>
+                    `;
+                });
+                html += '</tr>';
+            });
+            
+            // Total row
+            html += '<tr class="total-row"><td>TOTAL</td>';
+            groups.forEach(g => {
+                html += `<td>${getTotal(g)}</td>`;
+            });
+            html += '</tr>';
+            
+            html += '</tbody>';
+            table.innerHTML = html;
+        }
+
+        // Mobile: one round at a time, all groups clearly listed, switch rounds by tapping a tab
+        let currentRoundIndex = 0;
+
+        function renderRoundSwitcher() {
+            const tabsEl = document.getElementById('roundTabs');
+            const listEl = document.getElementById('roundGroupsList');
+            if (!tabsEl || !listEl) return;
+
+            if (rounds.length === 0) {
+                tabsEl.innerHTML = '';
+                listEl.innerHTML = '<div class="round-empty-state">No rounds yet. Add one from Manage Rounds.</div>';
+                return;
+            }
+
+            if (currentRoundIndex >= rounds.length) currentRoundIndex = rounds.length - 1;
+            if (currentRoundIndex < 0) currentRoundIndex = 0;
+
+            tabsEl.innerHTML = rounds.map((r, i) => `
+                <button class="round-tab ${i === currentRoundIndex ? 'active' : ''}" onclick="selectRound(${i})">
+                    ${r.name}
+                    <span class="round-tab-max">Max ${r.max}</span>
+                </button>
+            `).join('');
+
+            const round = rounds[currentRoundIndex];
+            listEl.innerHTML = groups.map(g => {
+                const score = scores[g]?.[round.id] || 0;
+                const isChanged = lastChanged && lastChanged.group === g && lastChanged.roundId === round.id;
+                const flashClass = isChanged ? (lastChanged.direction === 'up' ? ' flash-up' : ' flash-down') : '';
+                return `
+                    <div class="round-group-card">
+                        <div class="round-group-top">
+                            <div class="round-group-name">${g}</div>
+                            <div class="round-group-score${flashClass}">${score}</div>
+                        </div>
+                        <div class="round-group-controls">
+                            <button class="btn-score btn-plus" onclick="updateScore('${g}', ${round.id}, 1)">+1</button>
+                            <button class="btn-score btn-plus" onclick="updateScore('${g}', ${round.id}, 5)">+5</button>
+                            <button class="btn-score btn-minus" onclick="updateScore('${g}', ${round.id}, -1)">-1</button>
+                            <button class="btn-score btn-minus" onclick="updateScore('${g}', ${round.id}, -5)">-5</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            const activeTab = tabsEl.querySelector('.round-tab.active');
+            if (activeTab) activeTab.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        }
+
+        function selectRound(index) {
+            currentRoundIndex = index;
+            renderRoundSwitcher();
+        }
+
+        function renderRounds() {
+            const list = document.getElementById('roundsList');
+            list.innerHTML = rounds.map(r => `
+                <tr>
+                    <td>${r.name}</td>
+                    <td>${r.max}</td>
+                    <td>
+                        <button class="btn-danger" onclick="deleteRound(${r.id})">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function renderGroups() {
+            const list = document.getElementById('groupsList');
+            list.innerHTML = groups.map((g, i) => `
+                <tr>
+                    <td>Group ${i + 1}</td>
+                    <td>
+                        <input type="text" class="form-input" value="${g}" id="groupName${i}">
+                    </td>
+                    <td>
+                        <button class="btn-success" onclick="updateGroup(${i}, document.getElementById('groupName${i}').value)">Update</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Start app
+        init();
+    </script>
+    <script src="common-header.js"></script>
+</body>
+</html>
