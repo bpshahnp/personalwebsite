@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Competition Scorer</title>
+    <title>Quiz Competition Scorer</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1077,10 +1077,8 @@
                 </div>
             </div>
             <div class="competition-section">
-    		<div class="competition-title">Spelling Bee - 2083</div>
-    		<button id="editCompetitionBtn" title="Click to edit competition name" aria-label="Edit competition name">✏️</button>
-	</div>
-
+                <div class="competition-title">Quiz Competition Scorer 2083</div>
+            </div>
         </header>
 
         <div class="nav-wrapper">
@@ -1209,38 +1207,6 @@
 
         </div>
     </div>
-<!-- Competition Title Update Modal -->
-<div id="competitionModal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2>Update Competition Name</h2>
-            <p>Enter the new competition title</p>
-        </div>
-        <div class="modal-body">
-            <input 
-                type="text" 
-                id="competitionInput" 
-                placeholder="e.g., Inter-House Quiz Competition - 2084"
-                maxlength="100"
-            />
-        </div>
-        <div class="modal-footer">
-            <button 
-                id="cancelCompetitionBtn" 
-                class="modal-btn" 
-                onclick="closeCompetitionModal()"
-            >
-                Cancel
-            </button>
-            <button 
-                id="saveCompetitionBtn" 
-                class="modal-btn"
-            >
-                Save Changes
-            </button>
-        </div>
-    </div>
-</div>
 
     <script>
         // App State
@@ -1784,6 +1750,5 @@
         init();
     </script>
     <script src="common-header.js"></script>
-
 </body>
 </html>
