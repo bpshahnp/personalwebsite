@@ -1,0 +1,43 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function isAdmin() { return signedIn() && request.auth.token.admin == true; }
+
+    // Public competition display data. Answers are included because the round screen is an
+    // authenticated moderator screen; contestants should not be given direct database access.
+    match /competition/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /rounds/{roundId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+      match /questions/{questionId} {
+        allow read: if true;
+        allow create, update, delete: if isAdmin();
+      }
+    }
+
+    match /teams/{teamId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /scores/{scoreId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Admin-only collection. Keep sensitive/admin metadata here.
+    match /admins/{uid} {
+      allow read: if isAdmin() || (signedIn() && request.auth.uid == uid);
+      allow write: if isAdmin();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

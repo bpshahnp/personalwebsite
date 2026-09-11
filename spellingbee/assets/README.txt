@@ -1,0 +1,1 @@
+Place the existing school logo here as school_logo.png
