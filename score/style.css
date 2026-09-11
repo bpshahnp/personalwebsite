@@ -121,6 +121,10 @@ body {
     text-align: center;
     z-index: 2;
     position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
 }
 
 .competition-title {
@@ -140,6 +144,13 @@ body {
     display: inline-block;
     position: relative;
     overflow: hidden;
+    cursor: pointer;
+    transition: var(--transition-standard);
+}
+
+.competition-title:hover {
+    transform: scale(1.02);
+    box-shadow: 0 10px 30px rgba(229, 62, 62, 0.5);
 }
 
 .competition-title::before {
@@ -165,40 +176,199 @@ body {
         transform: translateX(-100%) translateY(-100%) rotate(45deg);
     }
 }
+
+/* Edit Competition Button */
+#editCompetitionBtn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: var(--transition-standard);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+}
+
+#editCompetitionBtn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.6);
+    transform: scale(1.1);
+}
+
+#editCompetitionBtn:focus {
+    outline: 3px solid #ffd700;
+    outline-offset: 2px;
+}
+
+/* Competition Modal */
+#competitionModal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 10000;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(5px);
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.modal-content {
+    background: white;
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    max-width: 500px;
+    width: 90%;
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-header {
+    margin-bottom: 20px;
+}
+
+.modal-header h2 {
+    color: var(--primary-blue);
+    font-size: 1.8rem;
+    margin: 0 0 5px 0;
+}
+
+.modal-header p {
+    color: var(--text-light);
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+.modal-body {
+    margin-bottom: 25px;
+}
+
+#competitionInput {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid var(--border-gray);
+    border-radius: 10px;
+    font-size: 1rem;
+    font-family: 'Poppins', sans-serif;
+    transition: var(--transition-standard);
+    box-sizing: border-box;
+}
+
+#competitionInput:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+}
+
+#competitionInput:hover {
+    border-color: var(--primary-blue);
+}
+
+.modal-footer {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.modal-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    transition: var(--transition-standard);
+    font-size: 0.95rem;
+}
+
+#saveCompetitionBtn {
+    background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+    color: white;
+    min-width: 100px;
+}
+
+#saveCompetitionBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(72, 187, 120, 0.3);
+}
+
+#saveCompetitionBtn:active {
+    transform: translateY(0);
+}
+
+#cancelCompetitionBtn {
+    background: var(--light-gray);
+    color: var(--text-dark);
+    border: 1px solid var(--border-gray);
+    min-width: 80px;
+}
+
+#cancelCompetitionBtn:hover {
+    background: var(--border-gray);
+}
+
 /* Scoreboard Button */
-        .scoreboard-btn {
-            position: fixed; 
-            top: 10px; 
-            left: 80px; 
-            background: linear-gradient(135deg, #f6ad55, #dd6b20);
-            color: white; 
-            padding: 15px 30px;
-            border-radius: 30px; 
-            cursor: pointer;
-            z-index: 1000; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            text-decoration: none;
-            transition: transform 0.2s ease;
-            font-weight: 600;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
-        
-        .scoreboard-btn:hover {
-            transform: scale(1.05);
-        }
-        
-        .scoreboard-btn:focus {
-            outline: 3px solid #4299e1;
-            outline-offset: 2px;
-        }
-        
-        .scoreboard-txt { font-size: 1.1rem; }
-        .home-btn:focus {
-            outline: 3px solid #4299e1;
-            outline-offset: 2px;
-        }
+.scoreboard-btn {
+    position: fixed; 
+    top: 10px; 
+    left: 80px; 
+    background: linear-gradient(135deg, #f6ad55, #dd6b20);
+    color: white; 
+    padding: 15px 30px;
+    border-radius: 30px; 
+    cursor: pointer;
+    z-index: 1000; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    text-decoration: none;
+    transition: transform 0.2s ease;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.scoreboard-btn:hover {
+    transform: scale(1.05);
+}
+
+.scoreboard-btn:focus {
+    outline: 3px solid #4299e1;
+    outline-offset: 2px;
+}
+
+.scoreboard-txt { font-size: 1.1rem; }
+.home-btn:focus {
+    outline: 3px solid #4299e1;
+    outline-offset: 2px;
+}
+
 /* Question Navigation */
 .question-nav {
     background: rgba(255, 255, 255, 0.95);
@@ -618,6 +788,16 @@ body {
         letter-spacing: 1px;
     }
     
+    .competition-section {
+        flex-wrap: wrap;
+    }
+    
+    #editCompetitionBtn {
+        width: 40px;
+        height: 40px;
+        padding: 0;
+    }
+    
     .timers-container {
         grid-template-columns: repeat(4, 1fr);
     }
@@ -660,6 +840,10 @@ body {
         padding: 10px 16px;
         font-size: 0.9rem;
     }
+    
+    .modal-content {
+        padding: 30px 20px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -688,6 +872,21 @@ body {
     .go-back-arrow {
         font-size: 1rem;
     }
+    
+    #editCompetitionBtn {
+        width: 36px;
+        height: 36px;
+        font-size: 0.9rem;
+    }
+    
+    .modal-content {
+        width: 95%;
+        padding: 25px 15px;
+    }
+    
+    .modal-header h2 {
+        font-size: 1.4rem;
+    }
 }
 
 /* Accessibility Improvements */
@@ -714,7 +913,8 @@ a:focus-visible,
     .go-back-btn,
     .reset-btn,
     .reveal-btn,
-    .question-nav {
+    .question-nav,
+    #editCompetitionBtn {
         display: none;
     }
     
