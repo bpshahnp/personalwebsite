@@ -2,7 +2,7 @@ const SCHOOL_INFO = {
     name: "OM SHANTI ACADEMY",
     tagline: "An activity based school",
     logoPath: "abc.png",
-    competitionTitle: "Inter-House Quiz Competition - 2083"
+    competitionTitle: "INTER-HOUSE SPELL BEE COMPETITION 2083"
 };
 
 function loadCommonHeader() {
