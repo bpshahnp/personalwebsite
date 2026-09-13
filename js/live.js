@@ -758,6 +758,7 @@
       const saved = await saveScoreToDatabase(user, totalPointsEarned, correctCount, speedBonusTotal);
       if (saved && resultSubline) {
         resultSubline.innerHTML = `🎉 Great effort! Your score of <strong>${totalPointsEarned} pts</strong> has been added to the leaderboard.`;
+        document.dispatchEvent(new CustomEvent("premiumCheckReady"));
       } else if (!saved && resultSubline) {
         resultSubline.innerHTML = `⚠️ Score calculated, but could not sync with leaderboard. Check your network or permissions.`;
       }
@@ -926,6 +927,7 @@
         const saved = await saveScoreToDatabase(user, pending.points, pending.correct, pending.bonus);
         if (saved && resultSubline) {
           resultSubline.innerHTML = `🎉 Score of <strong>${pending.points} pts</strong> saved to the leaderboard as <strong>${user.displayName || user.email}</strong>!`;
+          document.dispatchEvent(new CustomEvent("premiumCheckReady"));
         }
       } catch (err) {
         console.error("Error auto-saving pending score on login:", err);
@@ -937,5 +939,847 @@
   initCycleInfo();
   loadDailyQuestions();
   subscribeLeaderboard();
+
+  /* ============================================================
+     PREMIUM QUIZ ENGINE — CREDITS, PAYMENTS & ARENA DASHBOARD
+     ============================================================ */
+
+  // DOM Elements - Arena Modal
+  const premiumModalOverlay       = document.getElementById("premiumModalOverlay");
+  const closePremiumModalBtn      = document.getElementById("closePremiumModalBtn");
+  const openPremiumModalBtn       = document.getElementById("openPremiumModalBtn");
+  const openPremiumArenaBtn       = document.getElementById("openPremiumArenaBtn");
+  const openBuyCreditsFromArenaBtn= document.getElementById("openBuyCreditsFromArenaBtn");
+  const premiumCategoryCardsGrid  = document.getElementById("premiumCategoryCardsGrid");
+  const premiumArenaTitle         = document.getElementById("premiumArenaTitle");
+  const premiumArenaSubtitle      = document.getElementById("premiumArenaSubtitle");
+  const premiumBanner             = document.getElementById("premiumAccessBanner");
+
+  // DOM Elements - Buy Credits Modal
+  const buyCreditsModal           = document.getElementById("buyCreditsModal");
+  const closeBuyCreditsModalBtn   = document.getElementById("closeBuyCreditsModalBtn");
+  const googleStatusText          = document.getElementById("googleStatusText");
+  const buyModalGoogleBtn         = document.getElementById("buyModalGoogleBtn");
+  const phoneStatusText           = document.getElementById("phoneStatusText");
+  const userPhoneInput            = document.getElementById("userPhoneInput");
+  const savePhoneBtn              = document.getElementById("savePhoneBtn");
+  const selectedPackAmountText    = document.getElementById("selectedPackAmountText");
+  const payWithKhaltiBtn          = document.getElementById("payWithKhaltiBtn");
+  const payWithEsewaBtn           = document.getElementById("payWithEsewaBtn");
+  const paymentActionStatus       = document.getElementById("paymentActionStatus");
+
+  // DOM Elements - Active Quiz & Results
+  const premiumActiveCard         = document.getElementById("premiumActiveCard");
+  const premiumResultsCard        = document.getElementById("premiumResultsCard");
+  const premiumQIndex             = document.getElementById("premiumQIndex");
+  const premiumRunningPts         = document.getElementById("premiumRunningPoints");
+  const premiumTimerTxt           = document.getElementById("premiumTimerText");
+  const premiumTimerFill          = document.getElementById("premiumTimerFill");
+  const premiumTimerSec           = document.getElementById("premiumTimerSeconds");
+  const premiumQCat               = document.getElementById("premiumQCategory");
+  const premiumQTxt               = document.getElementById("premiumQText");
+  const premiumOptsGrid           = document.getElementById("premiumOptsGrid");
+  const premiumFbBar              = document.getElementById("premiumFeedbackBar");
+  const premiumFbText             = document.getElementById("premiumFeedbackText");
+  const premiumNextBtn            = document.getElementById("premiumNextBtn");
+  const premiumResSub             = document.getElementById("premiumResultSubline");
+  const premiumResScore           = document.getElementById("premiumResultScore");
+  const premiumResPts             = document.getElementById("premiumResultPoints");
+  const premiumResBonus           = document.getElementById("premiumResultBonus");
+  const premiumResCat             = document.getElementById("premiumResultCat");
+  const premiumBackModal          = document.getElementById("premiumBackToModalBtn");
+  const premiumBackIntro          = document.getElementById("premiumBackToIntroBtn");
+
+  // State
+  let userCredits        = 2; // Default 2 credits
+  let isWeeklyChampion   = false;
+  let currentUserProfile = null;
+  let pCategories        = [];
+  let pQuestions         = [];
+  let pQIdx              = 0;
+  let pCorrect           = 0;
+  let pPts               = 0;
+  let pSpeedBon          = 0;
+  let pAnswered          = false;
+  let pTimer             = null;
+  let pSecs              = QUESTION_TIME_LIMIT;
+  let pCatName           = "";
+  let pMinScore          = 50;
+
+  // Selected Credit Package (Default 5 credits for NPR 50)
+  let selectedPackCredits = 5;
+  let selectedPackAmount  = 50;
+
+  // Payment Gateway Config (Loaded from siteSettings/payment)
+  let paymentConfig = {
+    khaltiPublicKey: "test_public_key_dc74e0fd69cb46cd8583f30e42f04155",
+    esewaMerchantCode: "EPAYTEST",
+    nprPerCredit: 10
+  };
+
+  // Load min score & payment settings from Firestore
+  db.collection("siteSettings").doc("config").get()
+    .then(s => { if (s.exists && s.data().minScoreForPremium != null) pMinScore = Number(s.data().minScoreForPremium); })
+    .catch(() => {});
+
+  db.collection("siteSettings").doc("payment").get()
+    .then(s => {
+      if (s.exists) {
+        const d = s.data();
+        if (d.khaltiPublicKey) paymentConfig.khaltiPublicKey = d.khaltiPublicKey;
+        if (d.esewaMerchantCode) paymentConfig.esewaMerchantCode = d.esewaMerchantCode;
+        if (d.nprPerCredit) paymentConfig.nprPerCredit = d.nprPerCredit;
+      }
+    }).catch(() => {});
+
+  /* ---------- User Credits & Profile Realtime Sync ---------- */
+  function syncUserCredits(user) {
+    if (!user || !db) {
+      updateCreditBadges(2);
+      return;
+    }
+    db.collection("users").doc(user.uid).onSnapshot(snap => {
+      if (snap.exists) {
+        currentUserProfile = snap.data();
+        userCredits = currentUserProfile.credits != null ? Number(currentUserProfile.credits) : 2;
+      } else {
+        userCredits = 2;
+      }
+      updateCreditBadges(userCredits);
+      updateSecurityBoxUI();
+      if (pCategories.length) renderCategoryCards();
+    }, err => {
+      console.warn("Credit sync error:", err);
+    });
+  }
+
+  function updateCreditBadges(val) {
+    document.querySelectorAll(".user-credits-val").forEach(el => {
+      el.textContent = val;
+    });
+  }
+
+  /* ---------- Winner Detection ---------- */
+  async function checkWeeklyWinner(user) {
+    if (!user || isPracticeMode) return;
+    const ranked = leaderboardDocs
+      .map(d => ({ uid: d.userId, pts: Number(d.totalPoints || 0) }))
+      .filter(x => x.pts > 0).sort((a, b) => b.pts - a.pts);
+    if (!ranked.length || ranked[0].pts < pMinScore) return;
+    const top = ranked[0].pts;
+    if (!ranked.some(x => x.uid === user.uid && x.pts === top)) return;
+
+    isWeeklyChampion = true;
+    const docId = `${user.uid}_${currentWeekKey}`;
+    try {
+      const ex = await db.collection("premiumUnlocks").doc(docId).get();
+      if (!ex.exists) {
+        await db.collection("premiumUnlocks").doc(docId).set({
+          userId: user.uid,
+          userName: user.displayName || user.email.split("@")[0] || "Champion",
+          weekKey: currentWeekKey, weekPoints: top,
+          unlockedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      }
+    } catch (e) { console.warn("premiumUnlocks write:", e); }
+
+    if (premiumBanner) premiumBanner.hidden = false;
+    await loadCategories();
+    showArenaModal(true);
+  }
+
+  async function checkPremiumAccess(user) {
+    if (!user) return;
+    try {
+      const s = await db.collection("premiumUnlocks").doc(`${user.uid}_${currentWeekKey}`).get();
+      if (s.exists) {
+        isWeeklyChampion = true;
+        if (premiumBanner) premiumBanner.hidden = false;
+      } else {
+        isWeeklyChampion = false;
+      }
+    } catch (e) {}
+  }
+
+  /* ---------- Load & Render Category Cards Dashboard ---------- */
+  async function loadCategories() {
+    try {
+      const s = await db.collection("premiumQuizContent").orderBy("name").get();
+      pCategories = s.docs.map(d => ({
+        id: d.id,
+        name: d.data().name || d.id,
+        imageUrl: d.data().imageUrl || "",
+        description: d.data().description || "",
+        credits: Number(d.data().credits ?? 3),
+        questions: d.data().questions || []
+      }));
+      renderCategoryCards();
+    } catch (e) {
+      if (premiumCategoryCardsGrid) {
+        premiumCategoryCardsGrid.innerHTML = `<p style="color:#ef4444; grid-column:1/-1;">Could not load categories: ${e.message}</p>`;
+      }
+    }
+  }
+
+  function renderCategoryCards() {
+    if (!premiumCategoryCardsGrid) return;
+    if (!pCategories.length) {
+      premiumCategoryCardsGrid.innerHTML = `
+        <div style="grid-column:1/-1; text-align:center; padding:32px; color:#94a3b8;">
+          <p style="font-size:1.1rem; margin:0 0 6px;">No premium categories published yet.</p>
+          <p style="font-size:0.85rem; margin:0;">Check back soon or explore the 7-day tournament!</p>
+        </div>
+      `;
+      return;
+    }
+
+    const defaultGradients = [
+      "linear-gradient(135deg,#1e293b 0%,#334155 100%)",
+      "linear-gradient(135deg,#064e3b 0%,#047857 100%)",
+      "linear-gradient(135deg,#78350f 0%,#b45309 100%)",
+      "linear-gradient(135deg,#312e81 0%,#4338ca 100%)"
+    ];
+
+    premiumCategoryCardsGrid.innerHTML = "";
+
+    pCategories.forEach((cat, idx) => {
+      const cost = cat.credits || 3;
+      const hasEnough = isWeeklyChampion || userCredits >= cost;
+      const gradient = defaultGradients[idx % defaultGradients.length];
+
+      let btnLabel = isWeeklyChampion
+        ? `Start Quiz (Free Access 🏆)`
+        : hasEnough
+          ? `Start Quiz (${cost} Credits 🪙)`
+          : `Need ${cost} Credits (Get More 🪙)`;
+
+      let btnStyle = hasEnough
+        ? "background:#f59e0b; border-color:#f59e0b; color:#fff;"
+        : "background:#fff; border:1px solid #f59e0b; color:#d97706;";
+
+      const card = document.createElement("div");
+      card.className = "premium-cat-card";
+      card.style.cssText = `
+        border:1px solid #e2e8f0; border-radius:18px; overflow:hidden;
+        background:#ffffff; box-shadow:0 4px 16px rgba(0,0,0,0.06);
+        display:flex; flex-direction:column; transition:transform 0.2s, box-shadow 0.2s;
+      `;
+
+      card.innerHTML = `
+        <div style="height:140px; background:${gradient}; position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center;">
+          ${cat.imageUrl ? `<img src="${escapeHtml(cat.imageUrl)}" alt="${escapeHtml(cat.name)}" style="width:100%; height:100%; object-fit:cover;" onerror="this.style.display='none'" />` : `<span style="font-size:3rem; opacity:0.85;">⭐</span>`}
+          <span style="position:absolute; top:12px; right:12px; background:rgba(0,0,0,0.7); color:#fef08a; font-weight:700; font-size:0.8rem; padding:4px 10px; border-radius:999px; backdrop-filter:blur(4px); display:inline-flex; align-items:center; gap:4px;">
+            🪙 ${cost} Credits
+          </span>
+          <span style="position:absolute; bottom:10px; left:12px; background:rgba(0,0,0,0.6); color:#fff; font-size:0.75rem; font-weight:600; padding:2px 8px; border-radius:6px; backdrop-filter:blur(4px);">
+            ${(cat.questions || []).length} Questions
+          </span>
+        </div>
+
+        <div style="padding:16px 18px 20px; display:flex; flex-direction:column; flex:1;">
+          <h3 style="margin:0 0 6px; font-size:1.15rem; color:#0f172a; font-weight:700;">${escapeHtml(cat.name)}</h3>
+          <p style="margin:0 0 16px; font-size:0.85rem; color:#64748b; flex:1; line-height:1.45;">
+            ${escapeHtml(cat.description || "Comprehensive timed questions on competitive exams and current events.")}
+          </p>
+
+          <button type="button" class="btn btn-primary start-cat-quiz-btn" style="width:100%; font-weight:700; padding:10px 14px; border-radius:10px; ${btnStyle}">
+            ${btnLabel}
+          </button>
+        </div>
+      `;
+
+      // Card hover effect
+      card.addEventListener("mouseenter", () => { card.style.transform = "translateY(-4px)"; card.style.boxShadow = "0 10px 24px rgba(0,0,0,0.12)"; });
+      card.addEventListener("mouseleave", () => { card.style.transform = "none"; card.style.boxShadow = "0 4px 16px rgba(0,0,0,0.06)"; });
+
+      // Card action click
+      card.querySelector(".start-cat-quiz-btn").addEventListener("click", () => {
+        handleCategorySelect(cat);
+      });
+
+      premiumCategoryCardsGrid.appendChild(card);
+    });
+  }
+
+  /* ---------- Handle Category Selection (Free vs Credits) ---------- */
+  async function handleCategorySelect(cat) {
+    const user = auth.currentUser;
+    if (!user) {
+      if (typeof window.openMcqAuthModal === "function") {
+        window.openMcqAuthModal({
+          title: "Log in to Play Premium Quiz",
+          subtitle: "Connect your Google account to access your 2 free credits and start this premium quiz.",
+          onSuccess: () => handleCategorySelect(cat)
+        });
+      } else {
+        alert("Please log in or connect your Google account to play!");
+      }
+      return;
+    }
+
+    // 1. Weekly champion has free unlimited access
+    if (isWeeklyChampion) {
+      startPQuiz(cat.id, cat.name);
+      return;
+    }
+
+    const cost = cat.credits || 3;
+
+    // 2. Check if user has enough credits
+    if (userCredits < cost) {
+      openBuyCreditsModal(`You need ${cost} credits to play "${cat.name}". Your balance is ${userCredits} credits.`);
+      return;
+    }
+
+    // 3. Check security requirement: Google and Phone
+    const verified = await ensureSecurityRequirements(user);
+    if (!verified) return;
+
+    // 4. Confirm deduction of credits
+    const confirmed = confirm(
+      `Start "${cat.name}" quiz for ${cost} credits?\n\nYour current balance: ${userCredits} credits\nBalance after: ${userCredits - cost} credits`
+    );
+    if (!confirmed) return;
+
+    // Deduct credits in Firestore
+    try {
+      await db.collection("users").doc(user.uid).update({
+        credits: firebase.firestore.FieldValue.increment(-cost),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      userCredits = Math.max(0, userCredits - cost);
+      updateCreditBadges(userCredits);
+      startPQuiz(cat.id, cat.name);
+    } catch (err) {
+      alert("Could not deduct credits: " + err.message);
+    }
+  }
+
+  /* ---------- Security Check Helper (Google + Phone) ---------- */
+  async function ensureSecurityRequirements(user) {
+    const isGoogle = (user.providerData || []).some(p => p.providerId === "google.com") || (currentUserProfile && currentUserProfile.googleLinked);
+    const hasPhone = currentUserProfile && currentUserProfile.phoneNumber && /^\d{10}$/.test(currentUserProfile.phoneNumber.replace(/\s+/g, ""));
+
+    if (!isGoogle || !hasPhone) {
+      openBuyCreditsModal("For security, please connect your Google account and enter your phone number.");
+      return false;
+    }
+    return true;
+  }
+
+  /* ---------- Arena Modal Open / Close ---------- */
+  function showArenaModal(asChampion = false) {
+    if (!premiumModalOverlay) return;
+    if (asChampion) {
+      if (premiumArenaTitle) premiumArenaTitle.textContent = "🏆 Champion's Premium Arena";
+      if (premiumArenaSubtitle) premiumArenaSubtitle.textContent = "Congratulations on taking #1 this week! Enjoy Free Unlimited Access to all categories.";
+    } else {
+      if (premiumArenaTitle) premiumArenaTitle.textContent = "⭐ Premium Quiz Arena";
+      if (premiumArenaSubtitle) premiumArenaSubtitle.textContent = "Play exclusive competitive exam categories with credits, or enjoy Free Access as this week's champion!";
+    }
+    loadCategories();
+    premiumModalOverlay.hidden = false;
+    premiumModalOverlay.style.display = "flex";
+    document.body.style.overflow = "hidden";
+  }
+
+  function hideArenaModal() {
+    if (!premiumModalOverlay) return;
+    premiumModalOverlay.hidden = true;
+    premiumModalOverlay.style.display = "";
+    document.body.style.overflow = "";
+  }
+
+  if (closePremiumModalBtn) closePremiumModalBtn.addEventListener("click", hideArenaModal);
+  if (premiumModalOverlay) {
+    premiumModalOverlay.addEventListener("click", e => {
+      if (e.target === premiumModalOverlay) hideArenaModal();
+    });
+  }
+
+  if (openPremiumModalBtn) openPremiumModalBtn.addEventListener("click", () => showArenaModal(isWeeklyChampion));
+  if (openPremiumArenaBtn) openPremiumArenaBtn.addEventListener("click", () => showArenaModal(false));
+
+  /* ---------- Buy Credits Modal Logic ---------- */
+  function openBuyCreditsModal(noticeMsg = "") {
+    if (!buyCreditsModal) return;
+    if (paymentActionStatus) {
+      paymentActionStatus.textContent = noticeMsg || "";
+      paymentActionStatus.style.color = noticeMsg ? "#ea580c" : "";
+    }
+    updateSecurityBoxUI();
+    buyCreditsModal.hidden = false;
+    buyCreditsModal.style.display = "flex";
+    document.body.style.overflow = "hidden";
+  }
+
+  function hideBuyCreditsModal() {
+    if (!buyCreditsModal) return;
+    buyCreditsModal.hidden = true;
+    buyCreditsModal.style.display = "";
+    if (premiumModalOverlay && !premiumModalOverlay.hidden) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+  }
+
+  if (closeBuyCreditsModalBtn) closeBuyCreditsModalBtn.addEventListener("click", hideBuyCreditsModal);
+  if (buyCreditsModal) {
+    buyCreditsModal.addEventListener("click", e => {
+      if (e.target === buyCreditsModal) hideBuyCreditsModal();
+    });
+  }
+  if (openBuyCreditsFromArenaBtn) openBuyCreditsFromArenaBtn.addEventListener("click", () => openBuyCreditsModal());
+
+  // Update Security Box in Buy Credits Modal
+  function updateSecurityBoxUI() {
+    const user = auth.currentUser;
+    if (!user) {
+      if (googleStatusText) googleStatusText.innerHTML = "Google Account: <strong style='color:#ef4444'>Not logged in</strong>";
+      if (buyModalGoogleBtn) { buyModalGoogleBtn.style.display = "block"; buyModalGoogleBtn.textContent = "Sign in with Google"; }
+      if (phoneStatusText) phoneStatusText.innerHTML = "Phone Number: <span style='color:#94a3b8'>Login first</span>";
+      if (userPhoneInput) userPhoneInput.disabled = true;
+      if (savePhoneBtn) savePhoneBtn.disabled = true;
+      return;
+    }
+
+    const isGoogle = (user.providerData || []).some(p => p.providerId === "google.com") || (currentUserProfile && currentUserProfile.googleLinked);
+    if (isGoogle) {
+      if (googleStatusText) googleStatusText.innerHTML = `Google Account: <strong style='color:#10b981'>✅ Connected (${escapeHtml(user.email)})</strong>`;
+      if (buyModalGoogleBtn) buyModalGoogleBtn.style.display = "none";
+    } else {
+      if (googleStatusText) googleStatusText.innerHTML = "Google Account: <strong style='color:#ea580c'>⚠️ Required for security</strong>";
+      if (buyModalGoogleBtn) { buyModalGoogleBtn.style.display = "block"; buyModalGoogleBtn.textContent = "Connect Google"; }
+    }
+
+    if (userPhoneInput) userPhoneInput.disabled = false;
+    if (savePhoneBtn) savePhoneBtn.disabled = false;
+
+    if (currentUserProfile && currentUserProfile.phoneNumber) {
+      if (phoneStatusText) phoneStatusText.innerHTML = `Phone Number: <strong style='color:#10b981'>✅ ${escapeHtml(currentUserProfile.phoneNumber)}</strong>`;
+      if (userPhoneInput) userPhoneInput.value = currentUserProfile.phoneNumber;
+    } else {
+      if (phoneStatusText) phoneStatusText.innerHTML = "Phone Number: <strong style='color:#ea580c'>⚠️ Enter 10-digit mobile number</strong>";
+    }
+  }
+
+  if (buyModalGoogleBtn) {
+    buyModalGoogleBtn.addEventListener("click", async () => {
+      try {
+        if (typeof window.signInWithGoogle === "function") {
+          await window.signInWithGoogle();
+          updateSecurityBoxUI();
+          if (paymentActionStatus) paymentActionStatus.textContent = "✅ Google account connected!";
+        }
+      } catch (err) {
+        if (paymentActionStatus) paymentActionStatus.textContent = err.message;
+      }
+    });
+  }
+
+  if (savePhoneBtn) {
+    savePhoneBtn.addEventListener("click", async () => {
+      const user = auth.currentUser;
+      if (!user) { alert("Please sign in first!"); return; }
+      const raw = userPhoneInput ? userPhoneInput.value.trim().replace(/\s+/g, "") : "";
+      if (!/^\d{10}$/.test(raw)) {
+        alert("Please enter a valid 10-digit Nepal mobile number (e.g. 98xxxxxxxx)");
+        return;
+      }
+      try {
+        await db.collection("users").doc(user.uid).set({
+          phoneNumber: raw,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+        if (currentUserProfile) currentUserProfile.phoneNumber = raw;
+        updateSecurityBoxUI();
+        alert("✅ Phone number saved successfully!");
+      } catch (err) {
+        alert("Error saving phone: " + err.message);
+      }
+    });
+  }
+
+  // Credit Pack Selection Handler
+  document.querySelectorAll(".credit-pack-card").forEach(card => {
+    card.addEventListener("click", () => {
+      document.querySelectorAll(".credit-pack-card").forEach(c => {
+        c.classList.remove("active");
+        c.style.borderColor = "#e2e8f0";
+        c.style.background = "#fff";
+      });
+      card.classList.add("active");
+      card.style.borderColor = "#f59e0b";
+      card.style.background = "#fffbeb";
+
+      selectedPackCredits = Number(card.dataset.credits || 5);
+      selectedPackAmount  = Number(card.dataset.amount || 50);
+      if (selectedPackAmountText) selectedPackAmountText.textContent = `NPR ${selectedPackAmount}`;
+    });
+  });
+
+  /* ---------- Payment Handlers: Khalti & eSewa ---------- */
+  async function handlePaymentSuccess(gateway, amountNpr, creditsAdded, refId) {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    try {
+      if (paymentActionStatus) {
+        paymentActionStatus.textContent = "Payment confirmed! Adding credits to your account…";
+        paymentActionStatus.style.color = "#10b981";
+      }
+
+      // 1. Increment credits in users collection
+      await db.collection("users").doc(user.uid).set({
+        credits: firebase.firestore.FieldValue.increment(creditsAdded),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+
+      // 2. Record payment transaction log
+      await db.collection("payments").add({
+        userId: user.uid,
+        userEmail: user.email || "",
+        gateway: gateway,
+        amountNpr: amountNpr,
+        creditsPurchased: creditsAdded,
+        referenceId: String(refId || Date.now()),
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      userCredits += creditsAdded;
+      updateCreditBadges(userCredits);
+
+      alert(`🎉 Payment Successful via ${gateway}!\n\n${creditsAdded} credits have been added to your account.\nNew Balance: ${userCredits} Credits`);
+      hideBuyCreditsModal();
+    } catch (err) {
+      console.error("Payment post-processing error:", err);
+      alert("Credits were paid but saving failed: " + err.message);
+    }
+  }
+
+  // 1. Khalti Payment Trigger
+  if (payWithKhaltiBtn) {
+    payWithKhaltiBtn.addEventListener("click", async () => {
+      const user = auth.currentUser;
+      if (!user) {
+        openBuyCreditsModal("Please log in or connect Google first.");
+        return;
+      }
+      const verified = await ensureSecurityRequirements(user);
+      if (!verified) return;
+
+      paymentActionStatus.textContent = "Initiating Khalti payment…";
+
+      // Check if Khalti Checkout SDK is available
+      if (typeof KhaltiCheckout === "undefined") {
+        paymentActionStatus.textContent = "Khalti SDK loading. Testing fallback…";
+        // Fallback test verification prompt
+        const sim = confirm(`[Khalti Sandbox Test]\nPay NPR ${selectedPackAmount} for ${selectedPackCredits} Credits?`);
+        if (sim) {
+          handlePaymentSuccess("Khalti", selectedPackAmount, selectedPackCredits, "KHALTI_TEST_" + Date.now());
+        }
+        return;
+      }
+
+      try {
+        const checkout = new KhaltiCheckout({
+          publicKey: paymentConfig.khaltiPublicKey,
+          productIdentity: `credits_${selectedPackCredits}`,
+          productName: `${selectedPackCredits} Premium Quiz Credits`,
+          productUrl: window.location.href,
+          eventHandler: {
+            onSuccess(payload) {
+              handlePaymentSuccess("Khalti", payload.amount / 100, selectedPackCredits, payload.token || payload.idx);
+            },
+            onError(error) {
+              paymentActionStatus.textContent = "Khalti payment failed: " + JSON.stringify(error);
+              paymentActionStatus.style.color = "crimson";
+            },
+            onClose() {
+              paymentActionStatus.textContent = "Khalti payment canceled.";
+            }
+          }
+        });
+
+        checkout.show({ amount: selectedPackAmount * 100 }); // Amount in Paisa
+      } catch (err) {
+        paymentActionStatus.textContent = "Khalti initialization error: " + err.message;
+        paymentActionStatus.style.color = "crimson";
+      }
+    });
+  }
+
+  // 2. eSewa Payment Trigger
+  if (payWithEsewaBtn) {
+    payWithEsewaBtn.addEventListener("click", async () => {
+      const user = auth.currentUser;
+      if (!user) {
+        openBuyCreditsModal("Please log in or connect Google first.");
+        return;
+      }
+      const verified = await ensureSecurityRequirements(user);
+      if (!verified) return;
+
+      paymentActionStatus.textContent = "Redirecting to eSewa payment…";
+
+      const txId = `ES_${user.uid.slice(0, 5)}_${Date.now()}`;
+      const successUrl = `${window.location.origin}${window.location.pathname}?payment=esewa&status=success&amt=${selectedPackAmount}&credits=${selectedPackCredits}&tx=${txId}`;
+      const failureUrl = `${window.location.origin}${window.location.pathname}?payment=esewa&status=fail`;
+
+      // Build eSewa ePay Form
+      const form = document.createElement("form");
+      form.method = "POST";
+      form.action = "https://uat.esewa.com.np/epay/main"; // Sandbox / test endpoint
+
+      const params = {
+        amt: selectedPackAmount,
+        psc: 0,
+        pdc: 0,
+        txAmt: 0,
+        tAmt: selectedPackAmount,
+        pid: txId,
+        scd: paymentConfig.esewaMerchantCode || "EPAYTEST",
+        su: successUrl,
+        fu: failureUrl
+      };
+
+      for (const key in params) {
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = key;
+        input.value = params[key];
+        form.appendChild(input);
+      }
+
+      document.body.appendChild(form);
+
+      // In development / local testing environment where eSewa sandbox callback may not redirect back to localhost:
+      // provide instant simulated test confirmation
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        const proceedSim = confirm(`[eSewa Sandbox Mode]\nProceed to payment of NPR ${selectedPackAmount} for ${selectedPackCredits} credits?\n\n(Click OK to simulate instant success, or Cancel to abort)`);
+        if (proceedSim) {
+          handlePaymentSuccess("eSewa", selectedPackAmount, selectedPackCredits, txId);
+          return;
+        }
+      }
+
+      form.submit();
+    });
+  }
+
+  // Handle return redirect from eSewa callback
+  (function checkUrlPaymentCallback() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get("payment") === "esewa" && urlParams.get("status") === "success") {
+      const amt = Number(urlParams.get("amt") || 50);
+      const credits = Number(urlParams.get("credits") || 5);
+      const tx = urlParams.get("tx") || urlParams.get("refId") || Date.now();
+
+      auth.onAuthStateChanged(user => {
+        if (user) {
+          handlePaymentSuccess("eSewa", amt, credits, tx);
+          // Clean URL params
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+      });
+    }
+  })();
+
+  /* ---------- Start Premium Quiz Session ---------- */
+  async function startPQuiz(catId, catName) {
+    hideArenaModal();
+    hideBuyCreditsModal();
+
+    pCatName = catName;
+    pQIdx = 0;
+    pCorrect = 0;
+    pPts = 0;
+    pSpeedBon = 0;
+
+    if (liveIntroCard) liveIntroCard.hidden = true;
+    if (liveActiveCard) liveActiveCard.hidden = true;
+    if (liveResultsCard) liveResultsCard.hidden = true;
+    if (premiumResultsCard) premiumResultsCard.hidden = true;
+    if (premiumActiveCard) premiumActiveCard.hidden = false;
+
+    try {
+      const s = await db.collection("premiumQuizContent").doc(catId).get();
+      pQuestions = s.exists ? (s.data().questions || []) : [];
+    } catch (e) { pQuestions = []; }
+
+    if (!pQuestions.length) {
+      alert("No questions available in this category yet. Check back later!");
+      returnPToIntro();
+      return;
+    }
+    renderPQ();
+  }
+
+  /* ---------- Render Premium Question ---------- */
+  function renderPQ() {
+    pAnswered = false;
+    if (premiumFbBar) premiumFbBar.hidden = true;
+    if (premiumOptsGrid) premiumOptsGrid.innerHTML = "";
+    const q = pQuestions[pQIdx];
+    if (!q) { finishPQuiz(); return; }
+
+    if (premiumQIndex) premiumQIndex.textContent = `Question ${pQIdx + 1} of ${pQuestions.length}`;
+    if (premiumRunningPts) premiumRunningPts.textContent = `${pPts} pts`;
+    if (premiumQCat) premiumQCat.textContent = pCatName;
+    if (premiumQTxt) premiumQTxt.textContent = q.question;
+
+    startPTimer();
+
+    const opts = Array.isArray(q.options) ? q.options : [];
+    const ci = Number(q.correctIndex ?? 0);
+    opts.forEach((txt, i) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "mcq-opt";
+      b.innerHTML = `<span class="opt-num">${i + 1}</span> <span>${escapeHtml(txt)}</span>`;
+      b.addEventListener("click", () => handlePAns(i, ci, q.explanation));
+      premiumOptsGrid.appendChild(b);
+    });
+  }
+
+  function startPTimer() {
+    clearInterval(pTimer);
+    pSecs = QUESTION_TIME_LIMIT;
+    updatePTimerViz();
+    pTimer = setInterval(() => {
+      pSecs--;
+      updatePTimerViz();
+      if (pSecs <= 5 && pSecs > 0) playTick();
+      if (pSecs <= 0) { clearInterval(pTimer); pTimeout(); }
+    }, 1000);
+  }
+
+  function updatePTimerViz() {
+    if (premiumTimerTxt) premiumTimerTxt.textContent = `${pSecs}s`;
+    const pct = Math.max(0, (pSecs / QUESTION_TIME_LIMIT) * 100);
+    if (premiumTimerFill) {
+      premiumTimerFill.style.width = `${pct}%`;
+      premiumTimerFill.style.background = pSecs <= 5 ? "var(--q-wrong,#f87171)" : pSecs <= 10 ? "#fbbf24" : "#f59e0b";
+    }
+    if (premiumTimerSec) premiumTimerSec.classList.toggle("is-critical", pSecs <= 5);
+  }
+
+  function handlePAns(chosen, correct, expl) {
+    if (pAnswered) return;
+    pAnswered = true;
+    clearInterval(pTimer);
+
+    const ok = chosen === correct;
+    premiumOptsGrid.querySelectorAll(".mcq-opt").forEach((b, i) => {
+      b.disabled = true;
+      if (i === correct) b.classList.add("is-correct");
+      if (i === chosen && !ok) b.classList.add("is-wrong");
+    });
+
+    if (ok) {
+      playCorrect();
+      pCorrect++;
+      const sp = Math.round((pSecs / QUESTION_TIME_LIMIT) * MAX_SPEED_BONUS);
+      pSpeedBon += sp;
+      pPts += BASE_POINTS_PER_CORRECT + sp;
+      if (premiumRunningPts) premiumRunningPts.textContent = `${pPts} pts`;
+      showPFb(`🎉 Correct! +${BASE_POINTS_PER_CORRECT} pts${sp > 0 ? ` (+${sp} speed bonus ⚡)` : ""}`, true, expl);
+    } else {
+      playWrong();
+      showPFb(`Incorrect. Correct answer: Option ${correct + 1}.`, false, expl);
+    }
+  }
+
+  function pTimeout() {
+    if (pAnswered) return;
+    pAnswered = true;
+    playWrong();
+    const q = pQuestions[pQIdx];
+    const c = Number(q.correctIndex ?? 0);
+    premiumOptsGrid.querySelectorAll(".mcq-opt").forEach((b, i) => {
+      b.disabled = true;
+      if (i === c) b.classList.add("is-correct");
+    });
+    showPFb(`⏰ Time's up! Correct answer: Option ${c + 1}.`, false, q.explanation);
+  }
+
+  function showPFb(msg, ok, expl) {
+    if (!premiumFbBar) return;
+    premiumFbBar.hidden = false;
+    premiumFbText.innerHTML = msg + (expl ? ` <br/><small class="quiz-muted">${expl}</small>` : "");
+    premiumFbBar.classList.toggle("is-correct-bar", ok);
+    premiumFbBar.classList.toggle("is-wrong-bar", !ok);
+  }
+
+  if (premiumNextBtn) {
+    premiumNextBtn.addEventListener("click", () => {
+      pQIdx++;
+      pQIdx < pQuestions.length ? renderPQ() : finishPQuiz();
+    });
+  }
+
+  /* ---------- Finish Premium Quiz ---------- */
+  function finishPQuiz() {
+    clearInterval(pTimer);
+    if (premiumActiveCard) premiumActiveCard.hidden = true;
+    if (premiumResultsCard) premiumResultsCard.hidden = false;
+    if (premiumResScore) premiumResScore.textContent = `${pCorrect}/${pQuestions.length}`;
+    if (premiumResPts) premiumResPts.textContent = pPts.toLocaleString();
+    if (premiumResBonus) premiumResBonus.textContent = `+${pSpeedBon}`;
+    if (premiumResCat) premiumResCat.textContent = pCatName;
+    if (premiumResSub) {
+      premiumResSub.innerHTML = `You scored <strong>${pPts} pts</strong> (${pCorrect}/${pQuestions.length} correct) in <strong>${escapeHtml(pCatName)}</strong>!`;
+    }
+  }
+
+  function returnPToIntro() {
+    clearInterval(pTimer);
+    if (premiumActiveCard) premiumActiveCard.hidden = true;
+    if (premiumResultsCard) premiumResultsCard.hidden = true;
+    if (liveIntroCard) liveIntroCard.hidden = false;
+  }
+
+  if (premiumBackModal) {
+    premiumBackModal.addEventListener("click", () => {
+      if (premiumResultsCard) premiumResultsCard.hidden = true;
+      showArenaModal(isWeeklyChampion);
+    });
+  }
+  if (premiumBackIntro) premiumBackIntro.addEventListener("click", returnPToIntro);
+
+  // Keyboard navigation
+  window.addEventListener("keydown", (e) => {
+    if (!premiumActiveCard || premiumActiveCard.hidden) return;
+    if (!pAnswered) {
+      const n = parseInt(e.key, 10);
+      if (n >= 1 && n <= 4) {
+        const b = premiumOptsGrid.querySelectorAll(".mcq-opt")[n - 1];
+        if (b && !b.disabled) b.click();
+      }
+    } else if (premiumFbBar && !premiumFbBar.hidden && (e.key === "Enter" || e.key === " ")) {
+      e.preventDefault();
+      if (premiumNextBtn) premiumNextBtn.click();
+    }
+  });
+
+  // Auth state listener: check premium access and sync credits
+  auth.onAuthStateChanged(async (user) => {
+    if (user) {
+      syncUserCredits(user);
+      await checkPremiumAccess(user);
+    } else {
+      userCredits = 2;
+      isWeeklyChampion = false;
+      updateCreditBadges(2);
+      if (premiumBanner) premiumBanner.hidden = true;
+    }
+  });
+
+  // Winner check: triggered when score is saved to tournament leaderboard
+  document.addEventListener("premiumCheckReady", async () => {
+    const user = auth.currentUser;
+    if (user) await checkWeeklyWinner(user);
+  });
 
 })();

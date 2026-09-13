@@ -114,6 +114,10 @@
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           <span>Live Quiz Schedule</span>
         </button>
+        <button class="admin-tab" data-tab="premiumquiz" role="tab" type="button">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+          <span>Premium Quiz</span>
+        </button>
       </div>
 
       <!-- ---- Questions tab ---- -->
@@ -332,6 +336,130 @@
             <button type="button" class="btn btn-outline" id="clearLiveDayQuestionsBtn">Reset to Automated Question Selection</button>
           </div>
           <p class="modal-status" id="adminLiveStatus"></p>
+        </div>
+      </div>
+
+      <!-- ---- Premium Quiz tab ---- -->
+      <div class="admin-panel" id="tab-premiumquiz" hidden>
+
+        <!-- Min score threshold setting -->
+        <div class="admin-form" style="margin-bottom:28px">
+          <h3>🏆 Premium Reward Settings</h3>
+          <p class="quiz-muted">
+            The weekly tournament <strong>#1 winner</strong> (or all tied leaders) who reach the minimum score gets
+            unlocked premium quiz access for that week. You can change the threshold and manage premium content categories and questions here.
+          </p>
+          <div class="admin-form-grid">
+            <label>Minimum Score to Unlock Premium (points)
+              <input type="number" id="premiumMinScore" value="50" min="1" max="9999" style="width:100%" />
+            </label>
+          </div>
+          <div class="admin-form-actions">
+            <button type="button" class="btn btn-primary btn-sm" id="savePremiumMinScoreBtn">Save Threshold</button>
+          </div>
+          <p class="modal-status" id="premiumSettingsStatus"></p>
+        </div>
+
+        <!-- Payment Gateway Settings -->
+        <div class="admin-form" style="margin-bottom:28px">
+          <h3>💳 Payment Gateway Settings (Khalti &amp; eSewa)</h3>
+          <p class="quiz-muted">
+            Configure merchant credentials for credit purchases. Learners can buy credits via Khalti or eSewa when they don't have enough credits.
+          </p>
+          <div class="admin-form-grid">
+            <label>Khalti Public Key
+              <input type="text" id="khaltiPublicKeyInput" placeholder="e.g. test_public_key_..." />
+            </label>
+            <label>eSewa Merchant Code / Product Code
+              <input type="text" id="esewaMerchantCodeInput" placeholder="e.g. EPAYTEST" />
+            </label>
+          </div>
+          <div class="admin-form-grid">
+            <label>Price per Credit (NPR)
+              <input type="number" id="nprPerCreditInput" value="10" min="1" max="1000" />
+            </label>
+          </div>
+          <div class="admin-form-actions">
+            <button type="button" class="btn btn-primary btn-sm" id="savePaymentSettingsBtn">Save Payment Settings</button>
+          </div>
+          <p class="modal-status" id="paymentSettingsStatus"></p>
+        </div>
+
+        <hr style="margin:24px 0; border-color: var(--border, #e5e7eb);" />
+
+        <!-- Category Manager -->
+        <div class="admin-form" style="margin-bottom:28px">
+          <h3>Premium Categories</h3>
+          <p class="quiz-muted">
+            Add or remove categories displayed in the <strong>Premium Quiz Arena</strong>. Each category card displays an image, title, description, and required credits.
+          </p>
+          <div class="admin-form-grid">
+            <label>Category Name
+              <input type="text" id="premiumCatName" placeholder="e.g. Current Affairs 2026" />
+            </label>
+            <label>Category Slug (no spaces, lowercase)
+              <input type="text" id="premiumCatSlug" placeholder="e.g. current-affairs" />
+            </label>
+          </div>
+          <div class="admin-form-grid">
+            <label>Card Image URL
+              <input type="url" id="premiumCatImage" placeholder="https://example.com/banner.jpg or leave empty" />
+            </label>
+            <label>Credits Required to Play
+              <input type="number" id="premiumCatCredits" value="3" min="1" max="50" />
+            </label>
+          </div>
+          <label>Category Description
+            <textarea id="premiumCatDesc" rows="2" placeholder="Brief overview of the questions, topics, and competitive exams covered…"></textarea>
+          </label>
+          <div class="admin-form-actions">
+            <button type="button" class="btn btn-primary btn-sm" id="addPremiumCategoryBtn">Save / Add Category</button>
+          </div>
+          <p class="modal-status" id="premiumCatStatus"></p>
+          <div id="premiumCatList" class="admin-list" style="margin-top:12px">
+            <p class="updates-loading">Loading categories…</p>
+          </div>
+        </div>
+
+        <hr style="margin:24px 0; border-color: var(--border, #e5e7eb);" />
+
+        <!-- Question Manager -->
+        <div class="admin-form">
+          <h3>Premium Questions</h3>
+          <p class="quiz-muted">Select a category, then add or manage questions for it.</p>
+          <label>Select Category
+            <select id="premiumQCategorySelect">
+              <option value="">-- Select a category --</option>
+            </select>
+          </label>
+
+          <form id="premiumQuestionForm" class="admin-form" style="margin-top:16px">
+            <input type="hidden" id="premiumQId" />
+            <label>Question <textarea id="premiumQText" rows="2" required placeholder="Enter the question…"></textarea></label>
+            <div class="admin-form-grid">
+              <label>Option A <input type="text" id="premiumOpt0" required /></label>
+              <label>Option B <input type="text" id="premiumOpt1" required /></label>
+              <label>Option C <input type="text" id="premiumOpt2" required /></label>
+              <label>Option D <input type="text" id="premiumOpt3" required /></label>
+            </div>
+            <label>Correct option
+              <select id="premiumCorrectIndex" required>
+                <option value="0">A</option>
+                <option value="1">B</option>
+                <option value="2">C</option>
+                <option value="3">D</option>
+              </select>
+            </label>
+            <label>Explanation <textarea id="premiumQExplanation" rows="2" placeholder="Optional explanation…"></textarea></label>
+            <div class="admin-form-actions">
+              <button type="submit" class="btn btn-primary" id="premiumQSubmitBtn">Add Question</button>
+              <button type="button" class="btn btn-outline" id="cancelPremiumQEdit" hidden>Cancel edit</button>
+            </div>
+          </form>
+          <p class="modal-status" id="premiumQStatus"></p>
+          <div id="premiumQList" class="admin-list" style="margin-top:12px">
+            <p class="updates-loading">Select a category to view its questions.</p>
+          </div>
         </div>
       </div>
     </div>

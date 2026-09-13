@@ -716,3 +716,97 @@
 [data-theme="dark"] .leaderboard-row.header-row {
   background: #0f172a;
 }
+
+/* Premium Quiz Enhancements */
+#premiumAccessBanner {
+  animation: premiumGlow 2.5s infinite ease-in-out;
+}
+@keyframes premiumGlow {
+  0%, 100% { box-shadow: 0 4px 14px rgba(245, 158, 11, 0.25); }
+  50% { box-shadow: 0 6px 22px rgba(245, 158, 11, 0.45); }
+}
+
+[data-theme="dark"] #premiumAccessBanner {
+  background: linear-gradient(135deg, #451a03 0%, #78350f 100%) !important;
+  border-color: #f59e0b !important;
+}
+[data-theme="dark"] #premiumAccessBanner p {
+  color: #fef3c7 !important;
+}
+[data-theme="dark"] #premiumModalOverlay > div {
+  background: #1e293b !important;
+  color: #f8fafc !important;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.7) !important;
+}
+[data-theme="dark"] #premiumModalOverlay p {
+  color: #94a3b8 !important;
+}
+
+/* Category Cards & Buy Credits Modal */
+.premium-direct-entry-box {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.premium-direct-entry-box:hover {
+  box-shadow: 0 8px 24px rgba(234, 88, 12, 0.12);
+}
+
+.credit-pack-card {
+  transition: all 0.2s ease;
+}
+.credit-pack-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+}
+.credit-pack-card.active {
+  box-shadow: 0 0 0 2px #f59e0b, 0 6px 20px rgba(245, 158, 11, 0.2);
+}
+
+[data-theme="dark"] .premium-direct-entry-box {
+  background: linear-gradient(135deg, #2a160b 0%, #3f1d0a 100%) !important;
+  border-color: #9a3412 !important;
+}
+[data-theme="dark"] .premium-direct-entry-box strong {
+  color: #fdba74 !important;
+}
+[data-theme="dark"] .premium-direct-entry-box p {
+  color: #fed7aa !important;
+}
+
+[data-theme="dark"] .premium-cat-card {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+}
+[data-theme="dark"] .premium-cat-card h3 {
+  color: #f8fafc !important;
+}
+[data-theme="dark"] .premium-cat-card p {
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] #buyCreditsModal > div {
+  background: #1e293b !important;
+  color: #f8fafc !important;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.75) !important;
+}
+[data-theme="dark"] #buyCreditsModal h2 {
+  color: #f8fafc !important;
+}
+[data-theme="dark"] #paymentSecurityBox {
+  background: #0f172a !important;
+  border-color: #334155 !important;
+}
+[data-theme="dark"] #paymentSecurityBox strong {
+  color: #cbd5e1 !important;
+}
+[data-theme="dark"] .credit-pack-card {
+  background: #0f172a !important;
+  border-color: #334155 !important;
+}
+[data-theme="dark"] .credit-pack-card.active {
+  background: #2a1804 !important;
+  border-color: #f59e0b !important;
+}
+[data-theme="dark"] .credit-pack-card div:last-child {
+  color: #f8fafc !important;
+}
+

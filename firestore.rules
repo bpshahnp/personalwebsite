@@ -76,6 +76,48 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
+    // ---- Premium Quiz Content (categories + questions) --------------------
+    // Only authenticated users may read (client-side gates by unlock status).
+    // Admin-only writes.
+    match /premiumQuizContent/{categoryId} {
+      allow read: if request.auth != null;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ---- Premium Unlock records -------------------------------------------
+    // Written when a user wins the weekly tournament.
+    // Each user can read/write their own doc; admin can read all.
+    match /premiumUnlocks/{unlockId} {
+      allow read: if request.auth != null &&
+        (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if request.auth != null &&
+        request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+
+    // ---- Site Settings (min score threshold, payment keys, etc.) ----------
+    // Public read so clients can load threshold & public gateway keys; admin-only write.
+    match /siteSettings/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ---- User Profiles & Credits ------------------------------------------
+    // Each user manages their own profile (credits, phone number, google auth).
+    match /users/{uid} {
+      allow read: if request.auth != null && (request.auth.uid == uid || isAdmin());
+      allow create, update: if request.auth != null && (request.auth.uid == uid || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // ---- Payment & Credit Transaction Logs --------------------------------
+    // Logs payments from eSewa and Khalti. User can create and read their own.
+    match /payments/{paymentId} {
+      allow read: if request.auth != null && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+
     // ---- Everything else: locked by default ------------------------------
     // Deny-by-default so a future collection isn't accidentally left open.
     match /{document=**} {

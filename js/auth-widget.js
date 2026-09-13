@@ -14,21 +14,81 @@
 const ACCOUNT_ICON_SVG =
   '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>';
 
+const GOOGLE_ICON_SVG =
+  '<svg width="16" height="16" viewBox="0 0 24 24" style="flex-shrink:0"><path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.3 9 5 12 5z"/><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.7-.2-2.3H12v4.6h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.9z"/><path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.8s.2-2.1.4-2.8L1.9 6.3C.7 8.7 0 11.3 0 14s.7 5.3 1.9 7.7l3.7-2.9z"/><path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.3-6.4-5.2L1.9 16C3.7 19.7 7.5 23 12 23z"/></svg>';
+
+// Global user profile initialization helper: gives 2 credits by default!
+async function initUserProfile(user) {
+  if (!user || !db) return null;
+  const userRef = db.collection("users").doc(user.uid);
+  try {
+    const snap = await userRef.get();
+    const isGoogle = (user.providerData || []).some(p => p.providerId === "google.com");
+    if (!snap.exists) {
+      const data = {
+        credits: 2, // Default 2 credits on account creation!
+        email: user.email || "",
+        displayName: user.displayName || user.email.split("@")[0] || "Learner",
+        phoneNumber: user.phoneNumber || "",
+        googleLinked: isGoogle,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+      await userRef.set(data, { merge: true });
+      return data;
+    } else {
+      const data = snap.data();
+      if (isGoogle && !data.googleLinked) {
+        await userRef.set({ googleLinked: true, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+      }
+      return data;
+    }
+  } catch (err) {
+    console.warn("Could not sync user profile:", err);
+    return null;
+  }
+}
+window.initUserProfile = initUserProfile;
+
+// Global Google Sign-In helper
+window.signInWithGoogle = function() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: "select_account" });
+  return auth.signInWithPopup(provider).then(async res => {
+    if (res.user) await initUserProfile(res.user);
+    return res;
+  });
+};
+
 function renderAuthDropdown(dropdown, user) {
   if (user) {
     const displayName = user.displayName || user.email;
     dropdown.innerHTML = `
       <p class="auth-email">${escapeHtmlAuth(displayName)}</p>
+      <div class="auth-credits-badge" style="background:#fef3c7; color:#92400e; font-weight:700; padding:6px 10px; border-radius:6px; margin-bottom:8px; font-size:0.85rem; text-align:center;">
+        🪙 Balance: <span class="user-credits-val">2</span> Credits
+      </div>
       <button class="btn btn-outline btn-sm auth-name-btn" style="width:100%;text-align:center;display:block;margin-bottom:8px">Change Name</button>
-      <a href="../leaderboard/leaderboard.html" class="btn btn-outline btn-sm" style="width:100%;text-align:center;display:block;margin-bottom:8px">View Leaderboard</a>
+      <a href="live-quiz.html" class="btn btn-outline btn-sm" style="width:100%;text-align:center;display:block;margin-bottom:8px">Premium Arena 🏆</a>
       <button class="btn btn-outline btn-sm auth-signout-btn" style="width:100%">Logout</button>
     `;
+
+    // Realtime listen to user credits
+    if (db) {
+      db.collection("users").doc(user.uid).onSnapshot(s => {
+        if (s.exists && s.data().credits != null) {
+          const el = dropdown.querySelector(".user-credits-val");
+          if (el) el.textContent = s.data().credits;
+        }
+      });
+    }
+
     dropdown.querySelector(".auth-name-btn").addEventListener("click", () => {
       const newName = prompt("Enter your display name (this will appear on the leaderboard):", user.displayName || "");
       if (newName && newName.trim() !== "") {
         user.updateProfile({ displayName: newName.trim() }).then(() => {
-          // Force a quick refresh of the UI by re-triggering the state
           auth.updateCurrentUser(user);
+          if (db) db.collection("users").doc(user.uid).set({ displayName: newName.trim() }, { merge: true });
         });
       }
     });
@@ -38,6 +98,14 @@ function renderAuthDropdown(dropdown, user) {
     });
   } else {
     dropdown.innerHTML = `
+      <button type="button" class="btn btn-outline btn-sm auth-google-btn" style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:10px; font-weight:600;">
+        ${GOOGLE_ICON_SVG} Continue with Google
+      </button>
+      <div style="display:flex; align-items:center; gap:8px; margin:8px 0; color:var(--mist); font-size:0.75rem; text-transform:uppercase;">
+        <span style="flex:1; border-top:1px solid var(--border)"></span>
+        <span>or</span>
+        <span style="flex:1; border-top:1px solid var(--border)"></span>
+      </div>
       <form class="auth-form">
         <input type="text" class="auth-name-input" placeholder="Display Name" style="display:none; width:100%; margin-bottom:8px; padding:8px; border:1px solid var(--border); border-radius:4px" />
         <input type="email" class="auth-email-input" placeholder="Email" required autocomplete="email" style="width:100%; margin-bottom:8px; padding:8px; border:1px solid var(--border); border-radius:4px" />
@@ -47,6 +115,16 @@ function renderAuthDropdown(dropdown, user) {
         <p class="auth-status"></p>
       </form>
     `;
+
+    dropdown.querySelector(".auth-google-btn").addEventListener("click", () => {
+      window.signInWithGoogle()
+        .then(() => (dropdown.hidden = true))
+        .catch(err => {
+          const status = dropdown.querySelector(".auth-status");
+          if (status) status.textContent = err.message;
+        });
+    });
+
     let isSignup = false;
     const submitBtn = dropdown.querySelector(".auth-submit-btn");
     const toggleLink = dropdown.querySelector(".auth-toggle-mode");
@@ -55,8 +133,7 @@ function renderAuthDropdown(dropdown, user) {
       e.preventDefault();
       isSignup = !isSignup;
       nameInput.style.display = isSignup ? "block" : "none";
-      if (isSignup) nameInput.required = true;
-      else nameInput.required = false;
+      nameInput.required = isSignup;
       submitBtn.textContent = isSignup ? "Sign Up" : "Login";
       toggleLink.textContent = isSignup ? "Have an account? Login" : "Need an account? Sign up";
     });
@@ -77,7 +154,10 @@ function renderAuthDropdown(dropdown, user) {
         : auth.signInWithEmailAndPassword(email, password);
         
       action
-        .then(() => (dropdown.hidden = true))
+        .then(async res => {
+          if (res.user) await initUserProfile(res.user);
+          dropdown.hidden = true;
+        })
         .catch((err) => (status.textContent = err.message));
     });
   }
@@ -119,6 +199,9 @@ function setupAuthWidgets() {
       btn.classList.toggle("signed-in", !!user);
       renderAuthDropdown(dropdown, user);
     });
+    if (user) {
+      initUserProfile(user);
+    }
     document.dispatchEvent(new CustomEvent("authchange", { detail: { user } }));
   });
 }
