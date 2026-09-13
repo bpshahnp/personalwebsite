@@ -1458,7 +1458,35 @@
     }
   }
 
-  // 1. Khalti Payment Trigger
+  // Helper: Load Khalti Checkout SDK on demand if not already loaded
+  function loadKhaltiSdk() {
+    return new Promise((resolve, reject) => {
+      if (typeof KhaltiCheckout !== "undefined") {
+        resolve(KhaltiCheckout);
+        return;
+      }
+      const existing = document.querySelector('script[src*="khalti"]');
+      if (existing) {
+        existing.addEventListener("load", () => {
+          if (typeof KhaltiCheckout !== "undefined") resolve(KhaltiCheckout);
+          else reject(new Error("KhaltiCheckout not found"));
+        });
+        existing.addEventListener("error", () => reject(new Error("Khalti script load failed")));
+        return;
+      }
+      const s = document.createElement("script");
+      s.src = "https://khalti.s3.amazonaws.com/khalti-checkout-web.2.0.0.js";
+      s.async = true;
+      s.onload = () => {
+        if (typeof KhaltiCheckout !== "undefined") resolve(KhaltiCheckout);
+        else reject(new Error("KhaltiCheckout not found after script load"));
+      };
+      s.onerror = () => reject(new Error("Unable to load Khalti SDK. Check your connection or ad blocker."));
+      document.head.appendChild(s);
+    });
+  }
+
+  // 1. Khalti Payment Trigger (Strict Gateway Flow)
   if (payWithKhaltiBtn) {
     payWithKhaltiBtn.addEventListener("click", async () => {
       const user = auth.currentUser;
@@ -1469,48 +1497,56 @@
       const verified = await ensureSecurityRequirements(user);
       if (!verified) return;
 
-      paymentActionStatus.textContent = "Initiating Khalti payment…";
+      paymentActionStatus.textContent = "Connecting to Khalti secure checkout…";
+      paymentActionStatus.style.color = "#475569";
+      payWithKhaltiBtn.disabled = true;
 
-      // Check if Khalti Checkout SDK is available
-      if (typeof KhaltiCheckout === "undefined") {
-        paymentActionStatus.textContent = "Khalti SDK loading. Testing fallback…";
-        // Fallback test verification prompt
-        const sim = confirm(`[Khalti Sandbox Test]\nPay NPR ${selectedPackAmount} for ${selectedPackCredits} Credits?`);
-        if (sim) {
-          handlePaymentSuccess("Khalti", selectedPackAmount, selectedPackCredits, "KHALTI_TEST_" + Date.now());
-        }
+      try {
+        await loadKhaltiSdk();
+      } catch (err) {
+        payWithKhaltiBtn.disabled = false;
+        paymentActionStatus.textContent = "⚠️ Could not connect to Khalti payment server. Please verify your internet connection or disable ad-blockers and try again.";
+        paymentActionStatus.style.color = "crimson";
         return;
       }
 
       try {
         const checkout = new KhaltiCheckout({
-          publicKey: paymentConfig.khaltiPublicKey,
+          publicKey: paymentConfig.khaltiPublicKey || "test_public_key_dc74e0fd69cb46cd8583f30e42f04155",
           productIdentity: `credits_${selectedPackCredits}`,
           productName: `${selectedPackCredits} Premium Quiz Credits`,
           productUrl: window.location.href,
           eventHandler: {
             onSuccess(payload) {
+              // Real payment completed on Khalti widget
+              console.log("Khalti payment success payload:", payload);
+              payWithKhaltiBtn.disabled = false;
               handlePaymentSuccess("Khalti", payload.amount / 100, selectedPackCredits, payload.token || payload.idx);
             },
             onError(error) {
-              paymentActionStatus.textContent = "Khalti payment failed: " + JSON.stringify(error);
+              payWithKhaltiBtn.disabled = false;
+              console.warn("Khalti payment error:", error);
+              paymentActionStatus.textContent = "Khalti payment was not completed or failed. No credits were added.";
               paymentActionStatus.style.color = "crimson";
             },
             onClose() {
-              paymentActionStatus.textContent = "Khalti payment canceled.";
+              payWithKhaltiBtn.disabled = false;
+              paymentActionStatus.textContent = "Khalti checkout closed without payment.";
+              paymentActionStatus.style.color = "#64748b";
             }
           }
         });
 
-        checkout.show({ amount: selectedPackAmount * 100 }); // Amount in Paisa
+        checkout.show({ amount: selectedPackAmount * 100 }); // Khalti amount in Paisa
       } catch (err) {
+        payWithKhaltiBtn.disabled = false;
         paymentActionStatus.textContent = "Khalti initialization error: " + err.message;
         paymentActionStatus.style.color = "crimson";
       }
     });
   }
 
-  // 2. eSewa Payment Trigger
+  // 2. eSewa Payment Trigger (Official Form Submission)
   if (payWithEsewaBtn) {
     payWithEsewaBtn.addEventListener("click", async () => {
       const user = auth.currentUser;
@@ -1521,16 +1557,17 @@
       const verified = await ensureSecurityRequirements(user);
       if (!verified) return;
 
-      paymentActionStatus.textContent = "Redirecting to eSewa payment…";
+      paymentActionStatus.textContent = "Redirecting to eSewa payment portal…";
+      paymentActionStatus.style.color = "#475569";
 
       const txId = `ES_${user.uid.slice(0, 5)}_${Date.now()}`;
       const successUrl = `${window.location.origin}${window.location.pathname}?payment=esewa&status=success&amt=${selectedPackAmount}&credits=${selectedPackCredits}&tx=${txId}`;
       const failureUrl = `${window.location.origin}${window.location.pathname}?payment=esewa&status=fail`;
 
-      // Build eSewa ePay Form
+      // Build and submit official eSewa form
       const form = document.createElement("form");
       form.method = "POST";
-      form.action = "https://uat.esewa.com.np/epay/main"; // Sandbox / test endpoint
+      form.action = "https://uat.esewa.com.np/epay/main"; // eSewa test gateway
 
       const params = {
         amt: selectedPackAmount,
@@ -1553,17 +1590,6 @@
       }
 
       document.body.appendChild(form);
-
-      // In development / local testing environment where eSewa sandbox callback may not redirect back to localhost:
-      // provide instant simulated test confirmation
-      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-        const proceedSim = confirm(`[eSewa Sandbox Mode]\nProceed to payment of NPR ${selectedPackAmount} for ${selectedPackCredits} credits?\n\n(Click OK to simulate instant success, or Cancel to abort)`);
-        if (proceedSim) {
-          handlePaymentSuccess("eSewa", selectedPackAmount, selectedPackCredits, txId);
-          return;
-        }
-      }
-
       form.submit();
     });
   }
@@ -1571,18 +1597,30 @@
   // Handle return redirect from eSewa callback
   (function checkUrlPaymentCallback() {
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get("payment") === "esewa" && urlParams.get("status") === "success") {
-      const amt = Number(urlParams.get("amt") || 50);
-      const credits = Number(urlParams.get("credits") || 5);
-      const tx = urlParams.get("tx") || urlParams.get("refId") || Date.now();
+    if (urlParams.get("payment") === "esewa") {
+      if (urlParams.get("status") === "success") {
+        const amt = Number(urlParams.get("amt") || 50);
+        const credits = Number(urlParams.get("credits") || 5);
+        const tx = urlParams.get("tx") || urlParams.get("refId") || urlParams.get("oid");
 
-      auth.onAuthStateChanged(user => {
-        if (user) {
-          handlePaymentSuccess("eSewa", amt, credits, tx);
-          // Clean URL params
-          window.history.replaceState({}, document.title, window.location.pathname);
-        }
-      });
+        auth.onAuthStateChanged(async user => {
+          if (user && tx) {
+            // Check if this transaction was already credited to prevent duplicate additions
+            try {
+              const existing = await db.collection("payments").where("referenceId", "==", String(tx)).get();
+              if (existing.empty) {
+                await handlePaymentSuccess("eSewa", amt, credits, tx);
+              }
+            } catch (e) {
+              console.warn("Payment verification error:", e);
+            }
+            window.history.replaceState({}, document.title, window.location.pathname);
+          }
+        });
+      } else {
+        alert("eSewa payment was cancelled or failed. No credits were added.");
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
     }
   })();
 
