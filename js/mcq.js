@@ -1006,7 +1006,7 @@ function getTimeBuckets() {
 function saveScoreToLeaderboard(rawScore, total, pct) {
   const user = auth.currentUser;
   if (!user) {
-    leaderboardStatus.innerHTML = `Log in (top-right 👤) to save this score to the <a href="leaderboard.html">Leaderboard</a>.`;
+    leaderboardStatus.innerHTML = `Log in (top-right 👤) to save this score to the <a href="../leaderboard/leaderboard.html">Leaderboard</a>.`;
     return;
   }
 
@@ -1072,7 +1072,7 @@ function saveScoreToLeaderboard(rawScore, total, pct) {
     });
   })
     .then(({ earned, newTotal }) => {
-      leaderboardStatus.innerHTML = `Saved! You earned <strong>${earned} points</strong>. All-time total: ${newTotal}. Check the <a href="leaderboard.html">Leaderboard</a>.`;
+      leaderboardStatus.innerHTML = `Saved! You earned <strong>${earned} points</strong>. All-time total: ${newTotal}. Check the <a href="../leaderboard/leaderboard.html">Leaderboard</a>.`;
     })
     .catch((err) => {
       leaderboardStatus.textContent = `Could not save score (${err.message}).`;

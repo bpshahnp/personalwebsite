@@ -5,7 +5,7 @@
   <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1694584663544438" crossorigin="anonymous"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Leaderboard | B. Prasad Shah</title>
+  <title>Contact | B. Prasad Shah</title>
   <link rel="stylesheet" href="../css/style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -22,12 +22,12 @@
         <a href="../mcq/mcq.html">MCQ Hub</a>
         <a href="../python/python.html">Python Hub</a>
         <a href="../videos/video.html">Video Hub</a>
-        <a href="../leaderboard/leaderboard.html" class="active">Leaderboard</a>
+        <a href="../leaderboard/leaderboard.html">Leaderboard</a>
         <div class="dropdown">
           <button class="dropdown-toggle">See More Options ▾</button>
           <div class="dropdown-menu">
             <a href="../resources/resources.html">Additional Resources</a>
-            <a href="../contact/contact.html">Contact</a>
+            <a href="../contact/contact.html" class="active">Contact</a>
             <a href="../admin/admin.html">Admin Panel</a>
           </div>
         </div>
@@ -58,12 +58,12 @@
       <a href="../mcq/mcq.html">MCQ Hub</a>
       <a href="../python/python.html">Python Hub</a>
       <a href="../videos/video.html">Video Hub</a>
-      <a href="../leaderboard/leaderboard.html" class="active">Leaderboard</a>
+      <a href="../leaderboard/leaderboard.html">Leaderboard</a>
       <div class="dropdown">
         <button class="dropdown-toggle">See More Options ▾</button>
         <div class="dropdown-menu">
           <a href="../resources/resources.html">Additional Resources</a>
-          <a href="../contact/contact.html">Contact</a>
+          <a href="../contact/contact.html" class="active">Contact</a>
           <a href="../admin/admin.html">Admin Panel</a>
         </div>
       </div>
@@ -73,41 +73,69 @@
 
   <section class="page-hero">
     <div class="container">
-      <h1>Leaderboard</h1>
-      <p>Top scorers from the MCQ Hub quiz. <strong>Ranked by total points. Earn 1 point for every correct answer!</strong></p>
-      <p style="margin-top:8px; font-size:0.9rem; color:var(--mist)">Filter by time and class. Log in before taking a quiz to appear here.</p>
+      <h1>Contact</h1>
+      <p>Have a question, found a bug, or want to suggest something for MCQ Hub or Python Hub? Send it over below.</p>
     </div>
   </section>
 
-  <section class="leaderboard-section">
-    <div class="container" style="max-width:680px">
-      <div class="board-filter" id="timeFilter" role="group" aria-label="Filter leaderboard by time" style="margin-bottom:12px;">
-        <button type="button" class="board-chip active" data-time="day">Today</button>
-        <button type="button" class="board-chip" data-time="week">This Week</button>
-        <button type="button" class="board-chip" data-time="month">This Month</button>
-        <button type="button" class="board-chip" data-time="all">All Time</button>
-      </div>
-      <div class="board-filter" id="boardFilter" role="group" aria-label="Filter leaderboard by class">
-        <button type="button" class="board-chip active" data-class="All">All Classes</button>
-        <button type="button" class="board-chip" data-class="8">Class 8</button>
-        <button type="button" class="board-chip" data-class="9">Class 9</button>
-        <button type="button" class="board-chip" data-class="10">Class 10</button>
-      </div>
+  <section class="contact-section">
+    <div class="container contact-grid">
 
-      <div class="your-rank-card" id="yourRankCard" hidden></div>
+      <!-- ===== Profile / contact details ===== -->
+      <aside class="profile-card">
+        <img src="../assets/profile.jpg" alt="B. Prasad Shah" class="profile-photo" />
+        <h2>B. Prasad Shah</h2>
+        <p class="profile-title"><!-- e.g. "Python Instructor" / "Founder, B. Prasad Shah" — edit this line --></p>
 
-      <div class="leaderboard-table" id="leaderboardTable">
-        <div class="leaderboard-row header-row">
-          <span>#</span><span>Player</span><span style="text-align:right">Points</span>
+        <ul class="contact-details">
+          <li>
+            <span class="contact-icon">✉️</span>
+            <a href="mailto:you@example.com">bholapdshah.np@gmail.com</a>
+            <!-- ↑ replace with your real email -->
+          </li>
+          <li>
+            <span class="contact-icon">📞</span>
+            <a href="tel:+9770000000000">+977 9865351506</a>
+            <!-- ↑ replace with your real phone number -->
+          </li>
+          <li>
+            <span class="contact-icon">📍</span>
+            <span>Nepal</span>
+            <!-- ↑ replace with your real city/address -->
+          </li>
+        </ul>
+
+        <div class="social-links">
+          <!-- Add real links, or delete any you don't use -->
+          <a href="https://www.facebook.com/bpshah.np" target="_blank" rel="noopener">Facebook</a>
+          <a href="#" target="_blank" rel="noopener">YouTube</a>
+          <a href="#" target="_blank" rel="noopener">LinkedIn</a>
         </div>
-        <p class="updates-loading" style="padding:20px">Loading leaderboard…</p>
+      </aside>
+
+      <!-- ===== Query form ===== -->
+      <div class="contact-form-card">
+        <h2>Send a message</h2>
+        <p class="quiz-muted">Messages go straight to the site admin — you'll be contacted back at the email you provide.</p>
+
+        <form id="contactForm" class="admin-form">
+          <label>Name <input type="text" id="cfName" required /></label>
+          <label>Email <input type="email" id="cfEmail" required /></label>
+          <label>Subject <input type="text" id="cfSubject" placeholder="e.g. Question about MCQ Hub" /></label>
+          <label>Message <textarea id="cfMessage" rows="6" required></textarea></label>
+          <div class="admin-form-actions">
+            <button type="submit" class="btn btn-primary" id="cfSubmitBtn">Send message</button>
+          </div>
+          <p class="modal-status" id="cfStatus"></p>
+        </form>
       </div>
+
     </div>
   </section>
 
   <footer class="site-footer">
     <div class="container footer-inner">
-      <p>&copy; <span id="year"></span> B. Prasad Shah</p>
+      <p>&copy; <span id="year"></span> B. Prasad Shah — Python Hub</p>
       <div class="footer-links">
         <a href="../home/index.html">Home</a>
         <a href="../privacy/privacy.html">Privacy Policy</a>
@@ -122,7 +150,7 @@
   <script src="../js/firebase-config.js"></script>
   <script src="../js/auth-widget.js"></script>
   <script src="../js/nav-drawer.js"></script>
-  <script src="../js/leaderboard.js"></script>
+  <script src="../js/contact.js"></script>
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
   </script>

@@ -1,15 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1694584663544438" crossorigin="anonymous"></script>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Leaderboard | B. Prasad Shah</title>
-  <link rel="stylesheet" href="../css/style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Python Hub | B. Prasad Shah</title>
+  <link rel="stylesheet" href="../css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+
+  <!-- Pyodide: runs Python in the browser, main thread, loaded on first Run -->
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
+  <!-- Prism tokenises the code; the token colours live in css/style.css so the
+       editor matches this site's navy instead of a borrowed theme. -->
 </head>
 <body>
 
@@ -20,9 +25,9 @@
         <a href="../home/index.html">Home</a>
         <a href="../live/live-quiz.html" class="nav-live-link">Live Quiz <span class="nav-live-dot" aria-hidden="true"></span></a>
         <a href="../mcq/mcq.html">MCQ Hub</a>
-        <a href="../python/python.html">Python Hub</a>
+        <a href="../python/python.html" class="active">Python Hub</a>
         <a href="../videos/video.html">Video Hub</a>
-        <a href="../leaderboard/leaderboard.html" class="active">Leaderboard</a>
+        <a href="../leaderboard/leaderboard.html">Leaderboard</a>
         <div class="dropdown">
           <button class="dropdown-toggle">See More Options ▾</button>
           <div class="dropdown-menu">
@@ -56,9 +61,9 @@
       <a href="../home/index.html">Home</a>
       <a href="../live/live-quiz.html">Live Quiz 🔴</a>
       <a href="../mcq/mcq.html">MCQ Hub</a>
-      <a href="../python/python.html">Python Hub</a>
+      <a href="../python/python.html" class="active">Python Hub</a>
       <a href="../videos/video.html">Video Hub</a>
-      <a href="../leaderboard/leaderboard.html" class="active">Leaderboard</a>
+      <a href="../leaderboard/leaderboard.html">Leaderboard</a>
       <div class="dropdown">
         <button class="dropdown-toggle">See More Options ▾</button>
         <div class="dropdown-menu">
@@ -71,43 +76,38 @@
   </div>
   <div class="drawer-overlay" id="drawerOverlay"></div>
 
-  <section class="page-hero">
-    <div class="container">
-      <h1>Leaderboard</h1>
-      <p>Top scorers from the MCQ Hub quiz. <strong>Ranked by total points. Earn 1 point for every correct answer!</strong></p>
-      <p style="margin-top:8px; font-size:0.9rem; color:var(--mist)">Filter by time and class. Log in before taking a quiz to appear here.</p>
+  <div class="pyhub-bar">
+    <div class="container pyhub-bar-inner">
+      <h1>Python Hub</h1>
+      <button class="rail-toggle" id="railToggle" aria-controls="programRail" aria-expanded="false">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><circle cx="3.5" cy="6" r="1.2" fill="currentColor" stroke="none"></circle><circle cx="3.5" cy="12" r="1.2" fill="currentColor" stroke="none"></circle><circle cx="3.5" cy="18" r="1.2" fill="currentColor" stroke="none"></circle></svg>
+        Programs
+      </button>
     </div>
-  </section>
+  </div>
 
-  <section class="leaderboard-section">
-    <div class="container" style="max-width:680px">
-      <div class="board-filter" id="timeFilter" role="group" aria-label="Filter leaderboard by time" style="margin-bottom:12px;">
-        <button type="button" class="board-chip active" data-time="day">Today</button>
-        <button type="button" class="board-chip" data-time="week">This Week</button>
-        <button type="button" class="board-chip" data-time="month">This Month</button>
-        <button type="button" class="board-chip" data-time="all">All Time</button>
+  <div class="container pyhub-layout">
+    <aside class="pyhub-rail" id="programRail" aria-label="Program list">
+      <div class="rail-head">
+        <label class="rail-search">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><line x1="15.5" y1="15.5" x2="21" y2="21"></line></svg>
+          <input type="search" id="search-input" placeholder="Search programs" aria-label="Search programs" autocomplete="off" spellcheck="false">
+        </label>
+        <p class="rail-count" id="rail-count" aria-live="polite">Loading…</p>
       </div>
-      <div class="board-filter" id="boardFilter" role="group" aria-label="Filter leaderboard by class">
-        <button type="button" class="board-chip active" data-class="All">All Classes</button>
-        <button type="button" class="board-chip" data-class="8">Class 8</button>
-        <button type="button" class="board-chip" data-class="9">Class 9</button>
-        <button type="button" class="board-chip" data-class="10">Class 10</button>
-      </div>
+      <div class="rail-list" id="rail-list"></div>
+    </aside>
 
-      <div class="your-rank-card" id="yourRankCard" hidden></div>
+    <main class="pyhub-workspace" id="workspace">
+      <p class="workspace-note">Loading programs…</p>
+    </main>
+  </div>
 
-      <div class="leaderboard-table" id="leaderboardTable">
-        <div class="leaderboard-row header-row">
-          <span>#</span><span>Player</span><span style="text-align:right">Points</span>
-        </div>
-        <p class="updates-loading" style="padding:20px">Loading leaderboard…</p>
-      </div>
-    </div>
-  </section>
+  <div class="overlay" id="overlay"></div>
 
   <footer class="site-footer">
     <div class="container footer-inner">
-      <p>&copy; <span id="year"></span> B. Prasad Shah</p>
+      <p>&copy; <span id="year"></span> B. Prasad Shah — Python Hub</p>
       <div class="footer-links">
         <a href="../home/index.html">Home</a>
         <a href="../privacy/privacy.html">Privacy Policy</a>
@@ -116,15 +116,19 @@
     </div>
   </footer>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
   <script src="../js/firebase-config.js"></script>
   <script src="../js/auth-widget.js"></script>
   <script src="../js/nav-drawer.js"></script>
-  <script src="../js/leaderboard.js"></script>
+  <script src="../js/python-hub.js"></script>
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
   </script>
+
 </body>
 </html>

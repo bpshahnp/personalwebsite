@@ -20,7 +20,7 @@ function renderAuthDropdown(dropdown, user) {
     dropdown.innerHTML = `
       <p class="auth-email">${escapeHtmlAuth(displayName)}</p>
       <button class="btn btn-outline btn-sm auth-name-btn" style="width:100%;text-align:center;display:block;margin-bottom:8px">Change Name</button>
-      <a href="leaderboard.html" class="btn btn-outline btn-sm" style="width:100%;text-align:center;display:block;margin-bottom:8px">View Leaderboard</a>
+      <a href="../leaderboard/leaderboard.html" class="btn btn-outline btn-sm" style="width:100%;text-align:center;display:block;margin-bottom:8px">View Leaderboard</a>
       <button class="btn btn-outline btn-sm auth-signout-btn" style="width:100%">Logout</button>
     `;
     dropdown.querySelector(".auth-name-btn").addEventListener("click", () => {
@@ -322,7 +322,7 @@ window.openMcqAuthModal = function (options = {}) {
     } else {
       const isMcqPage = window.location.pathname.endsWith("mcq.html") || window.location.pathname.includes("mcq.html");
       if (!isMcqPage) {
-        window.location.href = options.targetUrl || "mcq.html";
+        window.location.href = options.targetUrl || "../mcq/mcq.html";
       }
     }
   });
@@ -355,7 +355,7 @@ window.openMcqAuthModal = function (options = {}) {
         } else {
           const isMcqPage = window.location.pathname.endsWith("mcq.html") || window.location.pathname.includes("mcq.html");
           if (!isMcqPage) {
-            window.location.href = options.targetUrl || "mcq.html";
+            window.location.href = options.targetUrl || "../mcq/mcq.html";
           }
         }
       })
@@ -384,7 +384,7 @@ document.addEventListener("click", (e) => {
   // If already on mcq.html and clicking the active link
   const currentPath = window.location.pathname;
   if (currentPath.endsWith("mcq.html") || currentPath.includes("/mcq.html")) {
-    if (link.classList.contains("active") || link.getAttribute("href") === "mcq.html") {
+    if (link.classList.contains("active") || link.getAttribute("href") === "../mcq/mcq.html") {
       return;
     }
   }
@@ -397,7 +397,7 @@ document.addEventListener("click", (e) => {
   if (navDrawer) navDrawer.classList.remove("open");
   if (drawerOverlay) drawerOverlay.classList.remove("visible");
 
-  const targetHref = link.getAttribute("href") || "mcq.html";
+  const targetHref = link.getAttribute("href") || "../mcq/mcq.html";
 
   window.openMcqAuthModal({
     title: "MCQ Quiz Hub",

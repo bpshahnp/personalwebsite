@@ -194,7 +194,7 @@ function renderYourRank(ranked) {
   yourRankCard.hidden = false;
 
   if (index === -1) {
-    yourRankCard.innerHTML = `<p>You haven't earned any Class ${selectedClass} points here yet — <a href="mcq.html">take a quiz</a>!</p>`;
+    yourRankCard.innerHTML = `<p>You haven't earned any Class ${selectedClass} points here yet — <a href="../mcq/mcq.html">take a quiz</a>!</p>`;
     return;
   }
 

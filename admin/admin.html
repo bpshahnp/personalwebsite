@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin | B. Prasad Shah</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="../home/index.html" class="logo">B. <span>Prasad Shah</span></a>
+      <nav class="main-nav">
+        <a href="../home/index.html">Home</a>
+        <a href="../live/live-quiz.html" class="nav-live-link">Live Quiz <span class="nav-live-dot" aria-hidden="true"></span></a>
+        <a href="../mcq/mcq.html">MCQ Hub</a>
+        <a href="../python/python.html">Python Hub</a>
+        <a href="../videos/video.html">Video Hub</a>
+        <a href="../leaderboard/leaderboard.html">Leaderboard</a>
+        <div class="dropdown">
+          <button class="dropdown-toggle">See More Options ▾</button>
+          <div class="dropdown-menu">
+            <a href="../resources/resources.html">Additional Resources</a>
+            <a href="../contact/contact.html">Contact</a>
+          </div>
+        </div>
+      </nav>
+      <div class="header-actions">
+        <button class="btn btn-outline" id="signOutBtn" hidden>Sign out</button>
+      </div>
+      <div class="mobile-header-icons">
+        <button class="btn btn-outline btn-sm" id="signOutBtnMobile" hidden style="padding:6px 12px; font-size:0.82rem; margin-right:6px;">Sign out</button>
+        <button class="nav-toggle" id="navToggle" aria-label="Open menu">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="nav-drawer" id="navDrawer">
+    <button class="drawer-close" id="drawerClose" aria-label="Close menu">&times;</button>
+    <nav class="drawer-nav">
+      <a href="../home/index.html">Home</a>
+      <a href="../live/live-quiz.html">Live Quiz 🔴</a>
+      <a href="../mcq/mcq.html">MCQ Hub</a>
+      <a href="../python/python.html">Python Hub</a>
+      <a href="../videos/video.html">Video Hub</a>
+      <a href="../leaderboard/leaderboard.html">Leaderboard</a>
+      <div class="dropdown">
+        <button class="dropdown-toggle">See More Options ▾</button>
+        <div class="dropdown-menu">
+          <a href="../resources/resources.html">Additional Resources</a>
+          <a href="../contact/contact.html">Contact</a>
+        </div>
+      </div>
+    </nav>
+  </div>
+  <div class="drawer-overlay" id="drawerOverlay"></div>
+
+  <!-- ===== Not logged in: sign-in gate ===== -->
+  <section class="admin-gate" id="signInGate">
+    <div class="container" style="max-width:380px">
+      <h1 class="section-title" style="text-align:center">Admin sign in</h1>
+      <form id="adminLoginForm" class="admin-login-form">
+        <label>Email <input type="email" id="adminEmail" required /></label>
+        <label>Password <input type="password" id="adminPassword" required minlength="6" /></label>
+        <button type="submit" class="btn btn-primary" style="width:100%">Sign in</button>
+      </form>
+      <p class="modal-status" id="adminLoginStatus"></p>
+      <p class="modal-alt">Only email addresses listed in <code>ADMIN_EMAILS</code> (in <code>js/firebase-config.js</code>) can manage content.</p>
+    </div>
+  </section>
+
+  <!-- ===== Logged in but not on the admin allowlist ===== -->
+  <section class="admin-gate" id="notAuthorized" hidden>
+    <div class="container" style="max-width:420px; text-align:center">
+      <h1 class="section-title">Not authorized</h1>
+      <p>Your account is signed in, but isn't on the admin list yet. Add your email to <code>ADMIN_EMAILS</code> in <code>js/firebase-config.js</code> (and to your Firestore rules) to get access.</p>
+    </div>
+  </section>
+
+  <!-- ===== Admin dashboard ===== -->
+  <section class="admin-dashboard" id="dashboard" hidden>
+    <div class="container">
+      <h1 class="section-title">Admin Panel</h1>
+
+      <div class="admin-tabs" role="tablist">
+        <button class="admin-tab active" data-tab="questions" role="tab" type="button">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+          <span>Questions</span>
+        </button>
+        <button class="admin-tab" data-tab="python" role="tab" type="button">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+          <span>Python Programs</span>
+        </button>
+        <button class="admin-tab" data-tab="resources" role="tab" type="button">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+          <span>Resources</span>
+        </button>
+        <button class="admin-tab" data-tab="messages" role="tab" type="button">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+          <span>Messages</span>
+        </button>
+        <button class="admin-tab" data-tab="updates" role="tab" type="button">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+          <span>Latest Updates</span>
+        </button>
+        <button class="admin-tab" data-tab="livequiz" role="tab" type="button">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          <span>Live Quiz Schedule</span>
+        </button>
+      </div>
+
+      <!-- ---- Questions tab ---- -->
+      <div class="admin-panel" id="tab-questions">
+        <details class="admin-import">
+          <summary>Bulk import questions</summary>
+          <div class="admin-import-body">
+            <p class="quiz-muted">
+              Upload a CSV or JSON file, or paste content below.
+              <a href="#" id="downloadQuestionCsvTemplate">Download CSV template</a> ·
+              <a href="#" id="downloadQuestionJsonTemplate">Download JSON template</a>
+            </p>
+            <p class="quiz-muted">
+              <strong>CSV columns:</strong> question, option_a, option_b, option_c, option_d, correct (A/B/C/D), explanation, category, class (8/9/10).<br/>
+              <strong>JSON:</strong> array of <code>{ "question", "options": [4 strings], "correctIndex" (0-3), "explanation", "category", "classLevel" }</code>.<br/>
+              The <code>class</code> column and <code>classLevel</code> field are optional — anything left blank imports as <strong>Class 10</strong>, so older files still work unchanged.
+            </p>
+            <input type="file" id="questionImportFile" accept=".csv,.json,text/csv,application/json" />
+            <textarea id="questionImportText" rows="6" placeholder="...or paste CSV/JSON content here"></textarea>
+            <div class="admin-form-actions">
+              <button type="button" class="btn btn-primary btn-sm" id="questionImportBtn">Import questions</button>
+            </div>
+            <p class="modal-status" id="questionImportStatus"></p>
+          </div>
+        </details>
+
+        <form id="questionForm" class="admin-form">
+          <input type="hidden" id="questionId" />
+          <label>Question <textarea id="qText" rows="2" required></textarea></label>
+          <div class="admin-form-grid">
+            <label>Option A <input type="text" id="opt0" required /></label>
+            <label>Option B <input type="text" id="opt1" required /></label>
+            <label>Option C <input type="text" id="opt2" required /></label>
+            <label>Option D <input type="text" id="opt3" required /></label>
+          </div>
+          <label>Correct option
+            <select id="correctIndex" required>
+              <option value="0">A</option>
+              <option value="1">B</option>
+              <option value="2">C</option>
+              <option value="3">D</option>
+            </select>
+          </label>
+          <label>Explanation <textarea id="qExplanation" rows="2"></textarea></label>
+          <div class="admin-form-grid">
+            <label>Class
+              <select id="qClass" required>
+                <option value="8">Class 8</option>
+                <option value="9">Class 9</option>
+                <option value="10" selected>Class 10</option>
+              </select>
+            </label>
+            <label>Category <input type="text" id="qCategory" placeholder="e.g. Python Basics" /></label>
+          </div>
+          <div class="admin-form-actions">
+            <button type="submit" class="btn btn-primary" id="questionSubmitBtn">Add question</button>
+            <button type="button" class="btn btn-outline" id="cancelQuestionEdit" hidden>Cancel edit</button>
+          </div>
+        </form>
+
+        <div class="admin-list-filter">
+          <label>Show
+            <select id="questionClassFilter">
+              <option value="All">All classes</option>
+              <option value="8">Class 8</option>
+              <option value="9">Class 9</option>
+              <option value="10">Class 10</option>
+            </select>
+          </label>
+          <span class="quiz-muted" id="questionCountLabel"></span>
+        </div>
+
+        <div id="questionsAdminList" class="admin-list">
+          <p class="updates-loading">Loading questions…</p>
+        </div>
+      </div>
+
+      <!-- ---- Python Programs tab ---- -->
+      <div class="admin-panel" id="tab-python" hidden>
+        <details class="admin-import">
+          <summary>Bulk import programs</summary>
+          <div class="admin-import-body">
+            <p class="quiz-muted">
+              Upload a JSON file, or paste content below (code doesn't fit cleanly in CSV, so JSON only here).
+              <a href="#" id="downloadPythonJsonTemplate">Download JSON template</a>
+            </p>
+            <p class="quiz-muted">
+              <strong>JSON:</strong> array of <code>{ "title", "category", "description", "code" }</code>.
+            </p>
+            <input type="file" id="pythonImportFile" accept=".json,application/json" />
+            <textarea id="pythonImportText" rows="6" placeholder="...or paste JSON content here"></textarea>
+            <div class="admin-form-actions">
+              <button type="button" class="btn btn-primary btn-sm" id="pythonImportBtn">Import programs</button>
+            </div>
+            <p class="modal-status" id="pythonImportStatus"></p>
+          </div>
+        </details>
+
+        <form id="pythonForm" class="admin-form">
+          <input type="hidden" id="pyId" />
+          <label>Title <input type="text" id="pyTitle" required /></label>
+          <div class="admin-form-grid">
+            <label>Category <input type="text" id="pyCategory" placeholder="e.g. Loops, Sorting" required /></label>
+            <label>Order (higher shows first) <input type="number" id="pyOrder" value="1" required /></label>
+          </div>
+          <label>Description <textarea id="pyDescription" rows="2" placeholder="What this program does"></textarea></label>
+          <label>Python code
+            <textarea id="pyCode" rows="8" class="code-textarea" required placeholder="print('Hello, world!')"></textarea>
+          </label>
+          <div class="admin-form-actions">
+            <button type="submit" class="btn btn-primary" id="pythonSubmitBtn">Add program</button>
+            <button type="button" class="btn btn-outline" id="cancelPythonEdit" hidden>Cancel edit</button>
+          </div>
+        </form>
+
+        <div id="pythonAdminList" class="admin-list">
+          <p class="updates-loading">Loading programs…</p>
+        </div>
+      </div>
+
+      <!-- ---- Resources tab ---- -->
+      <div class="admin-panel" id="tab-resources" hidden>
+        <form id="resourceForm" class="admin-form">
+          <input type="hidden" id="resId" />
+          <label>Title <input type="text" id="resTitle" required /></label>
+          <div class="admin-form-grid">
+            <label>File type
+              <select id="resFileType">
+                <option value="PPT">PPT</option>
+                <option value="Word">Word</option>
+                <option value="PDF">PDF</option>
+                <option value="Excel">Excel</option>
+                <option value="Other">Other</option>
+              </select>
+            </label>
+            <label>Category <input type="text" id="resCategory" placeholder="e.g. Class 10 Notes" /></label>
+          </div>
+          <label>Description <textarea id="resDescription" rows="2" placeholder="What this file covers"></textarea></label>
+          <label>Google Drive link
+            <input type="url" id="resDriveUrl" placeholder="https://drive.google.com/file/d/.../view" required />
+          </label>
+          <p class="quiz-muted">Make sure the file's Drive sharing setting is "Anyone with the link" (Viewer) — otherwise visitors can't open it.</p>
+          <div class="admin-form-grid">
+            <label>Order (higher shows first) <input type="number" id="resOrder" value="1" required /></label>
+          </div>
+          <div class="admin-form-actions">
+            <button type="submit" class="btn btn-primary" id="resourceSubmitBtn">Add resource</button>
+            <button type="button" class="btn btn-outline" id="cancelResourceEdit" hidden>Cancel edit</button>
+          </div>
+        </form>
+
+        <div id="resourcesAdminList" class="admin-list">
+          <p class="updates-loading">Loading resources…</p>
+        </div>
+      </div>
+
+      <!-- ---- Messages tab (contact form submissions) ---- -->
+      <div class="admin-panel" id="tab-messages" hidden>
+        <p class="quiz-muted" style="margin-bottom:16px">Messages sent through the Contact page. Reply directly to the sender's email — there's no reply feature here, this is just an inbox.</p>
+        <div id="messagesAdminList" class="admin-list">
+          <p class="updates-loading">Loading messages…</p>
+        </div>
+      </div>
+
+      <!-- ---- Updates tab ---- -->
+      <div class="admin-panel" id="tab-updates" hidden>
+        <form id="updateForm" class="admin-form">
+          <input type="hidden" id="updateId" />
+          <label>Title <input type="text" id="uTitle" required /></label>
+          <div class="admin-form-grid">
+            <label>Date (as shown) <input type="text" id="uDate" placeholder="08/30/2026" required /></label>
+            <label>Order (higher shows first) <input type="number" id="uOrder" value="1" required /></label>
+          </div>
+          <div class="admin-form-actions">
+            <button type="submit" class="btn btn-primary" id="updateSubmitBtn">Add update</button>
+            <button type="button" class="btn btn-outline" id="cancelUpdateEdit" hidden>Cancel edit</button>
+          </div>
+        </form>
+
+        <div id="updatesAdminList" class="admin-list">
+          <p class="updates-loading">Loading updates…</p>
+        </div>
+      </div>
+
+      <!-- ---- Live Quiz Schedule tab ---- -->
+      <div class="admin-panel" id="tab-livequiz" hidden>
+        <div class="admin-form">
+          <h3>7-Day Live Quiz Tournament Schedule</h3>
+          <p class="quiz-muted">
+            The live quiz automatically renews every single day for 7 days, then resets each week. By default, questions are <strong>automatically selected</strong> from your question bank. You can also assign custom questions for any specific day below.
+          </p>
+
+          <div class="admin-form-grid">
+            <label>Select Day of Week
+              <select id="adminLiveDaySelect">
+                <option value="1">Day 1 (Monday)</option>
+                <option value="2">Day 2 (Tuesday)</option>
+                <option value="3">Day 3 (Wednesday)</option>
+                <option value="4">Day 4 (Thursday)</option>
+                <option value="5">Day 5 (Friday)</option>
+                <option value="6">Day 6 (Saturday)</option>
+                <option value="7">Day 7 (Sunday)</option>
+              </select>
+            </label>
+            <label>Target Week
+              <input type="text" id="adminLiveWeekInput" placeholder="e.g. 2026-W36" />
+            </label>
+          </div>
+
+          <label>Custom Questions for this Day (JSON format)
+            <textarea id="adminLiveCustomJson" rows="8" placeholder='[&#10;  {&#10;    "question": "What is Python?",&#10;    "options": ["A snake", "A programming language", "A car", "A fruit"],&#10;    "correctIndex": 1,&#10;    "explanation": "Python is a high-level language.",&#10;    "category": "Python"&#10;  }&#10;]'></textarea>
+          </label>
+
+          <div class="admin-form-actions">
+            <button type="button" class="btn btn-primary" id="saveLiveDayQuestionsBtn">Save Daily Questions</button>
+            <button type="button" class="btn btn-outline" id="clearLiveDayQuestionsBtn">Reset to Automated Question Selection</button>
+          </div>
+          <p class="modal-status" id="adminLiveStatus"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+  <script src="../js/firebase-config.js"></script>
+  <script src="../js/nav-drawer.js"></script>
+  <script src="../js/admin.js"></script>
+</body>
+</html>

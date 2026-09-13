@@ -225,7 +225,7 @@ function renderWorkspace() {
       '<p class="workspace-note">' +
       (allPrograms.length
         ? "Pick a program from the list to read and run it."
-        : 'No programs yet. Add the first one from the <a href="admin.html">Admin Panel</a>.') +
+        : 'No programs yet. Add the first one from the <a href="../admin/admin.html">Admin Panel</a>.') +
       "</p>";
     return;
   }
