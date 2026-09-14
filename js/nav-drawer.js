@@ -23,18 +23,30 @@
     navToggle.addEventListener("click", openDrawer);
     if (drawerClose) drawerClose.addEventListener("click", closeDrawer);
     drawerOverlay.addEventListener("click", closeDrawer);
-    navDrawer.querySelectorAll(".drawer-nav > a").forEach((a) => {
+    navDrawer.querySelectorAll(".drawer-nav a").forEach((a) => {
       a.addEventListener("click", closeDrawer);
     });
   }
 
-  // "See More Options" dropdown inside the drawer (and anywhere else on
-  // the page) — tap-to-toggle, since CSS :hover doesn't work on touch.
+  // Dropdown toggle inside the drawer and desktop nav — tap-to-toggle
   document.querySelectorAll(".dropdown-toggle").forEach((btn) => {
     btn.addEventListener("click", (e) => {
       e.preventDefault();
-      btn.closest(".dropdown").classList.toggle("open");
+      e.stopPropagation();
+      const dropdown = btn.closest(".dropdown");
+      const wasOpen = dropdown.classList.contains("open");
+      document.querySelectorAll(".dropdown.open").forEach((d) => d.classList.remove("open"));
+      if (!wasOpen) {
+        dropdown.classList.add("open");
+      }
     });
+  });
+
+  // Close open dropdowns when clicking outside
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest(".dropdown")) {
+      document.querySelectorAll(".dropdown.open").forEach((d) => d.classList.remove("open"));
+    }
   });
 
   // Mobile search icon — reveals a search bar under the header (only on

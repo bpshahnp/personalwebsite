@@ -23,6 +23,265 @@
    ============================================ */
 
 const CLASS_LEVELS = ["8", "9", "10"];
+
+const SUBJECTS = ["All", "Computer Science", "Science", "Mathematics", "English", "General Knowledge"];
+const DEFAULT_SUBJECT = "All";
+
+function normalizeSubject(q) {
+  if (q && q.subject && String(q.subject).trim()) return String(q.subject).trim();
+  const cat = String((q && q.category) || "").toLowerCase();
+  if (cat.includes("science") && !cat.includes("computer")) return "Science";
+  if (cat.includes("math") || cat.includes("algebra") || cat.includes("geometry") || cat.includes("arithmetic")) return "Mathematics";
+  if (cat.includes("english") || cat.includes("grammar") || cat.includes("vocab")) return "English";
+  if (cat.includes("gk") || cat.includes("general knowledge") || cat.includes("nepal") || cat.includes("history")) return "General Knowledge";
+  return "Computer Science";
+}
+
+const DEFAULT_SUBJECT_QUESTIONS = [
+  // SCIENCE
+  {
+    question: "What is the SI unit of force?",
+    options: ["Joule", "Newton", "Pascal", "Watt"],
+    correctIndex: 1,
+    explanation: "Newton (N) is the SI unit of force, named after Sir Isaac Newton.",
+    subject: "Science",
+    category: "Physics",
+    classLevel: "8"
+  },
+  {
+    question: "Which cell organelle is commonly called the powerhouse of the cell?",
+    options: ["Ribosome", "Nucleus", "Mitochondria", "Golgi apparatus"],
+    correctIndex: 2,
+    explanation: "Mitochondria generate most of the chemical energy (ATP) needed by the cell.",
+    subject: "Science",
+    category: "Biology",
+    classLevel: "8"
+  },
+  {
+    question: "What is the formula representing Newton's second law of motion?",
+    options: ["F = m/a", "F = m × a", "F = m + a", "F = a/m"],
+    correctIndex: 1,
+    explanation: "Force equals mass multiplied by acceleration (F = ma).",
+    subject: "Science",
+    category: "Physics",
+    classLevel: "9"
+  },
+  {
+    question: "What is the chemical formula for ordinary water?",
+    options: ["CO2", "H2O", "NaCl", "O2"],
+    correctIndex: 1,
+    explanation: "Water consists of two hydrogen atoms bonded to one oxygen atom (H2O).",
+    subject: "Science",
+    category: "Chemistry",
+    classLevel: "9"
+  },
+  {
+    question: "What is the standard value of acceleration due to gravity (g) at Earth's surface?",
+    options: ["9.8 m/s²", "8.9 m/s²", "10.8 m/s²", "6.67 m/s²"],
+    correctIndex: 0,
+    explanation: "Standard gravity near Earth's surface is approximately 9.8 m/s².",
+    subject: "Science",
+    category: "Physics",
+    classLevel: "10"
+  },
+  {
+    question: "Which gas makes up approximately 78% of the Earth's atmosphere?",
+    options: ["Oxygen", "Nitrogen", "Carbon dioxide", "Argon"],
+    correctIndex: 1,
+    explanation: "Nitrogen comprises roughly 78% of Earth's atmosphere by volume.",
+    subject: "Science",
+    category: "Chemistry",
+    classLevel: "10"
+  },
+  {
+    question: "Who is widely recognized as the father of modern genetics?",
+    options: ["Charles Darwin", "Gregor Mendel", "Louis Pasteur", "Alexander Fleming"],
+    correctIndex: 1,
+    explanation: "Gregor Mendel discovered the basic principles of heredity through experiments with pea plants.",
+    subject: "Science",
+    category: "Biology",
+    classLevel: "10"
+  },
+
+  // MATHEMATICS
+  {
+    question: "What is 15% of 200?",
+    options: ["20", "25", "30", "35"],
+    correctIndex: 2,
+    explanation: "15% of 200 = (15 / 100) × 200 = 30.",
+    subject: "Mathematics",
+    category: "Arithmetic",
+    classLevel: "8"
+  },
+  {
+    question: "What is the sum of interior angles in any triangle?",
+    options: ["90°", "180°", "270°", "360°"],
+    correctIndex: 1,
+    explanation: "The interior angles of any planar triangle always add up to 180°.",
+    subject: "Mathematics",
+    category: "Geometry",
+    classLevel: "8"
+  },
+  {
+    question: "If 2x + 6 = 20, what is the value of x?",
+    options: ["5", "7", "8", "14"],
+    correctIndex: 1,
+    explanation: "2x = 20 - 6 = 14, so x = 14 / 2 = 7.",
+    subject: "Mathematics",
+    category: "Algebra",
+    classLevel: "9"
+  },
+  {
+    question: "What is the area of a rectangle with length 8 cm and width 5 cm?",
+    options: ["13 cm²", "26 cm²", "40 cm²", "45 cm²"],
+    correctIndex: 2,
+    explanation: "Area of a rectangle = length × width = 8 cm × 5 cm = 40 cm².",
+    subject: "Mathematics",
+    category: "Geometry",
+    classLevel: "9"
+  },
+  {
+    question: "What is the trigonometric value of sin(90°)?",
+    options: ["0", "0.5", "1", "Undefined"],
+    correctIndex: 2,
+    explanation: "The value of sine of 90 degrees is exactly 1.",
+    subject: "Mathematics",
+    category: "Trigonometry",
+    classLevel: "10"
+  },
+  {
+    question: "In the quadratic formula x = (-b ± √(b² - 4ac)) / (2a), what is the term (b² - 4ac) called?",
+    options: ["Discriminant", "Determinant", "Derivative", "Differential"],
+    correctIndex: 0,
+    explanation: "The expression b² - 4ac is known as the discriminant.",
+    subject: "Mathematics",
+    category: "Algebra",
+    classLevel: "10"
+  },
+
+  // ENGLISH
+  {
+    question: "Which word is an adjective in: 'She wore a beautiful blue dress'?",
+    options: ["She", "Wore", "Beautiful", "Dress"],
+    correctIndex: 2,
+    explanation: "'Beautiful' modifies the noun 'dress', making it an adjective.",
+    subject: "English",
+    category: "Grammar",
+    classLevel: "8"
+  },
+  {
+    question: "What is the antonym of 'Ancient'?",
+    options: ["Historic", "Modern", "Antique", "Traditional"],
+    correctIndex: 1,
+    explanation: "The opposite of ancient (very old) is modern (recent or contemporary).",
+    subject: "English",
+    category: "Vocabulary",
+    classLevel: "8"
+  },
+  {
+    question: "Which of the following sentences is written in the Passive Voice?",
+    options: [
+      "The boy kicked the soccer ball.",
+      "The soccer ball was kicked by the boy.",
+      "The boy was kicking the soccer ball.",
+      "The boy will kick the soccer ball."
+    ],
+    correctIndex: 1,
+    explanation: "'The soccer ball was kicked by the boy' is passive because the subject receives the action.",
+    subject: "English",
+    category: "Grammar",
+    classLevel: "9"
+  },
+  {
+    question: "Choose the correct preposition: 'He has been studying in this school ___ 2018.'",
+    options: ["for", "since", "from", "at"],
+    correctIndex: 1,
+    explanation: "We use 'since' to refer to a specific point in time in the past.",
+    subject: "English",
+    category: "Grammar",
+    classLevel: "9"
+  },
+  {
+    question: "Choose the correct first conditional sentence:",
+    options: [
+      "If it rains tomorrow, we will stay indoors.",
+      "If it will rain tomorrow, we stay indoors.",
+      "If it rained tomorrow, we will stay indoors.",
+      "If it rains tomorrow, we stayed indoors."
+    ],
+    correctIndex: 0,
+    explanation: "First conditional structure: If + Present Simple, will + base verb.",
+    subject: "English",
+    category: "Grammar",
+    classLevel: "10"
+  },
+  {
+    question: "What is the closest meaning of the word 'Meticulous'?",
+    options: ["Careless and hurried", "Showing great attention to detail", "Lazy and indifferent", "Extremely angry"],
+    correctIndex: 1,
+    explanation: "Meticulous means very careful, precise, and attentive to details.",
+    subject: "English",
+    category: "Vocabulary",
+    classLevel: "10"
+  },
+
+  // GENERAL KNOWLEDGE
+  {
+    question: "Which is the highest mountain peak in the world?",
+    options: ["K2", "Mount Everest (Sagarmatha)", "Kangchenjunga", "Makalu"],
+    correctIndex: 1,
+    explanation: "Mount Everest (Sagarmatha) is the world's highest peak at 8,848.86 meters.",
+    subject: "General Knowledge",
+    category: "Geography",
+    classLevel: "8"
+  },
+  {
+    question: "What is the capital city of Nepal?",
+    options: ["Pokhara", "Kathmandu", "Biratnagar", "Lalitpur"],
+    correctIndex: 1,
+    explanation: "Kathmandu is the capital and largest city of Nepal.",
+    subject: "General Knowledge",
+    category: "Nepal",
+    classLevel: "8"
+  },
+  {
+    question: "How many administrative districts are there in Nepal?",
+    options: ["75", "77", "14", "7"],
+    correctIndex: 1,
+    explanation: "Nepal is divided into 77 administrative districts across 7 provinces.",
+    subject: "General Knowledge",
+    category: "Nepal",
+    classLevel: "9"
+  },
+  {
+    question: "In which province of Nepal is Mount Everest located?",
+    options: ["Koshi Province", "Bagmati Province", "Gandaki Province", "Lumbini Province"],
+    correctIndex: 0,
+    explanation: "Mount Everest is situated in the Solukhumbu district of Koshi Province.",
+    subject: "General Knowledge",
+    category: "Geography",
+    classLevel: "9"
+  },
+  {
+    question: "In which year was the current Constitution of Nepal promulgated?",
+    options: ["2063 BS", "2070 BS", "2072 BS (2015 AD)", "2074 BS"],
+    correctIndex: 2,
+    explanation: "The current Constitution of Nepal was promulgated on 3 Ashwin 2072 BS (20 September 2015).",
+    subject: "General Knowledge",
+    category: "History & Governance",
+    classLevel: "10"
+  },
+  {
+    question: "Where is the permanent Secretariat headquarters of SAARC located?",
+    options: ["New Delhi, India", "Kathmandu, Nepal", "Dhaka, Bangladesh", "Colombo, Sri Lanka"],
+    correctIndex: 1,
+    explanation: "The SAARC Secretariat is located in Kathmandu, Nepal.",
+    subject: "General Knowledge",
+    category: "International",
+    classLevel: "10"
+  }
+];
+
 const DEFAULT_CLASS = "10";
 const SOUND_KEY = "mcqSound";
 
@@ -54,8 +313,24 @@ function topicKey(cls, category) {
 /* Distinct categories present in a given class ("All" = every class),
    alphabetised — same list refreshCategoryOptions() shows in the
    dropdown, reused here so the progress list always matches it. */
+function selectedSubject() {
+  return pickedValue(subjectRadios, DEFAULT_SUBJECT);
+}
+
+function questionsInClassAndSubject(classValue, subjectValue) {
+  let pool = questionsInClass(classValue);
+  if (subjectValue && subjectValue !== "All") {
+    pool = pool.filter((q) => q.subject === subjectValue);
+  }
+  return pool;
+}
+
 function categoriesInClass(classValue) {
-  const pool = questionsInClass(classValue);
+  return categoriesInClassAndSubject(classValue, selectedSubject());
+}
+
+function categoriesInClassAndSubject(classValue, subjectValue) {
+  const pool = questionsInClassAndSubject(classValue, subjectValue);
   return [...new Set(pool.map((q) => q.category).filter(Boolean))].sort((a, b) =>
     a.localeCompare(b)
   );
@@ -68,6 +343,7 @@ const quizResult = document.getElementById("quizResult");
 
 const questionBankStatus = document.getElementById("questionBankStatus");
 const classRadios = [...document.querySelectorAll('input[name="quizClass"]')];
+const subjectRadios = [...document.querySelectorAll('input[name="quizSubject"]')];
 const countRadios = [...document.querySelectorAll('input[name="quizCount"]')];
 const categorySelect = document.getElementById("categorySelect");
 const startQuizBtn = document.getElementById("startQuizBtn");
@@ -317,17 +593,34 @@ function playFinishSound() {
 db.collection("questions")
   .get()
   .then((snapshot) => {
-    // Stamp a normalised classLevel on every question up front, so the rest
-    // of the engine never has to think about legacy/blank values.
-    questionBank = snapshot.docs.map((doc) => {
+    const fromFirestore = snapshot.docs.map((doc) => {
       const data = doc.data();
-      return { id: doc.id, ...data, classLevel: questionClass(data) };
+      return {
+        id: doc.id,
+        ...data,
+        subject: normalizeSubject(data),
+        classLevel: questionClass(data),
+        category: data.category || "General"
+      };
     });
+
+    // Check which subjects already have questions in Firestore
+    const existingSubjects = new Set(fromFirestore.map(q => q.subject));
+
+    // Complement with curated curriculum questions for subjects not yet fully populated in Firestore
+    const defaultsToAdd = DEFAULT_SUBJECT_QUESTIONS.filter(dq => {
+      // If Firestore has no questions for this subject, include the default
+      return !existingSubjects.has(dq.subject) || fromFirestore.filter(q => q.subject === dq.subject).length < 4;
+    }).map((dq, idx) => ({ id: "default_" + idx, ...dq }));
+
+    questionBank = fromFirestore.concat(defaultsToAdd);
+
     if (!questionBank.length) {
       questionBankStatus.textContent = "No questions yet — add some from the Admin Panel.";
       return;
     }
     refreshClassOptions();
+    refreshSubjectOptions();
     refreshCategoryOptions();
     refreshStatus();
   })
@@ -356,7 +649,7 @@ function questionsInClass(classValue) {
    Always a fresh array — the caller shuffles it in place. */
 function currentPool() {
   const category = categorySelect.value;
-  const pool = questionsInClass(selectedClass());
+  const pool = questionsInClassAndSubject(selectedClass(), selectedSubject());
   return category === "All" ? [...pool] : pool.filter((q) => q.category === category);
 }
 
@@ -385,6 +678,34 @@ function refreshClassOptions() {
 
 /* Category dropdown, scoped to the classes currently in play — picking
    Class 8 shouldn't offer a category that only exists in Class 10. */
+
+/* Subject picker: updates question counts per subject for the current class */
+function refreshSubjectOptions() {
+  const currentClass = selectedClass();
+  const poolForClass = questionsInClass(currentClass);
+  subjectRadios.forEach((radio) => {
+    const sVal = radio.value;
+    const count = sVal === "All"
+      ? poolForClass.length
+      : poolForClass.filter((q) => q.subject === sVal).length;
+
+    const chip = document.querySelector(`.pick-count[data-subject-count-for="${sVal}"]`);
+    if (chip) chip.textContent = String(count);
+
+    radio.disabled = sVal !== "All" && count === 0;
+    radio.setAttribute(
+      "aria-label",
+      `${sVal}, ${count} question${count === 1 ? "" : "s"}`
+    );
+  });
+
+  const checked = subjectRadios.find((r) => r.checked);
+  if (!checked || checked.disabled) {
+    const fallback = subjectRadios.find((r) => !r.disabled);
+    if (fallback) fallback.checked = true;
+  }
+}
+
 function refreshCategoryOptions() {
   const previous = categorySelect.value;
   const categories = categoriesInClass(selectedClass());
@@ -497,7 +818,11 @@ function renderTopicProgress() {
 function refreshStatus() {
   const available = currentPool().length;
   const chosen = selectedClass();
-  const label = chosen === "All" ? "across all classes" : `in Class ${chosen}`;
+  const subj = selectedSubject();
+  let label = chosen === "All" ? "across all classes" : `in Class ${chosen}`;
+  if (subj !== "All") {
+    label += ` (${subj})`;
+  }
 
   if (!available) {
     questionBankStatus.textContent = `No questions ${label} yet${
@@ -510,6 +835,13 @@ function refreshStatus() {
 }
 
 classRadios.forEach((radio) => {
+  radio.addEventListener("change", () => {
+    refreshSubjectOptions();
+    refreshCategoryOptions();
+    refreshStatus();
+  });
+});
+subjectRadios.forEach((radio) => {
   radio.addEventListener("change", () => {
     refreshCategoryOptions();
     refreshStatus();
@@ -685,6 +1017,13 @@ function renderQuestion() {
     quizQuestionClass.hidden = false;
   } else {
     quizQuestionClass.hidden = true;
+  }
+
+  const subjTag = document.getElementById("quizQuestionSubject");
+  if (subjTag) {
+    const subj = q.subject || normalizeSubject(q);
+    subjTag.textContent = subj;
+    subjTag.hidden = !subj;
   }
 
   if (q.category) {

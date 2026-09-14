@@ -10,6 +10,17 @@
 const CLASS_LEVELS = ["8", "9", "10"];
 const DEFAULT_CLASS = "10";
 
+
+function normalizeSubject(q) {
+  if (q && q.subject && String(q.subject).trim()) return String(q.subject).trim();
+  const cat = String((q && q.category) || "").toLowerCase();
+  if (cat.includes("science") && !cat.includes("computer")) return "Science";
+  if (cat.includes("math") || cat.includes("algebra") || cat.includes("geometry") || cat.includes("arithmetic")) return "Mathematics";
+  if (cat.includes("english") || cat.includes("grammar") || cat.includes("vocab")) return "English";
+  if (cat.includes("gk") || cat.includes("general knowledge") || cat.includes("nepal") || cat.includes("history")) return "General Knowledge";
+  return "Computer Science";
+}
+
 function normalizeClass(value) {
   const digits = String(value ?? "").match(/\d+/);
   const found = digits ? digits[0] : "";
@@ -159,7 +170,8 @@ function parseQuestionsInput(text) {
         options: q.options.map((o) => String(o).trim()),
         correctIndex: Number(q.correctIndex) || 0,
         explanation: q.explanation ? String(q.explanation).trim() : "",
-        category: q.category ? String(q.category).trim() : "",
+        subject: q.subject ? String(q.subject).trim() : normalizeSubject(q),
+        category: q.category ? String(q.category).trim() : "General",
         classLevel: normalizeClass(q.classLevel ?? q.class),
       };
     });
@@ -176,7 +188,13 @@ function parseQuestionsInput(text) {
     if (!r[0] || !r[0].trim()) continue;
     // `class` is the last column and optional, so CSVs exported before
     // classes existed still import cleanly (they all become Class 10).
-    const [question, a, b, c, d, correct, explanation, category, classLevel] = r;
+    let question, a, b, c, d, correct, explanation, subject, category, classLevel;
+    if (r.length >= 10) {
+      [question, a, b, c, d, correct, explanation, subject, category, classLevel] = r;
+    } else {
+      [question, a, b, c, d, correct, explanation, category, classLevel] = r;
+      subject = "Computer Science";
+    }
     if (!a || !b || !c || !d) {
       throw new Error(`Row ${i + 1}: needs question + 4 options (columns 2-5).`);
     }
@@ -191,7 +209,8 @@ function parseQuestionsInput(text) {
       options: [a.trim(), b.trim(), c.trim(), d.trim()],
       correctIndex,
       explanation: (explanation || "").trim(),
-      category: (category || "").trim(),
+      subject: (subject || "Computer Science").trim(),
+      category: (category || "General").trim(),
       classLevel: normalizeClass(classLevel),
     });
   }
@@ -224,17 +243,29 @@ function initQuestionsAdmin() {
   const cancelBtn = document.getElementById("cancelQuestionEdit");
   const idField = document.getElementById("questionId");
   const classFilter = document.getElementById("questionClassFilter");
+  const subjectFilter = document.getElementById("questionSubjectFilter");
   const countLabel = document.getElementById("questionCountLabel");
+  const qSubjectSelect = document.getElementById("qSubject");
+  const qCustomSubjectWrap = document.getElementById("qCustomSubjectWrap");
+  const qCustomSubjectInput = document.getElementById("qCustomSubject");
 
   let allQuestions = []; // latest snapshot, newest first, class already normalised
 
   classFilter.addEventListener("change", renderQuestionList);
+  if (subjectFilter) subjectFilter.addEventListener("change", renderQuestionList);
+  if (qSubjectSelect) {
+    qSubjectSelect.addEventListener("change", () => {
+      if (qCustomSubjectWrap) {
+        qCustomSubjectWrap.style.display = qSubjectSelect.value === "Other" ? "block" : "none";
+      }
+    });
+  }
 
   questionsUnsub = db.collection("questions").orderBy("order", "desc").onSnapshot(
     (snapshot) => {
       allQuestions = snapshot.docs.map((doc) => {
         const data = doc.data();
-        return { id: doc.id, ...data, classLevel: normalizeClass(data.classLevel ?? data.class) };
+        return { id: doc.id, ...data, subject: normalizeSubject(data), classLevel: normalizeClass(data.classLevel ?? data.class) };
       });
       renderQuestionList();
     },
@@ -244,9 +275,13 @@ function initQuestionsAdmin() {
   );
 
   function renderQuestionList() {
-    const filter = classFilter.value;
-    const visible =
-      filter === "All" ? allQuestions : allQuestions.filter((q) => q.classLevel === filter);
+    const filterClass = classFilter.value;
+    const filterSubject = subjectFilter ? subjectFilter.value : "All";
+    const visible = allQuestions.filter((q) => {
+      const matchClass = filterClass === "All" || q.classLevel === filterClass;
+      const matchSubject = filterSubject === "All" || (q.subject || normalizeSubject(q)) === filterSubject;
+      return matchClass && matchSubject;
+    });
 
     const perClass = CLASS_LEVELS.map(
       (lvl) => `Class ${lvl}: ${allQuestions.filter((q) => q.classLevel === lvl).length}`
@@ -258,7 +293,7 @@ function initQuestionsAdmin() {
     if (!visible.length) {
       listEl.innerHTML = `<p class="updates-loading">${
         allQuestions.length
-          ? "No questions in this class yet — add one above."
+          ? "No questions match the selected filters — add one above."
           : "No questions yet — add one above."
       }</p>`;
       return;
@@ -266,12 +301,14 @@ function initQuestionsAdmin() {
 
     listEl.innerHTML = "";
     visible.forEach((q) => {
+      const subj = q.subject || normalizeSubject(q);
       const row = document.createElement("div");
       row.className = "admin-row";
       row.innerHTML = `
         <div>
           <strong>${escapeHtml(q.question || "")}</strong>
           <span class="admin-tag">Class ${escapeHtml(q.classLevel)}</span>
+          <span class="admin-tag" style="background:#e0f2fe; color:#0369a1; font-weight:600;">${escapeHtml(subj)}</span>
           ${q.category ? `<span class="admin-tag">${escapeHtml(q.category)}</span>` : ""}
         </div>
         <div class="admin-row-actions">
@@ -298,6 +335,18 @@ function initQuestionsAdmin() {
     document.getElementById("qExplanation").value = q.explanation || "";
     document.getElementById("qCategory").value = q.category || "";
     document.getElementById("qClass").value = q.classLevel;
+    const subj = q.subject || normalizeSubject(q);
+    if (qSubjectSelect) {
+      const std = ["Computer Science", "Science", "Mathematics", "English", "General Knowledge"];
+      if (std.includes(subj)) {
+        qSubjectSelect.value = subj;
+        if (qCustomSubjectWrap) qCustomSubjectWrap.style.display = "none";
+      } else {
+        qSubjectSelect.value = "Other";
+        if (qCustomSubjectWrap) qCustomSubjectWrap.style.display = "block";
+        if (qCustomSubjectInput) qCustomSubjectInput.value = subj;
+      }
+    }
     submitBtn.textContent = "Save changes";
     cancelBtn.hidden = false;
     form.scrollIntoView({ behavior: "smooth" });
@@ -307,6 +356,15 @@ function initQuestionsAdmin() {
 
   form.addEventListener("submit", (e) => {
     e.preventDefault();
+    let chosenSubject = "Computer Science";
+    if (qSubjectSelect) {
+      if (qSubjectSelect.value === "Other" && qCustomSubjectInput && qCustomSubjectInput.value.trim()) {
+        chosenSubject = qCustomSubjectInput.value.trim();
+      } else {
+        chosenSubject = qSubjectSelect.value;
+      }
+    }
+
     const payload = {
       question: document.getElementById("qText").value.trim(),
       options: [
@@ -317,7 +375,8 @@ function initQuestionsAdmin() {
       ],
       correctIndex: Number(document.getElementById("correctIndex").value),
       explanation: document.getElementById("qExplanation").value.trim(),
-      category: document.getElementById("qCategory").value.trim(),
+      subject: chosenSubject,
+      category: document.getElementById("qCategory").value.trim() || "General",
       classLevel: normalizeClass(document.getElementById("qClass").value),
     };
 
@@ -333,6 +392,9 @@ function initQuestionsAdmin() {
     form.reset();
     idField.value = "";
     document.getElementById("qClass").value = DEFAULT_CLASS;
+    if (qSubjectSelect) qSubjectSelect.value = "Computer Science";
+    if (qCustomSubjectWrap) qCustomSubjectWrap.style.display = "none";
+    if (qCustomSubjectInput) qCustomSubjectInput.value = "";
     submitBtn.textContent = "Add question";
     cancelBtn.hidden = true;
   }
@@ -373,9 +435,10 @@ function initQuestionsAdmin() {
   document.getElementById("downloadQuestionCsvTemplate").addEventListener("click", (e) => {
     e.preventDefault();
     const csv =
-      "question,option_a,option_b,option_c,option_d,correct,explanation,category,class\n" +
-      '"What does len() return for a list?","Its length","Its type","Its memory address","Nothing",A,"len() returns the number of items in a list.","Python Basics",10\n' +
-      '"Which keyword defines a function in Python?","func","define","def","function",C,"Functions are defined with the def keyword.","Python Basics",9\n';
+      "question,option_a,option_b,option_c,option_d,correct,explanation,subject,category,class\n" +
+      '"What does len() return for a list?","Its length","Its type","Its memory address","Nothing",A,"len() returns the number of items in a list.","Computer Science","Python Basics",10\n' +
+      '"What is the chemical formula of water?","CO2","H2O","NaCl","O2",B,"Water is composed of two hydrogen atoms and one oxygen atom.","Science","Chemistry",9\n' +
+      '"What is the sum of angles in a triangle?","90°","180°","270°","360°",B,"The interior angles of a triangle always add up to 180°.","Mathematics","Geometry",8\n';
     downloadTextFile("questions-template.csv", csv, "text/csv");
   });
 

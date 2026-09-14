@@ -16,17 +16,17 @@
   <header class="site-header">
     <div class="container header-inner">
       <a href="index.html" class="logo">B. <span>Prasad Shah</span></a>
-      <nav class="main-nav">
+      <nav class="main-nav" id="mainNav">
         <a href="index.html">Home</a>
-        <a href="live-quiz.html" class="nav-live-link">Live Quiz <span class="nav-live-dot" aria-hidden="true"></span></a>
-        <a href="premium.html">Premium Quiz</a>
         <a href="mcq.html" class="active">MCQ Hub</a>
         <a href="python.html">Python Hub</a>
-        <a href="video.html">Video Hub</a>
+        <a href="live-quiz.html" class="nav-live-link">Live Quiz <span class="nav-live-dot" aria-hidden="true"></span></a>
+        <a href="premium.html">Premium Quiz</a>
         <a href="leaderboard.html">Leaderboard</a>
         <div class="dropdown">
-          <button class="dropdown-toggle">See More Options ▾</button>
+          <button class="dropdown-toggle" type="button" aria-haspopup="true" aria-expanded="false">More ▾</button>
           <div class="dropdown-menu">
+            <a href="video.html">Video Hub</a>
             <a href="resources.html">Additional Resources</a>
             <a href="contact.html">Contact</a>
             <a href="admin.html">Admin Panel</a>
@@ -55,15 +55,15 @@
     <button class="drawer-close" id="drawerClose" aria-label="Close menu">&times;</button>
     <nav class="drawer-nav">
       <a href="index.html">Home</a>
-      <a href="live-quiz.html">Live Quiz</a>
-      <a href="premium.html">Premium Quiz</a>
       <a href="mcq.html" class="active">MCQ Hub</a>
       <a href="python.html">Python Hub</a>
-      <a href="video.html">Video Hub</a>
+      <a href="live-quiz.html">Live Quiz</a>
+      <a href="premium.html">Premium Quiz</a>
       <a href="leaderboard.html">Leaderboard</a>
       <div class="dropdown">
-        <button class="dropdown-toggle">See More Options ▾</button>
+        <button class="dropdown-toggle" type="button">More ▾</button>
         <div class="dropdown-menu">
+          <a href="video.html">Video Hub</a>
           <a href="resources.html">Additional Resources</a>
           <a href="contact.html">Contact</a>
           <a href="admin.html">Admin Panel</a>
@@ -155,10 +155,40 @@
           </div>
         </fieldset>
 
+        <fieldset class="pick" id="subjectPick">
+          <legend>Subject</legend>
+          <div class="pick-row" id="subjectPickRow">
+            <label class="pick-opt">
+              <input type="radio" name="quizSubject" value="All" checked />
+              <span>All subjects<em class="pick-count" data-subject-count-for="All"></em></span>
+            </label>
+            <label class="pick-opt">
+              <input type="radio" name="quizSubject" value="Computer Science" />
+              <span>Computer Science<em class="pick-count" data-subject-count-for="Computer Science"></em></span>
+            </label>
+            <label class="pick-opt">
+              <input type="radio" name="quizSubject" value="Science" />
+              <span>Science<em class="pick-count" data-subject-count-for="Science"></em></span>
+            </label>
+            <label class="pick-opt">
+              <input type="radio" name="quizSubject" value="Mathematics" />
+              <span>Mathematics<em class="pick-count" data-subject-count-for="Mathematics"></em></span>
+            </label>
+            <label class="pick-opt">
+              <input type="radio" name="quizSubject" value="English" />
+              <span>English<em class="pick-count" data-subject-count-for="English"></em></span>
+            </label>
+            <label class="pick-opt">
+              <input type="radio" name="quizSubject" value="General Knowledge" />
+              <span>General Knowledge<em class="pick-count" data-subject-count-for="General Knowledge"></em></span>
+            </label>
+          </div>
+        </fieldset>
+
         <label class="quiz-field">
-          Category
+          Topic / Chapter
           <select id="categorySelect">
-            <option value="All">All categories</option>
+            <option value="All">All topics</option>
           </select>
         </label>
 
@@ -180,6 +210,7 @@
         <div class="stage-tools">
           <div class="stage-tags">
             <span class="mcq-class" id="quizQuestionClass" hidden></span>
+            <span class="mcq-category" id="quizQuestionSubject" style="background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd; font-weight:600;" hidden></span>
             <span class="mcq-category" id="quizQuestionCategory" hidden></span>
           </div>
           <div class="stage-actions">

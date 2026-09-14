@@ -15,17 +15,17 @@
   <header class="site-header">
     <div class="container header-inner">
       <a href="index.html" class="logo">B. <span>Prasad Shah</span></a>
-      <nav class="main-nav">
+      <nav class="main-nav" id="mainNav">
         <a href="index.html">Home</a>
-        <a href="live-quiz.html" class="nav-live-link">Live Quiz <span class="nav-live-dot" aria-hidden="true"></span></a>
-        <a href="premium.html">Premium Quiz</a>
         <a href="mcq.html">MCQ Hub</a>
         <a href="python.html">Python Hub</a>
-        <a href="video.html">Video Hub</a>
+        <a href="live-quiz.html" class="nav-live-link">Live Quiz <span class="nav-live-dot" aria-hidden="true"></span></a>
+        <a href="premium.html">Premium Quiz</a>
         <a href="leaderboard.html">Leaderboard</a>
         <div class="dropdown">
-          <button class="dropdown-toggle">See More Options ▾</button>
+          <button class="dropdown-toggle" type="button" aria-haspopup="true" aria-expanded="false">More ▾</button>
           <div class="dropdown-menu">
+            <a href="video.html">Video Hub</a>
             <a href="resources.html">Additional Resources</a>
             <a href="contact.html">Contact</a>
           </div>
@@ -47,15 +47,15 @@
     <button class="drawer-close" id="drawerClose" aria-label="Close menu">&times;</button>
     <nav class="drawer-nav">
       <a href="index.html">Home</a>
-      <a href="live-quiz.html">Live Quiz</a>
-      <a href="premium.html">Premium Quiz</a>
       <a href="mcq.html">MCQ Hub</a>
       <a href="python.html">Python Hub</a>
-      <a href="video.html">Video Hub</a>
+      <a href="live-quiz.html">Live Quiz</a>
+      <a href="premium.html">Premium Quiz</a>
       <a href="leaderboard.html">Leaderboard</a>
       <div class="dropdown">
-        <button class="dropdown-toggle">See More Options ▾</button>
+        <button class="dropdown-toggle" type="button">More ▾</button>
         <div class="dropdown-menu">
+          <a href="video.html">Video Hub</a>
           <a href="resources.html">Additional Resources</a>
           <a href="contact.html">Contact</a>
         </div>
@@ -164,7 +164,7 @@
             </select>
           </label>
           <label>Explanation <textarea id="qExplanation" rows="2"></textarea></label>
-          <div class="admin-form-grid">
+          <div class="admin-form-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
             <label>Class
               <select id="qClass" required>
                 <option value="8">Class 8</option>
@@ -172,7 +172,20 @@
                 <option value="10" selected>Class 10</option>
               </select>
             </label>
-            <label>Category <input type="text" id="qCategory" placeholder="e.g. Python Basics" /></label>
+            <label>Subject
+              <select id="qSubject" required>
+                <option value="Computer Science" selected>Computer Science</option>
+                <option value="Science">Science</option>
+                <option value="Mathematics">Mathematics</option>
+                <option value="English">English</option>
+                <option value="General Knowledge">General Knowledge</option>
+                <option value="Other">Other (Custom)</option>
+              </select>
+            </label>
+            <label id="qCustomSubjectWrap" style="display:none;">Custom Subject
+              <input type="text" id="qCustomSubject" placeholder="e.g. Social Studies" />
+            </label>
+            <label>Topic / Category <input type="text" id="qCategory" placeholder="e.g. Python Basics, Physics" /></label>
           </div>
           <div class="admin-form-actions">
             <button type="submit" class="btn btn-primary" id="questionSubmitBtn">Add question</button>
@@ -180,13 +193,23 @@
           </div>
         </form>
 
-        <div class="admin-list-filter">
-          <label>Show
+        <div class="admin-list-filter" style="display:flex; flex-wrap:wrap; gap:12px; align-items:center;">
+          <label>Class
             <select id="questionClassFilter">
               <option value="All">All classes</option>
               <option value="8">Class 8</option>
               <option value="9">Class 9</option>
               <option value="10">Class 10</option>
+            </select>
+          </label>
+          <label>Subject
+            <select id="questionSubjectFilter">
+              <option value="All">All subjects</option>
+              <option value="Computer Science">Computer Science</option>
+              <option value="Science">Science</option>
+              <option value="Mathematics">Mathematics</option>
+              <option value="English">English</option>
+              <option value="General Knowledge">General Knowledge</option>
             </select>
           </label>
           <span class="quiz-muted" id="questionCountLabel"></span>
