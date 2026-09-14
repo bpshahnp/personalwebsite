@@ -125,20 +125,27 @@
   }
 
   function setupToggles() {
-    // Desktop: inject into .header-actions (before the auth-widget), NOT .main-nav
+    // Desktop: wire up existing .theme-toggle-btn or inject if missing
     document.querySelectorAll(".header-actions").forEach((actions) => {
-      if (!actions.querySelector(".theme-toggle-btn")) {
-        const btn = makeToggleBtn();
-        // Prepend so it appears before the auth widget
+      let btn = actions.querySelector(".theme-toggle-btn");
+      if (!btn) {
+        btn = makeToggleBtn();
         actions.insertBefore(btn, actions.firstChild);
+      } else if (!btn.dataset.wired) {
+        btn.dataset.wired = "true";
+        btn.addEventListener("click", toggleTheme);
       }
     });
 
-    // Mobile: inject at the end of the mobile drawer nav bar (.drawer-nav)
+    // Mobile: wire up in .drawer-nav
     document.querySelectorAll(".drawer-nav").forEach((nav) => {
-      if (!nav.querySelector(".theme-toggle-btn")) {
-        const btn = makeToggleBtn();
+      let btn = nav.querySelector(".theme-toggle-btn");
+      if (!btn) {
+        btn = makeToggleBtn();
         nav.appendChild(btn);
+      } else if (!btn.dataset.wired) {
+        btn.dataset.wired = "true";
+        btn.addEventListener("click", toggleTheme);
       }
     });
 
@@ -160,6 +167,54 @@
     document.addEventListener("DOMContentLoaded", setupToggles);
   } else {
     setupToggles();
+  }
+
+  // Instant page transition prefetcher: prefetch on hover for 0ms transitions
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initPrefetcher);
+  } else {
+    initPrefetcher();
+  }
+
+  function initPrefetcher() {
+    document.querySelectorAll(".main-nav a, .drawer-nav a").forEach((link) => {
+      link.addEventListener("mouseenter", () => {
+        const href = link.getAttribute("href");
+        if (href && !href.startsWith("#") && !href.startsWith("http") && !document.querySelector(`link[rel="prefetch"][href="${href}"]`)) {
+          const prefetch = document.createElement("link");
+          prefetch.rel = "prefetch";
+          prefetch.href = href;
+          document.head.appendChild(prefetch);
+        }
+      }, { once: true });
+    });
+  }
+
+  // Page transition: fade-out before navigating (fallback for non-View-Transitions browsers)
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initPageTransitions);
+  } else {
+    initPageTransitions();
+  }
+
+  function initPageTransitions() {
+    // Skip if View Transitions API is natively supported — CSS handles it
+    if (document.startViewTransition) return;
+
+    document.addEventListener("click", (e) => {
+      const link = e.target.closest("a[href]");
+      if (!link) return;
+      const href = link.getAttribute("href");
+      // Only intercept same-origin, non-hash, non-external links
+      if (!href || href.startsWith("#") || href.startsWith("javascript") ||
+          href.startsWith("http") || href.startsWith("mailto") ||
+          link.target === "_blank") return;
+
+      e.preventDefault();
+      document.body.classList.add("page-leaving");
+      // Wait for CSS transition (150ms) then navigate
+      setTimeout(() => { window.location.href = href; }, 150);
+    });
   }
 
   // Also respond to OS theme changes (if user hasn't manually toggled)
