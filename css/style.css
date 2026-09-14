@@ -1174,6 +1174,31 @@ img { max-width: 100%; display: block; }
   cursor: not-allowed;
 }
 
+.site-auth-guest-btn {
+  background: none;
+  border: none;
+  color: var(--mist, #64748b);
+  font-size: 0.86rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 6px 14px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+  text-decoration: none;
+  display: inline-block;
+}
+.site-auth-guest-btn:hover {
+  color: var(--navy-deep, #0f172a);
+  background: rgba(0, 0, 0, 0.04);
+}
+[data-theme="dark"] .site-auth-guest-btn {
+  color: #94a3b8;
+}
+[data-theme="dark"] .site-auth-guest-btn:hover {
+  color: #f8fafc;
+  background: rgba(255, 255, 255, 0.06);
+}
+
 /* Refined User Dropdown in Header */
 .auth-dropdown-user-header {
   display: flex;
