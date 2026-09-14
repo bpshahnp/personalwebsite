@@ -881,100 +881,267 @@ function initPremiumQuizAdmin() {
   const saveMinScoreBtn = document.getElementById("savePremiumMinScoreBtn");
   const settingsStatus  = document.getElementById("premiumSettingsStatus");
 
-  // Payment Settings DOM
-  const khaltiKeyInput    = document.getElementById("khaltiSecretKeyInput");
-  const esewaCodeInput    = document.getElementById("esewaMerchantCodeInput");
-  const esewaKeyInput     = document.getElementById("esewaSecretKeyInput");
-  const nprRateInput      = document.getElementById("nprPerCreditInput");
-  const savePaymentBtn    = document.getElementById("savePaymentSettingsBtn");
-  const paymentStatus     = document.getElementById("paymentSettingsStatus");
+  // Payment Verification Requests DOM
+  const reqListEl         = document.getElementById("premiumRequestsList");
+  const reqFilterBtns     = document.querySelectorAll(".req-filter-btn");
+  const manualGrantEmail  = document.getElementById("manualGrantEmail");
+  const manualGrantBtn    = document.getElementById("manualGrantBtn");
+  const manualRevokeBtn   = document.getElementById("manualRevokeBtn");
+  const manualGrantStatus = document.getElementById("manualGrantStatus");
 
-  // Category Manager DOM
-  const catNameInput    = document.getElementById("premiumCatName");
-  const catSlugInput    = document.getElementById("premiumCatSlug");
-  const catImageInput   = document.getElementById("premiumCatImage");
-  const catCreditsInput = document.getElementById("premiumCatCredits");
-  const catDescInput    = document.getElementById("premiumCatDesc");
-  const addCatBtn       = document.getElementById("addPremiumCategoryBtn");
-  const catStatus       = document.getElementById("premiumCatStatus");
-  const catListEl       = document.getElementById("premiumCatList");
+  // Receipt Modal DOM
+  const receiptModal      = document.getElementById("receiptPreviewModal");
+  const modalReceiptImg   = document.getElementById("modalReceiptImg");
+  const closeReceiptBtn   = document.getElementById("closeReceiptModalBtn");
 
-  const qCatSelect    = document.getElementById("premiumQCategorySelect");
-  const qForm         = document.getElementById("premiumQuestionForm");
-  const qIdField      = document.getElementById("premiumQId");
-  const qTextField    = document.getElementById("premiumQText");
-  const qOpts         = [0, 1, 2, 3].map(i => document.getElementById(`premiumOpt${i}`));
-  const qCorrectSel   = document.getElementById("premiumCorrectIndex");
-  const qExplField    = document.getElementById("premiumQExplanation");
-  const qSubmitBtn    = document.getElementById("premiumQSubmitBtn");
-  const cancelQBtn    = document.getElementById("cancelPremiumQEdit");
-  const qStatus       = document.getElementById("premiumQStatus");
-  const qListEl       = document.getElementById("premiumQList");
-
-  if (!minScoreInput || !addCatBtn || !qForm) return;
-
-  // ---- Load current min score from siteSettings/config ----
-  db.collection("siteSettings").doc("config").get().then(snap => {
-    if (snap.exists && snap.data().minScoreForPremium != null) {
-      minScoreInput.value = snap.data().minScoreForPremium;
-    }
-  }).catch(() => {});
-
-  saveMinScoreBtn.addEventListener("click", async () => {
-    const val = parseInt(minScoreInput.value, 10);
-    if (isNaN(val) || val < 1) {
-      settingsStatus.textContent = "Please enter a valid positive number.";
-      settingsStatus.style.color = "crimson";
-      return;
-    }
-    try {
-      await db.collection("siteSettings").doc("config").set(
-        { minScoreForPremium: val },
-        { merge: true }
-      );
-      settingsStatus.textContent = `✅ Min score threshold saved: ${val} pts`;
-      settingsStatus.style.color = "#10b981";
-    } catch (err) {
-      settingsStatus.textContent = err.message;
-      settingsStatus.style.color = "crimson";
-    }
-  });
-
-  // ---- Load & Save Payment Settings from siteSettings/payment ----
-  if (savePaymentBtn) {
-    db.collection("siteSettings").doc("payment").get().then(snap => {
-      if (snap.exists) {
-        const d = snap.data();
-        if (khaltiKeyInput && d.khaltiSecretKey)   khaltiKeyInput.value = d.khaltiSecretKey;
-        if (esewaCodeInput && d.esewaMerchantCode) esewaCodeInput.value = d.esewaMerchantCode;
-        if (esewaKeyInput  && d.esewaSecretKey)    esewaKeyInput.value  = d.esewaSecretKey;
-        if (nprRateInput   && d.nprPerCredit)      nprRateInput.value   = d.nprPerCredit;
-      }
-    }).catch(() => {});
-
-    savePaymentBtn.addEventListener("click", async () => {
-      const khaltiKey = khaltiKeyInput ? khaltiKeyInput.value.trim() : "";
-      const esewaCode = esewaCodeInput ? esewaCodeInput.value.trim() : "";
-      const esewaKey  = esewaKeyInput  ? esewaKeyInput.value.trim()  : "";
-      const nprRate   = nprRateInput ? parseInt(nprRateInput.value, 10) : 10;
-
-      try {
-        paymentStatus.textContent = "Saving payment settings…";
-        await db.collection("siteSettings").doc("payment").set({
-          khaltiSecretKey:   khaltiKey || "",
-          esewaMerchantCode: esewaCode || "EPAYTEST",
-          esewaSecretKey:    esewaKey  || "8gBm/:&EnhH.1/q",
-          nprPerCredit:      isNaN(nprRate) ? 10 : nprRate,
-          updatedAt:         firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge: true });
-        paymentStatus.textContent = "✅ Payment gateway settings saved successfully!";
-        paymentStatus.style.color = "#10b981";
-      } catch (err) {
-        paymentStatus.textContent = err.message;
-        paymentStatus.style.color = "crimson";
+  if (closeReceiptBtn && receiptModal) {
+    closeReceiptBtn.addEventListener("click", () => {
+      receiptModal.style.display = "none";
+      receiptModal.hidden = true;
+    });
+    receiptModal.addEventListener("click", e => {
+      if (e.target === receiptModal) {
+        receiptModal.style.display = "none";
+        receiptModal.hidden = true;
       }
     });
   }
+
+  function openReceiptModal(imgSrc) {
+    if (!receiptModal || !modalReceiptImg) return;
+    modalReceiptImg.src = imgSrc;
+    receiptModal.hidden = false;
+    receiptModal.style.display = "flex";
+  }
+
+  // ---- Payment Verification Requests Live Subscription ----
+  let allRequests = [];
+  let currentRequestFilter = "all";
+
+  if (reqFilterBtns.length > 0) {
+    reqFilterBtns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        reqFilterBtns.forEach(b => {
+          b.classList.remove("btn-primary");
+          b.classList.add("btn-outline");
+        });
+        btn.classList.remove("btn-outline");
+        btn.classList.add("btn-primary");
+        currentRequestFilter = btn.dataset.status || "all";
+        renderPaymentRequests();
+      });
+    });
+  }
+
+  function subscribePaymentRequests() {
+    if (!reqListEl) return;
+    db.collection("premiumRequests")
+      .orderBy("createdAt", "desc")
+      .onSnapshot(snap => {
+        allRequests = snap.docs.map(d => Object.assign({ id: d.id }, d.data()));
+        renderPaymentRequests();
+      }, err => {
+        console.error("Error loading payment requests:", err);
+        reqListEl.innerHTML = `<p class="updates-loading">Error loading requests: ${err.message}</p>`;
+      });
+  }
+
+  function renderPaymentRequests() {
+    if (!reqListEl) return;
+    const filtered = allRequests.filter(r => {
+      if (currentRequestFilter === "all") return true;
+      return r.status === currentRequestFilter;
+    });
+
+    if (filtered.length === 0) {
+      reqListEl.innerHTML = `<p class="updates-loading">No ${currentRequestFilter === "all" ? "" : currentRequestFilter} requests found.</p>`;
+      return;
+    }
+
+    reqListEl.innerHTML = "";
+    filtered.forEach(req => {
+      const card = document.createElement("div");
+      card.className = "admin-row";
+      card.style.cssText = "display:flex; justify-content:space-between; align-items:flex-start; gap:14px; padding:14px; border:1px solid var(--border); border-radius:10px; margin-bottom:10px; background:var(--bg, #fff);";
+
+      const statusColor = req.status === "approved" ? "#10b981" : (req.status === "rejected" ? "#ef4444" : "#f59e0b");
+      const statusBg = req.status === "approved" ? "#ecfdf5" : (req.status === "rejected" ? "#fef2f2" : "#fffbeb");
+      const formattedDate = req.createdAt && req.createdAt.toDate ? req.createdAt.toDate().toLocaleString() : "Recently";
+
+      card.innerHTML = `
+        <div style="flex:1;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px; flex-wrap:wrap;">
+            <strong>${escapeHtml(req.userName || "User")}</strong>
+            <span class="admin-tag">${escapeHtml(req.userEmail || "")}</span>
+            <span class="admin-tag" style="background:${statusBg}; color:${statusColor}; font-weight:700; text-transform:uppercase;">${escapeHtml(req.status || "pending")}</span>
+          </div>
+
+          <div style="font-size:0.86rem; color:var(--text); line-height:1.6;">
+            <div><strong>Method:</strong> ${escapeHtml(req.paymentMethod || "eSewa")} · <strong>Amount:</strong> NPR ${escapeHtml(String(req.amountNpr || 200))} · <strong>Ref Code:</strong> <code style="background:#f1f5f9; padding:2px 6px; border-radius:4px; font-weight:700;">${escapeHtml(req.referenceCode || "-")}</code></div>
+            <div><strong>Phone:</strong> ${escapeHtml(req.userPhone || "Not provided")} · <strong>Submitted:</strong> ${formattedDate}</div>
+            ${req.remarks ? `<div><strong>Remarks:</strong> <em>${escapeHtml(req.remarks)}</em></div>` : ""}
+          </div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px; flex-shrink:0;">
+          ${req.screenshotUrl ? `
+            <button type="button" class="btn btn-outline btn-sm view-receipt-btn" style="font-size:0.78rem; padding:4px 8px;">
+              View Screenshot
+            </button>
+          ` : `<span style="font-size:0.75rem; color:#94a3b8;">No Image</span>`}
+
+          <div style="display:flex; gap:6px;">
+            ${req.status !== "approved" ? `
+              <button type="button" class="btn btn-primary btn-sm approve-req-btn" style="padding:4px 10px; font-size:0.8rem; background:#10b981; border-color:#10b981;">
+                Approve
+              </button>
+            ` : ""}
+            ${req.status !== "rejected" ? `
+              <button type="button" class="btn btn-outline btn-sm btn-danger reject-req-btn" style="padding:4px 10px; font-size:0.8rem;">
+                Reject
+              </button>
+            ` : ""}
+          </div>
+        </div>
+      `;
+
+      if (req.screenshotUrl) {
+        card.querySelector(".view-receipt-btn").addEventListener("click", () => {
+          openReceiptModal(req.screenshotUrl);
+        });
+      }
+
+      const approveBtn = card.querySelector(".approve-req-btn");
+      if (approveBtn) {
+        approveBtn.addEventListener("click", async () => {
+          if (!confirm(`Approve payment for ${req.userEmail}? This will grant them instant premium access.`)) return;
+          approveBtn.disabled = true;
+          approveBtn.textContent = "Approving…";
+          try {
+            // 1. Update request status
+            await db.collection("premiumRequests").doc(req.id).update({
+              status: "approved",
+              approvedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            // 2. Grant premium access in users collection
+            if (req.userId) {
+              await db.collection("users").doc(req.userId).set({
+                hasPremiumAccess: true,
+                premiumApprovedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+              }, { merge: true });
+            }
+            alert(`Payment approved! Full premium access granted to ${req.userEmail}.`);
+          } catch (err) {
+            alert("Error approving request: " + err.message);
+          }
+        });
+      }
+
+      const rejectBtn = card.querySelector(".reject-req-btn");
+      if (rejectBtn) {
+        rejectBtn.addEventListener("click", async () => {
+          if (!confirm(`Reject payment request for ${req.userEmail}?`)) return;
+          rejectBtn.disabled = true;
+          rejectBtn.textContent = "Rejecting…";
+          try {
+            await db.collection("premiumRequests").doc(req.id).update({
+              status: "rejected",
+              rejectedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            if (req.userId) {
+              await db.collection("users").doc(req.userId).set({
+                hasPremiumAccess: false,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+              }, { merge: true });
+            }
+          } catch (err) {
+            alert("Error rejecting request: " + err.message);
+          }
+        });
+      }
+
+      reqListEl.appendChild(card);
+    });
+  }
+
+  // ---- Manual Access Override by Email ----
+  if (manualGrantBtn && manualGrantEmail) {
+    manualGrantBtn.addEventListener("click", async () => {
+      const email = manualGrantEmail.value.trim().toLowerCase();
+      if (!email || !email.includes("@")) {
+        manualGrantStatus.textContent = "Please enter a valid email address.";
+        manualGrantStatus.style.color = "crimson";
+        return;
+      }
+      manualGrantBtn.disabled = true;
+      manualGrantStatus.textContent = "Searching user and granting access…";
+      manualGrantStatus.style.color = "#475569";
+
+      try {
+        const snap = await db.collection("users").where("email", "==", email).limit(1).get();
+        if (snap.empty) {
+          manualGrantStatus.textContent = `No account found registered with email "${email}". The user must register first.`;
+          manualGrantStatus.style.color = "crimson";
+        } else {
+          const userDoc = snap.docs[0];
+          await userDoc.ref.set({
+            hasPremiumAccess: true,
+            premiumApprovedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          }, { merge: true });
+          manualGrantStatus.textContent = `Success! Premium access granted to ${email}.`;
+          manualGrantStatus.style.color = "#10b981";
+          manualGrantEmail.value = "";
+        }
+      } catch (err) {
+        manualGrantStatus.textContent = "Error: " + err.message;
+        manualGrantStatus.style.color = "crimson";
+      } finally {
+        manualGrantBtn.disabled = false;
+      }
+    });
+  }
+
+  if (manualRevokeBtn && manualGrantEmail) {
+    manualRevokeBtn.addEventListener("click", async () => {
+      const email = manualGrantEmail.value.trim().toLowerCase();
+      if (!email || !email.includes("@")) {
+        manualGrantStatus.textContent = "Please enter a valid email address.";
+        manualGrantStatus.style.color = "crimson";
+        return;
+      }
+      manualRevokeBtn.disabled = true;
+      manualGrantStatus.textContent = "Revoking access…";
+      manualGrantStatus.style.color = "#475569";
+
+      try {
+        const snap = await db.collection("users").where("email", "==", email).limit(1).get();
+        if (snap.empty) {
+          manualGrantStatus.textContent = `No account found with email "${email}".`;
+          manualGrantStatus.style.color = "crimson";
+        } else {
+          const userDoc = snap.docs[0];
+          await userDoc.ref.set({
+            hasPremiumAccess: false,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          }, { merge: true });
+          manualGrantStatus.textContent = `Premium access revoked for ${email}.`;
+          manualGrantStatus.style.color = "#10b981";
+          manualGrantEmail.value = "";
+        }
+      } catch (err) {
+        manualGrantStatus.textContent = "Error: " + err.message;
+        manualGrantStatus.style.color = "crimson";
+      } finally {
+        manualRevokeBtn.disabled = false;
+      }
+    });
+  }
+
+  subscribePaymentRequests();
 
 
   // ---- Auto-generate slug from name ----
@@ -1020,9 +1187,9 @@ function initPremiumQuizAdmin() {
       row.style.cssText = "display:flex; justify-content:space-between; align-items:center; gap:12px; padding:12px 14px; border:1px solid var(--border); border-radius:8px; margin-bottom:8px;";
       row.innerHTML = `
         <div style="display:flex; align-items:center; gap:12px;">
-          ${cat.imageUrl ? `<img src="${escapeHtml(cat.imageUrl)}" alt="${escapeHtml(cat.name)}" style="width:48px; height:48px; object-fit:cover; border-radius:6px; border:1px solid var(--border);" onerror="this.style.display='none'" />` : `<div style="width:48px; height:48px; background:var(--border); border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:1.4rem;">⭐</div>`}
+          ${cat.imageUrl ? `<img src="${escapeHtml(cat.imageUrl)}" alt="${escapeHtml(cat.name)}" style="width:48px; height:48px; object-fit:cover; border-radius:6px; border:1px solid var(--border);" onerror="this.style.display='none'" />` : `<div style="width:48px; height:48px; background:var(--border); border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:0.8rem; font-weight:700; color:var(--mist);">CAT</div>`}
           <div>
-            <div><strong>${escapeHtml(cat.name)}</strong> <span class="admin-tag">${escapeHtml(cat.id)}</span> <span class="admin-tag" style="background:#fef3c7; color:#92400e;">🪙 ${cat.credits} Credits</span></div>
+            <div><strong>${escapeHtml(cat.name)}</strong> <span class="admin-tag">${escapeHtml(cat.id)}</span> <span class="admin-tag" style="background:#fef3c7; color:#92400e;">${cat.credits} Credits</span></div>
             <p style="margin:4px 0 0; font-size:0.85rem; color:var(--mist);">${escapeHtml(cat.description || "No description provided.")}</p>
           </div>
         </div>
@@ -1100,7 +1267,7 @@ function initPremiumQuizAdmin() {
       if (catDescInput) catDescInput.value = "";
       addCatBtn.textContent = "Save / Add Category";
 
-      catStatus.textContent = `✅ Category "${name}" saved!`;
+      catStatus.textContent = `Category "${name}" saved successfully.`;
       catStatus.style.color = "#10b981";
     } catch (err) {
       catStatus.textContent = err.message;
@@ -1203,7 +1370,7 @@ function initPremiumQuizAdmin() {
     try {
       qStatus.textContent = "Saving…";
       await db.collection("premiumQuizContent").doc(currentCatId).update({ questions: updated });
-      qStatus.textContent = editingIdx >= 0 ? "✅ Question updated!" : "✅ Question added!";
+      qStatus.textContent = editingIdx >= 0 ? "Question updated successfully." : "Question added successfully.";
       qStatus.style.color = "#10b981";
       resetQForm();
     } catch (err) {

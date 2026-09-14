@@ -2,7 +2,6 @@
    auth-widget.js — Professional Authentication & Account System
    - Multi-instance header account widget
    - Professional Sign In & Sign Up Modal with Google & Email
-   - Phone verification with SMS verification code (Firebase Phone Auth)
    - Real-time profile & credit balance synchronization
    - Clean SVG iconography without unnecessary emojis
    ============================================================ */
@@ -20,9 +19,6 @@ const CHECK_ICON_SVG =
 const SHIELD_ICON_SVG =
   '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>';
 
-const PHONE_ICON_SVG =
-  '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>';
-
 // Global user profile initialization helper: gives 2 credits by default!
 async function initUserProfile(user) {
   if (!user || !db) return null;
@@ -35,8 +31,6 @@ async function initUserProfile(user) {
         credits: 2, // Default 2 credits on account creation
         email: user.email || "",
         displayName: user.displayName || user.email.split("@")[0] || "Learner",
-        phoneNumber: user.phoneNumber || "",
-        phoneVerified: !!user.phoneNumber,
         googleLinked: isGoogle,
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -48,10 +42,6 @@ async function initUserProfile(user) {
       const updates = {};
       if (isGoogle && !data.googleLinked) {
         updates.googleLinked = true;
-      }
-      if (user.phoneNumber && (!data.phoneNumber || !data.phoneVerified)) {
-        updates.phoneNumber = user.phoneNumber;
-        updates.phoneVerified = true;
       }
       if (Object.keys(updates).length > 0) {
         updates.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
@@ -74,300 +64,6 @@ window.signInWithGoogle = function() {
     if (res.user) await initUserProfile(res.user);
     return res;
   });
-};
-
-/* ============================================================
-   Firebase Phone Verification Engine (SMS Code Confirmation)
-   ============================================================ */
-let appRecaptchaVerifier = null;
-let currentPhoneConfirmation = null;
-
-function ensureRecaptchaContainer(containerId = "recaptcha-container") {
-  let el = document.getElementById(containerId);
-  if (!el) {
-    el = document.createElement("div");
-    el.id = containerId;
-    document.body.appendChild(el);
-  }
-  return el;
-}
-
-function getRecaptchaVerifier(containerId = "recaptcha-container") {
-  ensureRecaptchaContainer(containerId);
-  if (appRecaptchaVerifier) return appRecaptchaVerifier;
-
-  appRecaptchaVerifier = new firebase.auth.RecaptchaVerifier(containerId, {
-    size: "invisible",
-    callback: () => {
-      // reCAPTCHA solved automatically
-    },
-    "expired-callback": () => {
-      if (appRecaptchaVerifier && typeof appRecaptchaVerifier.clear === "function") {
-        try { appRecaptchaVerifier.clear(); } catch(e) {}
-      }
-      appRecaptchaVerifier = null;
-    }
-  });
-  return appRecaptchaVerifier;
-}
-
-function formatE164Phone(rawPhone) {
-  const clean = String(rawPhone || "").replace(/[\s\-\(\)]/g, "");
-  if (clean.startsWith("+")) return clean;
-  if (/^\d{10}$/.test(clean)) {
-    return "+977" + clean; // Default country code for Nepal
-  }
-  return "+" + clean;
-}
-
-async function sendPhoneVerificationCode(rawPhone, containerId = "recaptcha-container") {
-  const formatted = formatE164Phone(rawPhone);
-  if (!/^\+\d{10,15}$/.test(formatted)) {
-    throw new Error("Please enter a valid mobile number (e.g. 98XXXXXXXX).");
-  }
-
-  const verifier = getRecaptchaVerifier(containerId);
-  try {
-    const confirmationResult = await auth.signInWithPhoneNumber(formatted, verifier);
-    currentPhoneConfirmation = confirmationResult;
-    window.phoneConfirmationResult = confirmationResult;
-    return { success: true, formattedPhone: formatted };
-  } catch (err) {
-    if (appRecaptchaVerifier && typeof appRecaptchaVerifier.clear === "function") {
-      try { appRecaptchaVerifier.clear(); } catch(e) {}
-    }
-    appRecaptchaVerifier = null;
-
-    if (err.code === "auth/operation-not-allowed" || err.code === "auth/admin-restricted-operation") {
-      throw new Error("Phone authentication is not enabled in Firebase Console. (Please enable Phone sign-in under Authentication > Sign-in method, or add test phone numbers).");
-    }
-    if (err.code === "auth/quota-exceeded" || err.code === "auth/too-many-requests") {
-      throw new Error("SMS quota exceeded. Please try again later or contact support.");
-    }
-    throw err;
-  }
-}
-window.sendPhoneVerificationCode = sendPhoneVerificationCode;
-
-async function confirmPhoneVerificationCode(code, targetPhone) {
-  const confirmation = currentPhoneConfirmation || window.phoneConfirmationResult;
-  if (!confirmation) {
-    throw new Error("No pending verification found. Please request a verification code first.");
-  }
-  const cleanCode = String(code || "").trim();
-  if (!/^\d{6}$/.test(cleanCode)) {
-    throw new Error("Please enter a valid 6-digit verification code.");
-  }
-
-  const result = await confirmation.confirm(cleanCode);
-
-  const user = auth.currentUser;
-  if (user) {
-    const formatted = formatE164Phone(targetPhone);
-    await db.collection("users").doc(user.uid).set({
-      phoneNumber: formatted,
-      phoneVerified: true,
-      phoneVerifiedAt: firebase.firestore.FieldValue.serverTimestamp(),
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    }, { merge: true });
-  }
-  return result;
-}
-window.confirmPhoneVerificationCode = confirmPhoneVerificationCode;
-
-/* ============================================================
-   Stand-alone Phone Verification Modal
-   ============================================================ */
-let phoneModalEl = null;
-
-function ensurePhoneModal() {
-  if (phoneModalEl && document.body.contains(phoneModalEl)) return phoneModalEl;
-
-  const modal = document.createElement("div");
-  modal.className = "modal site-auth-modal";
-  modal.id = "phoneVerifyModal";
-  modal.hidden = true;
-  modal.setAttribute("role", "dialog");
-  modal.setAttribute("aria-modal", "true");
-
-  modal.innerHTML = `
-    <div class="modal-content">
-      <button type="button" class="modal-close" id="phoneModalClose" aria-label="Close dialog">&times;</button>
-      <div class="site-auth-header">
-        <div style="width:42px; height:42px; border-radius:50%; background:#f1f5f9; display:inline-flex; align-items:center; justify-content:center; color:#0f172a; margin-bottom:12px;">
-          ${PHONE_ICON_SVG}
-        </div>
-        <h3 id="phoneModalTitle">Verify Phone Number</h3>
-        <p id="phoneModalSubtitle">We will send a 6-digit verification code via SMS to verify your mobile number.</p>
-      </div>
-
-      <!-- Step 1: Input Phone Number -->
-      <div id="phoneStepInput">
-        <div style="margin-bottom:14px;">
-          <label style="display:block; font-size:0.82rem; font-weight:600; color:#334155; margin-bottom:6px;">Mobile Number</label>
-          <div class="phone-input-group">
-            <span class="phone-country-code">+977</span>
-            <input type="tel" id="phoneModalInput" placeholder="98XXXXXXXX" maxlength="10" autocomplete="tel-national" />
-          </div>
-          <small style="color:#64748b; font-size:0.75rem; display:block; margin-top:4px;">10-digit mobile number for Nepal</small>
-        </div>
-        <button type="button" class="site-auth-submit-btn" id="phoneModalSendBtn">Send Verification Code</button>
-      </div>
-
-      <!-- Step 2: Input Verification Code (Hidden initially) -->
-      <div id="phoneStepCode" style="display:none;">
-        <div class="site-auth-alert info" id="phoneSentAlert" style="margin-bottom:14px;">
-          <span>Verification code sent to <strong id="phoneSentTarget"></strong></span>
-        </div>
-        <div style="margin-bottom:14px;">
-          <label style="display:block; font-size:0.82rem; font-weight:600; color:#334155; margin-bottom:6px;">6-Digit Verification Code</label>
-          <input type="text" id="phoneModalCodeInput" placeholder="123456" maxlength="6" style="width:100%; text-align:center; font-size:1.2rem; letter-spacing:0.25em; font-weight:700; padding:10px;" autocomplete="one-time-code" />
-        </div>
-        <button type="button" class="site-auth-submit-btn" id="phoneModalConfirmBtn">Verify Code</button>
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; font-size:0.8rem;">
-          <a href="#" id="phoneModalChangeLink" style="color:#2563eb; text-decoration:none; font-weight:600;">Change number</a>
-          <a href="#" id="phoneModalResendLink" style="color:#64748b; text-decoration:none;">Resend code</a>
-        </div>
-      </div>
-
-      <div class="site-auth-alert error" id="phoneModalError" style="display:none; margin-top:12px;"></div>
-      <div class="site-auth-alert success" id="phoneModalSuccess" style="display:none; margin-top:12px;"></div>
-      <div id="phoneModalRecaptcha"></div>
-    </div>
-  `;
-
-  document.body.appendChild(modal);
-  phoneModalEl = modal;
-
-  const closeBtn      = modal.querySelector("#phoneModalClose");
-  const phoneInput    = modal.querySelector("#phoneModalInput");
-  const sendBtn       = modal.querySelector("#phoneModalSendBtn");
-  const stepInput     = modal.querySelector("#phoneStepInput");
-  const stepCode      = modal.querySelector("#phoneStepCode");
-  const sentTarget    = modal.querySelector("#phoneSentTarget");
-  const codeInput     = modal.querySelector("#phoneModalCodeInput");
-  const confirmBtn    = modal.querySelector("#phoneModalConfirmBtn");
-  const changeLink    = modal.querySelector("#phoneModalChangeLink");
-  const resendLink    = modal.querySelector("#phoneModalResendLink");
-  const errorAlert    = modal.querySelector("#phoneModalError");
-  const successAlert  = modal.querySelector("#phoneModalSuccess");
-
-  let currentTargetNumber = "";
-
-  function showError(msg) {
-    errorAlert.textContent = msg;
-    errorAlert.style.display = "flex";
-    successAlert.style.display = "none";
-  }
-
-  function clearAlerts() {
-    errorAlert.textContent = "";
-    errorAlert.style.display = "none";
-    successAlert.textContent = "";
-    successAlert.style.display = "none";
-  }
-
-  closeBtn.addEventListener("click", () => { modal.hidden = true; });
-  modal.addEventListener("click", (e) => { if (e.target === modal) modal.hidden = true; });
-
-  changeLink.addEventListener("click", (e) => {
-    e.preventDefault();
-    stepInput.style.display = "block";
-    stepCode.style.display = "none";
-    clearAlerts();
-  });
-
-  sendBtn.addEventListener("click", async () => {
-    clearAlerts();
-    const val = phoneInput.value.trim();
-    if (!/^\d{10}$/.test(val)) {
-      showError("Please enter a valid 10-digit mobile number.");
-      return;
-    }
-    currentTargetNumber = formatE164Phone(val);
-    sendBtn.disabled = true;
-    sendBtn.textContent = "Sending code…";
-
-    try {
-      await sendPhoneVerificationCode(currentTargetNumber, "phoneModalRecaptcha");
-      stepInput.style.display = "none";
-      stepCode.style.display = "block";
-      sentTarget.textContent = currentTargetNumber;
-      codeInput.value = "";
-      codeInput.focus();
-    } catch (err) {
-      showError(err.message || "Failed to send verification code.");
-    } finally {
-      sendBtn.disabled = false;
-      sendBtn.textContent = "Send Verification Code";
-    }
-  });
-
-  resendLink.addEventListener("click", async (e) => {
-    e.preventDefault();
-    clearAlerts();
-    resendLink.textContent = "Resending…";
-    try {
-      await sendPhoneVerificationCode(currentTargetNumber, "phoneModalRecaptcha");
-      successAlert.textContent = "A new verification code has been sent.";
-      successAlert.style.display = "flex";
-    } catch (err) {
-      showError(err.message || "Could not resend code.");
-    } finally {
-      resendLink.textContent = "Resend code";
-    }
-  });
-
-  confirmBtn.addEventListener("click", async () => {
-    clearAlerts();
-    const code = codeInput.value.trim();
-    if (!/^\d{6}$/.test(code)) {
-      showError("Please enter the 6-digit code sent to your phone.");
-      return;
-    }
-    confirmBtn.disabled = true;
-    confirmBtn.textContent = "Verifying…";
-
-    try {
-      await confirmPhoneVerificationCode(code, currentTargetNumber);
-      successAlert.textContent = "Phone number verified successfully.";
-      successAlert.style.display = "flex";
-      setTimeout(() => {
-        modal.hidden = true;
-        if (typeof modal._onVerified === "function") {
-          modal._onVerified(currentTargetNumber);
-        }
-        document.dispatchEvent(new CustomEvent("phoneverified", { detail: { phoneNumber: currentTargetNumber } }));
-      }, 1000);
-    } catch (err) {
-      showError(err.message || "Invalid verification code. Please check and try again.");
-    } finally {
-      confirmBtn.disabled = false;
-      confirmBtn.textContent = "Verify Code";
-    }
-  });
-
-  return modal;
-}
-
-window.openPhoneVerificationModal = function(options = {}) {
-  const modal = ensurePhoneModal();
-  modal._onVerified = options.onVerified;
-  const phoneInput  = modal.querySelector("#phoneModalInput");
-  const stepInput   = modal.querySelector("#phoneStepInput");
-  const stepCode    = modal.querySelector("#phoneStepCode");
-  const errorAlert  = modal.querySelector("#phoneModalError");
-  const successAlert= modal.querySelector("#phoneModalSuccess");
-
-  stepInput.style.display = "block";
-  stepCode.style.display = "none";
-  errorAlert.style.display = "none";
-  successAlert.style.display = "none";
-
-  if (options.initialPhone) {
-    phoneInput.value = options.initialPhone.replace("+977", "").trim();
-  }
-  modal.hidden = false;
 };
 
 /* ============================================================
@@ -433,20 +129,6 @@ function ensureSiteAuthModal() {
           <input type="password" id="siteAuthPasswordInput" placeholder="At least 6 characters" required minlength="6" autocomplete="current-password" />
         </div>
 
-        <!-- Phone Number section for Sign Up -->
-        <div id="siteAuthPhoneGroup" style="display:none;">
-          <label style="margin-bottom:5px;">
-            Mobile Number (Verification Required)
-          </label>
-          <div class="phone-input-group">
-            <span class="phone-country-code">+977</span>
-            <input type="tel" id="siteAuthPhoneInput" placeholder="98XXXXXXXX" maxlength="10" autocomplete="tel-national" />
-          </div>
-          <small style="color:#64748b; font-size:0.75rem; display:block; margin-top:3px;">
-            A verification code will be sent to confirm your identity for tournament prizes & payments.
-          </small>
-        </div>
-
         <button type="submit" class="site-auth-submit-btn" id="siteAuthSubmitBtn">Sign In</button>
       </form>
 
@@ -469,8 +151,6 @@ function ensureSiteAuthModal() {
   const nameInput     = modal.querySelector("#siteAuthNameInput");
   const emailInput    = modal.querySelector("#siteAuthEmailInput");
   const passwordInput = modal.querySelector("#siteAuthPasswordInput");
-  const phoneGroup    = modal.querySelector("#siteAuthPhoneGroup");
-  const phoneInput    = modal.querySelector("#siteAuthPhoneInput");
   const forgotLink    = modal.querySelector("#siteAuthForgotLink");
   const submitBtn     = modal.querySelector("#siteAuthSubmitBtn");
   const alertError    = modal.querySelector("#siteAuthAlertError");
@@ -496,8 +176,6 @@ function ensureSiteAuthModal() {
 
     nameGroup.style.display = signup ? "block" : "none";
     nameInput.required = signup;
-    phoneGroup.style.display = signup ? "block" : "none";
-    phoneInput.required = signup;
 
     forgotLink.style.display = signup ? "none" : "block";
     passwordInput.autocomplete = signup ? "new-password" : "current-password";
@@ -566,14 +244,6 @@ function ensureSiteAuthModal() {
     const email    = emailInput.value.trim();
     const password = passwordInput.value;
     const name     = nameInput.value.trim();
-    const phoneVal = phoneInput.value.trim();
-
-    if (isSignupMode && phoneVal && !/^\d{10}$/.test(phoneVal)) {
-      alertError.textContent = "Please enter a valid 10-digit mobile number.";
-      alertError.style.display = "flex";
-      phoneInput.focus();
-      return;
-    }
 
     submitBtn.disabled = true;
     submitBtn.textContent = "Please wait…";
@@ -585,17 +255,6 @@ function ensureSiteAuthModal() {
           await cred.user.updateProfile({ displayName: name });
         }
         await initUserProfile(cred.user);
-
-        if (phoneVal) {
-          modal.hidden = true;
-          window.openPhoneVerificationModal({
-            initialPhone: phoneVal,
-            onVerified: () => {
-              if (typeof modal._onSuccess === "function") modal._onSuccess();
-            }
-          });
-          return;
-        }
       } else {
         const res = await auth.signInWithEmailAndPassword(email, password);
         if (res.user) await initUserProfile(res.user);
@@ -647,7 +306,6 @@ function renderAuthDropdown(dropdown, user) {
         <div class="auth-user-details">
           <div class="auth-user-name">${escapeHtmlAuth(displayName)}</div>
           <div class="auth-user-email">${escapeHtmlAuth(user.email)}</div>
-          <div id="authDropdownPhoneStatus" style="margin-top:2px;"></div>
         </div>
       </div>
 
@@ -662,9 +320,6 @@ function renderAuthDropdown(dropdown, user) {
         <a href="live-quiz.html" class="btn btn-outline btn-sm" style="width:100%; text-align:center; display:block; font-size:0.84rem; font-weight:600;">
           Premium Arena
         </a>
-        <button type="button" class="btn btn-outline btn-sm auth-verify-phone-btn" style="display:none; width:100%; text-align:center; font-size:0.82rem;">
-          Verify Phone Number
-        </button>
         <button type="button" class="btn btn-outline btn-sm auth-name-btn" style="width:100%; text-align:center; font-size:0.82rem;">
           Edit Display Name
         </button>
@@ -675,33 +330,12 @@ function renderAuthDropdown(dropdown, user) {
       </button>
     `;
 
-    const phoneStatusEl  = dropdown.querySelector("#authDropdownPhoneStatus");
-    const verifyPhoneBtn = dropdown.querySelector(".auth-verify-phone-btn");
-
     if (db) {
       db.collection("users").doc(user.uid).onSnapshot(s => {
         if (s.exists) {
           const d = s.data();
           const creditEl = dropdown.querySelector(".user-credits-val");
           if (creditEl && d.credits != null) creditEl.textContent = d.credits;
-
-          if (d.phoneVerified && d.phoneNumber) {
-            if (phoneStatusEl) {
-              phoneStatusEl.innerHTML = `<span class="auth-status-pill verified">${CHECK_ICON_SVG} Verified</span>`;
-            }
-            if (verifyPhoneBtn) verifyPhoneBtn.style.display = "none";
-          } else {
-            if (phoneStatusEl) {
-              phoneStatusEl.innerHTML = `<span class="auth-status-pill unverified">Unverified Phone</span>`;
-            }
-            if (verifyPhoneBtn) {
-              verifyPhoneBtn.style.display = "block";
-              verifyPhoneBtn.onclick = () => {
-                dropdown.hidden = true;
-                window.openPhoneVerificationModal({ initialPhone: d.phoneNumber || "" });
-              };
-            }
-          }
         }
       });
     }

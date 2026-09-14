@@ -118,6 +118,16 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
 
+    // ---- Manual Payment Verification Requests ----------------------------
+    // Users submit payment proof (name, phone, ref code, screenshot).
+    // User can read their own submissions, create a new submission.
+    // Admin can read all, update status (approve/reject), or delete.
+    match /premiumRequests/{requestId} {
+      allow read: if request.auth != null && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+
     // ---- Everything else: locked by default ------------------------------
     // Deny-by-default so a future collection isn't accidentally left open.
     match /{document=**} {
