@@ -212,19 +212,18 @@
 
       let status = "locked";
       let statusLabel = "Locked";
-      let icon = "🔒";
+      let icon = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
 
       if (isComingSoon) {
         if (i === 1) {
-          // Day 1 (Monday) is the upcoming launch day!
           status = "active";
           statusLabel = "Starts Mon";
-          icon = "🚀";
+          icon = "●";
           dayCard.classList.add("is-today");
         } else {
           status = "locked";
           statusLabel = "Locked";
-          icon = "🔒";
+          icon = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
           dayCard.classList.add("is-locked");
         }
       } else {
@@ -236,12 +235,12 @@
         } else if (i === currentDayIndex) {
           status = "active";
           statusLabel = "Today";
-          icon = "⚡";
+          icon = "●";
           dayCard.classList.add("is-today");
         } else {
           status = "locked";
           statusLabel = "Locked";
-          icon = "🔒";
+          icon = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
           dayCard.classList.add("is-locked");
         }
       }
@@ -302,7 +301,7 @@
 
   function updateSoundButton() {
     if (!liveSoundBtn) return;
-    liveSoundBtn.textContent = soundOn ? "🔊 Sound on" : "🔇 Sound off";
+    liveSoundBtn.textContent = soundOn ? "Sound: On" : "Sound: Off";
     liveSoundBtn.setAttribute("aria-pressed", String(soundOn));
   }
 
@@ -402,7 +401,7 @@
     if (isComingSoon) {
       if (startLiveQuizBtn) {
         startLiveQuizBtn.disabled = true;
-        startLiveQuizBtn.textContent = "Tournament Starts This Monday (Day 1) 🚀";
+        startLiveQuizBtn.textContent = "Tournament Starts This Monday (Day 1)";
         startLiveQuizBtn.style.opacity = "0.75";
         startLiveQuizBtn.style.cursor = "not-allowed";
       }
@@ -410,7 +409,7 @@
         startWarmupBtn.hidden = false;
       }
       if (liveQuizStatusText) {
-        liveQuizStatusText.innerHTML = `🏁 <strong>The 7-Day Challenge officially starts on Monday, Sep 14.</strong> Try an unranked warm-up quiz above to test your speed!`;
+        liveQuizStatusText.innerHTML = `<strong>The 7-Day Challenge officially starts on Monday, Sep 14.</strong> Try an unranked warm-up quiz above to test your speed!`;
       }
     } else {
       if (startLiveQuizBtn) {
@@ -564,7 +563,7 @@
       totalPointsEarned += questionPoints;
 
       liveRunningPoints.textContent = `${totalPointsEarned} pts`;
-      showFeedback(`🎉 Correct! +${BASE_POINTS_PER_CORRECT} pts ${speedBonus > 0 ? `(+${speedBonus} speed bonus ⚡)` : ""}`, true, explanation);
+      showFeedback(`Correct! +${BASE_POINTS_PER_CORRECT} pts ${speedBonus > 0 ? `(+${speedBonus} speed bonus)` : ""}`, true, explanation);
     } else {
       playWrong();
       showFeedback(`Incorrect. The correct answer is Option ${correctIndex + 1}.`, false, explanation);
@@ -757,10 +756,10 @@
       }
       const saved = await saveScoreToDatabase(user, totalPointsEarned, correctCount, speedBonusTotal);
       if (saved && resultSubline) {
-        resultSubline.innerHTML = `🎉 Great effort! Your score of <strong>${totalPointsEarned} pts</strong> has been added to the leaderboard.`;
+        resultSubline.innerHTML = `Great effort! Your score of <strong>${totalPointsEarned} pts</strong> has been added to the leaderboard.`;
         document.dispatchEvent(new CustomEvent("premiumCheckReady"));
       } else if (!saved && resultSubline) {
-        resultSubline.innerHTML = `⚠️ Score calculated, but could not sync with leaderboard. Check your network or permissions.`;
+        resultSubline.innerHTML = `Score calculated, but could not sync with leaderboard. Check your network or permissions.`;
       }
     } else {
       // Guest user — store score temporarily and show login callout
@@ -776,13 +775,17 @@
       } catch (e) {}
 
       if (resultSubline) {
-        resultSubline.innerHTML = `⚠️ <strong>Playing as Guest:</strong> <a href="#" id="resultLoginLink" style="color:var(--orange);font-weight:700;text-decoration:underline;">Log in or Sign up (top-right 👤)</a> to save your <strong>${totalPointsEarned} pts</strong> to the Leaderboard!`;
+        resultSubline.innerHTML = `<strong>Playing as Guest:</strong> <a href="#" id="resultLoginLink" style="color:var(--orange);font-weight:700;text-decoration:underline;">Sign in or create a free account</a> to save your <strong>${totalPointsEarned} pts</strong> to the Leaderboard!`;
         const link = document.getElementById("resultLoginLink");
         if (link) {
           link.addEventListener("click", (e) => {
             e.preventDefault();
-            const btn = document.getElementById("authIconBtn");
-            if (btn) btn.click();
+            if (typeof window.openAuthModal === "function") {
+              window.openAuthModal({ mode: "signin" });
+            } else {
+              const btn = document.getElementById("authIconBtn");
+              if (btn) btn.click();
+            }
           });
         }
       }
@@ -870,10 +873,7 @@
       const isMe = currentUid && player.userId === currentUid;
       const pointsToShow = activeLeaderboardFilter === "today" ? player.dayPoints : player.weekPoints;
 
-      let rankMedal = `#${rank}`;
-      if (rank === 1) rankMedal = "🥇 1";
-      if (rank === 2) rankMedal = "🥈 2";
-      if (rank === 3) rankMedal = "🥉 3";
+      const rankMedal = `#${rank}`;
 
       html += `
         <div class="leaderboard-row ${isMe ? "is-you" : ""}">
@@ -926,7 +926,7 @@
         }
         const saved = await saveScoreToDatabase(user, pending.points, pending.correct, pending.bonus);
         if (saved && resultSubline) {
-          resultSubline.innerHTML = `🎉 Score of <strong>${pending.points} pts</strong> saved to the leaderboard as <strong>${user.displayName || user.email}</strong>!`;
+          resultSubline.innerHTML = `Score of <strong>${pending.points} pts</strong> saved to the leaderboard as <strong>${user.displayName || user.email}</strong>!`;
           document.dispatchEvent(new CustomEvent("premiumCheckReady"));
         }
       } catch (err) {
@@ -1012,9 +1012,10 @@
 
   // Payment Gateway Config (Loaded from siteSettings/payment)
   let paymentConfig = {
-    khaltiPublicKey: "test_public_key_dc74e0fd69cb46cd8583f30e42f04155",
+    khaltiSecretKey:   "",   // Khalti live_secret_key from admin panel
     esewaMerchantCode: "EPAYTEST",
-    nprPerCredit: 10
+    esewaSecretKey:    "8gBm/:&EnhH.1/q", // eSewa test secret; replace in admin panel for production
+    nprPerCredit:      10
   };
 
   // Load min score & payment settings from Firestore
@@ -1026,9 +1027,10 @@
     .then(s => {
       if (s.exists) {
         const d = s.data();
-        if (d.khaltiPublicKey) paymentConfig.khaltiPublicKey = d.khaltiPublicKey;
+        if (d.khaltiSecretKey)   paymentConfig.khaltiSecretKey   = d.khaltiSecretKey;
         if (d.esewaMerchantCode) paymentConfig.esewaMerchantCode = d.esewaMerchantCode;
-        if (d.nprPerCredit) paymentConfig.nprPerCredit = d.nprPerCredit;
+        if (d.esewaSecretKey)    paymentConfig.esewaSecretKey    = d.esewaSecretKey;
+        if (d.nprPerCredit)      paymentConfig.nprPerCredit      = d.nprPerCredit;
       }
     }).catch(() => {});
 
@@ -1148,10 +1150,10 @@
       const gradient = defaultGradients[idx % defaultGradients.length];
 
       let btnLabel = isWeeklyChampion
-        ? `Start Quiz (Free Access 🏆)`
+        ? `Start Quiz (Free Access)`
         : hasEnough
-          ? `Start Quiz (${cost} Credits 🪙)`
-          : `Need ${cost} Credits (Get More 🪙)`;
+          ? `Start Quiz (${cost} Credits)`
+          : `Need ${cost} Credits (Get More)`;
 
       let btnStyle = hasEnough
         ? "background:#f59e0b; border-color:#f59e0b; color:#fff;"
@@ -1167,9 +1169,9 @@
 
       card.innerHTML = `
         <div style="height:140px; background:${gradient}; position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center;">
-          ${cat.imageUrl ? `<img src="${escapeHtml(cat.imageUrl)}" alt="${escapeHtml(cat.name)}" style="width:100%; height:100%; object-fit:cover;" onerror="this.style.display='none'" />` : `<span style="font-size:3rem; opacity:0.85;">⭐</span>`}
+          ${cat.imageUrl ? `<img src="${escapeHtml(cat.imageUrl)}" alt="${escapeHtml(cat.name)}" style="width:100%; height:100%; object-fit:cover;" onerror="this.style.display='none'" />` : `<div style="width:52px; height:52px; border-radius:12px; background:rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; color:#fff;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>`}
           <span style="position:absolute; top:12px; right:12px; background:rgba(0,0,0,0.7); color:#fef08a; font-weight:700; font-size:0.8rem; padding:4px 10px; border-radius:999px; backdrop-filter:blur(4px); display:inline-flex; align-items:center; gap:4px;">
-            🪙 ${cost} Credits
+            ${cost} Credits
           </span>
           <span style="position:absolute; bottom:10px; left:12px; background:rgba(0,0,0,0.6); color:#fff; font-size:0.75rem; font-weight:600; padding:2px 8px; border-radius:6px; backdrop-filter:blur(4px);">
             ${(cat.questions || []).length} Questions
@@ -1258,10 +1260,10 @@
   /* ---------- Security Check Helper (Google + Phone) ---------- */
   async function ensureSecurityRequirements(user) {
     const isGoogle = (user.providerData || []).some(p => p.providerId === "google.com") || (currentUserProfile && currentUserProfile.googleLinked);
-    const hasPhone = currentUserProfile && currentUserProfile.phoneNumber && /^\d{10}$/.test(currentUserProfile.phoneNumber.replace(/\s+/g, ""));
+    const hasPhone = currentUserProfile && currentUserProfile.phoneVerified && currentUserProfile.phoneNumber;
 
     if (!isGoogle || !hasPhone) {
-      openBuyCreditsModal("For security, please connect your Google account and enter your phone number.");
+      openBuyCreditsModal("For security, please connect your Google account and verify your phone number.");
       return false;
     }
     return true;
@@ -1271,10 +1273,10 @@
   function showArenaModal(asChampion = false) {
     if (!premiumModalOverlay) return;
     if (asChampion) {
-      if (premiumArenaTitle) premiumArenaTitle.textContent = "🏆 Champion's Premium Arena";
+      if (premiumArenaTitle) premiumArenaTitle.textContent = "Champion's Premium Arena";
       if (premiumArenaSubtitle) premiumArenaSubtitle.textContent = "Congratulations on taking #1 this week! Enjoy Free Unlimited Access to all categories.";
     } else {
-      if (premiumArenaTitle) premiumArenaTitle.textContent = "⭐ Premium Quiz Arena";
+      if (premiumArenaTitle) premiumArenaTitle.textContent = "Premium Quiz Arena";
       if (premiumArenaSubtitle) premiumArenaSubtitle.textContent = "Play exclusive competitive exam categories with credits, or enjoy Free Access as this week's champion!";
     }
     loadCategories();
@@ -1332,35 +1334,54 @@
   }
   if (openBuyCreditsFromArenaBtn) openBuyCreditsFromArenaBtn.addEventListener("click", () => openBuyCreditsModal());
 
+  // Phone OTP elements in Buy Credits Modal
+  const phoneOtpRow         = document.getElementById("phoneOtpRow");
+  const phoneOtpCodeInput   = document.getElementById("phoneOtpCodeInput");
+  const verifyPhoneCodeBtn  = document.getElementById("verifyPhoneCodeBtn");
+  const cancelPhoneOtpBtn   = document.getElementById("cancelPhoneOtpBtn");
+  const phoneOtpStatus      = document.getElementById("phoneOtpStatus");
+  const phoneInputControls  = document.getElementById("phoneInputControls");
+  let pendingVerificationPhone = "";
+
   // Update Security Box in Buy Credits Modal
   function updateSecurityBoxUI() {
     const user = auth.currentUser;
     if (!user) {
-      if (googleStatusText) googleStatusText.innerHTML = "Google Account: <strong style='color:#ef4444'>Not logged in</strong>";
+      if (googleStatusText) googleStatusText.innerHTML = "Google Account: <strong style='color:#ef4444'>Not signed in</strong>";
       if (buyModalGoogleBtn) { buyModalGoogleBtn.style.display = "block"; buyModalGoogleBtn.textContent = "Sign in with Google"; }
-      if (phoneStatusText) phoneStatusText.innerHTML = "Phone Number: <span style='color:#94a3b8'>Login first</span>";
+      if (phoneStatusText) phoneStatusText.innerHTML = "Phone Number: <span style='color:#94a3b8'>Sign in first</span>";
       if (userPhoneInput) userPhoneInput.disabled = true;
       if (savePhoneBtn) savePhoneBtn.disabled = true;
+      if (phoneOtpRow) phoneOtpRow.style.display = "none";
+      if (phoneInputControls) phoneInputControls.style.display = "flex";
       return;
     }
 
     const isGoogle = (user.providerData || []).some(p => p.providerId === "google.com") || (currentUserProfile && currentUserProfile.googleLinked);
     if (isGoogle) {
-      if (googleStatusText) googleStatusText.innerHTML = `Google Account: <strong style='color:#10b981'>✅ Connected (${escapeHtml(user.email)})</strong>`;
+      if (googleStatusText) googleStatusText.innerHTML = `Google Account: <strong style='color:#10b981'>Connected (${escapeHtml(user.email)})</strong>`;
       if (buyModalGoogleBtn) buyModalGoogleBtn.style.display = "none";
     } else {
-      if (googleStatusText) googleStatusText.innerHTML = "Google Account: <strong style='color:#ea580c'>⚠️ Required for security</strong>";
+      if (googleStatusText) googleStatusText.innerHTML = "Google Account: <strong style='color:#ea580c'>Required for security</strong>";
       if (buyModalGoogleBtn) { buyModalGoogleBtn.style.display = "block"; buyModalGoogleBtn.textContent = "Connect Google"; }
     }
 
     if (userPhoneInput) userPhoneInput.disabled = false;
     if (savePhoneBtn) savePhoneBtn.disabled = false;
 
-    if (currentUserProfile && currentUserProfile.phoneNumber) {
-      if (phoneStatusText) phoneStatusText.innerHTML = `Phone Number: <strong style='color:#10b981'>✅ ${escapeHtml(currentUserProfile.phoneNumber)}</strong>`;
-      if (userPhoneInput) userPhoneInput.value = currentUserProfile.phoneNumber;
+    const isPhoneVerified = currentUserProfile && currentUserProfile.phoneVerified && currentUserProfile.phoneNumber;
+    if (isPhoneVerified) {
+      if (phoneStatusText) phoneStatusText.innerHTML = `Phone Number: <strong style='color:#10b981'>Verified (${escapeHtml(currentUserProfile.phoneNumber)})</strong>`;
+      if (phoneInputControls) phoneInputControls.style.display = "none";
+      if (phoneOtpRow) phoneOtpRow.style.display = "none";
     } else {
-      if (phoneStatusText) phoneStatusText.innerHTML = "Phone Number: <strong style='color:#ea580c'>⚠️ Enter 10-digit mobile number</strong>";
+      if (currentUserProfile && currentUserProfile.phoneNumber) {
+        if (phoneStatusText) phoneStatusText.innerHTML = `Phone Number: <strong style='color:#ea580c'>Verification required (${escapeHtml(currentUserProfile.phoneNumber)})</strong>`;
+        if (userPhoneInput) userPhoneInput.value = currentUserProfile.phoneNumber.replace("+977", "").trim();
+      } else {
+        if (phoneStatusText) phoneStatusText.innerHTML = "Phone Number: <strong style='color:#ea580c'>Verification required</strong>";
+      }
+      if (phoneInputControls) phoneInputControls.style.display = "flex";
     }
   }
 
@@ -1370,7 +1391,10 @@
         if (typeof window.signInWithGoogle === "function") {
           await window.signInWithGoogle();
           updateSecurityBoxUI();
-          if (paymentActionStatus) paymentActionStatus.textContent = "✅ Google account connected!";
+          if (paymentActionStatus) {
+            paymentActionStatus.textContent = "Google account connected successfully.";
+            paymentActionStatus.style.color = "#10b981";
+          }
         }
       } catch (err) {
         if (paymentActionStatus) paymentActionStatus.textContent = err.message;
@@ -1378,28 +1402,104 @@
     });
   }
 
+  // Send Phone SMS Verification Code
   if (savePhoneBtn) {
     savePhoneBtn.addEventListener("click", async () => {
       const user = auth.currentUser;
       if (!user) { alert("Please sign in first!"); return; }
       const raw = userPhoneInput ? userPhoneInput.value.trim().replace(/\s+/g, "") : "";
       if (!/^\d{10}$/.test(raw)) {
-        alert("Please enter a valid 10-digit Nepal mobile number (e.g. 98xxxxxxxx)");
+        alert("Please enter a valid 10-digit mobile number (e.g. 98XXXXXXXX).");
         return;
       }
+
+      pendingVerificationPhone = raw.startsWith("+") ? raw : "+977" + raw;
+      savePhoneBtn.disabled = true;
+      savePhoneBtn.textContent = "Sending…";
+      if (paymentActionStatus) paymentActionStatus.textContent = "";
+
       try {
-        await db.collection("users").doc(user.uid).set({
-          phoneNumber: raw,
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge: true });
-        if (currentUserProfile) currentUserProfile.phoneNumber = raw;
-        updateSecurityBoxUI();
-        alert("✅ Phone number saved successfully!");
+        if (typeof window.sendPhoneVerificationCode === "function") {
+          await window.sendPhoneVerificationCode(pendingVerificationPhone);
+        }
+        if (phoneOtpRow) phoneOtpRow.style.display = "block";
+        if (phoneInputControls) phoneInputControls.style.display = "none";
+        if (phoneOtpStatus) {
+          phoneOtpStatus.textContent = `Verification code sent to ${pendingVerificationPhone}`;
+          phoneOtpStatus.style.color = "#2563eb";
+        }
+        if (phoneOtpCodeInput) {
+          phoneOtpCodeInput.value = "";
+          phoneOtpCodeInput.focus();
+        }
       } catch (err) {
-        alert("Error saving phone: " + err.message);
+        alert("Could not send verification code: " + err.message);
+      } finally {
+        savePhoneBtn.disabled = false;
+        savePhoneBtn.textContent = "Send Code";
       }
     });
   }
+
+  // Confirm Phone SMS Verification Code
+  if (verifyPhoneCodeBtn) {
+    verifyPhoneCodeBtn.addEventListener("click", async () => {
+      const code = phoneOtpCodeInput ? phoneOtpCodeInput.value.trim() : "";
+      if (!/^\d{6}$/.test(code)) {
+        if (phoneOtpStatus) {
+          phoneOtpStatus.textContent = "Please enter the 6-digit code received via SMS.";
+          phoneOtpStatus.style.color = "#dc2626";
+        }
+        return;
+      }
+
+      verifyPhoneCodeBtn.disabled = true;
+      verifyPhoneCodeBtn.textContent = "Verifying…";
+
+      try {
+        if (typeof window.confirmPhoneVerificationCode === "function") {
+          await window.confirmPhoneVerificationCode(code, pendingVerificationPhone);
+        } else {
+          const user = auth.currentUser;
+          if (user) {
+            await db.collection("users").doc(user.uid).set({
+              phoneNumber: pendingVerificationPhone,
+              phoneVerified: true,
+              updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
+          }
+        }
+
+        if (currentUserProfile) {
+          currentUserProfile.phoneNumber = pendingVerificationPhone;
+          currentUserProfile.phoneVerified = true;
+        }
+
+        updateSecurityBoxUI();
+        if (paymentActionStatus) {
+          paymentActionStatus.textContent = "Phone number verified successfully.";
+          paymentActionStatus.style.color = "#10b981";
+        }
+      } catch (err) {
+        if (phoneOtpStatus) {
+          phoneOtpStatus.textContent = err.message || "Invalid verification code. Please try again.";
+          phoneOtpStatus.style.color = "#dc2626";
+        }
+      } finally {
+        verifyPhoneCodeBtn.disabled = false;
+        verifyPhoneCodeBtn.textContent = "Verify Code";
+      }
+    });
+  }
+
+  if (cancelPhoneOtpBtn) {
+    cancelPhoneOtpBtn.addEventListener("click", () => {
+      if (phoneOtpRow) phoneOtpRow.style.display = "none";
+      if (phoneInputControls) phoneInputControls.style.display = "flex";
+      if (phoneOtpStatus) phoneOtpStatus.textContent = "";
+    });
+  }
+
 
   // Credit Pack Selection Handler
   document.querySelectorAll(".credit-pack-card").forEach(card => {
@@ -1450,7 +1550,7 @@
       userCredits += creditsAdded;
       updateCreditBadges(userCredits);
 
-      alert(`🎉 Payment Successful via ${gateway}!\n\n${creditsAdded} credits have been added to your account.\nNew Balance: ${userCredits} Credits`);
+      alert(`Payment Successful via ${gateway}!\n\n${creditsAdded} credits have been added to your account.\nNew Balance: ${userCredits} Credits`);
       hideBuyCreditsModal();
     } catch (err) {
       console.error("Payment post-processing error:", err);
@@ -1458,35 +1558,10 @@
     }
   }
 
-  // Helper: Load Khalti Checkout SDK on demand if not already loaded
-  function loadKhaltiSdk() {
-    return new Promise((resolve, reject) => {
-      if (typeof KhaltiCheckout !== "undefined") {
-        resolve(KhaltiCheckout);
-        return;
-      }
-      const existing = document.querySelector('script[src*="khalti"]');
-      if (existing) {
-        existing.addEventListener("load", () => {
-          if (typeof KhaltiCheckout !== "undefined") resolve(KhaltiCheckout);
-          else reject(new Error("KhaltiCheckout not found"));
-        });
-        existing.addEventListener("error", () => reject(new Error("Khalti script load failed")));
-        return;
-      }
-      const s = document.createElement("script");
-      s.src = "https://khalti.s3.amazonaws.com/khalti-checkout-web.2.0.0.js";
-      s.async = true;
-      s.onload = () => {
-        if (typeof KhaltiCheckout !== "undefined") resolve(KhaltiCheckout);
-        else reject(new Error("KhaltiCheckout not found after script load"));
-      };
-      s.onerror = () => reject(new Error("Unable to load Khalti SDK. Check your connection or ad blocker."));
-      document.head.appendChild(s);
-    });
-  }
 
-  // 1. Khalti Payment Trigger (Strict Gateway Flow)
+  // ---------------------------------------------------------------------------
+  // 1. KHALTI PAYMENT — Khalti ePayment API v2 (New Web Checkout)
+  // ---------------------------------------------------------------------------
   if (payWithKhaltiBtn) {
     payWithKhaltiBtn.addEventListener("click", async () => {
       const user = auth.currentUser;
@@ -1497,56 +1572,102 @@
       const verified = await ensureSecurityRequirements(user);
       if (!verified) return;
 
-      paymentActionStatus.textContent = "Connecting to Khalti secure checkout…";
-      paymentActionStatus.style.color = "#475569";
-      payWithKhaltiBtn.disabled = true;
-
-      try {
-        await loadKhaltiSdk();
-      } catch (err) {
-        payWithKhaltiBtn.disabled = false;
-        paymentActionStatus.textContent = "⚠️ Could not connect to Khalti payment server. Please verify your internet connection or disable ad-blockers and try again.";
+      if (!paymentConfig.khaltiSecretKey) {
+        paymentActionStatus.textContent = "Khalti is not configured yet. Please contact the site admin.";
         paymentActionStatus.style.color = "crimson";
         return;
       }
 
+      paymentActionStatus.textContent = "Connecting to Khalti — please wait…";
+      paymentActionStatus.style.color = "#475569";
+      payWithKhaltiBtn.disabled = true;
+
       try {
-        const checkout = new KhaltiCheckout({
-          publicKey: paymentConfig.khaltiPublicKey || "test_public_key_dc74e0fd69cb46cd8583f30e42f04155",
-          productIdentity: `credits_${selectedPackCredits}`,
-          productName: `${selectedPackCredits} Premium Quiz Credits`,
-          productUrl: window.location.href,
-          eventHandler: {
-            onSuccess(payload) {
-              // Real payment completed on Khalti widget
-              console.log("Khalti payment success payload:", payload);
-              payWithKhaltiBtn.disabled = false;
-              handlePaymentSuccess("Khalti", payload.amount / 100, selectedPackCredits, payload.token || payload.idx);
-            },
-            onError(error) {
-              payWithKhaltiBtn.disabled = false;
-              console.warn("Khalti payment error:", error);
-              paymentActionStatus.textContent = "Khalti payment was not completed or failed. No credits were added.";
-              paymentActionStatus.style.color = "crimson";
-            },
-            onClose() {
-              payWithKhaltiBtn.disabled = false;
-              paymentActionStatus.textContent = "Khalti checkout closed without payment.";
-              paymentActionStatus.style.color = "#64748b";
+        const txId = `KH-${user.uid.slice(0, 6)}-${Date.now()}`;
+        const returnUrl = `${window.location.origin}${window.location.pathname}?payment=khalti&status=success&amt=${selectedPackAmount}&credits=${selectedPackCredits}&tx=${txId}`;
+
+        // Khalti ePayment v2 — initiate payment (live: a.khalti.com, test: dev.khalti.com)
+        const KHALTI_INITIATE_URL = "https://a.khalti.com/api/v2/epayment/initiate/";
+
+        const resp = await fetch(KHALTI_INITIATE_URL, {
+          method: "POST",
+          headers: {
+            "Authorization": `key ${paymentConfig.khaltiSecretKey}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            return_url: returnUrl,
+            website_url: window.location.origin,
+            amount: selectedPackAmount * 100, // Paisa
+            purchase_order_id: txId,
+            purchase_order_name: `${selectedPackCredits} Premium Quiz Credits`,
+            customer_info: {
+              name: user.displayName || user.email,
+              email: user.email
             }
-          }
+          })
         });
 
-        checkout.show({ amount: selectedPackAmount * 100 }); // Khalti amount in Paisa
+        if (!resp.ok) {
+          const errData = await resp.json().catch(() => ({}));
+          throw new Error(errData.detail || errData.error_key || `HTTP ${resp.status}`);
+        }
+
+        const data = await resp.json();
+        if (data.payment_url) {
+          // Redirect to Khalti hosted checkout page
+          window.location.href = data.payment_url;
+        } else {
+          throw new Error("No payment_url in Khalti response.");
+        }
+
       } catch (err) {
         payWithKhaltiBtn.disabled = false;
-        paymentActionStatus.textContent = "Khalti initialization error: " + err.message;
+        paymentActionStatus.textContent = "Khalti error: " + err.message;
         paymentActionStatus.style.color = "crimson";
+        console.error("Khalti initiation error:", err);
       }
     });
   }
 
-  // 2. eSewa Payment Trigger (Official Form Submission)
+  // Handle Khalti return callback (Khalti redirects back with pidx + status)
+  (function checkKhaltiCallback() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get("payment") === "khalti" && urlParams.get("status") === "success") {
+      const amt     = Number(urlParams.get("amt")     || 50);
+      const credits = Number(urlParams.get("credits") || 5);
+      const tx      = urlParams.get("tx") || urlParams.get("pidx") || "";
+
+      auth.onAuthStateChanged(async user => {
+        if (user && tx) {
+          try {
+            const existing = await db.collection("payments").where("referenceId", "==", String(tx)).get();
+            if (existing.empty) {
+              await handlePaymentSuccess("Khalti", amt, credits, tx);
+            }
+          } catch (e) {
+            console.warn("Khalti callback credit error:", e);
+          }
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+      });
+    }
+  })();
+
+  // ---------------------------------------------------------------------------
+  // 2. eSEWA PAYMENT — eSewa ePay v2 (epay.esewa.com.np) with HMAC-SHA256
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Generate HMAC-SHA256 base64 signature using CryptoJS.
+   * Signature message: "total_amount=X,transaction_uuid=Y,product_code=Z"
+   */
+  function generateEsewaSignature(totalAmount, transactionUuid, productCode, secretKey) {
+    const message = `total_amount=${totalAmount},transaction_uuid=${transactionUuid},product_code=${productCode}`;
+    const hash = CryptoJS.HmacSHA256(message, secretKey);
+    return CryptoJS.enc.Base64.stringify(hash);
+  }
+
   if (payWithEsewaBtn) {
     payWithEsewaBtn.addEventListener("click", async () => {
       const user = auth.currentUser;
@@ -1557,35 +1678,52 @@
       const verified = await ensureSecurityRequirements(user);
       if (!verified) return;
 
+      if (typeof CryptoJS === "undefined") {
+        paymentActionStatus.textContent = "Encryption library not loaded. Refresh the page and try again.";
+        paymentActionStatus.style.color = "crimson";
+        return;
+      }
+
       paymentActionStatus.textContent = "Redirecting to eSewa payment portal…";
       paymentActionStatus.style.color = "#475569";
 
-      const txId = `ES_${user.uid.slice(0, 5)}_${Date.now()}`;
+      // eSewa v2 requires alphanumeric + hyphen only in transaction_uuid
+      const txId       = `ES-${user.uid.slice(0, 5)}-${Date.now()}`;
       const successUrl = `${window.location.origin}${window.location.pathname}?payment=esewa&status=success&amt=${selectedPackAmount}&credits=${selectedPackCredits}&tx=${txId}`;
       const failureUrl = `${window.location.origin}${window.location.pathname}?payment=esewa&status=fail`;
 
-      // Build and submit official eSewa form
+      const merchantCode = paymentConfig.esewaMerchantCode || "EPAYTEST";
+      const secretKey    = paymentConfig.esewaSecretKey    || "8gBm/:&EnhH.1/q";
+      const totalAmount  = selectedPackAmount;
+
+      // Build HMAC-SHA256 signature
+      const signature = generateEsewaSignature(totalAmount, txId, merchantCode, secretKey);
+
+      // Build and submit eSewa v2 form
       const form = document.createElement("form");
       form.method = "POST";
-      form.action = "https://uat.esewa.com.np/epay/main"; // eSewa test gateway
+      // Production URL; for testing use: https://rc-epay.esewa.com.np/api/epay/main/v2/form
+      form.action = "https://epay.esewa.com.np/api/epay/main/v2/form";
 
       const params = {
-        amt: selectedPackAmount,
-        psc: 0,
-        pdc: 0,
-        txAmt: 0,
-        tAmt: selectedPackAmount,
-        pid: txId,
-        scd: paymentConfig.esewaMerchantCode || "EPAYTEST",
-        su: successUrl,
-        fu: failureUrl
+        amount:                   totalAmount,
+        tax_amount:               0,
+        total_amount:             totalAmount,
+        transaction_uuid:         txId,
+        product_code:             merchantCode,
+        product_service_charge:   0,
+        product_delivery_charge:  0,
+        success_url:              successUrl,
+        failure_url:              failureUrl,
+        signed_field_names:       "total_amount,transaction_uuid,product_code",
+        signature:                signature
       };
 
       for (const key in params) {
-        const input = document.createElement("input");
-        input.type = "hidden";
-        input.name = key;
-        input.value = params[key];
+        const input   = document.createElement("input");
+        input.type    = "hidden";
+        input.name    = key;
+        input.value   = params[key];
         form.appendChild(input);
       }
 
@@ -1594,25 +1732,33 @@
     });
   }
 
-  // Handle return redirect from eSewa callback
-  (function checkUrlPaymentCallback() {
+  // Handle return redirect from eSewa v2 callback
+  // eSewa v2 encodes the entire response JSON as Base64 in the `data` query param
+  (function checkEsewaCallback() {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get("payment") === "esewa") {
       if (urlParams.get("status") === "success") {
-        const amt = Number(urlParams.get("amt") || 50);
+        const amt     = Number(urlParams.get("amt")     || 50);
         const credits = Number(urlParams.get("credits") || 5);
-        const tx = urlParams.get("tx") || urlParams.get("refId") || urlParams.get("oid");
+        // Try to get transaction ID from our custom param, or from eSewa's Base64 data
+        let tx = urlParams.get("tx") || "";
+        const esewaData = urlParams.get("data");
+        if (!tx && esewaData) {
+          try {
+            const decoded = JSON.parse(atob(esewaData));
+            tx = decoded.transaction_uuid || decoded.transaction_code || tx;
+          } catch (e) { /* ignore decode errors */ }
+        }
 
         auth.onAuthStateChanged(async user => {
           if (user && tx) {
-            // Check if this transaction was already credited to prevent duplicate additions
             try {
               const existing = await db.collection("payments").where("referenceId", "==", String(tx)).get();
               if (existing.empty) {
                 await handlePaymentSuccess("eSewa", amt, credits, tx);
               }
             } catch (e) {
-              console.warn("Payment verification error:", e);
+              console.warn("eSewa payment verification error:", e);
             }
             window.history.replaceState({}, document.title, window.location.pathname);
           }
@@ -1623,6 +1769,7 @@
       }
     }
   })();
+
 
   /* ---------- Start Premium Quiz Session ---------- */
   async function startPQuiz(catId, catName) {
@@ -1722,7 +1869,7 @@
       pSpeedBon += sp;
       pPts += BASE_POINTS_PER_CORRECT + sp;
       if (premiumRunningPts) premiumRunningPts.textContent = `${pPts} pts`;
-      showPFb(`🎉 Correct! +${BASE_POINTS_PER_CORRECT} pts${sp > 0 ? ` (+${sp} speed bonus ⚡)` : ""}`, true, expl);
+      showPFb(`Correct! +${BASE_POINTS_PER_CORRECT} pts${sp > 0 ? ` (+${sp} speed bonus)` : ""}`, true, expl);
     } else {
       playWrong();
       showPFb(`Incorrect. Correct answer: Option ${correct + 1}.`, false, expl);
@@ -1739,7 +1886,7 @@
       b.disabled = true;
       if (i === c) b.classList.add("is-correct");
     });
-    showPFb(`⏰ Time's up! Correct answer: Option ${c + 1}.`, false, q.explanation);
+    showPFb(`Time's up! Correct answer: Option ${c + 1}.`, false, q.explanation);
   }
 
   function showPFb(msg, ok, expl) {

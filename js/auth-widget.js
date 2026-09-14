@@ -1,21 +1,27 @@
-/* ============================================
-   auth-widget.js — compact account icon + dropdown.
-   Supports MULTIPLE instances on one page (e.g. one in
-   the desktop header, one inside the mobile nav drawer)
-   — all instances share the same Firebase auth state.
+/* ============================================================
+   auth-widget.js — Professional Authentication & Account System
+   - Multi-instance header account widget
+   - Professional Sign In & Sign Up Modal with Google & Email
+   - Phone verification with SMS verification code (Firebase Phone Auth)
+   - Real-time profile & credit balance synchronization
+   - Clean SVG iconography without unnecessary emojis
+   ============================================================ */
 
-   Each instance needs this markup, wrapped in .auth-widget:
-     <div class="auth-widget">
-       <button class="auth-icon-btn">👤</button>
-       <div class="auth-dropdown" hidden></div>
-     </div>
-   ============================================ */
-
+// Clean, professional SVG icons (no emojis)
 const ACCOUNT_ICON_SVG =
   '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>';
 
 const GOOGLE_ICON_SVG =
-  '<svg width="16" height="16" viewBox="0 0 24 24" style="flex-shrink:0"><path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.3 9 5 12 5z"/><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.7-.2-2.3H12v4.6h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.9z"/><path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.8s.2-2.1.4-2.8L1.9 6.3C.7 8.7 0 11.3 0 14s.7 5.3 1.9 7.7l3.7-2.9z"/><path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.3-6.4-5.2L1.9 16C3.7 19.7 7.5 23 12 23z"/></svg>';
+  '<svg width="18" height="18" viewBox="0 0 24 24" style="flex-shrink:0"><path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.3 9 5 12 5z"/><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.7-.2-2.3H12v4.6h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.9z"/><path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.8s.2-2.1.4-2.8L1.9 6.3C.7 8.7 0 11.3 0 14s.7 5.3 1.9 7.7l3.7-2.9z"/><path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.3-6.4-5.2L1.9 16C3.7 19.7 7.5 23 12 23z"/></svg>';
+
+const CHECK_ICON_SVG =
+  '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+
+const SHIELD_ICON_SVG =
+  '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>';
+
+const PHONE_ICON_SVG =
+  '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>';
 
 // Global user profile initialization helper: gives 2 credits by default!
 async function initUserProfile(user) {
@@ -26,10 +32,11 @@ async function initUserProfile(user) {
     const isGoogle = (user.providerData || []).some(p => p.providerId === "google.com");
     if (!snap.exists) {
       const data = {
-        credits: 2, // Default 2 credits on account creation!
+        credits: 2, // Default 2 credits on account creation
         email: user.email || "",
         displayName: user.displayName || user.email.split("@")[0] || "Learner",
         phoneNumber: user.phoneNumber || "",
+        phoneVerified: !!user.phoneNumber,
         googleLinked: isGoogle,
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -38,10 +45,19 @@ async function initUserProfile(user) {
       return data;
     } else {
       const data = snap.data();
+      const updates = {};
       if (isGoogle && !data.googleLinked) {
-        await userRef.set({ googleLinked: true, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+        updates.googleLinked = true;
       }
-      return data;
+      if (user.phoneNumber && (!data.phoneNumber || !data.phoneVerified)) {
+        updates.phoneNumber = user.phoneNumber;
+        updates.phoneVerified = true;
+      }
+      if (Object.keys(updates).length > 0) {
+        updates.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
+        await userRef.set(updates, { merge: true });
+      }
+      return Object.assign({}, data, updates);
     }
   } catch (err) {
     console.warn("Could not sync user profile:", err);
@@ -60,31 +76,638 @@ window.signInWithGoogle = function() {
   });
 };
 
+/* ============================================================
+   Firebase Phone Verification Engine (SMS Code Confirmation)
+   ============================================================ */
+let appRecaptchaVerifier = null;
+let currentPhoneConfirmation = null;
+
+function ensureRecaptchaContainer(containerId = "recaptcha-container") {
+  let el = document.getElementById(containerId);
+  if (!el) {
+    el = document.createElement("div");
+    el.id = containerId;
+    document.body.appendChild(el);
+  }
+  return el;
+}
+
+function getRecaptchaVerifier(containerId = "recaptcha-container") {
+  ensureRecaptchaContainer(containerId);
+  if (appRecaptchaVerifier) return appRecaptchaVerifier;
+
+  appRecaptchaVerifier = new firebase.auth.RecaptchaVerifier(containerId, {
+    size: "invisible",
+    callback: () => {
+      // reCAPTCHA solved automatically
+    },
+    "expired-callback": () => {
+      if (appRecaptchaVerifier && typeof appRecaptchaVerifier.clear === "function") {
+        try { appRecaptchaVerifier.clear(); } catch(e) {}
+      }
+      appRecaptchaVerifier = null;
+    }
+  });
+  return appRecaptchaVerifier;
+}
+
+function formatE164Phone(rawPhone) {
+  const clean = String(rawPhone || "").replace(/[\s\-\(\)]/g, "");
+  if (clean.startsWith("+")) return clean;
+  if (/^\d{10}$/.test(clean)) {
+    return "+977" + clean; // Default country code for Nepal
+  }
+  return "+" + clean;
+}
+
+async function sendPhoneVerificationCode(rawPhone, containerId = "recaptcha-container") {
+  const formatted = formatE164Phone(rawPhone);
+  if (!/^\+\d{10,15}$/.test(formatted)) {
+    throw new Error("Please enter a valid mobile number (e.g. 98XXXXXXXX).");
+  }
+
+  const verifier = getRecaptchaVerifier(containerId);
+  try {
+    const confirmationResult = await auth.signInWithPhoneNumber(formatted, verifier);
+    currentPhoneConfirmation = confirmationResult;
+    window.phoneConfirmationResult = confirmationResult;
+    return { success: true, formattedPhone: formatted };
+  } catch (err) {
+    if (appRecaptchaVerifier && typeof appRecaptchaVerifier.clear === "function") {
+      try { appRecaptchaVerifier.clear(); } catch(e) {}
+    }
+    appRecaptchaVerifier = null;
+
+    if (err.code === "auth/operation-not-allowed" || err.code === "auth/admin-restricted-operation") {
+      throw new Error("Phone authentication is not enabled in Firebase Console. (Please enable Phone sign-in under Authentication > Sign-in method, or add test phone numbers).");
+    }
+    if (err.code === "auth/quota-exceeded" || err.code === "auth/too-many-requests") {
+      throw new Error("SMS quota exceeded. Please try again later or contact support.");
+    }
+    throw err;
+  }
+}
+window.sendPhoneVerificationCode = sendPhoneVerificationCode;
+
+async function confirmPhoneVerificationCode(code, targetPhone) {
+  const confirmation = currentPhoneConfirmation || window.phoneConfirmationResult;
+  if (!confirmation) {
+    throw new Error("No pending verification found. Please request a verification code first.");
+  }
+  const cleanCode = String(code || "").trim();
+  if (!/^\d{6}$/.test(cleanCode)) {
+    throw new Error("Please enter a valid 6-digit verification code.");
+  }
+
+  const result = await confirmation.confirm(cleanCode);
+
+  const user = auth.currentUser;
+  if (user) {
+    const formatted = formatE164Phone(targetPhone);
+    await db.collection("users").doc(user.uid).set({
+      phoneNumber: formatted,
+      phoneVerified: true,
+      phoneVerifiedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+  }
+  return result;
+}
+window.confirmPhoneVerificationCode = confirmPhoneVerificationCode;
+
+/* ============================================================
+   Stand-alone Phone Verification Modal
+   ============================================================ */
+let phoneModalEl = null;
+
+function ensurePhoneModal() {
+  if (phoneModalEl && document.body.contains(phoneModalEl)) return phoneModalEl;
+
+  const modal = document.createElement("div");
+  modal.className = "modal site-auth-modal";
+  modal.id = "phoneVerifyModal";
+  modal.hidden = true;
+  modal.setAttribute("role", "dialog");
+  modal.setAttribute("aria-modal", "true");
+
+  modal.innerHTML = `
+    <div class="modal-content">
+      <button type="button" class="modal-close" id="phoneModalClose" aria-label="Close dialog">&times;</button>
+      <div class="site-auth-header">
+        <div style="width:42px; height:42px; border-radius:50%; background:#f1f5f9; display:inline-flex; align-items:center; justify-content:center; color:#0f172a; margin-bottom:12px;">
+          ${PHONE_ICON_SVG}
+        </div>
+        <h3 id="phoneModalTitle">Verify Phone Number</h3>
+        <p id="phoneModalSubtitle">We will send a 6-digit verification code via SMS to verify your mobile number.</p>
+      </div>
+
+      <!-- Step 1: Input Phone Number -->
+      <div id="phoneStepInput">
+        <div style="margin-bottom:14px;">
+          <label style="display:block; font-size:0.82rem; font-weight:600; color:#334155; margin-bottom:6px;">Mobile Number</label>
+          <div class="phone-input-group">
+            <span class="phone-country-code">+977</span>
+            <input type="tel" id="phoneModalInput" placeholder="98XXXXXXXX" maxlength="10" autocomplete="tel-national" />
+          </div>
+          <small style="color:#64748b; font-size:0.75rem; display:block; margin-top:4px;">10-digit mobile number for Nepal</small>
+        </div>
+        <button type="button" class="site-auth-submit-btn" id="phoneModalSendBtn">Send Verification Code</button>
+      </div>
+
+      <!-- Step 2: Input Verification Code (Hidden initially) -->
+      <div id="phoneStepCode" style="display:none;">
+        <div class="site-auth-alert info" id="phoneSentAlert" style="margin-bottom:14px;">
+          <span>Verification code sent to <strong id="phoneSentTarget"></strong></span>
+        </div>
+        <div style="margin-bottom:14px;">
+          <label style="display:block; font-size:0.82rem; font-weight:600; color:#334155; margin-bottom:6px;">6-Digit Verification Code</label>
+          <input type="text" id="phoneModalCodeInput" placeholder="123456" maxlength="6" style="width:100%; text-align:center; font-size:1.2rem; letter-spacing:0.25em; font-weight:700; padding:10px;" autocomplete="one-time-code" />
+        </div>
+        <button type="button" class="site-auth-submit-btn" id="phoneModalConfirmBtn">Verify Code</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; font-size:0.8rem;">
+          <a href="#" id="phoneModalChangeLink" style="color:#2563eb; text-decoration:none; font-weight:600;">Change number</a>
+          <a href="#" id="phoneModalResendLink" style="color:#64748b; text-decoration:none;">Resend code</a>
+        </div>
+      </div>
+
+      <div class="site-auth-alert error" id="phoneModalError" style="display:none; margin-top:12px;"></div>
+      <div class="site-auth-alert success" id="phoneModalSuccess" style="display:none; margin-top:12px;"></div>
+      <div id="phoneModalRecaptcha"></div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+  phoneModalEl = modal;
+
+  const closeBtn      = modal.querySelector("#phoneModalClose");
+  const phoneInput    = modal.querySelector("#phoneModalInput");
+  const sendBtn       = modal.querySelector("#phoneModalSendBtn");
+  const stepInput     = modal.querySelector("#phoneStepInput");
+  const stepCode      = modal.querySelector("#phoneStepCode");
+  const sentTarget    = modal.querySelector("#phoneSentTarget");
+  const codeInput     = modal.querySelector("#phoneModalCodeInput");
+  const confirmBtn    = modal.querySelector("#phoneModalConfirmBtn");
+  const changeLink    = modal.querySelector("#phoneModalChangeLink");
+  const resendLink    = modal.querySelector("#phoneModalResendLink");
+  const errorAlert    = modal.querySelector("#phoneModalError");
+  const successAlert  = modal.querySelector("#phoneModalSuccess");
+
+  let currentTargetNumber = "";
+
+  function showError(msg) {
+    errorAlert.textContent = msg;
+    errorAlert.style.display = "flex";
+    successAlert.style.display = "none";
+  }
+
+  function clearAlerts() {
+    errorAlert.textContent = "";
+    errorAlert.style.display = "none";
+    successAlert.textContent = "";
+    successAlert.style.display = "none";
+  }
+
+  closeBtn.addEventListener("click", () => { modal.hidden = true; });
+  modal.addEventListener("click", (e) => { if (e.target === modal) modal.hidden = true; });
+
+  changeLink.addEventListener("click", (e) => {
+    e.preventDefault();
+    stepInput.style.display = "block";
+    stepCode.style.display = "none";
+    clearAlerts();
+  });
+
+  sendBtn.addEventListener("click", async () => {
+    clearAlerts();
+    const val = phoneInput.value.trim();
+    if (!/^\d{10}$/.test(val)) {
+      showError("Please enter a valid 10-digit mobile number.");
+      return;
+    }
+    currentTargetNumber = formatE164Phone(val);
+    sendBtn.disabled = true;
+    sendBtn.textContent = "Sending code…";
+
+    try {
+      await sendPhoneVerificationCode(currentTargetNumber, "phoneModalRecaptcha");
+      stepInput.style.display = "none";
+      stepCode.style.display = "block";
+      sentTarget.textContent = currentTargetNumber;
+      codeInput.value = "";
+      codeInput.focus();
+    } catch (err) {
+      showError(err.message || "Failed to send verification code.");
+    } finally {
+      sendBtn.disabled = false;
+      sendBtn.textContent = "Send Verification Code";
+    }
+  });
+
+  resendLink.addEventListener("click", async (e) => {
+    e.preventDefault();
+    clearAlerts();
+    resendLink.textContent = "Resending…";
+    try {
+      await sendPhoneVerificationCode(currentTargetNumber, "phoneModalRecaptcha");
+      successAlert.textContent = "A new verification code has been sent.";
+      successAlert.style.display = "flex";
+    } catch (err) {
+      showError(err.message || "Could not resend code.");
+    } finally {
+      resendLink.textContent = "Resend code";
+    }
+  });
+
+  confirmBtn.addEventListener("click", async () => {
+    clearAlerts();
+    const code = codeInput.value.trim();
+    if (!/^\d{6}$/.test(code)) {
+      showError("Please enter the 6-digit code sent to your phone.");
+      return;
+    }
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = "Verifying…";
+
+    try {
+      await confirmPhoneVerificationCode(code, currentTargetNumber);
+      successAlert.textContent = "Phone number verified successfully.";
+      successAlert.style.display = "flex";
+      setTimeout(() => {
+        modal.hidden = true;
+        if (typeof modal._onVerified === "function") {
+          modal._onVerified(currentTargetNumber);
+        }
+        document.dispatchEvent(new CustomEvent("phoneverified", { detail: { phoneNumber: currentTargetNumber } }));
+      }, 1000);
+    } catch (err) {
+      showError(err.message || "Invalid verification code. Please check and try again.");
+    } finally {
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = "Verify Code";
+    }
+  });
+
+  return modal;
+}
+
+window.openPhoneVerificationModal = function(options = {}) {
+  const modal = ensurePhoneModal();
+  modal._onVerified = options.onVerified;
+  const phoneInput  = modal.querySelector("#phoneModalInput");
+  const stepInput   = modal.querySelector("#phoneStepInput");
+  const stepCode    = modal.querySelector("#phoneStepCode");
+  const errorAlert  = modal.querySelector("#phoneModalError");
+  const successAlert= modal.querySelector("#phoneModalSuccess");
+
+  stepInput.style.display = "block";
+  stepCode.style.display = "none";
+  errorAlert.style.display = "none";
+  successAlert.style.display = "none";
+
+  if (options.initialPhone) {
+    phoneInput.value = options.initialPhone.replace("+977", "").trim();
+  }
+  modal.hidden = false;
+};
+
+/* ============================================================
+   Professional Site Authentication Modal (Sign In / Sign Up)
+   ============================================================ */
+let siteAuthModalEl = null;
+
+function ensureSiteAuthModal() {
+  if (siteAuthModalEl && document.body.contains(siteAuthModalEl)) return siteAuthModalEl;
+
+  const modal = document.createElement("div");
+  modal.className = "modal site-auth-modal";
+  modal.id = "siteAuthModal";
+  modal.hidden = true;
+  modal.setAttribute("role", "dialog");
+  modal.setAttribute("aria-modal", "true");
+
+  modal.innerHTML = `
+    <div class="modal-content">
+      <button type="button" class="modal-close" id="siteAuthClose" aria-label="Close dialog">&times;</button>
+      
+      <div class="site-auth-header">
+        <h3 id="siteAuthTitle">Welcome Back</h3>
+        <p id="siteAuthSubtitle">Sign in to access your quizzes, track your scores, and manage your account.</p>
+      </div>
+
+      <div class="site-auth-tabs" role="tablist">
+        <button type="button" class="site-auth-tab active" id="siteAuthTabSignin" role="tab" aria-selected="true">Sign In</button>
+        <button type="button" class="site-auth-tab" id="siteAuthTabSignup" role="tab" aria-selected="false">Create Account</button>
+      </div>
+
+      <!-- Quick Google Access -->
+      <button type="button" class="site-auth-google-btn" id="siteAuthGoogleBtn">
+        ${GOOGLE_ICON_SVG} <span>Continue with Google</span>
+      </button>
+
+      <div class="site-auth-divider">
+        <span>or continue with email</span>
+      </div>
+
+      <!-- Authentication Form -->
+      <form class="site-auth-form" id="siteAuthMainForm">
+        <!-- Name field for Sign Up -->
+        <div id="siteAuthNameGroup" style="display:none;">
+          <label>
+            Full Name
+            <input type="text" id="siteAuthNameInput" placeholder="John Doe" autocomplete="name" />
+          </label>
+        </div>
+
+        <div>
+          <label>
+            Email Address
+            <input type="email" id="siteAuthEmailInput" placeholder="you@example.com" required autocomplete="email" />
+          </label>
+        </div>
+
+        <div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+            <label style="margin:0;">Password</label>
+            <a href="#" class="site-auth-forgot-link" id="siteAuthForgotLink">Forgot password?</a>
+          </div>
+          <input type="password" id="siteAuthPasswordInput" placeholder="At least 6 characters" required minlength="6" autocomplete="current-password" />
+        </div>
+
+        <!-- Phone Number section for Sign Up -->
+        <div id="siteAuthPhoneGroup" style="display:none;">
+          <label style="margin-bottom:5px;">
+            Mobile Number (Verification Required)
+          </label>
+          <div class="phone-input-group">
+            <span class="phone-country-code">+977</span>
+            <input type="tel" id="siteAuthPhoneInput" placeholder="98XXXXXXXX" maxlength="10" autocomplete="tel-national" />
+          </div>
+          <small style="color:#64748b; font-size:0.75rem; display:block; margin-top:3px;">
+            A verification code will be sent to confirm your identity for tournament prizes & payments.
+          </small>
+        </div>
+
+        <button type="submit" class="site-auth-submit-btn" id="siteAuthSubmitBtn">Sign In</button>
+      </form>
+
+      <div class="site-auth-alert error" id="siteAuthAlertError" style="display:none; margin-top:14px;"></div>
+      <div class="site-auth-alert success" id="siteAuthAlertSuccess" style="display:none; margin-top:14px;"></div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+  siteAuthModalEl = modal;
+
+  const closeBtn      = modal.querySelector("#siteAuthClose");
+  const tabSignin     = modal.querySelector("#siteAuthTabSignin");
+  const tabSignup     = modal.querySelector("#siteAuthTabSignup");
+  const titleEl       = modal.querySelector("#siteAuthTitle");
+  const subtitleEl    = modal.querySelector("#siteAuthSubtitle");
+  const googleBtn     = modal.querySelector("#siteAuthGoogleBtn");
+  const form          = modal.querySelector("#siteAuthMainForm");
+  const nameGroup     = modal.querySelector("#siteAuthNameGroup");
+  const nameInput     = modal.querySelector("#siteAuthNameInput");
+  const emailInput    = modal.querySelector("#siteAuthEmailInput");
+  const passwordInput = modal.querySelector("#siteAuthPasswordInput");
+  const phoneGroup    = modal.querySelector("#siteAuthPhoneGroup");
+  const phoneInput    = modal.querySelector("#siteAuthPhoneInput");
+  const forgotLink    = modal.querySelector("#siteAuthForgotLink");
+  const submitBtn     = modal.querySelector("#siteAuthSubmitBtn");
+  const alertError    = modal.querySelector("#siteAuthAlertError");
+  const alertSuccess  = modal.querySelector("#siteAuthAlertSuccess");
+
+  let isSignupMode = false;
+
+  function clearAlerts() {
+    alertError.textContent = "";
+    alertError.style.display = "none";
+    alertSuccess.textContent = "";
+    alertSuccess.style.display = "none";
+  }
+
+  function setMode(signup) {
+    isSignupMode = signup;
+    clearAlerts();
+
+    tabSignin.classList.toggle("active", !signup);
+    tabSignin.setAttribute("aria-selected", !signup);
+    tabSignup.classList.toggle("active", signup);
+    tabSignup.setAttribute("aria-selected", signup);
+
+    nameGroup.style.display = signup ? "block" : "none";
+    nameInput.required = signup;
+    phoneGroup.style.display = signup ? "block" : "none";
+    phoneInput.required = signup;
+
+    forgotLink.style.display = signup ? "none" : "block";
+    passwordInput.autocomplete = signup ? "new-password" : "current-password";
+
+    if (signup) {
+      titleEl.textContent = "Create Your Account";
+      subtitleEl.textContent = "Sign up to participate in weekly tournaments, access premium quizzes, and save your progress.";
+      submitBtn.textContent = "Create Account";
+    } else {
+      titleEl.textContent = "Welcome Back";
+      subtitleEl.textContent = "Sign in to access your quizzes, track your scores, and manage your account.";
+      submitBtn.textContent = "Sign In";
+    }
+  }
+
+  tabSignin.addEventListener("click", () => setMode(false));
+  tabSignup.addEventListener("click", () => setMode(true));
+
+  closeBtn.addEventListener("click", () => { modal.hidden = true; });
+  modal.addEventListener("click", (e) => { if (e.target === modal) modal.hidden = true; });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !modal.hidden) modal.hidden = true;
+  });
+
+  googleBtn.addEventListener("click", async () => {
+    clearAlerts();
+    googleBtn.disabled = true;
+    try {
+      await window.signInWithGoogle();
+      modal.hidden = true;
+      if (typeof modal._onSuccess === "function") modal._onSuccess();
+    } catch (err) {
+      if (err.code !== "auth/popup-closed-by-user") {
+        alertError.textContent = err.message || "Failed to sign in with Google.";
+        alertError.style.display = "flex";
+      }
+    } finally {
+      googleBtn.disabled = false;
+    }
+  });
+
+  forgotLink.addEventListener("click", async (e) => {
+    e.preventDefault();
+    clearAlerts();
+    const email = emailInput.value.trim();
+    if (!email) {
+      alertError.textContent = "Please enter your email address above to receive a password reset link.";
+      alertError.style.display = "flex";
+      emailInput.focus();
+      return;
+    }
+    try {
+      await auth.sendPasswordResetEmail(email);
+      alertSuccess.textContent = `Password reset link sent to ${email}. Please check your inbox.`;
+      alertSuccess.style.display = "flex";
+    } catch (err) {
+      alertError.textContent = err.message || "Could not send password reset email.";
+      alertError.style.display = "flex";
+    }
+  });
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    clearAlerts();
+
+    const email    = emailInput.value.trim();
+    const password = passwordInput.value;
+    const name     = nameInput.value.trim();
+    const phoneVal = phoneInput.value.trim();
+
+    if (isSignupMode && phoneVal && !/^\d{10}$/.test(phoneVal)) {
+      alertError.textContent = "Please enter a valid 10-digit mobile number.";
+      alertError.style.display = "flex";
+      phoneInput.focus();
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Please wait…";
+
+    try {
+      if (isSignupMode) {
+        const cred = await auth.createUserWithEmailAndPassword(email, password);
+        if (name) {
+          await cred.user.updateProfile({ displayName: name });
+        }
+        await initUserProfile(cred.user);
+
+        if (phoneVal) {
+          modal.hidden = true;
+          window.openPhoneVerificationModal({
+            initialPhone: phoneVal,
+            onVerified: () => {
+              if (typeof modal._onSuccess === "function") modal._onSuccess();
+            }
+          });
+          return;
+        }
+      } else {
+        const res = await auth.signInWithEmailAndPassword(email, password);
+        if (res.user) await initUserProfile(res.user);
+      }
+
+      modal.hidden = true;
+      if (typeof modal._onSuccess === "function") modal._onSuccess();
+    } catch (err) {
+      let msg = err.message;
+      if (err.code === "auth/invalid-credential" || err.code === "auth/wrong-password") {
+        msg = "Incorrect email address or password.";
+      } else if (err.code === "auth/user-not-found") {
+        msg = "No account found with this email address.";
+      } else if (err.code === "auth/email-already-in-use") {
+        msg = "An account with this email already exists. Please sign in instead.";
+      } else if (err.code === "auth/weak-password") {
+        msg = "Password must be at least 6 characters.";
+      }
+      alertError.textContent = msg;
+      alertError.style.display = "flex";
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = isSignupMode ? "Create Account" : "Sign In";
+    }
+  });
+
+  modal._setMode = setMode;
+  return modal;
+}
+
+window.openAuthModal = function(options = {}) {
+  const modal = ensureSiteAuthModal();
+  modal._onSuccess = options.onSuccess;
+  modal._setMode(options.mode === "signup");
+  modal.hidden = false;
+};
+
+/* ============================================================
+   Account Header Dropdown Renderer
+   ============================================================ */
 function renderAuthDropdown(dropdown, user) {
   if (user) {
-    const displayName = user.displayName || user.email;
+    const displayName = user.displayName || user.email.split("@")[0] || "Learner";
+    const initial = (displayName[0] || "U").toUpperCase();
+
     dropdown.innerHTML = `
-      <p class="auth-email">${escapeHtmlAuth(displayName)}</p>
-      <div class="auth-credits-badge" style="background:#fef3c7; color:#92400e; font-weight:700; padding:6px 10px; border-radius:6px; margin-bottom:8px; font-size:0.85rem; text-align:center;">
-        🪙 Balance: <span class="user-credits-val">2</span> Credits
+      <div class="auth-dropdown-user-header">
+        <div class="auth-user-avatar">${escapeHtmlAuth(initial)}</div>
+        <div class="auth-user-details">
+          <div class="auth-user-name">${escapeHtmlAuth(displayName)}</div>
+          <div class="auth-user-email">${escapeHtmlAuth(user.email)}</div>
+          <div id="authDropdownPhoneStatus" style="margin-top:2px;"></div>
+        </div>
       </div>
-      <button class="btn btn-outline btn-sm auth-name-btn" style="width:100%;text-align:center;display:block;margin-bottom:8px">Change Name</button>
-      <a href="live-quiz.html" class="btn btn-outline btn-sm" style="width:100%;text-align:center;display:block;margin-bottom:8px">Premium Arena 🏆</a>
-      <button class="btn btn-outline btn-sm auth-signout-btn" style="width:100%">Logout</button>
+
+      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:8px 10px; margin-bottom:10px; text-align:center;">
+        <span style="font-size:0.75rem; color:#64748b; text-transform:uppercase; font-weight:700; letter-spacing:0.04em;">Credits</span>
+        <div style="font-size:1.15rem; font-weight:800; color:#0f172a;">
+          <span class="user-credits-val">2</span>
+        </div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:10px;">
+        <a href="live-quiz.html" class="btn btn-outline btn-sm" style="width:100%; text-align:center; display:block; font-size:0.84rem; font-weight:600;">
+          Premium Arena
+        </a>
+        <button type="button" class="btn btn-outline btn-sm auth-verify-phone-btn" style="display:none; width:100%; text-align:center; font-size:0.82rem;">
+          Verify Phone Number
+        </button>
+        <button type="button" class="btn btn-outline btn-sm auth-name-btn" style="width:100%; text-align:center; font-size:0.82rem;">
+          Edit Display Name
+        </button>
+      </div>
+
+      <button type="button" class="btn btn-outline btn-sm auth-signout-btn" style="width:100%; color:#dc2626; border-color:#fecaca; font-size:0.82rem;">
+        Sign Out
+      </button>
     `;
 
-    // Realtime listen to user credits
+    const phoneStatusEl  = dropdown.querySelector("#authDropdownPhoneStatus");
+    const verifyPhoneBtn = dropdown.querySelector(".auth-verify-phone-btn");
+
     if (db) {
       db.collection("users").doc(user.uid).onSnapshot(s => {
-        if (s.exists && s.data().credits != null) {
-          const el = dropdown.querySelector(".user-credits-val");
-          if (el) el.textContent = s.data().credits;
+        if (s.exists) {
+          const d = s.data();
+          const creditEl = dropdown.querySelector(".user-credits-val");
+          if (creditEl && d.credits != null) creditEl.textContent = d.credits;
+
+          if (d.phoneVerified && d.phoneNumber) {
+            if (phoneStatusEl) {
+              phoneStatusEl.innerHTML = `<span class="auth-status-pill verified">${CHECK_ICON_SVG} Verified</span>`;
+            }
+            if (verifyPhoneBtn) verifyPhoneBtn.style.display = "none";
+          } else {
+            if (phoneStatusEl) {
+              phoneStatusEl.innerHTML = `<span class="auth-status-pill unverified">Unverified Phone</span>`;
+            }
+            if (verifyPhoneBtn) {
+              verifyPhoneBtn.style.display = "block";
+              verifyPhoneBtn.onclick = () => {
+                dropdown.hidden = true;
+                window.openPhoneVerificationModal({ initialPhone: d.phoneNumber || "" });
+              };
+            }
+          }
         }
       });
     }
 
     dropdown.querySelector(".auth-name-btn").addEventListener("click", () => {
-      const newName = prompt("Enter your display name (this will appear on the leaderboard):", user.displayName || "");
+      const newName = prompt("Enter your display name for the leaderboard:", user.displayName || "");
       if (newName && newName.trim() !== "") {
         user.updateProfile({ displayName: newName.trim() }).then(() => {
           auth.updateCurrentUser(user);
@@ -92,73 +715,38 @@ function renderAuthDropdown(dropdown, user) {
         });
       }
     });
+
     dropdown.querySelector(".auth-signout-btn").addEventListener("click", () => {
       auth.signOut();
       dropdown.hidden = true;
     });
   } else {
     dropdown.innerHTML = `
-      <button type="button" class="btn btn-outline btn-sm auth-google-btn" style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:10px; font-weight:600;">
-        ${GOOGLE_ICON_SVG} Continue with Google
+      <button type="button" class="site-auth-google-btn" style="margin-bottom:10px; font-size:0.86rem; padding:8px 12px;">
+        ${GOOGLE_ICON_SVG} <span>Continue with Google</span>
       </button>
-      <div style="display:flex; align-items:center; gap:8px; margin:8px 0; color:var(--mist); font-size:0.75rem; text-transform:uppercase;">
-        <span style="flex:1; border-top:1px solid var(--border)"></span>
-        <span>or</span>
-        <span style="flex:1; border-top:1px solid var(--border)"></span>
+
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <button type="button" class="btn btn-primary btn-sm auth-launch-signin" style="width:100%; font-size:0.86rem; font-weight:600;">
+          Sign In
+        </button>
+        <button type="button" class="btn btn-outline btn-sm auth-launch-signup" style="width:100%; font-size:0.86rem; font-weight:600;">
+          Create Free Account
+        </button>
       </div>
-      <form class="auth-form">
-        <input type="text" class="auth-name-input" placeholder="Display Name" style="display:none; width:100%; margin-bottom:8px; padding:8px; border:1px solid var(--border); border-radius:4px" />
-        <input type="email" class="auth-email-input" placeholder="Email" required autocomplete="email" style="width:100%; margin-bottom:8px; padding:8px; border:1px solid var(--border); border-radius:4px" />
-        <input type="password" class="auth-password-input" placeholder="Password" required minlength="6" autocomplete="current-password" style="width:100%; margin-bottom:8px; padding:8px; border:1px solid var(--border); border-radius:4px" />
-        <button type="submit" class="btn btn-primary btn-sm auth-submit-btn" style="width:100%">Login</button>
-        <p class="auth-alt"><a href="#" class="auth-toggle-mode">Need an account? Sign up</a></p>
-        <p class="auth-status"></p>
-      </form>
     `;
 
-    dropdown.querySelector(".auth-google-btn").addEventListener("click", () => {
-      window.signInWithGoogle()
-        .then(() => (dropdown.hidden = true))
-        .catch(err => {
-          const status = dropdown.querySelector(".auth-status");
-          if (status) status.textContent = err.message;
-        });
+    dropdown.querySelector(".site-auth-google-btn").addEventListener("click", () => {
+      dropdown.hidden = true;
+      window.signInWithGoogle();
     });
-
-    let isSignup = false;
-    const submitBtn = dropdown.querySelector(".auth-submit-btn");
-    const toggleLink = dropdown.querySelector(".auth-toggle-mode");
-    const nameInput = dropdown.querySelector(".auth-name-input");
-    toggleLink.addEventListener("click", (e) => {
-      e.preventDefault();
-      isSignup = !isSignup;
-      nameInput.style.display = isSignup ? "block" : "none";
-      nameInput.required = isSignup;
-      submitBtn.textContent = isSignup ? "Sign Up" : "Login";
-      toggleLink.textContent = isSignup ? "Have an account? Login" : "Need an account? Sign up";
+    dropdown.querySelector(".auth-launch-signin").addEventListener("click", () => {
+      dropdown.hidden = true;
+      window.openAuthModal({ mode: "signin" });
     });
-    dropdown.querySelector(".auth-form").addEventListener("submit", (e) => {
-      e.preventDefault();
-      const email = dropdown.querySelector(".auth-email-input").value;
-      const password = dropdown.querySelector(".auth-password-input").value;
-      const name = nameInput.value;
-      const status = dropdown.querySelector(".auth-status");
-      
-      const action = isSignup
-        ? auth.createUserWithEmailAndPassword(email, password).then(cred => {
-            if (name.trim() !== "") {
-              return cred.user.updateProfile({ displayName: name.trim() }).then(() => cred);
-            }
-            return cred;
-          })
-        : auth.signInWithEmailAndPassword(email, password);
-        
-      action
-        .then(async res => {
-          if (res.user) await initUserProfile(res.user);
-          dropdown.hidden = true;
-        })
-        .catch((err) => (status.textContent = err.message));
+    dropdown.querySelector(".auth-launch-signup").addEventListener("click", () => {
+      dropdown.hidden = true;
+      window.openAuthModal({ mode: "signup" });
     });
   }
 }
@@ -170,10 +758,20 @@ function setupAuthWidgets() {
     const btn = widget.querySelector(".auth-icon-btn");
     const dropdown = widget.querySelector(".auth-dropdown");
     if (!btn || !dropdown) return;
+
     btn.addEventListener("click", (e) => {
       e.stopPropagation();
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        window.openAuthModal({ mode: "signin" });
+        return;
+      }
+
       widgets.forEach((w) => {
-        if (w !== widget) w.querySelector(".auth-dropdown").hidden = true;
+        if (w !== widget) {
+          const d = w.querySelector(".auth-dropdown");
+          if (d) d.hidden = true;
+        }
       });
       dropdown.hidden = !dropdown.hidden;
     });
@@ -181,7 +779,10 @@ function setupAuthWidgets() {
 
   document.addEventListener("click", (e) => {
     if (!e.target.closest(".auth-widget")) {
-      widgets.forEach((w) => (w.querySelector(".auth-dropdown").hidden = true));
+      widgets.forEach((w) => {
+        const d = w.querySelector(".auth-dropdown");
+        if (d) d.hidden = true;
+      });
     }
   });
 
@@ -190,9 +791,11 @@ function setupAuthWidgets() {
       const btn = widget.querySelector(".auth-icon-btn");
       const dropdown = widget.querySelector(".auth-dropdown");
       if (!btn || !dropdown) return;
+
       btn.textContent = "";
       if (user) {
-        btn.textContent = user.email[0].toUpperCase();
+        const initial = (user.displayName ? user.displayName[0] : user.email[0]).toUpperCase();
+        btn.textContent = initial;
       } else {
         btn.innerHTML = ACCOUNT_ICON_SVG;
       }
@@ -210,16 +813,15 @@ setupAuthWidgets();
 
 function escapeHtmlAuth(str) {
   const div = document.createElement("div");
-  div.textContent = str;
+  div.textContent = str || "";
   return div.innerHTML;
 }
 
-/* ============================================
+/* ============================================================
    MCQ Auth Prompt Modal
    Prompts unauthenticated users when clicking MCQ
    with optional Sign Up / Log In or Continue without login.
-   ============================================ */
-
+   ============================================================ */
 function isMcqGuestMode() {
   try {
     return sessionStorage.getItem("mcq_guest_mode") === "true";
@@ -270,6 +872,14 @@ function ensureMcqModal() {
         <button type="button" class="mcq-modal-tab" id="mcqTabSignup" role="tab" aria-selected="false">Sign Up</button>
       </div>
 
+      <button type="button" class="site-auth-google-btn" id="mcqGoogleBtn" style="margin-bottom:14px;">
+        ${GOOGLE_ICON_SVG} <span>Continue with Google</span>
+      </button>
+
+      <div class="mcq-modal-divider">
+        <span>or</span>
+      </div>
+
       <form class="mcq-modal-form" id="mcqAuthForm">
         <div class="mcq-name-group" id="mcqNameGroup" style="display: none; margin-bottom: 12px;">
           <label>
@@ -309,7 +919,6 @@ function ensureMcqModal() {
   document.body.appendChild(modal);
   mcqModalEl = modal;
 
-  // Setup tab toggles
   const tabLogin = modal.querySelector("#mcqTabLogin");
   const tabSignup = modal.querySelector("#mcqTabSignup");
   const nameGroup = modal.querySelector("#mcqNameGroup");
@@ -319,6 +928,7 @@ function ensureMcqModal() {
   const statusEl = modal.querySelector("#mcqModalStatus");
   const closeBtn = modal.querySelector("#mcqModalClose");
   const guestBtn = modal.querySelector("#mcqGuestBtn");
+  const googleBtn = modal.querySelector("#mcqGoogleBtn");
 
   let isSignupMode = false;
 
@@ -339,19 +949,21 @@ function ensureMcqModal() {
   tabLogin.addEventListener("click", () => setMode(false));
   tabSignup.addEventListener("click", () => setMode(true));
 
-  closeBtn.addEventListener("click", () => {
-    modal.hidden = true;
-  });
-
-  modal.addEventListener("click", (e) => {
-    if (e.target === modal) {
-      modal.hidden = true;
-    }
-  });
-
+  closeBtn.addEventListener("click", () => { modal.hidden = true; });
+  modal.addEventListener("click", (e) => { if (e.target === modal) modal.hidden = true; });
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && !modal.hidden) {
+    if (e.key === "Escape" && !modal.hidden) modal.hidden = true;
+  });
+
+  googleBtn.addEventListener("click", async () => {
+    try {
+      await window.signInWithGoogle();
       modal.hidden = true;
+      if (typeof modal._onSuccess === "function") modal._onSuccess();
+    } catch (err) {
+      if (err.code !== "auth/popup-closed-by-user") {
+        statusEl.textContent = err.message;
+      }
     }
   });
 
@@ -363,6 +975,7 @@ function ensureMcqModal() {
 
 window.openMcqAuthModal = function (options = {}) {
   const modal = ensureMcqModal();
+  modal._onSuccess = options.onSuccess;
   const titleEl = modal.querySelector("#mcqModalTitle");
   const subtitleEl = modal.querySelector("#mcqModalSubtitle");
   const guestBtn = modal.querySelector("#mcqGuestBtn");
@@ -383,14 +996,12 @@ window.openMcqAuthModal = function (options = {}) {
   submitBtn.disabled = false;
   modal._setMode(false);
 
-  // Clear previous event listeners by cloning form and guestBtn
   const newForm = form.cloneNode(true);
   form.parentNode.replaceChild(newForm, form);
 
   const newGuestBtn = guestBtn.cloneNode(true);
   guestBtn.parentNode.replaceChild(newGuestBtn, guestBtn);
 
-  // Re-fetch cloned references
   const freshEmail = newForm.querySelector("#mcqEmailInput");
   const freshPassword = newForm.querySelector("#mcqPasswordInput");
   const freshName = newForm.querySelector("#mcqNameInput");
@@ -431,7 +1042,8 @@ window.openMcqAuthModal = function (options = {}) {
       : auth.signInWithEmailAndPassword(email, password);
 
     authPromise
-      .then(() => {
+      .then(async (res) => {
+        if (res.user) await initUserProfile(res.user);
         modal.hidden = true;
         if (typeof options.onSuccess === "function") {
           options.onSuccess();
@@ -458,13 +1070,9 @@ document.addEventListener("click", (e) => {
   const link = e.target.closest('a[href*="mcq.html"], a[href="mcq.html"]');
   if (!link) return;
 
-  // If already authenticated, allow normal navigation
   if (auth && auth.currentUser) return;
-
-  // If guest mode was already selected in this session, allow normal navigation
   if (isMcqGuestMode()) return;
 
-  // If already on mcq.html and clicking the active link
   const currentPath = window.location.pathname;
   if (currentPath.endsWith("mcq.html") || currentPath.includes("/mcq.html")) {
     if (link.classList.contains("active") || link.getAttribute("href") === "../mcq/mcq.html") {
@@ -474,7 +1082,6 @@ document.addEventListener("click", (e) => {
 
   e.preventDefault();
 
-  // Close mobile drawer if open
   const navDrawer = document.getElementById("navDrawer");
   const drawerOverlay = document.getElementById("drawerOverlay");
   if (navDrawer) navDrawer.classList.remove("open");
@@ -493,4 +1100,3 @@ document.addEventListener("click", (e) => {
     }
   });
 });
-

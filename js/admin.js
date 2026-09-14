@@ -882,8 +882,9 @@ function initPremiumQuizAdmin() {
   const settingsStatus  = document.getElementById("premiumSettingsStatus");
 
   // Payment Settings DOM
-  const khaltiKeyInput    = document.getElementById("khaltiPublicKeyInput");
+  const khaltiKeyInput    = document.getElementById("khaltiSecretKeyInput");
   const esewaCodeInput    = document.getElementById("esewaMerchantCodeInput");
+  const esewaKeyInput     = document.getElementById("esewaSecretKeyInput");
   const nprRateInput      = document.getElementById("nprPerCreditInput");
   const savePaymentBtn    = document.getElementById("savePaymentSettingsBtn");
   const paymentStatus     = document.getElementById("paymentSettingsStatus");
@@ -944,24 +945,27 @@ function initPremiumQuizAdmin() {
     db.collection("siteSettings").doc("payment").get().then(snap => {
       if (snap.exists) {
         const d = snap.data();
-        if (khaltiKeyInput && d.khaltiPublicKey) khaltiKeyInput.value = d.khaltiPublicKey;
+        if (khaltiKeyInput && d.khaltiSecretKey)   khaltiKeyInput.value = d.khaltiSecretKey;
         if (esewaCodeInput && d.esewaMerchantCode) esewaCodeInput.value = d.esewaMerchantCode;
-        if (nprRateInput && d.nprPerCredit) nprRateInput.value = d.nprPerCredit;
+        if (esewaKeyInput  && d.esewaSecretKey)    esewaKeyInput.value  = d.esewaSecretKey;
+        if (nprRateInput   && d.nprPerCredit)      nprRateInput.value   = d.nprPerCredit;
       }
     }).catch(() => {});
 
     savePaymentBtn.addEventListener("click", async () => {
       const khaltiKey = khaltiKeyInput ? khaltiKeyInput.value.trim() : "";
       const esewaCode = esewaCodeInput ? esewaCodeInput.value.trim() : "";
+      const esewaKey  = esewaKeyInput  ? esewaKeyInput.value.trim()  : "";
       const nprRate   = nprRateInput ? parseInt(nprRateInput.value, 10) : 10;
 
       try {
         paymentStatus.textContent = "Saving payment settings…";
         await db.collection("siteSettings").doc("payment").set({
-          khaltiPublicKey: khaltiKey || "test_public_key_dc74e0fd69cb46cd8583f30e42f04155",
+          khaltiSecretKey:   khaltiKey || "",
           esewaMerchantCode: esewaCode || "EPAYTEST",
-          nprPerCredit: isNaN(nprRate) ? 10 : nprRate,
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          esewaSecretKey:    esewaKey  || "8gBm/:&EnhH.1/q",
+          nprPerCredit:      isNaN(nprRate) ? 10 : nprRate,
+          updatedAt:         firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true });
         paymentStatus.textContent = "✅ Payment gateway settings saved successfully!";
         paymentStatus.style.color = "#10b981";
@@ -971,6 +975,7 @@ function initPremiumQuizAdmin() {
       }
     });
   }
+
 
   // ---- Auto-generate slug from name ----
   catNameInput.addEventListener("input", () => {

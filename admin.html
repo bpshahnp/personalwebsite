@@ -46,7 +46,7 @@
     <button class="drawer-close" id="drawerClose" aria-label="Close menu">&times;</button>
     <nav class="drawer-nav">
       <a href="index.html">Home</a>
-      <a href="live-quiz.html">Live Quiz 🔴</a>
+      <a href="live-quiz.html">Live Quiz</a>
       <a href="mcq.html">MCQ Hub</a>
       <a href="python.html">Python Hub</a>
       <a href="video.html">Video Hub</a>
@@ -364,17 +364,24 @@
         <div class="admin-form" style="margin-bottom:28px">
           <h3>💳 Payment Gateway Settings (Khalti &amp; eSewa)</h3>
           <p class="quiz-muted">
-            Configure merchant credentials for credit purchases. Learners can buy credits via Khalti or eSewa when they don't have enough credits.
+            Configure merchant credentials for credit purchases. Learners can buy credits via Khalti or eSewa.
+            <strong>⚠️ Keep these keys private — only share with trusted admins.</strong>
           </p>
           <div class="admin-form-grid">
-            <label>Khalti Public Key
-              <input type="text" id="khaltiPublicKeyInput" placeholder="e.g. test_public_key_..." />
+            <label>Khalti Secret Key (live_secret_key)
+              <input type="password" id="khaltiSecretKeyInput" placeholder="e.g. live_secret_key_..." autocomplete="off" />
+              <small class="quiz-muted">Get this from your <a href="https://merchant.khalti.com/" target="_blank">Khalti Merchant Dashboard</a>.</small>
             </label>
-            <label>eSewa Merchant Code / Product Code
+            <label>eSewa Merchant Code (Product Code)
               <input type="text" id="esewaMerchantCodeInput" placeholder="e.g. EPAYTEST" />
+              <small class="quiz-muted">Use <code>EPAYTEST</code> for testing. Get production code from eSewa.</small>
             </label>
           </div>
           <div class="admin-form-grid">
+            <label>eSewa Secret Key (HMAC key)
+              <input type="password" id="esewaSecretKeyInput" placeholder="e.g. 8gBm/:&amp;EnhH.1/q" autocomplete="off" />
+              <small class="quiz-muted">Test key: <code>8gBm/:&EnhH.1/q</code>. Get production key from eSewa merchant portal.</small>
+            </label>
             <label>Price per Credit (NPR)
               <input type="number" id="nprPerCreditInput" value="10" min="1" max="1000" />
             </label>
@@ -384,6 +391,7 @@
           </div>
           <p class="modal-status" id="paymentSettingsStatus"></p>
         </div>
+
 
         <hr style="margin:24px 0; border-color: var(--border, #e5e7eb);" />
 

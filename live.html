@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -11,7 +11,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <script src="https://khalti.s3.amazonaws.com/khalti-checkout-web.2.0.0.js"></script>
+  <!-- CryptoJS for eSewa v2 HMAC-SHA256 signature -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js" crossorigin="anonymous"></script>
 </head>
 <body>
 
@@ -22,13 +23,13 @@
 
       <nav class="main-nav" id="mainNav">
         <a href="index.html">Home</a>
-        <a href="live.html" class="active nav-live-link">Live Quiz <span class="nav-live-dot" aria-hidden="true"></span></a>
+        <a href="live-quiz.html" class="active nav-live-link">Live Quiz <span class="nav-live-dot" aria-hidden="true"></span></a>
         <a href="mcq.html">MCQ Hub</a>
         <a href="python.html">Python Hub</a>
         <a href="video.html">Video Hub</a>
         <a href="leaderboard.html">Leaderboard</a>
         <div class="dropdown">
-          <button class="dropdown-toggle" type="button">See More Options ▾</button>
+          <button class="dropdown-toggle" type="button">See More Options â–¾</button>
           <div class="dropdown-menu">
             <a href="resources.html">Additional Resources</a>
             <a href="contact.html">Contact</a>
@@ -61,13 +62,13 @@
     <button class="drawer-close" id="drawerClose" aria-label="Close menu">&times;</button>
     <nav class="drawer-nav">
       <a href="index.html">Home</a>
-      <a href="live.html" class="active">Live Quiz 🔴</a>
+      <a href="live.html" class="active">Live Quiz</a>
       <a href="mcq.html">MCQ Hub</a>
       <a href="python.html">Python Hub</a>
       <a href="video.html">Video Hub</a>
       <a href="leaderboard.html">Leaderboard</a>
       <div class="dropdown">
-        <button class="dropdown-toggle" type="button">See More Options ▾</button>
+        <button class="dropdown-toggle" type="button">See More Options â–¾</button>
         <div class="dropdown-menu">
           <a href="resources.html">Additional Resources</a>
           <a href="contact.html">Contact</a>
@@ -119,28 +120,36 @@
 
       <div class="live-rules-grid">
         <div class="rule-box">
-          <div class="rule-icon">⏱️</div>
+          <div class="rule-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
           <div>
             <strong>25s per Question</strong>
             <p>A fast-paced countdown. Questions auto-advance on timeout.</p>
           </div>
         </div>
         <div class="rule-box">
-          <div class="rule-icon">⚡</div>
+          <div class="rule-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
           <div>
             <strong>Speed Bonus</strong>
             <p>Earn up to +50 bonus points for answering quickly.</p>
           </div>
         </div>
         <div class="rule-box">
-          <div class="rule-icon">🔄</div>
+          <div class="rule-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          </div>
           <div>
             <strong>Daily Reset</strong>
             <p>A new question set unlocks every 24 hours for 7 days.</p>
           </div>
         </div>
         <div class="rule-box">
-          <div class="rule-icon">🏆</div>
+          <div class="rule-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+          </div>
           <div>
             <strong>Weekly Crown</strong>
             <p>Points accumulate across the 7 days for the weekly championship.</p>
@@ -155,13 +164,15 @@
         <a href="mcq.html" class="btn btn-outline" id="startWarmupBtn" hidden>
           Practice on MCQ Hub &rarr;
         </a>
-        <p class="quiz-muted" id="liveQuizStatusText">Loading today's challenge…</p>
+        <p class="quiz-muted" id="liveQuizStatusText">Loading today's challengeâ€¦</p>
       </div>
 
       <!-- Direct Entry to Premium Arena (using Credits) -->
       <div class="premium-direct-entry-box" style="margin-top:20px; width:100%; border:1px solid #fed7aa; background:linear-gradient(135deg,#fffaf0,#fff7ed); border-radius:14px; padding:16px 20px; display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px;">
         <div style="display:flex; align-items:center; gap:12px;">
-          <div style="font-size:2.2rem; line-height:1;">⭐</div>
+          <div style="width:40px; height:40px; border-radius:10px; background:#ffedd5; display:flex; align-items:center; justify-content:center; color:#ea580c; flex-shrink:0;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
           <div>
             <strong style="font-size:1.05rem; color:#9a3412;">Skip Tournament? Enter Premium Quiz Arena</strong>
             <p style="margin:2px 0 0; font-size:0.85rem; color:#c2410c;">Access Current Affairs, Geography &amp; other exam categories directly using credits (3 credits/quiz). New accounts receive 2 free credits!</p>
@@ -169,7 +180,7 @@
         </div>
         <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
           <div class="user-credits-pill" style="background:#fef3c7; color:#92400e; font-weight:700; padding:7px 14px; border-radius:999px; font-size:0.88rem; border:1px solid #fcd34d; display:inline-flex; align-items:center; gap:6px;">
-            <span>🪙 Balance:</span> <span class="user-credits-val">2</span> Credits
+            <span>Balance:</span> <span class="user-credits-val">2</span> Credits
           </div>
           <button type="button" class="btn btn-primary btn-sm" id="openPremiumArenaBtn" style="background:#ea580c; border-color:#ea580c; color:#fff; font-weight:600; padding:8px 16px;">
             Browse Premium Quizzes &rarr;
@@ -177,12 +188,12 @@
         </div>
       </div>
 
-      <!-- Premium Access Banner — shown only to the current week's tournament winner -->
+      <!-- Premium Access Banner â€” shown only to the current week's tournament winner -->
       <div id="premiumAccessBanner" hidden style="margin-top:20px; padding:18px 20px; border-radius:12px; background:linear-gradient(135deg,#fef3c7,#fffbeb); border:2px solid #f59e0b; text-align:center;">
-        <div style="font-size:1.6rem; margin-bottom:6px;">🏆 You're This Week's Champion!</div>
+        <div style="font-size:1.4rem; font-weight:700; color:#92400e; margin-bottom:6px;">You are this week's champion</div>
         <p style="margin:0 0 12px; font-weight:600; color:#92400e;">You've unlocked <strong>Free Premium Quiz Access</strong> for this week.</p>
-        <button type="button" class="btn btn-primary" id="openPremiumModalBtn" style="background:#f59e0b;border-color:#f59e0b;color:#fff;">
-          ⭐ Open Premium Arena (Free Access)
+        <button type="button" class="btn btn-primary" id="openPremiumModalBtn" style="background:#f59e0b;border-color:#f59e0b;color:#fff; font-weight:600;">
+          Open Premium Arena (Free Access)
         </button>
       </div>
     </div>
@@ -209,7 +220,7 @@
       <!-- Question Text -->
       <div class="live-question-body">
         <span class="mcq-category" id="liveQCategory">General</span>
-        <h3 class="live-q-text" id="liveQText">Loading question…</h3>
+        <h3 class="live-q-text" id="liveQText">Loading questionâ€¦</h3>
       </div>
 
       <!-- Options -->
@@ -227,7 +238,9 @@
     <!-- Stage 3: Results & Celebration Screen -->
     <div class="quiz-card live-card" id="liveResultsCard" hidden>
       <div class="results-celebration">
-        <div class="trophy-badge" id="resultTrophy">🏆</div>
+        <div class="trophy-badge" id="resultTrophy">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+        </div>
         <h2 id="resultHeadline">Day Challenge Complete!</h2>
         <p class="quiz-muted" id="resultSubline">Great effort! Your score has been added to this week's leaderboard.</p>
       </div>
@@ -279,7 +292,7 @@
       <!-- Category badge + question -->
       <div class="live-question-body">
         <span class="mcq-category" id="premiumQCategory" style="background:var(--orange);color:#fff">Premium</span>
-        <h3 class="live-q-text" id="premiumQText">Loading question…</h3>
+        <h3 class="live-q-text" id="premiumQText">Loading questionâ€¦</h3>
       </div>
 
       <!-- Options -->
@@ -295,7 +308,9 @@
     <!-- Stage 5: Premium Quiz Results -->
     <div class="quiz-card live-card" id="premiumResultsCard" hidden>
       <div class="results-celebration">
-        <div class="trophy-badge">🌟</div>
+        <div class="trophy-badge">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+        </div>
         <h2>Premium Quiz Complete!</h2>
         <p class="quiz-muted" id="premiumResultSubline">Great job on the premium challenge!</p>
       </div>
@@ -313,7 +328,7 @@
           <span class="stat-desc">Speed Bonus</span>
         </div>
         <div class="result-stat-box">
-          <span class="stat-big" id="premiumResultCat">—</span>
+          <span class="stat-big" id="premiumResultCat">â€”</span>
           <span class="stat-desc">Category</span>
         </div>
       </div>
@@ -345,7 +360,7 @@
           <span>Points</span>
         </div>
         <div id="liveLeaderboardRows">
-          <p class="updates-loading">Loading live leaderboard…</p>
+          <p class="updates-loading">Loading live leaderboardâ€¦</p>
         </div>
       </div>
     </section>
@@ -365,7 +380,9 @@
       <!-- Modal Header -->
       <div style="padding:22px 28px 16px; border-bottom:1px solid #f1f5f9; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; background:#fafafa;">
         <div style="display:flex; align-items:center; gap:12px;">
-          <div style="font-size:2rem;">⭐</div>
+          <div style="width:38px; height:38px; border-radius:10px; background:#ffedd5; display:flex; align-items:center; justify-content:center; color:#ea580c; flex-shrink:0;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
           <div>
             <h2 style="margin:0; font-size:1.45rem; color:#0f172a;" id="premiumArenaTitle">Premium Quiz Arena</h2>
             <p style="margin:2px 0 0; font-size:0.85rem; color:#64748b;" id="premiumArenaSubtitle">Play exclusive competitive exam categories with credits, or enjoy Free Access as this week's champion!</p>
@@ -374,7 +391,7 @@
 
         <div style="display:flex; align-items:center; gap:10px;">
           <div class="user-credits-pill" style="background:#fef3c7; color:#92400e; font-weight:700; padding:7px 14px; border-radius:999px; font-size:0.88rem; border:1px solid #fcd34d; display:inline-flex; align-items:center; gap:6px;">
-            <span>🪙 Balance:</span> <span class="user-credits-val">2</span> Credits
+            <span>Balance:</span> <span class="user-credits-val">2</span> Credits
           </div>
           <button type="button" class="btn btn-sm btn-primary" id="openBuyCreditsFromArenaBtn" style="background:#f59e0b; border-color:#f59e0b; color:#fff; font-weight:600;">
             + Buy Credits
@@ -390,13 +407,13 @@
         <div id="premiumCategoryCardsGrid" style="
           display:grid; grid-template-columns:repeat(auto-fill, minmax(270px, 1fr)); gap:20px;
         ">
-          <p style="color:#9ca3af; font-size:0.95rem; text-align:center; grid-column:1/-1;">Loading premium categories…</p>
+          <p style="color:#9ca3af; font-size:0.95rem; text-align:center; grid-column:1/-1;">Loading premium categoriesâ€¦</p>
         </div>
       </div>
 
       <!-- Modal Footer Note -->
       <div style="padding:14px 28px; border-top:1px solid #f1f5f9; background:#f8fafc; display:flex; justify-content:space-between; align-items:center; font-size:0.82rem; color:#64748b; flex-wrap:wrap; gap:8px;">
-        <span>💡 Each quiz attempt costs <strong>3 credits</strong>. Default accounts receive 2 free credits.</span>
+        <span>Each quiz attempt costs <strong>3 credits</strong>. Default accounts receive 2 free credits.</span>
         <span>Payment via <strong>Khalti</strong> &amp; <strong>eSewa</strong></span>
       </div>
     </div>
@@ -419,8 +436,10 @@
       ">&times;</button>
 
       <div style="text-align:center; margin-bottom:18px;">
-        <div style="font-size:2.8rem; margin-bottom:4px;">🪙</div>
-        <h2 style="margin:0 0 6px; font-size:1.5rem; color:#0f172a;">Buy Quiz Credits</h2>
+        <div style="width:48px; height:48px; border-radius:50%; background:#fef3c7; display:inline-flex; align-items:center; justify-content:center; color:#d97706; margin:0 auto 10px;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>
+        </div>
+        <h2 style="margin:0 0 6px; font-size:1.45rem; color:#0f172a;">Buy Quiz Credits</h2>
         <p style="margin:0; font-size:0.88rem; color:#64748b;">
           Current Balance: <strong class="user-credits-val" style="color:#f59e0b;">2</strong> Credits.
           Each premium quiz requires 3 credits.
@@ -429,22 +448,41 @@
 
       <!-- Security Requirement Check (Google Account & Phone Number) -->
       <div id="paymentSecurityBox" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:14px 16px; margin-bottom:18px; font-size:0.85rem;">
-        <strong style="display:block; margin-bottom:8px; color:#334155;">🔒 Security &amp; Account Verification:</strong>
+        <strong style="display:flex; align-items:center; gap:6px; margin-bottom:10px; color:#334155;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Security &amp; Account Verification
+        </strong>
 
         <!-- Google status -->
-        <div id="googleAuthCheckRow" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; flex-wrap:wrap; gap:6px;">
-          <span id="googleStatusText" style="color:#64748b;">Google Account: Checking…</span>
+        <div id="googleAuthCheckRow" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; padding-bottom:8px; border-bottom:1px solid #e2e8f0; flex-wrap:wrap; gap:6px;">
+          <span id="googleStatusText" style="color:#64748b;">Google Account: Checkingâ€¦</span>
           <button type="button" id="buyModalGoogleBtn" class="btn btn-outline btn-sm" style="display:none; padding:4px 10px; font-size:0.8rem;">
             Connect Google
           </button>
         </div>
 
-        <!-- Phone number status -->
-        <div id="phoneCheckRow" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px;">
-          <span id="phoneStatusText" style="color:#64748b;">Phone Number: Required for payment verification</span>
-          <div style="display:flex; gap:6px; align-items:center;">
-            <input type="tel" id="userPhoneInput" placeholder="98xxxxxxxx" maxlength="10" style="padding:4px 8px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.82rem; width:120px;" />
-            <button type="button" id="savePhoneBtn" class="btn btn-outline btn-sm" style="padding:4px 10px; font-size:0.8rem;">Save</button>
+        <!-- Phone number status & verification -->
+        <div id="phoneCheckRow" style="display:flex; flex-direction:column; gap:8px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px;">
+            <span id="phoneStatusText" style="color:#64748b;">Phone Number: Required for payment verification</span>
+            <div id="phoneInputControls" style="display:flex; gap:6px; align-items:center;">
+              <div class="phone-input-group" style="width:150px;">
+                <span class="phone-country-code" style="padding:0 6px; font-size:0.75rem;">+977</span>
+                <input type="tel" id="userPhoneInput" placeholder="98XXXXXXXX" maxlength="10" style="padding:4px 8px; font-size:0.82rem;" />
+              </div>
+              <button type="button" id="savePhoneBtn" class="btn btn-outline btn-sm" style="padding:5px 10px; font-size:0.8rem; font-weight:600;">Send Code</button>
+            </div>
+          </div>
+
+          <!-- Phone OTP Code verification row (hidden until code sent) -->
+          <div id="phoneOtpRow" style="display:none; background:#ffffff; border:1px solid #cbd5e1; border-radius:8px; padding:10px 12px; margin-top:4px;">
+            <div style="font-size:0.8rem; color:#475569; margin-bottom:6px;">Enter the 6-digit SMS verification code:</div>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <input type="text" id="phoneOtpCodeInput" placeholder="123456" maxlength="6" style="padding:6px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.9rem; letter-spacing:0.18em; font-weight:700; width:110px; text-align:center;" />
+              <button type="button" id="verifyPhoneCodeBtn" class="btn btn-primary btn-sm" style="padding:6px 14px; font-size:0.82rem; font-weight:600;">Verify Code</button>
+              <button type="button" id="cancelPhoneOtpBtn" class="btn btn-outline btn-sm" style="padding:6px 10px; font-size:0.82rem;">Cancel</button>
+            </div>
+            <div id="phoneOtpStatus" style="font-size:0.78rem; margin-top:6px; color:#64748b;"></div>
           </div>
         </div>
       </div>
@@ -457,8 +495,8 @@
           <div class="credit-pack-card active" data-credits="5" data-amount="50" style="
             border:2px solid #f59e0b; background:#fffbeb; border-radius:12px; padding:14px 10px; text-align:center; cursor:pointer;
           ">
-            <div style="font-size:1.3rem; font-weight:800; color:#b45309;">5 🪙</div>
-            <div style="font-size:0.75rem; color:#78350f; margin:2px 0;">Credits</div>
+            <div style="font-size:1.3rem; font-weight:800; color:#b45309;">5 Credits</div>
+            <div style="font-size:0.75rem; color:#78350f; margin:2px 0;">Standard</div>
             <div style="font-weight:700; font-size:0.95rem; color:#0f172a;">NPR 50</div>
           </div>
 
@@ -467,7 +505,7 @@
             border:2px solid #e2e8f0; background:#fff; border-radius:12px; padding:14px 10px; text-align:center; cursor:pointer;
           ">
             <span style="background:#ef4444; color:#fff; font-size:0.65rem; font-weight:700; padding:2px 6px; border-radius:4px; display:inline-block; margin-bottom:2px;">10% OFF</span>
-            <div style="font-size:1.3rem; font-weight:800; color:#b45309;">10 🪙</div>
+            <div style="font-size:1.3rem; font-weight:800; color:#b45309;">10 Credits</div>
             <div style="font-weight:700; font-size:0.95rem; color:#0f172a;">NPR 90</div>
           </div>
 
@@ -476,7 +514,7 @@
             border:2px solid #e2e8f0; background:#fff; border-radius:12px; padding:14px 10px; text-align:center; cursor:pointer;
           ">
             <span style="background:#10b981; color:#fff; font-size:0.65rem; font-weight:700; padding:2px 6px; border-radius:4px; display:inline-block; margin-bottom:2px;">20% OFF</span>
-            <div style="font-size:1.3rem; font-weight:800; color:#b45309;">25 🪙</div>
+            <div style="font-size:1.3rem; font-weight:800; color:#b45309;">25 Credits</div>
             <div style="font-weight:700; font-size:0.95rem; color:#0f172a;">NPR 200</div>
           </div>
         </div>
@@ -542,3 +580,4 @@
   <script src="js/live.js"></script>
 </body>
 </html>
+
