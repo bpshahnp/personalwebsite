@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Quadratic Vertex Form Simulation</title>
+    <!-- Tailwind CSS for modern styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js for graph rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col items-center py-8 px-4">
+
+    <!-- Header -->
+    <header class="text-center mb-6">
+        <h1 class="text-3xl font-bold text-indigo-600">Quadratic Vertex Form Explorer</h1>
+        <p class="text-sm text-slate-600 mt-1">Visualize how parameters <span class="text-amber-600 font-semibold">a</span>, <span class="text-emerald-600 font-semibold">h</span>, and <span class="text-blue-600 font-semibold">k</span> shape the graph of <span class="font-semibold text-slate-700">f(x) = a(x - h)² + k</span></p>
+    </header>
+
+    <div class="w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <!-- Controls Card -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between space-y-6">
+            <div>
+                <h2 class="text-lg font-semibold text-slate-800 border-b pb-2 mb-4">Parameters</h2>
+                
+                <!-- Parameter A -->
+                <div class="mb-5">
+                    <div class="flex justify-between items-center mb-1">
+                        <label for="rangeA" class="text-sm font-medium text-amber-700">Parameter a: <span id="valA" class="font-bold">1.0</span></label>
+                        <span class="text-xs text-slate-400">Stretch & Direction</span>
+                    </div>
+                    <input id="rangeA" type="range" min="-5" max="5" step="0.2" value="1" 
+                        class="w-full accent-amber-500 cursor-pointer">
+                    <p class="text-[11px] text-slate-500 mt-1">Controls width and whether it opens up or down.</p>
+                </div>
+
+                <!-- Parameter H -->
+                <div class="mb-5">
+                    <div class="flex justify-between items-center mb-1">
+                        <label for="rangeH" class="text-sm font-medium text-emerald-700">Parameter h: <span id="valH" class="font-bold">0.0</span></label>
+                        <span class="text-xs text-slate-400">Horizontal Shift</span>
+                    </div>
+                    <input id="rangeH" type="range" min="-10" max="10" step="0.5" value="0" 
+                        class="w-full accent-emerald-500 cursor-pointer">
+                    <p class="text-[11px] text-slate-500 mt-1">Shifts the graph left or right.</p>
+                </div>
+
+                <!-- Parameter K -->
+                <div class="mb-5">
+                    <div class="flex justify-between items-center mb-1">
+                        <label for="rangeK" class="text-sm font-medium text-blue-700">Parameter k: <span id="valK" class="font-bold">0.0</span></label>
+                        <span class="text-xs text-slate-400">Vertical Shift</span>
+                    </div>
+                    <input id="rangeK" type="range" min="-10" max="10" step="0.5" value="0" 
+                        class="w-full accent-blue-500 cursor-pointer">
+                    <p class="text-[11px] text-slate-500 mt-1">Shifts the graph up or down.</p>
+                </div>
+            </div>
+
+            <!-- Dynamic Equation Display -->
+            <div class="bg-indigo-50 border border-indigo-100 p-4 rounded-xl text-center">
+                <span class="text-xs text-indigo-500 font-medium uppercase tracking-wider block mb-1">Current Equation</span>
+                <div id="equationDisplay" class="text-lg font-bold text-indigo-900">
+                    f(x) = 1(x - 0)² + 0
+                </div>
+                <div id="vertexDisplay" class="text-xs text-indigo-700 mt-1">
+                    Vertex (h, k): <span class="font-semibold">(0, 0)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Graph Display Area -->
+        <div class="md:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-center relative">
+            <div class="relative w-full h-[400px]">
+                <canvas id="parabolaChart"></canvas>
+            </div>
+            <div class="mt-4 flex flex-wrap items-center justify-center gap-4 text-xs text-slate-600">
+                <div class="flex items-center gap-1.5">
+                    <span class="w-3 h-3 rounded-full bg-indigo-600 inline-block"></span>
+                    <span>Parabola curve</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <span class="w-3 h-3 rounded-full bg-rose-500 inline-block"></span>
+                    <span>Vertex (h, k)</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Script to handle calculation and chart updates -->
+    <script>
+        const rangeA = document.getElementById('rangeA');
+        const rangeH = document.getElementById('rangeH');
+        const rangeK = document.getElementById('rangeK');
+
+        const valA = document.getElementById('valA');
+        const valH = document.getElementById('valH');
+        const valK = document.getElementById('valK');
+
+        const equationDisplay = document.getElementById('equationDisplay');
+        const vertexDisplay = document.getElementById('vertexDisplay');
+
+        const ctx = document.getElementById('parabolaChart').getContext('2d');
+
+        // Generate X values from -15 to 15
+        const xValues = [];
+        for (let x = -15; x <= 15; x += 0.5) {
+            xValues.push(Number(x.toFixed(1)));
+        }
+
+        function calculateY(x, a, h, k) {
+            return a * Math.pow((x - h), 2) + k;
+        }
+
+        function formatNumber(num) {
+            return num >= 0 ? num : `(${num})`;
+        }
+
+        // Initialize Chart
+        let parabolaChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: xValues,
+                datasets: [
+                    {
+                        label: 'f(x) = a(x - h)² + k',
+                        data: xValues.map(x => calculateY(x, 1, 0, 0)),
+                        borderColor: '#4f46e5',
+                        borderWidth: 3,
+                        pointRadius: 0,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Vertex',
+                        data: [{x: 0, y: 0}],
+                        backgroundColor: '#f43f5e',
+                        borderColor: '#ffffff',
+                        borderWidth: 2,
+                        pointRadius: 7,
+                        pointStyle: 'circle',
+                        showLine: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        type: 'linear',
+                        position: 'center',
+                        min: -15,
+                        max: 15,
+                        grid: {
+                            color: '#e2e8f0'
+                        },
+                        ticks: {
+                            stepSize: 5
+                        }
+                    },
+                    y: {
+                        type: 'linear',
+                        position: 'center',
+                        min: -15,
+                        max: 15,
+                        grid: {
+                            color: '#e2e8f0'
+                        },
+                        ticks: {
+                            stepSize: 5
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                if (context.datasetIndex === 1) {
+                                    return `Vertex: (${rangeH.value}, ${rangeK.value})`;
+                                }
+                                return `Point: (${context.parsed.x}, ${context.parsed.y.toFixed(2)})`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        function updateSimulation() {
+            const a = parseFloat(rangeA.value);
+            const h = parseFloat(rangeH.value);
+            const k = parseFloat(rangeK.value);
+
+            // Update text labels
+            valA.textContent = a.toFixed(1);
+            valH.textContent = h.toFixed(1);
+            valK.textContent = k.toFixed(1);
+
+            // Update formula view nicely handling signs
+            let hSign = h >= 0 ? `- ${h}` : `+ ${Math.abs(h)}`;
+            let kSign = k >= 0 ? `+ ${k}` : `- ${Math.abs(k)}`;
+            equationDisplay.textContent = `f(x) = ${a}(x ${hSign})² ${kSign}`;
+            vertexDisplay.innerHTML = `Vertex (h, k): <span class="font-semibold">(${h}, ${k})</span>`;
+
+            // Prevent 'a' from being 0 to keep it a quadratic function visually
+            const effectiveA = a === 0 ? 0.001 : a;
+
+            // Update line data
+            const newData = xValues.map(x => ({
+                x: x,
+                y: calculateY(x, effectiveA, h, k)
+            }));
+
+            parabolaChart.data.datasets[0].data = newData;
+            parabolaChart.data.datasets[1].data = [{x: h, y: k}];
+            parabolaChart.update('none'); // Update smoothly without full re-animation frames
+        }
+
+        rangeA.addEventListener('input', updateSimulation);
+        rangeH.addEventListener('input', updateSimulation);
+        rangeK.addEventListener('input', updateSimulation);
+    </script>
+</body>
+</html>
