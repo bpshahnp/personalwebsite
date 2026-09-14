@@ -1206,6 +1206,17 @@ function initPremiumQuizAdmin() {
 
   subscribePaymentRequests();
 
+  // ---- Category Manager DOM refs ----
+  const catNameInput    = document.getElementById("premiumCatName");
+  const catSlugInput    = document.getElementById("premiumCatSlug");
+  const catImageInput   = document.getElementById("premiumCatImage");
+  const catCreditsInput = document.getElementById("premiumCatCredits");
+  const catDescInput    = document.getElementById("premiumCatDesc");
+  const addCatBtn       = document.getElementById("addPremiumCategoryBtn");
+  const catStatus       = document.getElementById("premiumCatStatus");
+  const catListEl       = document.getElementById("premiumCatList");
+  const qCatSelect      = document.getElementById("premiumQCategorySelect");
+  const qListEl         = document.getElementById("premiumQList");
 
   // ---- Auto-generate slug from name ----
   catNameInput.addEventListener("input", () => {
