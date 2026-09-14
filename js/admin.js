@@ -1232,7 +1232,6 @@ function initPremiumQuizAdmin() {
 
   function subscribeCategories() {
     db.collection("premiumQuizContent")
-      .orderBy("name")
       .onSnapshot(snap => {
         categoryDocs = snap.docs.map(d => ({
           id: d.id,
@@ -1241,10 +1240,11 @@ function initPremiumQuizAdmin() {
           description: d.data().description || "",
           credits: d.data().credits ?? 3,
           questions: d.data().questions || []
-        }));
+        })).sort((a, b) => (a.name || "").localeCompare(b.name || ""));
         renderCategoryList();
         syncCategorySelect();
       }, err => {
+        console.error("Error subscribing to categories:", err);
         catListEl.innerHTML = `<p class="updates-loading">Error: ${err.message}</p>`;
       });
   }

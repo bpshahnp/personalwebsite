@@ -312,7 +312,11 @@ function topicKey(cls, category) {
 
 /* Distinct categories present in a given class ("All" = every class),
    alphabetised — same list refreshCategoryOptions() shows in the
-   dropdown, reused here so the progress list always matches it. */
+   dropdown, reused here so the progress list always matches it.
+   NOTE: categories are scoped to class only (not subject), so the
+   Topic/Chapter dropdown always shows available topics regardless of
+   which subject is selected. Subject + category filtering is applied
+   together in currentPool() when the quiz starts. */
 function selectedSubject() {
   return pickedValue(subjectRadios, DEFAULT_SUBJECT);
 }
@@ -325,8 +329,13 @@ function questionsInClassAndSubject(classValue, subjectValue) {
   return pool;
 }
 
+/* Categories for a class — NOT filtered by subject so the Topic/Chapter
+   dropdown is always populated as long as the class has questions. */
 function categoriesInClass(classValue) {
-  return categoriesInClassAndSubject(classValue, selectedSubject());
+  const pool = questionsInClass(classValue);
+  return [...new Set(pool.map((q) => q.category).filter(Boolean))].sort((a, b) =>
+    a.localeCompare(b)
+  );
 }
 
 function categoriesInClassAndSubject(classValue, subjectValue) {
@@ -625,7 +634,13 @@ db.collection("questions")
     refreshStatus();
   })
   .catch((err) => {
-    questionBankStatus.textContent = `Could not load questions (${err.message}).`;
+    console.error("Firestore questions load error:", err);
+    questionBankStatus.textContent = `Offline or could not reach Firestore (${err.message}). Using built-in question set.`;
+    questionBank = DEFAULT_SUBJECT_QUESTIONS.map((dq, idx) => ({ id: "default_" + idx, ...dq }));
+    refreshClassOptions();
+    refreshSubjectOptions();
+    refreshCategoryOptions();
+    refreshStatus();
   });
 
 /* Value of the checked radio in a group. */
@@ -711,7 +726,7 @@ function refreshCategoryOptions() {
   const categories = categoriesInClass(selectedClass());
 
   categorySelect.innerHTML = [
-    `<option value="All">All categories</option>`,
+    `<option value="All">All topics</option>`,
     ...categories.map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`),
   ].join("");
 
