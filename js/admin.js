@@ -1235,16 +1235,41 @@ function initPremiumQuizAdmin() {
               approvedAt: firebase.firestore.FieldValue.serverTimestamp()
             });
 
-            // 2. Grant premium access & 25 credits in users collection
+            // 2. Grant credits or unlimited access based on payment package
             if (req.userId) {
-              await db.collection("users").doc(req.userId).set({
-                hasPremiumAccess: true,
-                credits: firebase.firestore.FieldValue.increment(25),
+              const amt = Number(req.amountNpr || 0);
+              let creditsToAdd = 0;
+              let isUnlimitedYear = false;
+
+              if (amt >= 500) {
+                isUnlimitedYear = true;
+                creditsToAdd = 100;
+              } else if (amt >= 100) {
+                creditsToAdd = 30;
+              } else if (amt >= 50) {
+                creditsToAdd = 12;
+              } else if (amt >= 15) {
+                creditsToAdd = 3;
+              } else {
+                creditsToAdd = Math.max(3, Math.round(amt / 5) * 3);
+              }
+
+              const userUpdates = {
+                credits: firebase.firestore.FieldValue.increment(creditsToAdd),
                 premiumApprovedAt: firebase.firestore.FieldValue.serverTimestamp(),
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-              }, { merge: true });
+              };
+
+              if (isUnlimitedYear) {
+                const oneYearLater = new Date();
+                oneYearLater.setFullYear(oneYearLater.getFullYear() + 1);
+                userUpdates.hasPremiumAccess = true;
+                userUpdates.unlimitedUntil = firebase.firestore.Timestamp.fromDate(oneYearLater);
+              }
+
+              await db.collection("users").doc(req.userId).set(userUpdates, { merge: true });
             }
-            alert(`Payment approved! Full premium access granted to ${req.userEmail}.`);
+            alert(`Payment approved! Granted to ${req.userEmail}.`);
           } catch (err) {
             alert("Error approving request: " + err.message);
           }
@@ -1407,7 +1432,7 @@ function initPremiumQuizAdmin() {
           name: d.data().name || d.id,
           imageUrl: d.data().imageUrl || "",
           description: d.data().description || "",
-          credits: d.data().credits ?? 1,
+          credits: d.data().credits ?? 3,
           questions: d.data().questions || []
         })).sort((a, b) => (a.name || "").localeCompare(b.name || ""));
         renderCategoryList();
@@ -1450,7 +1475,7 @@ function initPremiumQuizAdmin() {
         if (catNameInput) catNameInput.value = cat.name;
         if (catSlugInput) catSlugInput.value = cat.id;
         if (catImageInput) catImageInput.value = cat.imageUrl || "";
-        if (catCreditsInput) catCreditsInput.value = cat.credits ?? 1;
+        if (catCreditsInput) catCreditsInput.value = cat.credits ?? 3;
         if (catDescInput) catDescInput.value = cat.description || "";
         if (addCatBtn) addCatBtn.textContent = "Save Changes to Category";
         if (catNameInput) catNameInput.scrollIntoView({ behavior: "smooth" });
@@ -1486,7 +1511,7 @@ function initPremiumQuizAdmin() {
       const name = catNameInput.value.trim();
       const slug = catSlugInput.value.trim();
       const imageUrl = catImageInput ? catImageInput.value.trim() : "";
-      const credits = catCreditsInput ? parseInt(catCreditsInput.value, 10) : 1;
+      const credits = catCreditsInput ? parseInt(catCreditsInput.value, 10) : 3;
       const desc = catDescInput ? catDescInput.value.trim() : "";
 
       if (!name || !slug) {
@@ -1512,14 +1537,14 @@ function initPremiumQuizAdmin() {
           name: name,
           imageUrl: imageUrl,
           description: desc,
-          credits: isNaN(credits) || credits < 1 ? 1 : credits,
+          credits: isNaN(credits) || credits < 1 ? 3 : credits,
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true });
 
         catNameInput.value = "";
         catSlugInput.value = "";
         if (catImageInput) catImageInput.value = "";
-        if (catCreditsInput) catCreditsInput.value = "1";
+        if (catCreditsInput) catCreditsInput.value = "3";
         if (catDescInput) catDescInput.value = "";
         addCatBtn.textContent = "Save / Add Category";
 

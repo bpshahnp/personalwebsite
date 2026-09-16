@@ -87,6 +87,53 @@ document.addEventListener("DOMContentLoaded", () => {
   const promptModalActionBtn    = document.getElementById("promptModalActionBtn");
   const promptModalCancelBtn    = document.getElementById("promptModalCancelBtn");
 
+  // Buy Credits Modal & Package Selection Elements
+  const buyCreditsModal           = document.getElementById("buyCreditsModal");
+  const buyCreditsTitle           = document.getElementById("buyCreditsTitle");
+  const buyCreditsSubtitle        = document.getElementById("buyCreditsSubtitle");
+  const buyCreditsCloseBtn        = document.getElementById("buyCreditsCloseBtn");
+  const buyCreditsCancelBtn       = document.getElementById("buyCreditsCancelBtn");
+  const buyCreditsHeaderBtn       = document.getElementById("buyCreditsHeaderBtn");
+  const paymentSelectedPkgSummary = document.getElementById("paymentSelectedPkgSummary");
+  const payInstructionPkgName     = document.getElementById("payInstructionPkgName");
+  const payInstructionAmount      = document.getElementById("payInstructionAmount");
+
+  // Defined Credit Packages
+  const CREDIT_PACKAGES = [
+    {
+      id: "pack_3",
+      credits: 3,
+      amount: 15,
+      label: "3 Credits",
+      sub: "1 Quiz Attempt",
+      remarks: "Purchase: 3 Credits (Rs. 15)"
+    },
+    {
+      id: "pack_12",
+      credits: 12,
+      amount: 50,
+      label: "12 Credits",
+      sub: "4 Quiz Attempts",
+      remarks: "Purchase: 12 Credits (Rs. 50)"
+    },
+    {
+      id: "pack_30",
+      credits: 30,
+      amount: 100,
+      label: "30 Credits",
+      sub: "10 Quiz Attempts",
+      remarks: "Purchase: 30 Credits (Rs. 100)"
+    },
+    {
+      id: "pack_unlimited",
+      credits: "unlimited",
+      amount: 500,
+      label: "1 Year Unlimited Pass",
+      sub: "Whole Year Access",
+      remarks: "Purchase: Annual Pass - Unlimited 1 Year (Rs. 500)"
+    }
+  ];
+
   // Global State
   let currentUser = null;
   let currentUserProfile = null;
@@ -156,27 +203,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (backToQuizzesFromPend) backToQuizzesFromPend.addEventListener("click", () => showView("catalog"));
   if (pendingReturnToCatalog) pendingReturnToCatalog.addEventListener("click", () => showView("catalog"));
 
-  if (catalogPayBtn) {
-    catalogPayBtn.addEventListener("click", () => {
-      if (!currentUser) {
-        openPromptModal({
-          iconSvg: '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>',
-          iconBg: '#eff6ff',
-          iconColor: '#2563eb',
-          title: "Sign Up or Sign In Required",
-          desc: "Please sign in or create an account first so your premium membership and credits can be linked to your profile.",
-          actionText: "Create Account / Sign In",
-          onAction: () => {
-            if (typeof window.openAuthModal === "function") {
-              window.openAuthModal({ mode: "signup" });
-            }
-          }
-        });
-      } else {
-        showView("payment");
-      }
-    });
-  }
+  
 
   if (catalogViewPendingBtn) {
     catalogViewPendingBtn.addEventListener("click", () => showView("pending"));
@@ -212,6 +239,122 @@ document.addEventListener("DOMContentLoaded", () => {
   if (promptModal) {
     promptModal.addEventListener("click", (e) => {
       if (e.target === promptModal) closePromptModal();
+    });
+  }
+
+  /* ---------- Credit Package Selection & Buy Modal ---------- */
+  function selectCreditPackage(pkgOrId) {
+    const pkg = typeof pkgOrId === "string"
+      ? (CREDIT_PACKAGES.find(p => p.id === pkgOrId) || CREDIT_PACKAGES[0])
+      : (pkgOrId || CREDIT_PACKAGES[0]);
+
+    if (payFormAmount) {
+      payFormAmount.value = pkg.amount;
+    }
+    if (payFormRemarks) {
+      payFormRemarks.value = pkg.remarks;
+    }
+    if (payInstructionPkgName) {
+      payInstructionPkgName.textContent = pkg.label;
+    }
+    if (payInstructionAmount) {
+      payInstructionAmount.textContent = `NPR ${pkg.amount}`;
+    }
+    if (paymentSelectedPkgSummary) {
+      paymentSelectedPkgSummary.textContent = `${pkg.label} — Rs. ${pkg.amount}`;
+    }
+
+    // Toggle active state on package pill buttons
+    document.querySelectorAll(".package-pill-btn").forEach(btn => {
+      const match = btn.getAttribute("data-pkg-id") === pkg.id;
+      btn.classList.toggle("active", match);
+    });
+
+    closeBuyCreditsModal();
+    showView("payment");
+  }
+
+  function openBuyCreditsModal(category, cost, userCredits) {
+    if (!currentUser) {
+      openPromptModal({
+        iconSvg: '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>',
+        iconBg: '#eff6ff',
+        iconColor: '#2563eb',
+        title: "Sign Up or Sign In Required",
+        desc: "Please sign in or create an account first so your credits and purchases can be linked to your profile.",
+        actionText: "Create Account / Sign In",
+        onAction: () => {
+          if (typeof window.openAuthModal === "function") {
+            window.openAuthModal({ mode: "signup" });
+          }
+        }
+      });
+      return;
+    }
+
+    if (userPendingRequest && userPendingRequest.status === "pending") {
+      openPromptModal({
+        iconSvg: '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+        iconBg: '#fffbeb',
+        iconColor: '#d97706',
+        title: "Verification Under Review",
+        desc: `You currently have ${userCredits ?? (currentUserProfile?.credits ?? 0)} credits. Your payment verification request is currently awaiting administrator review.`,
+        actionText: "View Submission Details",
+        onAction: () => showView("pending")
+      });
+      return;
+    }
+
+    if (buyCreditsSubtitle) {
+      if (category) {
+        const required = cost || 3;
+        const current = userCredits ?? (currentUserProfile?.credits ?? 0);
+        buyCreditsSubtitle.innerHTML = `"${escapeHtml(category.name || 'This quiz')}" requires <strong>${required} credits</strong> (you currently have <strong>${current}</strong>). Select a credit package below:`;
+      } else {
+        buyCreditsSubtitle.innerHTML = `Each quiz requires <strong>3 credits</strong> to play. Select a package below to top up your balance:`;
+      }
+    }
+
+    if (buyCreditsModal) buyCreditsModal.style.display = "flex";
+  }
+
+  function closeBuyCreditsModal() {
+    if (buyCreditsModal) buyCreditsModal.style.display = "none";
+  }
+
+  if (buyCreditsCloseBtn) buyCreditsCloseBtn.addEventListener("click", closeBuyCreditsModal);
+  if (buyCreditsCancelBtn) buyCreditsCancelBtn.addEventListener("click", closeBuyCreditsModal);
+  if (buyCreditsModal) {
+    buyCreditsModal.addEventListener("click", (e) => {
+      if (e.target === buyCreditsModal) closeBuyCreditsModal();
+    });
+  }
+
+  // Wire package cards in buyCreditsModal
+  document.querySelectorAll(".credit-pack-card").forEach(card => {
+    card.addEventListener("click", () => {
+      const pkgId = card.getAttribute("data-pkg-id");
+      selectCreditPackage(pkgId);
+    });
+  });
+
+  // Wire package pills in payment view
+  document.querySelectorAll(".package-pill-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const pkgId = btn.getAttribute("data-pkg-id");
+      selectCreditPackage(pkgId);
+    });
+  });
+
+  // Wire Catalog Pay button and Header Buy button
+  if (catalogPayBtn) {
+    catalogPayBtn.addEventListener("click", () => {
+      openBuyCreditsModal();
+    });
+  }
+  if (buyCreditsHeaderBtn) {
+    buyCreditsHeaderBtn.addEventListener("click", () => {
+      openBuyCreditsModal();
     });
   }
 
@@ -296,7 +439,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const phone = payFormPhone ? payFormPhone.value.trim() : "";
       const email = (payFormEmail && payFormEmail.value.trim()) || currentUser.email || "";
       const method = payFormMethod ? payFormMethod.value : "eSewa";
-      const amount = Number((payFormAmount && payFormAmount.value) || 200);
+      const amount = Number((payFormAmount && payFormAmount.value) || 15);
       const refCode = payFormRef ? payFormRef.value.trim() : "";
       const remarks = payFormRemarks ? payFormRemarks.value.trim() : "";
 
@@ -581,8 +724,8 @@ document.addEventListener("DOMContentLoaded", () => {
           : "background: linear-gradient(135deg, #1e293b 0%, #3b82f6 100%);";
         
         const qCount = Array.isArray(cat.questions) ? cat.questions.length : (cat.questionCount || 0);
-        const cost = Math.max(1, Number(cat.credits || 1));
-        const countBadge = qCount > 0 ? `${qCount} Qs · ${cost} Credit` : `${cost} Credit`;
+        const cost = Math.max(1, Number(cat.credits || 3));
+        const countBadge = qCount > 0 ? `${qCount} Qs · ${cost} Credits` : `${cost} Credits`;
 
         card.innerHTML = `
           <div class="category-card-img" style="${bgImg}">
@@ -595,7 +738,7 @@ document.addEventListener("DOMContentLoaded", () => {
             </p>
             <button type="button" class="btn btn-primary btn-sm start-cat-btn" style="width:100%; font-weight:700; padding:11px 16px; display:flex; align-items:center; justify-content:center; gap:8px;">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-              <span>Play Quiz (${cost} Credit)</span>
+              <span>Play Quiz (${cost} Credits)</span>
             </button>
           </div>
         `;
@@ -651,7 +794,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const cost = Math.max(1, Number(category.credits || 1));
+    const cost = Math.max(1, Number(category.credits || 3));
     const userCredits = Number(currentUserProfile?.credits ?? 0);
 
     // 2. Check if user has enough credits
@@ -705,18 +848,8 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // 4. Insufficient credits & no pending payment -> Prompt to top up credits
-    openPromptModal({
-      iconSvg: '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
-      iconBg: '#fef3c7',
-      iconColor: '#b45309',
-      title: "More Credits Required",
-      desc: `"${category.name || 'This quiz'}" requires ${cost} credit${cost > 1 ? "s" : ""}, but you currently have ${userCredits} credit${userCredits === 1 ? "" : "s"}. Complete a one-time payment of NPR 200 to top up your credits and unlock all premium quizzes!`,
-      actionText: "Open Payment Options",
-      onAction: () => {
-        showView("payment");
-      }
-    });
+    // 4. Insufficient credits & no pending payment -> Show credit purchase packages directly!
+    openBuyCreditsModal(category, cost, userCredits);
   }
 
   /* ============================================================
