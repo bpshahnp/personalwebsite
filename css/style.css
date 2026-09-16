@@ -2757,39 +2757,82 @@ img { max-width: 100%; display: block; }
    MCQ Hub — Python Hub–Style Split-Screen Layout
    ============================================================ */
 
-.mcqhub-bar {
-  background: var(--white);
-  border-bottom: 1px solid var(--line);
+/* ── MCQ Hero Header ── */
+.mcqhub-hero {
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 55%, #0f2d4a 100%);
+  border-bottom: 1px solid rgba(255,255,255,0.07);
   position: sticky;
-  top: 66px; /* Below site header */
+  top: 66px;
   z-index: 40;
 }
-.mcqhub-bar-inner {
+.mcqhub-hero-inner {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 14px 24px;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 22px 24px 20px;
 }
-.mcqhub-bar-inner h1 {
-  font-family: var(--font-display);
-  font-weight: 500;
-  font-size: 1.15rem;
-  margin: 0;
-  color: var(--navy-deep);
+.mcqhub-hero-text {
+  flex: 1;
+  min-width: 0;
 }
-.mcqhub-bar-actions {
-  display: flex;
+.mcqhub-hero-badge {
+  display: inline-flex;
   align-items: center;
-  gap: 12px;
-  margin-left: auto;
-}
-.mcqhub-bar-actions[hidden] { display: none; }
-.mcqhub-bar-actions .quiz-score {
+  gap: 5px;
+  background: rgba(249, 115, 22, 0.18);
+  color: #fb923c;
+  border: 1px solid rgba(249, 115, 22, 0.3);
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 0.72rem;
   font-weight: 700;
-  color: var(--navy-deep);
-  font-size: 0.9rem;
-  margin-right: 8px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
 }
+.mcqhub-hero-title {
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: #f8fafc;
+  margin: 0 0 5px;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+.mcqhub-hero-subtitle {
+  font-size: 0.88rem;
+  color: #94a3b8;
+  margin: 0;
+  line-height: 1.5;
+}
+.mcqhub-hero-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* Keep bar-actions and rail-toggle usable on dark hero bg */
+.mcqhub-hero .ghost-btn,
+.mcqhub-hero .rail-toggle {
+  color: #cbd5e1;
+  border-color: rgba(255,255,255,0.15);
+}
+.mcqhub-hero .ghost-btn:hover,
+.mcqhub-hero .rail-toggle:hover {
+  background: rgba(255,255,255,0.08);
+  color: #f1f5f9;
+}
+.mcqhub-hero .quiz-score {
+  color: #f1f5f9;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+/* Legacy alias kept so JS top calc still works */
+.mcqhub-bar { display: none; }
+
 
 .mcqhub-layout {
   display: grid;
@@ -2801,8 +2844,8 @@ img { max-width: 100%; display: block; }
 /* ── Program rail ── */
 .mcqhub-rail {
   position: sticky;
-  top: calc(66px + 54px); /* site header + mcqhub bar */
-  max-height: calc(100vh - 66px - 54px);
+  top: calc(66px + 106px); /* site header + mcqhub hero */
+  max-height: calc(100vh - 66px - 106px);
   display: flex;
   flex-direction: column;
   border-right: 1px solid var(--line);
@@ -2846,13 +2889,24 @@ img { max-width: 100%; display: block; }
 @media (max-width: 900px) {
   .mcqhub-layout {
     grid-template-columns: minmax(0, 1fr);
-    padding: 0 24px 72px;
+    padding: 0 16px 72px;
   }
   .rail-toggle { display: inline-flex; }
   .rail-toggle[hidden] { display: none !important; }
-  
-  .mcqhub-bar { top: 0; z-index: 60; } /* Overlaps site header on mobile if needed, or stays below */
-  .mcqhub-bar-actions { margin-left: 0; margin-right: 12px; }
+
+  .mcqhub-hero {
+    position: static; /* don't pin on mobile — takes too much space */
+  }
+  .mcqhub-hero-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 16px 16px 14px;
+  }
+  .mcqhub-hero-title { font-size: 1.3rem; }
+  .mcqhub-hero-subtitle { font-size: 0.82rem; }
+  .mcqhub-hero-right { width: 100%; justify-content: flex-end; }
+  .mcqhub-bar-actions { margin-left: 0; }
 
   .mcqhub-rail {
     position: fixed;
@@ -2869,8 +2923,8 @@ img { max-width: 100%; display: block; }
     z-index: 60;
   }
   .mcqhub-rail.open { transform: translateX(0); }
-  
-  .mcqhub-workspace { padding-top: 22px; }
+
+  .mcqhub-workspace { padding-top: 16px; }
 }
 
 /* Custom rail items for MCQ */
