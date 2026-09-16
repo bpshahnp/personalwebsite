@@ -42,6 +42,9 @@ async function initUserProfile(user) {
     } else {
       const data = snap.data();
       const updates = {};
+      if (data.credits == null) {
+        updates.credits = 2; // Default 2 credits if legacy profile lacked credits field
+      }
       if (isGoogle && !data.googleLinked) {
         updates.googleLinked = true;
       }

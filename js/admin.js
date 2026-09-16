@@ -31,44 +31,148 @@ const signInGate = document.getElementById("signInGate");
 const notAuthorized = document.getElementById("notAuthorized");
 const dashboard = document.getElementById("dashboard");
 const signOutBtns = document.querySelectorAll("#signOutBtn, #signOutBtnMobile");
+const notAuthorizedEmail = document.getElementById("notAuthorizedEmail");
+const switchAdminAccountBtn = document.getElementById("switchAdminAccountBtn");
+const adminGoogleSignInBtn = document.getElementById("adminGoogleSignInBtn");
+const adminForgotPassLink = document.getElementById("adminForgotPassLink");
+const adminLoginForm = document.getElementById("adminLoginForm");
+const adminEmailInput = document.getElementById("adminEmail");
+const adminPasswordInput = document.getElementById("adminPassword");
+const adminLoginStatus = document.getElementById("adminLoginStatus");
+const adminEmailSubmitBtn = document.getElementById("adminEmailSubmitBtn");
+
+let adminInitialized = false;
+
+function isUserAdmin(email) {
+  if (!email) return false;
+  const normalized = String(email).trim().toLowerCase();
+  return ADMIN_EMAILS.some((e) => String(e).trim().toLowerCase() === normalized);
+}
 
 /* ---------- Auth gate ---------- */
 auth.onAuthStateChanged((user) => {
   if (!user) {
+    adminInitialized = false;
     show(signInGate);
     hide(notAuthorized, dashboard);
     signOutBtns.forEach((b) => (b.hidden = true));
     return;
   }
   signOutBtns.forEach((b) => (b.hidden = false));
-  if (ADMIN_EMAILS.includes(user.email)) {
+  if (isUserAdmin(user.email)) {
     show(dashboard);
     hide(signInGate, notAuthorized);
-    initQuestionsAdmin();
-    initPythonAdmin();
-    initResourcesAdmin();
-    initMessagesAdmin();
-    initUpdatesAdmin();
-    initLiveQuizAdmin();
-    initPremiumQuizAdmin();
+    if (!adminInitialized) {
+      adminInitialized = true;
+      initQuestionsAdmin();
+      initPythonAdmin();
+      initResourcesAdmin();
+      initMessagesAdmin();
+      initUpdatesAdmin();
+      initLiveQuizAdmin();
+      initPremiumQuizAdmin();
+    }
   } else {
     show(notAuthorized);
+    if (notAuthorizedEmail) {
+      notAuthorizedEmail.textContent = user.email || "Unknown account";
+    }
     hide(signInGate, dashboard);
   }
 });
 
-document.getElementById("adminLoginForm").addEventListener("submit", (e) => {
-  e.preventDefault();
-  const email = document.getElementById("adminEmail").value;
-  const password = document.getElementById("adminPassword").value;
-  const status = document.getElementById("adminLoginStatus");
-  auth
-    .signInWithEmailAndPassword(email, password)
-    .catch((err) => {
-      status.textContent = err.message;
-      status.style.color = "crimson";
-    });
-});
+/* Google Sign-in for Admin */
+if (adminGoogleSignInBtn) {
+  adminGoogleSignInBtn.addEventListener("click", async () => {
+    if (adminLoginStatus) {
+      adminLoginStatus.textContent = "Connecting to Google…";
+      adminLoginStatus.style.color = "var(--mist, #64748b)";
+    }
+    try {
+      if (typeof window.signInWithGoogle === "function") {
+        await window.signInWithGoogle();
+      } else {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: "select_account" });
+        await auth.signInWithPopup(provider);
+      }
+    } catch (err) {
+      console.error("Google sign-in error:", err);
+      if (adminLoginStatus) {
+        adminLoginStatus.textContent = err.message || "Failed to sign in with Google.";
+        adminLoginStatus.style.color = "crimson";
+      }
+    }
+  });
+}
+
+/* Forgot Password Link */
+if (adminForgotPassLink) {
+  adminForgotPassLink.addEventListener("click", async (e) => {
+    e.preventDefault();
+    const currentEmail = (adminEmailInput ? adminEmailInput.value.trim() : "") || "bholashroff345@gmail.com";
+    const emailToReset = prompt("Enter the admin email address to send a password reset link:", currentEmail);
+    if (!emailToReset || !emailToReset.trim()) return;
+
+    try {
+      if (adminLoginStatus) {
+        adminLoginStatus.textContent = "Sending password reset email…";
+        adminLoginStatus.style.color = "var(--mist, #64748b)";
+      }
+      await auth.sendPasswordResetEmail(emailToReset.trim());
+      alert(`Password reset link sent to ${emailToReset.trim()}. Please check your inbox or spam folder.`);
+      if (adminLoginStatus) {
+        adminLoginStatus.textContent = "Password reset email sent! Check your inbox.";
+        adminLoginStatus.style.color = "#10b981";
+      }
+    } catch (err) {
+      console.error("Password reset error:", err);
+      if (adminLoginStatus) {
+        adminLoginStatus.textContent = "Could not send reset email: " + err.message;
+        adminLoginStatus.style.color = "crimson";
+      }
+    }
+  });
+}
+
+/* Email & Password login */
+if (adminLoginForm) {
+  adminLoginForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = adminEmailInput ? adminEmailInput.value.trim() : "";
+    const password = adminPasswordInput ? adminPasswordInput.value : "";
+    if (adminEmailSubmitBtn) {
+      adminEmailSubmitBtn.disabled = true;
+      adminEmailSubmitBtn.textContent = "Signing in…";
+    }
+    if (adminLoginStatus) {
+      adminLoginStatus.textContent = "";
+    }
+    try {
+      await auth.signInWithEmailAndPassword(email, password);
+    } catch (err) {
+      console.error("Admin login error:", err);
+      if (adminLoginStatus) {
+        let msg = err.message;
+        if (err.code === "auth/user-not-found" || err.code === "auth/invalid-credential" || err.code === "auth/wrong-password") {
+          msg = "Invalid email or password. If you originally signed up with Google, click 'Sign in with Google' above.";
+        }
+        adminLoginStatus.textContent = msg;
+        adminLoginStatus.style.color = "crimson";
+      }
+    } finally {
+      if (adminEmailSubmitBtn) {
+        adminEmailSubmitBtn.disabled = false;
+        adminEmailSubmitBtn.textContent = "Sign in with Email";
+      }
+    }
+  });
+}
+
+/* Switch Account button on Not Authorized screen */
+if (switchAdminAccountBtn) {
+  switchAdminAccountBtn.addEventListener("click", () => auth.signOut());
+}
 
 signOutBtns.forEach((b) => b.addEventListener("click", () => auth.signOut()));
 
@@ -1131,10 +1235,11 @@ function initPremiumQuizAdmin() {
               approvedAt: firebase.firestore.FieldValue.serverTimestamp()
             });
 
-            // 2. Grant premium access in users collection
+            // 2. Grant premium access & 25 credits in users collection
             if (req.userId) {
               await db.collection("users").doc(req.userId).set({
                 hasPremiumAccess: true,
+                credits: firebase.firestore.FieldValue.increment(25),
                 premiumApprovedAt: firebase.firestore.FieldValue.serverTimestamp(),
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
               }, { merge: true });
@@ -1196,6 +1301,7 @@ function initPremiumQuizAdmin() {
           const userDoc = snap.docs[0];
           await userDoc.ref.set({
             hasPremiumAccess: true,
+            credits: firebase.firestore.FieldValue.increment(25),
             premiumApprovedAt: firebase.firestore.FieldValue.serverTimestamp(),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
           }, { merge: true });
@@ -1301,7 +1407,7 @@ function initPremiumQuizAdmin() {
           name: d.data().name || d.id,
           imageUrl: d.data().imageUrl || "",
           description: d.data().description || "",
-          credits: d.data().credits ?? 3,
+          credits: d.data().credits ?? 1,
           questions: d.data().questions || []
         })).sort((a, b) => (a.name || "").localeCompare(b.name || ""));
         renderCategoryList();
@@ -1344,7 +1450,7 @@ function initPremiumQuizAdmin() {
         if (catNameInput) catNameInput.value = cat.name;
         if (catSlugInput) catSlugInput.value = cat.id;
         if (catImageInput) catImageInput.value = cat.imageUrl || "";
-        if (catCreditsInput) catCreditsInput.value = cat.credits ?? 3;
+        if (catCreditsInput) catCreditsInput.value = cat.credits ?? 1;
         if (catDescInput) catDescInput.value = cat.description || "";
         if (addCatBtn) addCatBtn.textContent = "Save Changes to Category";
         if (catNameInput) catNameInput.scrollIntoView({ behavior: "smooth" });
@@ -1380,7 +1486,7 @@ function initPremiumQuizAdmin() {
       const name = catNameInput.value.trim();
       const slug = catSlugInput.value.trim();
       const imageUrl = catImageInput ? catImageInput.value.trim() : "";
-      const credits = catCreditsInput ? parseInt(catCreditsInput.value, 10) : 3;
+      const credits = catCreditsInput ? parseInt(catCreditsInput.value, 10) : 1;
       const desc = catDescInput ? catDescInput.value.trim() : "";
 
       if (!name || !slug) {
@@ -1406,14 +1512,14 @@ function initPremiumQuizAdmin() {
           name: name,
           imageUrl: imageUrl,
           description: desc,
-          credits: isNaN(credits) || credits < 1 ? 3 : credits,
+          credits: isNaN(credits) || credits < 1 ? 1 : credits,
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true });
 
         catNameInput.value = "";
         catSlugInput.value = "";
         if (catImageInput) catImageInput.value = "";
-        if (catCreditsInput) catCreditsInput.value = "3";
+        if (catCreditsInput) catCreditsInput.value = "1";
         if (catDescInput) catDescInput.value = "";
         addCatBtn.textContent = "Save / Add Category";
 
@@ -1558,5 +1664,186 @@ function initPremiumQuizAdmin() {
     if (qSubmitBtn) qSubmitBtn.textContent = "Add Question";
     if (cancelQBtn) cancelQBtn.hidden = true;
     if (qStatus) qStatus.textContent = "";
+  }
+
+  /* ---- Bulk Import for Premium Questions ---- */
+  const premImportFile   = document.getElementById("premiumQImportFile");
+  const premImportText   = document.getElementById("premiumQImportText");
+  const premImportBtn    = document.getElementById("premiumQImportBtn");
+  const premImportStatus = document.getElementById("premiumQImportStatus");
+  const downloadPremCsv  = document.getElementById("downloadPremiumQCsvTemplate");
+  const downloadPremJson = document.getElementById("downloadPremiumQJsonTemplate");
+
+  function parsePremiumQuestionsInput(text) {
+    if (looksLikeJson(text)) {
+      const data = JSON.parse(text);
+      const arr = Array.isArray(data) ? data : [data];
+      return arr.map((q, i) => {
+        if (!q.question || !Array.isArray(q.options) || q.options.length !== 4) {
+          throw new Error(`Row ${i + 1}: needs "question" and exactly 4 "options".`);
+        }
+        let correctIdx = 0;
+        if (typeof q.correctIndex === "number") {
+          correctIdx = q.correctIndex;
+        } else if (typeof q.correct === "string") {
+          const cRaw = q.correct.trim().toUpperCase();
+          if (["A", "B", "C", "D"].includes(cRaw)) correctIdx = "ABCD".indexOf(cRaw);
+          else if (["0", "1", "2", "3"].includes(cRaw)) correctIdx = Number(cRaw);
+          else if (["1", "2", "3", "4"].includes(cRaw)) correctIdx = Number(cRaw) - 1;
+        }
+        return {
+          question:     String(q.question).trim(),
+          options:      q.options.map(o => String(o).trim()),
+          correctIndex: Math.max(0, Math.min(3, correctIdx)),
+          explanation:  q.explanation ? String(q.explanation).trim() : "",
+        };
+      });
+    }
+
+    // CSV path
+    const rows = parseCSV(text);
+    if (!rows.length) throw new Error("No rows found in CSV.");
+    let startIdx = 0;
+    if (/question/i.test(rows[0][0] || "")) startIdx = 1; // skip header row
+    const results = [];
+    for (let i = startIdx; i < rows.length; i++) {
+      const r = rows[i];
+      if (!r[0] || !r[0].trim()) continue;
+      const question = r[0];
+      const a = r[1];
+      const b = r[2];
+      const c = r[3];
+      const d = r[4];
+      const correct = r[5];
+      const explanation = r[6] || "";
+
+      if (!a || !b || !c || !d) {
+        throw new Error(`Row ${i + 1}: needs question + 4 options (columns 2-5).`);
+      }
+      let correctIndex = 0;
+      const cRaw = (correct || "").trim().toUpperCase();
+      if (["A", "B", "C", "D"].includes(cRaw)) correctIndex = "ABCD".indexOf(cRaw);
+      else if (["1", "2", "3", "4"].includes(cRaw)) correctIndex = Number(cRaw) - 1;
+      else if (["0", "1", "2", "3"].includes(cRaw)) correctIndex = Number(cRaw);
+
+      results.push({
+        question:     question.trim(),
+        options:      [a.trim(), b.trim(), c.trim(), d.trim()],
+        correctIndex: Math.max(0, Math.min(3, correctIndex)),
+        explanation:  (explanation || "").trim(),
+      });
+    }
+    if (!results.length) throw new Error("No valid question rows found.");
+    return results;
+  }
+
+  if (premImportBtn) {
+    premImportBtn.addEventListener("click", async () => {
+      if (!currentCatId) {
+        if (premImportStatus) {
+          premImportStatus.style.color = "crimson";
+          premImportStatus.textContent = "Please select a category first from the dropdown above.";
+        }
+        if (qCatSelect) qCatSelect.focus();
+        return;
+      }
+
+      if (premImportStatus) {
+        premImportStatus.style.color = "var(--mist)";
+        premImportStatus.textContent = "Reading file or pasted content…";
+      }
+
+      try {
+        const { text } = await readImportInput(premImportFile, premImportText);
+        const parsed = parsePremiumQuestionsInput(text);
+
+        const modeRadio = document.querySelector('input[name="premiumImportMode"]:checked');
+        const mode = modeRadio ? modeRadio.value : "append";
+
+        const selectedCat = categoryDocs.find(c => c.id === currentCatId);
+        const catName = selectedCat ? selectedCat.name : currentCatId;
+
+        let finalQuestions = [];
+        if (mode === "replace") {
+          if (!confirm(`Replace all ${currentCatQuestions.length} existing question(s) in "${catName}" with ${parsed.length} imported question(s)?`)) {
+            if (premImportStatus) {
+              premImportStatus.style.color = "var(--mist)";
+              premImportStatus.textContent = "Import cancelled.";
+            }
+            return;
+          }
+          finalQuestions = [...parsed];
+        } else {
+          finalQuestions = [...currentCatQuestions, ...parsed];
+        }
+
+        if (premImportStatus) {
+          premImportStatus.textContent = `Saving ${finalQuestions.length} questions to "${catName}"…`;
+        }
+
+        await db.collection("premiumQuizContent").doc(currentCatId).set({
+          questions: finalQuestions,
+          questionCount: finalQuestions.length,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+
+        if (premImportStatus) {
+          premImportStatus.style.color = "#10b981";
+          premImportStatus.textContent = `Successfully imported ${parsed.length} question(s)! Category now has ${finalQuestions.length} total questions.`;
+        }
+
+        if (premImportFile) premImportFile.value = "";
+        if (premImportText) premImportText.value = "";
+      } catch (err) {
+        console.error("Premium questions import error:", err);
+        if (premImportStatus) {
+          premImportStatus.style.color = "crimson";
+          premImportStatus.textContent = err.message || "Failed to import questions.";
+        }
+      }
+    });
+  }
+
+  if (downloadPremCsv) {
+    downloadPremCsv.addEventListener("click", (e) => {
+      e.preventDefault();
+      const csv =
+        "question,option_a,option_b,option_c,option_d,correct,explanation\n" +
+        '"What is the capital of Nepal?","Pokhara","Kathmandu","Lalitpur","Biratnagar",B,"Kathmandu is the constitutional capital and largest city of Nepal."\n' +
+        '"Which planet is known as the Red Planet?","Venus","Mars","Jupiter","Saturn",B,"Mars has high iron oxide on its surface giving it a reddish appearance."\n' +
+        '"What is the SI unit of electric current?","Volt","Ohm","Ampere","Watt",C,"Electric current is measured in Amperes (A)."\n';
+      downloadTextFile("premium-questions-template.csv", csv, "text/csv");
+    });
+  }
+
+  if (downloadPremJson) {
+    downloadPremJson.addEventListener("click", (e) => {
+      e.preventDefault();
+      const json = JSON.stringify(
+        [
+          {
+            question: "What is the capital of Nepal?",
+            options: ["Pokhara", "Kathmandu", "Lalitpur", "Biratnagar"],
+            correctIndex: 1,
+            explanation: "Kathmandu is the constitutional capital and largest city of Nepal."
+          },
+          {
+            question: "Which planet is known as the Red Planet?",
+            options: ["Venus", "Mars", "Jupiter", "Saturn"],
+            correctIndex: 1,
+            explanation: "Mars has high iron oxide on its surface giving it a reddish appearance."
+          },
+          {
+            question: "What is the SI unit of electric current?",
+            options: ["Volt", "Ohm", "Ampere", "Watt"],
+            correctIndex: 2,
+            explanation: "Electric current is measured in Amperes (A)."
+          }
+        ],
+        null,
+        2
+      );
+      downloadTextFile("premium-questions-template.json", json, "application/json");
+    });
   }
 }

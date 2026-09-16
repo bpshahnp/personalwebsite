@@ -3,13 +3,15 @@
    - Catalog-first: Displays all quiz cards immediately to everyone
    - Card click gate:
        * If not signed in: prompts user to sign up / sign in
-       * If signed in & unlocked: launches interactive quiz arena
+       * If signed in & sufficient credits: deducts credit and launches interactive quiz arena
+       * If signed in & insufficient credits: prompts user to make payment & opens payment options
        * If signed in & pending: informs user verification is in review
-       * If signed in & unpaid: prompts user to make payment & opens payment options
+   - Credit system:
+       * Takes 1 credit (or category.credits) per quiz attempt
+       * Updates balance in Firestore and in the UI in real time
    - Full question loading support (array on category doc or subcollection)
    - Client-side image compression for payment receipts
    - Interactive quiz runner with timed questions & instant feedback
-   - Weekly champion automatic unlock verification
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -29,6 +31,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const accessBadgeTitle        = document.getElementById("accessBadgeTitle");
   const accessBadgeSubtitle     = document.getElementById("accessBadgeSubtitle");
   const categoriesGrid          = document.getElementById("premiumCategoriesGrid");
+
+  // User Credits Display
+  const userCreditsDisplayWrap  = document.getElementById("userCreditsDisplayWrap");
+  const userCreditsDisplay      = document.getElementById("userCreditsDisplay");
 
   // Navigation Back Buttons
   const exitQuizBtn             = document.getElementById("premiumExitQuizBtn");
@@ -71,6 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const nextQuestionBtn         = document.getElementById("premiumNextQuestionBtn");
   const resultsFinalScore       = document.getElementById("resultsFinalScore");
   const resultsCorrectCount     = document.getElementById("resultsCorrectCount");
+  const resultsRemainingCredits = document.getElementById("resultsRemainingCredits");
 
   // Prompt Modal Elements
   const promptModal             = document.getElementById("premiumPromptModal");
@@ -133,7 +140,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (target) {
       target.style.display = "block";
-      // Scroll to view if switching away from catalog
       if (viewName !== "catalog") {
         window.scrollTo({ top: 120, behavior: "smooth" });
       }
@@ -158,7 +164,7 @@ document.addEventListener("DOMContentLoaded", () => {
           iconBg: '#eff6ff',
           iconColor: '#2563eb',
           title: "Sign Up or Sign In Required",
-          desc: "Please sign in or create an account first so your premium membership can be linked to your profile.",
+          desc: "Please sign in or create an account first so your premium membership and credits can be linked to your profile.",
           actionText: "Create Account / Sign In",
           onAction: () => {
             if (typeof window.openAuthModal === "function") {
@@ -206,6 +212,21 @@ document.addEventListener("DOMContentLoaded", () => {
   if (promptModal) {
     promptModal.addEventListener("click", (e) => {
       if (e.target === promptModal) closePromptModal();
+    });
+  }
+
+  /* ---------- Update Credit Balance in UI ---------- */
+  function updateUserCreditsUI(credits) {
+    const bal = typeof credits === "number" ? credits : 0;
+    if (userCreditsDisplay) {
+      userCreditsDisplay.textContent = `${bal} Credit${bal === 1 ? "" : "s"}`;
+    }
+    if (userCreditsDisplayWrap) {
+      userCreditsDisplayWrap.style.display = currentUser ? "inline-flex" : "none";
+    }
+    // Also sync dropdown credit elements across the page
+    document.querySelectorAll(".user-credits-val").forEach(el => {
+      el.textContent = bal;
     });
   }
 
@@ -352,7 +373,6 @@ document.addEventListener("DOMContentLoaded", () => {
   async function checkIsWeeklyChampion(userId) {
     if (!userId || !db) return false;
     try {
-      // 1. Check if user already has an active unlock record
       const unlockSnap = await db.collection("premiumUnlocks").doc(userId).get();
       if (unlockSnap.exists) {
         const d = unlockSnap.data();
@@ -363,7 +383,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
-      // 2. Check site settings for threshold
       let threshold = 50;
       try {
         const settingsSnap = await db.collection("siteSettings").doc("liveQuiz").get();
@@ -372,7 +391,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       } catch(e) {}
 
-      // 3. Check current top score in liveQuizScores
       const scoresSnap = await db.collection("liveQuizScores")
         .orderBy("score", "desc")
         .limit(1)
@@ -407,8 +425,12 @@ document.addEventListener("DOMContentLoaded", () => {
       if (catalogUnlockedBanner) catalogUnlockedBanner.style.display = "none";
       if (catalogPendingBanner) catalogPendingBanner.style.display = "none";
       if (catalogPromoBanner) catalogPromoBanner.style.display = "flex";
+      updateUserCreditsUI(0);
       return;
     }
+
+    const credits = Number(currentUserProfile?.credits ?? 0);
+    updateUserCreditsUI(credits);
 
     const hasAccess = await checkUserHasAccess(currentUser);
     if (hasAccess) {
@@ -420,8 +442,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       if (accessBadgeSubtitle) {
         accessBadgeSubtitle.textContent = isChamp
-          ? "Congratulations on ranking #1 with qualifying tournament points! Enjoy your free access this week."
-          : "Your account has full permission to practice all competitive examination categories.";
+          ? "Congratulations on ranking #1 in the weekly tournament! Practice all competitive categories freely."
+          : `Your account has full access. Current balance: ${credits} credit${credits === 1 ? "" : "s"}.`;
       }
       if (catalogUnlockedBanner) catalogUnlockedBanner.style.display = "flex";
       if (catalogPendingBanner) catalogPendingBanner.style.display = "none";
@@ -436,7 +458,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // Default unpaid / not yet approved
+    // Unpaid / default
     if (catalogUnlockedBanner) catalogUnlockedBanner.style.display = "none";
     if (catalogPendingBanner) catalogPendingBanner.style.display = "none";
     if (catalogPromoBanner) catalogPromoBanner.style.display = "flex";
@@ -491,7 +513,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const latest = docs[0];
             userPendingRequest = latest;
 
-            // Update pending view details
             if (pendingRefCode) pendingRefCode.textContent = latest.referenceCode || "-";
             if (pendingMethod) pendingMethod.textContent = latest.paymentMethod || "-";
             if (pendingAmount) pendingAmount.textContent = `NPR ${latest.amountNpr || 200}`;
@@ -560,7 +581,8 @@ document.addEventListener("DOMContentLoaded", () => {
           : "background: linear-gradient(135deg, #1e293b 0%, #3b82f6 100%);";
         
         const qCount = Array.isArray(cat.questions) ? cat.questions.length : (cat.questionCount || 0);
-        const countBadge = qCount > 0 ? `${qCount} Questions` : `${cat.credits || 3} Credits`;
+        const cost = Math.max(1, Number(cat.credits || 1));
+        const countBadge = qCount > 0 ? `${qCount} Qs · ${cost} Credit` : `${cost} Credit`;
 
         card.innerHTML = `
           <div class="category-card-img" style="${bgImg}">
@@ -573,12 +595,11 @@ document.addEventListener("DOMContentLoaded", () => {
             </p>
             <button type="button" class="btn btn-primary btn-sm start-cat-btn" style="width:100%; font-weight:700; padding:11px 16px; display:flex; align-items:center; justify-content:center; gap:8px;">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-              <span>Play Quiz</span>
+              <span>Play Quiz (${cost} Credit)</span>
             </button>
           </div>
         `;
 
-        // Card click or button click
         card.querySelector(".start-cat-btn").addEventListener("click", (e) => {
           e.stopPropagation();
           handleQuizCardClick(cat);
@@ -600,7 +621,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* ============================================================
-     Quiz Card Click Handler (Gate: Sign Up -> Pay -> Play)
+     Quiz Card Click Handler (Gate: Sign Up -> Credit Check/Deduction -> Pay/Play)
      ============================================================ */
   async function handleQuizCardClick(category) {
     if (!category) return;
@@ -623,14 +644,51 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // 2. If user IS signed in: check if they have active unlocked access
-    const hasAccess = await checkUserHasAccess(currentUser);
-    if (hasAccess) {
-      startCategoryQuiz(category);
+    // Check if user has unlimited access (admin-granted or weekly tournament champion)
+    const hasUnlimited = await checkUserHasAccess(currentUser);
+    if (hasUnlimited) {
+      startCategoryQuiz(category, "Unlimited");
       return;
     }
 
-    // 3. User is signed in, but does NOT have unlocked access yet
+    const cost = Math.max(1, Number(category.credits || 1));
+    const userCredits = Number(currentUserProfile?.credits ?? 0);
+
+    // 2. Check if user has enough credits
+    if (userCredits >= cost) {
+      // User has enough credits! Confirm starting quiz and deducting credits
+      openPromptModal({
+        iconSvg: '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>',
+        iconBg: '#ecfdf5',
+        iconColor: '#059669',
+        title: `Start "${category.name}"`,
+        desc: `Starting this quiz will use ${cost} credit${cost > 1 ? "s" : ""}. You currently have ${userCredits} credit${userCredits === 1 ? "" : "s"} (${userCredits - cost} remaining after this quiz).`,
+        actionText: `Start Quiz (-${cost} Credit${cost > 1 ? "s" : ""})`,
+        onAction: async () => {
+          // Deduct credit in Firestore
+          try {
+            await db.collection("users").doc(currentUser.uid).set({
+              credits: firebase.firestore.FieldValue.increment(-cost),
+              updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
+
+            // Update local state and UI immediately
+            const newBal = Math.max(0, userCredits - cost);
+            if (currentUserProfile) currentUserProfile.credits = newBal;
+            updateUserCreditsUI(newBal);
+
+            // Start quiz
+            startCategoryQuiz(category, newBal);
+          } catch (err) {
+            console.error("Error deducting credit:", err);
+            alert("Could not deduct credit: " + err.message);
+          }
+        }
+      });
+      return;
+    }
+
+    // 3. User does NOT have enough credits (< cost)
     // Check if user has a pending verification request
     if (userPendingRequest && userPendingRequest.status === "pending") {
       openPromptModal({
@@ -638,7 +696,7 @@ document.addEventListener("DOMContentLoaded", () => {
         iconBg: '#fffbeb',
         iconColor: '#d97706',
         title: "Verification Under Review",
-        desc: `Your payment verification request for NPR ${userPendingRequest.amountNpr || 200} is currently awaiting administrator review. Once approved, you will have instant access to all premium quizzes.`,
+        desc: `You currently have ${userCredits} credit${userCredits === 1 ? "" : "s"}. Your payment verification request is currently awaiting administrator review to top up your credits.`,
         actionText: "View Submission Details",
         onAction: () => {
           showView("pending");
@@ -647,14 +705,13 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // 4. User is signed in, but has not yet submitted payment:
-    // Ask them to make payment and open payment options
+    // 4. Insufficient credits & no pending payment -> Prompt to top up credits
     openPromptModal({
       iconSvg: '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
       iconBg: '#fef3c7',
       iconColor: '#b45309',
-      title: "Unlock Premium Access",
-      desc: `"${category.name || 'This quiz'}" is part of the premium examination bank. To play this and all other premium quizzes, please make a one-time payment of NPR 200.`,
+      title: "More Credits Required",
+      desc: `"${category.name || 'This quiz'}" requires ${cost} credit${cost > 1 ? "s" : ""}, but you currently have ${userCredits} credit${userCredits === 1 ? "" : "s"}. Complete a one-time payment of NPR 200 to top up your credits and unlock all premium quizzes!`,
       actionText: "Open Payment Options",
       onAction: () => {
         showView("payment");
@@ -665,12 +722,15 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ============================================================
      Interactive Quiz Arena Runner
      ============================================================ */
-  async function startCategoryQuiz(category) {
+  async function startCategoryQuiz(category, remainingCredits) {
     if (!category) return;
     
     // Switch view to arena
     showView("arena");
-    if (arenaCatName) arenaCatName.textContent = category.name || "Premium Quiz";
+    const creditsLabel = typeof remainingCredits === "number"
+      ? ` (${remainingCredits} credit${remainingCredits === 1 ? "" : "s"} remaining)`
+      : (remainingCredits === "Unlimited" ? " (Unlimited Access)" : "");
+    if (arenaCatName) arenaCatName.textContent = `${category.name || "Premium Quiz"}${creditsLabel}`;
     if (questionText) questionText.textContent = "Loading questions…";
     if (optionsGrid) optionsGrid.innerHTML = "";
     if (feedbackBar) feedbackBar.style.display = "none";
@@ -683,12 +743,10 @@ document.addEventListener("DOMContentLoaded", () => {
       if (Array.isArray(category.questions) && category.questions.length > 0) {
         activeQuestions = [...category.questions];
       } else {
-        // Fetch freshest doc from Firestore
         const docSnap = await db.collection("premiumQuizContent").doc(category.id).get();
         if (docSnap.exists && Array.isArray(docSnap.data().questions) && docSnap.data().questions.length > 0) {
           activeQuestions = [...docSnap.data().questions];
         } else {
-          // Fallback to questions subcollection if any
           const subSnap = await db.collection("premiumQuizContent").doc(category.id).collection("questions").get();
           if (!subSnap.empty) {
             subSnap.forEach(d => activeQuestions.push(Object.assign({ id: d.id }, d.data())));
@@ -870,6 +928,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (resultsFinalScore) resultsFinalScore.textContent = `${currentScore} pts`;
     if (resultsCorrectCount) resultsCorrectCount.textContent = `${correctCount} / ${activeQuestions.length}`;
+    if (resultsRemainingCredits) {
+      const bal = currentUserProfile && currentUserProfile.credits != null
+        ? currentUserProfile.credits
+        : 0;
+      resultsRemainingCredits.textContent = `${bal}`;
+    }
   }
 
   /* ---------- Utility: HTML Escaping ---------- */

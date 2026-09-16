@@ -80,23 +80,59 @@
 
   <!-- ===== Not logged in: sign-in gate ===== -->
   <section class="admin-gate" id="signInGate">
-    <div class="container" style="max-width:380px">
-      <h1 class="section-title" style="text-align:center">Admin sign in</h1>
+    <div class="container" style="max-width:400px">
+      <h1 class="section-title" style="text-align:center; margin-bottom:8px;">Admin Sign In</h1>
+      <p style="text-align:center; color:var(--mist, #64748b); font-size:0.9rem; margin-bottom:20px;">
+        Sign in to manage quiz categories, questions, resources, and live quizzes.
+      </p>
+
+      <!-- Google Sign In for Admin -->
+      <button type="button" class="site-auth-google-btn" id="adminGoogleSignInBtn" style="margin-bottom:16px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" style="flex-shrink:0"><path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.3 9 5 12 5z"/><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.7-.2-2.3H12v4.6h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.9z"/><path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.8s.2-2.1.4-2.8L1.9 6.3C.7 8.7 0 11.3 0 14s.7 5.3 1.9 7.7l3.7-2.9z"/><path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.3-6.4-5.2L1.9 16C3.7 19.7 7.5 23 12 23z"/></svg>
+        <span>Sign in with Google</span>
+      </button>
+
+      <div class="site-auth-divider" style="margin:16px 0;">
+        <span>or sign in with email</span>
+      </div>
+
       <form id="adminLoginForm" class="admin-login-form">
-        <label>Email <input type="email" id="adminEmail" required /></label>
-        <label>Password <input type="password" id="adminPassword" required minlength="6" /></label>
-        <button type="submit" class="btn btn-primary" style="width:100%">Sign in</button>
+        <label>Email Address <input type="email" id="adminEmail" placeholder="bholashroff345@gmail.com" required autocomplete="email" /></label>
+        <div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+            <label style="margin:0;">Password</label>
+            <a href="#" id="adminForgotPassLink" style="font-size:0.8rem; color:#2563eb; text-decoration:none;">Forgot password?</a>
+          </div>
+          <input type="password" id="adminPassword" placeholder="Enter password" required minlength="6" autocomplete="current-password" />
+        </div>
+        <button type="submit" class="btn btn-primary" id="adminEmailSubmitBtn" style="width:100%; margin-top:14px;">Sign in with Email</button>
       </form>
-      <p class="modal-status" id="adminLoginStatus"></p>
-      <p class="modal-alt">Only email addresses listed in <code>ADMIN_EMAILS</code> (in <code>js/firebase-config.js</code>) can manage content.</p>
+      <p class="modal-status" id="adminLoginStatus" style="margin-top:12px; font-size:0.88rem;"></p>
+      <p class="modal-alt" style="margin-top:16px; font-size:0.82rem; color:#64748b;">
+        Authorized admin: <code>bholashroff345@gmail.com</code>.
+      </p>
     </div>
   </section>
 
   <!-- ===== Logged in but not on the admin allowlist ===== -->
   <section class="admin-gate" id="notAuthorized" hidden>
-    <div class="container" style="max-width:420px; text-align:center">
-      <h1 class="section-title">Not authorized</h1>
-      <p>Your account is signed in, but isn't on the admin list yet. Add your email to <code>ADMIN_EMAILS</code> in <code>js/firebase-config.js</code> (and to your Firestore rules) to get access.</p>
+    <div class="container" style="max-width:440px; text-align:center; padding:32px 20px; background:#fff; border:1px solid #e2e8f0; border-radius:14px;">
+      <div style="width:48px; height:48px; border-radius:50%; background:#fee2e2; color:#dc2626; display:inline-flex; align-items:center; justify-content:center; margin-bottom:14px;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+      </div>
+      <h2 class="section-title" style="margin-bottom:8px; font-size:1.3rem;">Access Restricted</h2>
+      <p style="color:#64748b; font-size:0.92rem; margin-bottom:14px;">
+        You are currently signed in as <strong id="notAuthorizedEmail" style="color:#0f172a;">user</strong>, which is not on the admin allowlist.
+      </p>
+      <p style="font-size:0.85rem; color:#94a3b8; margin-bottom:20px;">
+        Please sign in using the administrator account (<code>bholashroff345@gmail.com</code>) to manage this site.
+      </p>
+      <div style="display:flex; gap:10px; justify-content:center;">
+        <button type="button" class="btn btn-primary btn-sm" id="switchAdminAccountBtn">
+          Sign Out & Switch Account
+        </button>
+        <a href="index.html" class="btn btn-outline btn-sm">Return Home</a>
+      </div>
     </div>
   </section>
 
@@ -456,7 +492,7 @@
               <input type="url" id="premiumCatImage" placeholder="https://example.com/banner.jpg or leave empty" />
             </label>
             <label>Credits Required to Play
-              <input type="number" id="premiumCatCredits" value="3" min="1" max="50" />
+              <input type="number" id="premiumCatCredits" value="1" min="1" max="50" />
             </label>
           </div>
           <label>Category Description
@@ -482,6 +518,38 @@
               <option value="">-- Select a category --</option>
             </select>
           </label>
+
+          <!-- Bulk import for Premium Quiz Questions -->
+          <details class="admin-import" style="margin-top:16px; margin-bottom:20px;">
+            <summary style="font-weight:600; cursor:pointer;">Bulk import questions into this category</summary>
+            <div class="admin-import-body" style="padding-top:14px;">
+              <p class="quiz-muted">
+                Upload a CSV or JSON file, or paste content below to quickly add multiple questions at once.
+                <a href="#" id="downloadPremiumQCsvTemplate">Download CSV template</a> ·
+                <a href="#" id="downloadPremiumQJsonTemplate">Download JSON template</a>
+              </p>
+              <p class="quiz-muted" style="font-size:0.84rem;">
+                <strong>CSV columns:</strong> question, option_a, option_b, option_c, option_d, correct (A/B/C/D or 0-3), explanation.<br/>
+                <strong>JSON:</strong> array of <code>{ "question", "options": [4 strings], "correctIndex" (0-3), "explanation" }</code>.
+              </p>
+              <div style="display:flex; gap:16px; align-items:center; margin:12px 0; flex-wrap:wrap;">
+                <label style="font-size:0.86rem; margin:0; display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
+                  <input type="radio" name="premiumImportMode" value="append" checked />
+                  Append to existing questions
+                </label>
+                <label style="font-size:0.86rem; margin:0; display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
+                  <input type="radio" name="premiumImportMode" value="replace" />
+                  Replace all existing questions in this category
+                </label>
+              </div>
+              <input type="file" id="premiumQImportFile" accept=".csv,.json,text/csv,application/json" />
+              <textarea id="premiumQImportText" rows="6" placeholder="...or paste CSV/JSON content here"></textarea>
+              <div class="admin-form-actions" style="margin-top:10px;">
+                <button type="button" class="btn btn-primary btn-sm" id="premiumQImportBtn">Import Questions to Category</button>
+              </div>
+              <p class="modal-status" id="premiumQImportStatus"></p>
+            </div>
+          </details>
 
           <form id="premiumQuestionForm" class="admin-form" style="margin-top:16px">
             <input type="hidden" id="premiumQId" />
@@ -528,6 +596,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
   <script src="js/firebase-config.js"></script>
+  <script src="js/auth-widget.js"></script>
   <script src="js/nav-drawer.js"></script>
   <script src="js/admin.js"></script>
 </body>
