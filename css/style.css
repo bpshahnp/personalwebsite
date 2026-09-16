@@ -2761,9 +2761,7 @@ img { max-width: 100%; display: block; }
 .mcqhub-hero {
   background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 55%, #0f2d4a 100%);
   border-bottom: 1px solid rgba(255,255,255,0.07);
-  position: sticky;
-  top: 66px;
-  z-index: 40;
+  /* Not sticky — scrolls away with the page. Only the rail pins. */
 }
 .mcqhub-hero-inner {
   display: flex;
@@ -2844,8 +2842,8 @@ img { max-width: 100%; display: block; }
 /* ── Program rail ── */
 .mcqhub-rail {
   position: sticky;
-  top: calc(66px + 106px); /* site header + mcqhub hero */
-  max-height: calc(100vh - 66px - 106px);
+  top: 76px; /* Below sticky site header (66px) with clean breathing room */
+  max-height: calc(100vh - 86px);
   display: flex;
   flex-direction: column;
   border-right: 1px solid var(--line);
