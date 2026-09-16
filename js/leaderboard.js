@@ -81,6 +81,9 @@ db.collection("scores")
 
 // Re-render when the signed-in user changes
 document.addEventListener("authchange", render);
+if (typeof auth !== "undefined" && auth) {
+  auth.onAuthStateChanged(render);
+}
 
 /* Pull out the points that apply to the selected board + time bucket.
    Returns null when this player has 0 points on this board. */

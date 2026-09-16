@@ -2242,7 +2242,62 @@ img { max-width: 100%; display: block; }
    Three states per topic: not attempted (hollow ring), attempted with
    at least one wrong answer (amber "!"), fully correct on the best
    attempt (green check). Lives right in the quiz setup card — no need
-   for a separate screen or split layout, it's just another list. */
+/* ---------- Overall progress summary card ---------- */
+.overall-progress-box {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin: 0 0 14px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+[data-theme="dark"] .overall-progress-box {
+  background: #1e293b;
+  border-color: #334155;
+}
+.overall-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.overall-progress-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--mist);
+}
+.overall-progress-pct {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--orange-dark, #ea580c);
+}
+.overall-progress-track {
+  height: 8px;
+  background: var(--cream, #f1f5f9);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+[data-theme="dark"] .overall-progress-track {
+  background: #334155;
+}
+.overall-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f97316, #ea580c);
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+.overall-progress-stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--mist);
+}
+
 .topic-progress-rail {
   flex: 1;
   overflow-y: auto;

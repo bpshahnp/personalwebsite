@@ -108,12 +108,33 @@
         <h2 class="rail-group-title" id="railTitle">Topic Progress</h2>
       </div>
 
-      <!-- Before quiz: Topic completion progress -->
+      <!-- Before quiz: Topic & Overall progress -->
       <div class="topic-progress-rail" id="topicProgress">
+        <!-- Overall Progress Summary Card -->
+        <div class="overall-progress-box" id="overallProgressBox">
+          <div class="overall-progress-header">
+            <span class="overall-progress-label">Overall Progress</span>
+            <span class="overall-progress-pct" id="overallProgressPct">0%</span>
+          </div>
+          <div class="overall-progress-track">
+            <div class="overall-progress-fill" id="overallProgressFill" style="width: 0%;"></div>
+          </div>
+          <div class="overall-progress-stats" id="overallProgressStats">
+            <span id="overallMasteredCount">0 Topics Completed</span>
+            <span id="overallTotalScore">0 Pts</span>
+          </div>
+        </div>
+
         <div class="topic-list" id="topicList"></div>
-        <p class="topic-progress-login" id="topicProgressLogin" hidden>
-          <a href="#" id="topicProgressLoginLink">Log in</a> to track which topics you've completed.
-        </p>
+
+        <div class="topic-progress-login" id="topicProgressLogin" hidden style="margin-top:14px; padding:12px; background:var(--white); border:1px solid var(--line); border-radius:10px; text-align:center;">
+          <p style="margin:0 0 10px; font-size:0.84rem; color:var(--mist); line-height:1.4;">
+            <a href="#" id="topicProgressLoginLink" style="font-weight:700; color:var(--orange-dark);">Sign in</a> to save and track your overall chapter completion.
+          </p>
+          <button type="button" class="btn btn-outline btn-sm" id="topicProgressLoginBtn" style="width:100%; font-size:0.8rem; padding:6px 12px; font-weight:600;">
+            Log In / Sign Up
+          </button>
+        </div>
       </div>
 
       <!-- During quiz: Question checklist -->

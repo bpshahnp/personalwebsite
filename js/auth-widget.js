@@ -474,6 +474,11 @@ function mountAuthWidget(widgetEl) {
       if (!dropdown.hidden) {
         renderAuthDropdown(dropdown, user);
       }
+      try {
+        document.dispatchEvent(new CustomEvent("authchange", { detail: { user } }));
+      } catch (e) {
+        console.warn("Could not dispatch authchange event:", e);
+      }
     });
   } else {
     updateIcon(null);

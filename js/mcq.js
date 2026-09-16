@@ -360,6 +360,14 @@ const topicProgress = document.getElementById("topicProgress");
 const topicList = document.getElementById("topicList");
 const topicProgressLogin = document.getElementById("topicProgressLogin");
 const topicProgressLoginLink = document.getElementById("topicProgressLoginLink");
+const topicProgressLoginBtn = document.getElementById("topicProgressLoginBtn");
+
+// Overall progress summary elements
+const overallProgressBox = document.getElementById("overallProgressBox");
+const overallProgressPct = document.getElementById("overallProgressPct");
+const overallProgressFill = document.getElementById("overallProgressFill");
+const overallMasteredCount = document.getElementById("overallMasteredCount");
+const overallTotalScore = document.getElementById("overallTotalScore");
 
 // Top bar elements
 const mcqhubBarActions = document.getElementById("mcqhubBarActions");
@@ -743,6 +751,7 @@ function refreshCategoryOptions() {
    the "topics" map already being written in saveScoreToLeaderboard —
    no extra collection, no extra writes. */
 let myTopics = null; // null = not loaded yet (logged out, or still loading)
+let myScoreDoc = null;
 let myTopicsUnsub = null;
 
 function watchMyTopics(user) {
@@ -752,6 +761,7 @@ function watchMyTopics(user) {
   }
   if (!user) {
     myTopics = null;
+    myScoreDoc = null;
     renderTopicProgress();
     return;
   }
@@ -760,46 +770,65 @@ function watchMyTopics(user) {
     .doc(user.uid)
     .onSnapshot(
       (doc) => {
-        myTopics = (doc.exists && doc.data().topics) || {};
+        myScoreDoc = doc.exists ? doc.data() : {};
+        myTopics = myScoreDoc.topics || {};
         renderTopicProgress();
       },
-      () => {
+      (err) => {
+        console.warn("Could not read topics snapshot:", err);
+        myScoreDoc = {};
         myTopics = {};
         renderTopicProgress();
       }
     );
 }
 
+// Listen to auth changes via both custom event and direct Firebase auth
 document.addEventListener("authchange", (e) => watchMyTopics(e.detail.user));
+if (typeof auth !== "undefined" && auth) {
+  auth.onAuthStateChanged((user) => watchMyTopics(user));
+}
+
+function triggerMcqAuthModal() {
+  if (typeof window.openMcqAuthModal === "function") {
+    window.openMcqAuthModal();
+  } else if (typeof window.openAuthModal === "function") {
+    window.openAuthModal({ mode: "signin" });
+  } else {
+    const btn = document.getElementById("authIconBtn") || document.getElementById("authIconBtnMobile");
+    if (btn) btn.click();
+  }
+}
 
 if (topicProgressLoginLink) {
   topicProgressLoginLink.addEventListener("click", (e) => {
     e.preventDefault();
-    if (typeof window.openMcqAuthModal === "function") {
-      window.openMcqAuthModal();
-    } else {
-      const btn = document.getElementById("authIconBtn") || document.getElementById("authIconBtnMobile");
-      if (btn) btn.click();
-    }
+    triggerMcqAuthModal();
+  });
+}
+
+if (topicProgressLoginBtn) {
+  topicProgressLoginBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    triggerMcqAuthModal();
   });
 }
 
 function renderTopicProgress() {
   if (!topicProgress) return;
 
-  if (myTopics === null) {
-    topicProgress.hidden = true;
-    topicProgressLogin.hidden = false;
-    return;
-  }
-  topicProgressLogin.hidden = true;
-
   const cls = selectedClass();
+  const subj = selectedSubject();
   const classesToShow = cls === "All" ? CLASS_LEVELS : [cls];
   const rows = [];
+
   classesToShow.forEach((c) => {
-    categoriesInClass(c).forEach((category) => {
-      const entry = myTopics[topicKey(c, category)];
+    const cats = subj && subj !== "All"
+      ? categoriesInClassAndSubject(c, subj)
+      : categoriesInClass(c);
+
+    cats.forEach((category) => {
+      const entry = myTopics ? myTopics[topicKey(c, category)] : null;
       rows.push({
         label: cls === "All" ? `Class ${c}: ${category}` : category,
         entry,
@@ -807,26 +836,58 @@ function renderTopicProgress() {
     });
   });
 
-  if (!rows.length) {
-    topicProgress.hidden = true;
-    return;
+  const isLoggedIn = Boolean(auth && auth.currentUser);
+
+  if (topicProgressLogin) {
+    topicProgressLogin.hidden = isLoggedIn;
   }
+
+  // Calculate overall completion metrics
+  const totalTopics = rows.length;
+  const completedTopics = rows.filter(r => r.entry && r.entry.bestPercentage >= 100).length;
+  const pct = totalTopics > 0 ? Math.round((completedTopics / totalTopics) * 100) : 0;
+
+  // Total points earned
+  const totalPoints = (myScoreDoc && myScoreDoc.points && myScoreDoc.points["All"] && myScoreDoc.points["All"]["all_time"]) || 0;
+
+  if (overallProgressPct) {
+    overallProgressPct.textContent = `${pct}%`;
+  }
+  if (overallProgressFill) {
+    overallProgressFill.style.width = `${pct}%`;
+  }
+  if (overallMasteredCount) {
+    overallMasteredCount.textContent = `${completedTopics} / ${totalTopics} Mastered`;
+  }
+  if (overallTotalScore) {
+    overallTotalScore.textContent = isLoggedIn ? `${totalPoints} Pts` : "Guest";
+  }
+
   topicProgress.hidden = false;
 
-  topicList.innerHTML = rows
-    .map(({ label, entry }) => {
-      const status = !entry ? "new" : entry.bestPercentage >= 100 ? "complete" : "attempted";
-      const icon = status === "complete" ? "✓" : status === "attempted" ? "!" : "";
-      const meta = entry ? `${Math.round(entry.bestPercentage)}% best` : "";
-      return `
-        <div class="topic-row is-${status}">
-          <span class="topic-icon" aria-hidden="true">${icon}</span>
-          <span class="topic-name">${escapeHtml(label)}</span>
-          <span class="topic-meta">${meta}</span>
-        </div>
-      `;
-    })
-    .join("");
+  if (!rows.length) {
+    if (topicList) {
+      topicList.innerHTML = '<p class="quiz-muted" style="font-size:0.84rem; padding:8px 4px;">No topics found for this selection.</p>';
+    }
+    return;
+  }
+
+  if (topicList) {
+    topicList.innerHTML = rows
+      .map(({ label, entry }) => {
+        const status = !entry ? "new" : entry.bestPercentage >= 100 ? "complete" : "attempted";
+        const icon = status === "complete" ? "✓" : status === "attempted" ? "!" : "";
+        const meta = entry ? `${Math.round(entry.bestPercentage)}% best` : "";
+        return `
+          <div class="topic-row is-${status}">
+            <span class="topic-icon" aria-hidden="true">${icon}</span>
+            <span class="topic-name">${escapeHtml(label)}</span>
+            <span class="topic-meta">${meta}</span>
+          </div>
+        `;
+      })
+      .join("");
+  }
 }
 
 /* Status line under the heading + Start button availability. */
@@ -854,12 +915,14 @@ classRadios.forEach((radio) => {
     refreshSubjectOptions();
     refreshCategoryOptions();
     refreshStatus();
+    renderTopicProgress();
   });
 });
 subjectRadios.forEach((radio) => {
   radio.addEventListener("change", () => {
     refreshCategoryOptions();
     refreshStatus();
+    renderTopicProgress();
   });
 });
 categorySelect.addEventListener("change", refreshStatus);
