@@ -1,71 +1,93 @@
 /* ============================================================
    premium.js — Dedicated Premium Quiz Portal
-   - State-driven access: Gate / Unlocked / Pending / Payment Proof Form
+   - Catalog-first: Displays all quiz cards immediately to everyone
+   - Card click gate:
+       * If not signed in: prompts user to sign up / sign in
+       * If signed in & unlocked: launches interactive quiz arena
+       * If signed in & pending: informs user verification is in review
+       * If signed in & unpaid: prompts user to make payment & opens payment options
+   - Full question loading support (array on category doc or subcollection)
    - Client-side image compression for payment receipts
-   - Interactive quiz runner for premium question banks
+   - Interactive quiz runner with timed questions & instant feedback
    - Weekly champion automatic unlock verification
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", () => {
   // DOM Views
-  const loadingView         = document.getElementById("premiumLoading");
-  const authGateView        = document.getElementById("premiumAuthGate");
-  const accessGrantedView   = document.getElementById("premiumAccessGranted");
-  const pendingView         = document.getElementById("premiumPendingView");
-  const paymentFormView     = document.getElementById("premiumPaymentFormView");
+  const catalogView             = document.getElementById("premiumCatalogView");
+  const quizArena               = document.getElementById("premiumQuizArena");
+  const quizResults             = document.getElementById("premiumQuizResults");
+  const pendingView             = document.getElementById("premiumPendingView");
+  const paymentFormView         = document.getElementById("premiumPaymentFormView");
 
-  // Auth Gate Buttons
-  const gateSigninBtn       = document.getElementById("premiumGateSigninBtn");
-  const gateSignupBtn       = document.getElementById("premiumGateSignupBtn");
+  // Catalog Banners & Buttons
+  const catalogUnlockedBanner   = document.getElementById("catalogUnlockedBanner");
+  const catalogPendingBanner    = document.getElementById("catalogPendingBanner");
+  const catalogPromoBanner      = document.getElementById("catalogPromoBanner");
+  const catalogPayBtn           = document.getElementById("catalogPayBtn");
+  const catalogViewPendingBtn   = document.getElementById("catalogViewPendingBtn");
+  const accessBadgeTitle        = document.getElementById("accessBadgeTitle");
+  const accessBadgeSubtitle     = document.getElementById("accessBadgeSubtitle");
+  const categoriesGrid          = document.getElementById("premiumCategoriesGrid");
+
+  // Navigation Back Buttons
+  const exitQuizBtn             = document.getElementById("premiumExitQuizBtn");
+  const resultsReturnBtn        = document.getElementById("resultsReturnBtn");
+  const backToQuizzesFromPay    = document.getElementById("backToQuizzesFromPaymentBtn");
+  const backToQuizzesFromPend   = document.getElementById("backToQuizzesFromPendingBtn");
+  const pendingReturnToCatalog  = document.getElementById("pendingReturnToCatalogBtn");
 
   // Payment Form Elements
-  const paymentForm         = document.getElementById("paymentProofForm");
-  const payFormName         = document.getElementById("payFormName");
-  const payFormPhone        = document.getElementById("payFormPhone");
-  const payFormEmail        = document.getElementById("payFormEmail");
-  const payFormMethod       = document.getElementById("payFormMethod");
-  const payFormAmount       = document.getElementById("payFormAmount");
-  const payFormRef          = document.getElementById("payFormRef");
-  const payFormScreenshot   = document.getElementById("payFormScreenshot");
-  const screenshotPreview   = document.getElementById("screenshotPreview");
-  const payFormRemarks      = document.getElementById("payFormRemarks");
-  const payFormStatus       = document.getElementById("payFormStatus");
-  const payFormSubmitBtn    = document.getElementById("payFormSubmitBtn");
+  const paymentForm             = document.getElementById("paymentProofForm");
+  const payFormName             = document.getElementById("payFormName");
+  const payFormPhone            = document.getElementById("payFormPhone");
+  const payFormEmail            = document.getElementById("payFormEmail");
+  const payFormMethod           = document.getElementById("payFormMethod");
+  const payFormAmount           = document.getElementById("payFormAmount");
+  const payFormRef              = document.getElementById("payFormRef");
+  const payFormScreenshot       = document.getElementById("payFormScreenshot");
+  const screenshotPreview       = document.getElementById("screenshotPreview");
+  const payFormRemarks          = document.getElementById("payFormRemarks");
+  const payFormStatus           = document.getElementById("payFormStatus");
+  const payFormSubmitBtn        = document.getElementById("payFormSubmitBtn");
 
   // Pending View Elements
-  const pendingRefCode      = document.getElementById("pendingRefCode");
-  const pendingMethod       = document.getElementById("pendingMethod");
-  const pendingAmount       = document.getElementById("pendingAmount");
-  const pendingDate         = document.getElementById("pendingDate");
-  const pendingReceiptThumbBox = document.getElementById("pendingReceiptThumbBox");
-  const pendingReceiptImg   = document.getElementById("pendingReceiptImg");
-  const resubmitPaymentBtn  = document.getElementById("resubmitPaymentBtn");
+  const pendingRefCode          = document.getElementById("pendingRefCode");
+  const pendingMethod           = document.getElementById("pendingMethod");
+  const pendingAmount           = document.getElementById("pendingAmount");
+  const pendingDate             = document.getElementById("pendingDate");
+  const pendingReceiptThumbBox  = document.getElementById("pendingReceiptThumbBox");
+  const pendingReceiptImg       = document.getElementById("pendingReceiptImg");
+  const resubmitPaymentBtn      = document.getElementById("resubmitPaymentBtn");
 
-  // Unlocked & Quiz Arena Elements
-  const categoriesSection   = document.getElementById("premiumCategoriesSection");
-  const categoriesGrid      = document.getElementById("premiumCategoriesGrid");
-  const quizArena           = document.getElementById("premiumQuizArena");
-  const quizResults         = document.getElementById("premiumQuizResults");
-  const exitQuizBtn         = document.getElementById("premiumExitQuizBtn");
-  const arenaCatName        = document.getElementById("premiumArenaCatName");
-  const timerBadge          = document.getElementById("premiumTimerBadge");
-  const questionCounter     = document.getElementById("premiumQuestionCounter");
-  const pointsCounter       = document.getElementById("premiumPointsCounter");
-  const questionText        = document.getElementById("premiumQuestionText");
-  const optionsGrid         = document.getElementById("premiumOptionsGrid");
-  const feedbackBar         = document.getElementById("premiumFeedbackBar");
-  const nextQuestionBtn     = document.getElementById("premiumNextQuestionBtn");
-  const resultsFinalScore   = document.getElementById("resultsFinalScore");
-  const resultsCorrectCount = document.getElementById("resultsCorrectCount");
-  const resultsReturnBtn    = document.getElementById("resultsReturnBtn");
-  const accessBadgeTitle    = document.getElementById("accessBadgeTitle");
-  const accessBadgeSubtitle = document.getElementById("accessBadgeSubtitle");
+  // Active Quiz Arena Elements
+  const arenaCatName            = document.getElementById("premiumArenaCatName");
+  const timerBadge              = document.getElementById("premiumTimerBadge");
+  const questionCounter         = document.getElementById("premiumQuestionCounter");
+  const pointsCounter           = document.getElementById("premiumPointsCounter");
+  const questionText            = document.getElementById("premiumQuestionText");
+  const optionsGrid             = document.getElementById("premiumOptionsGrid");
+  const feedbackBar             = document.getElementById("feedbackBar") || document.getElementById("premiumFeedbackBar");
+  const nextQuestionBtn         = document.getElementById("premiumNextQuestionBtn");
+  const resultsFinalScore       = document.getElementById("resultsFinalScore");
+  const resultsCorrectCount     = document.getElementById("resultsCorrectCount");
 
+  // Prompt Modal Elements
+  const promptModal             = document.getElementById("premiumPromptModal");
+  const promptModalIcon         = document.getElementById("promptModalIcon");
+  const promptModalTitle        = document.getElementById("promptModalTitle");
+  const promptModalDesc         = document.getElementById("promptModalDesc");
+  const promptModalActionBtn    = document.getElementById("promptModalActionBtn");
+  const promptModalCancelBtn    = document.getElementById("promptModalCancelBtn");
+
+  // Global State
   let currentUser = null;
   let currentUserProfile = null;
+  let userPendingRequest = null;
   let compressedScreenshotBase64 = "";
   let userRequestsUnsubscribe = null;
   let userProfileUnsubscribe = null;
+  let allLoadedCategories = [];
 
   // Active Quiz State
   let activeQuestions = [];
@@ -78,7 +100,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const BASE_POINTS = 10;
   const MAX_SPEED_BONUS = 5;
 
-  // Sound effects
+  /* ---------- Sound Effects ---------- */
   function playBeep(freq, type, duration) {
     try {
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -95,26 +117,95 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch(e) {}
   }
 
-  function showView(view) {
-    [loadingView, authGateView, accessGrantedView, pendingView, paymentFormView].forEach(v => {
+  /* ---------- View Router ---------- */
+  function showView(viewName) {
+    const allViews = [catalogView, quizArena, quizResults, pendingView, paymentFormView];
+    allViews.forEach(v => {
       if (v) v.style.display = "none";
     });
-    if (view) view.style.display = "block";
+
+    let target = catalogView;
+    if (viewName === "arena") target = quizArena;
+    else if (viewName === "results") target = quizResults;
+    else if (viewName === "pending") target = pendingView;
+    else if (viewName === "payment") target = paymentFormView;
+    else target = catalogView;
+
+    if (target) {
+      target.style.display = "block";
+      // Scroll to view if switching away from catalog
+      if (viewName !== "catalog") {
+        window.scrollTo({ top: 120, behavior: "smooth" });
+      }
+    }
   }
 
-  // Auth gate buttons
-  if (gateSigninBtn) {
-    gateSigninBtn.addEventListener("click", () => {
-      if (typeof window.openAuthModal === "function") {
-        window.openAuthModal({ mode: "signin" });
+  // Wire back buttons
+  if (exitQuizBtn) exitQuizBtn.addEventListener("click", () => {
+    clearInterval(timerInterval);
+    showView("catalog");
+  });
+  if (resultsReturnBtn) resultsReturnBtn.addEventListener("click", () => showView("catalog"));
+  if (backToQuizzesFromPay) backToQuizzesFromPay.addEventListener("click", () => showView("catalog"));
+  if (backToQuizzesFromPend) backToQuizzesFromPend.addEventListener("click", () => showView("catalog"));
+  if (pendingReturnToCatalog) pendingReturnToCatalog.addEventListener("click", () => showView("catalog"));
+
+  if (catalogPayBtn) {
+    catalogPayBtn.addEventListener("click", () => {
+      if (!currentUser) {
+        openPromptModal({
+          iconSvg: '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>',
+          iconBg: '#eff6ff',
+          iconColor: '#2563eb',
+          title: "Sign Up or Sign In Required",
+          desc: "Please sign in or create an account first so your premium membership can be linked to your profile.",
+          actionText: "Create Account / Sign In",
+          onAction: () => {
+            if (typeof window.openAuthModal === "function") {
+              window.openAuthModal({ mode: "signup" });
+            }
+          }
+        });
+      } else {
+        showView("payment");
       }
     });
   }
-  if (gateSignupBtn) {
-    gateSignupBtn.addEventListener("click", () => {
-      if (typeof window.openAuthModal === "function") {
-        window.openAuthModal({ mode: "signup" });
-      }
+
+  if (catalogViewPendingBtn) {
+    catalogViewPendingBtn.addEventListener("click", () => showView("pending"));
+  }
+
+  /* ---------- Prompt Modal Helper ---------- */
+  function openPromptModal({ iconSvg, iconBg, iconColor, title, desc, actionText, onAction }) {
+    if (!promptModal) return;
+    if (promptModalIcon) {
+      promptModalIcon.innerHTML = iconSvg || "";
+      promptModalIcon.style.background = iconBg || "#eff6ff";
+      promptModalIcon.style.color = iconColor || "#2563eb";
+    }
+    if (promptModalTitle) promptModalTitle.textContent = title || "";
+    if (promptModalDesc) promptModalDesc.textContent = desc || "";
+    if (promptModalActionBtn) {
+      promptModalActionBtn.textContent = actionText || "Proceed";
+      promptModalActionBtn.onclick = () => {
+        closePromptModal();
+        if (typeof onAction === "function") onAction();
+      };
+    }
+    promptModal.style.display = "flex";
+  }
+
+  function closePromptModal() {
+    if (promptModal) promptModal.style.display = "none";
+  }
+
+  if (promptModalCancelBtn) {
+    promptModalCancelBtn.addEventListener("click", closePromptModal);
+  }
+  if (promptModal) {
+    promptModal.addEventListener("click", (e) => {
+      if (e.target === promptModal) closePromptModal();
     });
   }
 
@@ -124,7 +215,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const file = e.target.files && e.target.files[0];
       if (!file) {
         compressedScreenshotBase64 = "";
-        screenshotPreview.style.display = "none";
+        if (screenshotPreview) screenshotPreview.style.display = "none";
         return;
       }
       if (!file.type.startsWith("image/")) {
@@ -137,7 +228,6 @@ document.addEventListener("DOMContentLoaded", () => {
       reader.onload = evt => {
         const img = new Image();
         img.onload = () => {
-          // Scale image down to max 1000px dimension
           const maxDim = 1000;
           let width = img.width;
           let height = img.height;
@@ -158,8 +248,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
           // Compress to JPEG 0.72 quality
           compressedScreenshotBase64 = canvas.toDataURL("image/jpeg", 0.72);
-          screenshotPreview.src = compressedScreenshotBase64;
-          screenshotPreview.style.display = "block";
+          if (screenshotPreview) {
+            screenshotPreview.src = compressedScreenshotBase64;
+            screenshotPreview.style.display = "block";
+          }
         };
         img.src = evt.target.result;
       };
@@ -172,17 +264,20 @@ document.addEventListener("DOMContentLoaded", () => {
     paymentForm.addEventListener("submit", async e => {
       e.preventDefault();
       if (!currentUser) {
-        alert("Please sign in first.");
+        alert("Please sign in or create an account first.");
+        if (typeof window.openAuthModal === "function") {
+          window.openAuthModal({ mode: "signup" });
+        }
         return;
       }
 
-      const name = payFormName.value.trim();
-      const phone = payFormPhone.value.trim();
-      const email = payFormEmail.value.trim() || currentUser.email;
-      const method = payFormMethod.value;
-      const amount = Number(payFormAmount.value || 200);
-      const refCode = payFormRef.value.trim();
-      const remarks = payFormRemarks.value.trim();
+      const name = payFormName ? payFormName.value.trim() : "";
+      const phone = payFormPhone ? payFormPhone.value.trim() : "";
+      const email = (payFormEmail && payFormEmail.value.trim()) || currentUser.email || "";
+      const method = payFormMethod ? payFormMethod.value : "eSewa";
+      const amount = Number((payFormAmount && payFormAmount.value) || 200);
+      const refCode = payFormRef ? payFormRef.value.trim() : "";
+      const remarks = payFormRemarks ? payFormRemarks.value.trim() : "";
 
       if (!refCode || refCode.length < 4) {
         showFormAlert("Please enter a valid payment transaction reference code.", "error");
@@ -194,8 +289,10 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      payFormSubmitBtn.disabled = true;
-      payFormSubmitBtn.textContent = "Submitting verification…";
+      if (payFormSubmitBtn) {
+        payFormSubmitBtn.disabled = true;
+        payFormSubmitBtn.textContent = "Submitting verification…";
+      }
       showFormAlert("", "");
 
       try {
@@ -219,13 +316,16 @@ document.addEventListener("DOMContentLoaded", () => {
         compressedScreenshotBase64 = "";
         if (screenshotPreview) screenshotPreview.style.display = "none";
 
-        // Listeners will automatically route to pending view!
+        alert("Payment verification submitted successfully! Your account will be verified by the administrator.");
+        showView("pending");
       } catch (err) {
         console.error("Error submitting verification request:", err);
         showFormAlert("Failed to submit request: " + err.message, "error");
       } finally {
-        payFormSubmitBtn.disabled = false;
-        payFormSubmitBtn.textContent = "Submit Verification Request";
+        if (payFormSubmitBtn) {
+          payFormSubmitBtn.disabled = false;
+          payFormSubmitBtn.textContent = "Submit Verification Request";
+        }
       }
     });
   }
@@ -244,13 +344,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (resubmitPaymentBtn) {
     resubmitPaymentBtn.addEventListener("click", () => {
-      showView(paymentFormView);
+      showView("payment");
     });
   }
 
   /* ---------- Weekly Champion Check Helper ---------- */
   async function checkIsWeeklyChampion(userId) {
-    if (!userId) return false;
+    if (!userId || !db) return false;
     try {
       // 1. Check if user already has an active unlock record
       const unlockSnap = await db.collection("premiumUnlocks").doc(userId).get();
@@ -290,225 +390,338 @@ document.addEventListener("DOMContentLoaded", () => {
     return false;
   }
 
-  /* ---------- Evaluate User State & Route View ---------- */
-  async function evaluateUserAccess(user) {
-    if (!user) {
-      showView(authGateView);
+  /* ---------- Access Check Helper ---------- */
+  async function checkUserHasAccess(user) {
+    if (!user) return false;
+    if (currentUserProfile && currentUserProfile.hasPremiumAccess === true) {
+      return true;
+    }
+    const isChamp = await checkIsWeeklyChampion(user.uid);
+    if (isChamp) return true;
+    return false;
+  }
+
+  /* ---------- Sync Banners based on User State ---------- */
+  async function syncUserStatusBanners() {
+    if (!currentUser) {
+      if (catalogUnlockedBanner) catalogUnlockedBanner.style.display = "none";
+      if (catalogPendingBanner) catalogPendingBanner.style.display = "none";
+      if (catalogPromoBanner) catalogPromoBanner.style.display = "flex";
       return;
     }
 
-    if (payFormEmail) payFormEmail.value = user.email || "";
-    if (payFormName && !payFormName.value) {
-      payFormName.value = user.displayName || "";
-    }
-
-    // 1. Check user profile for hasPremiumAccess
-    const hasAdminAccess = currentUserProfile && currentUserProfile.hasPremiumAccess === true;
-    
-    // 2. Check tournament champion status
-    const isChampion = await checkIsWeeklyChampion(user.uid);
-
-    if (hasAdminAccess || isChampion) {
+    const hasAccess = await checkUserHasAccess(currentUser);
+    if (hasAccess) {
+      const isChamp = await checkIsWeeklyChampion(currentUser.uid);
       if (accessBadgeTitle) {
-        accessBadgeTitle.textContent = isChampion
-          ? "Weekly Tournament Champion: Free Unlimited Access Unlocked!"
-          : "Access Granted: Full Premium Access Unlocked";
+        accessBadgeTitle.textContent = isChamp
+          ? "Weekly Tournament Champion: Unlimited Access Unlocked!"
+          : "Access Granted: Full Premium Membership Active";
       }
       if (accessBadgeSubtitle) {
-        accessBadgeSubtitle.textContent = isChampion
-          ? "Congratulations on ranking #1 with 50+ points! Enjoy your free access this week."
-          : "Your account has been approved by the administrator.";
+        accessBadgeSubtitle.textContent = isChamp
+          ? "Congratulations on ranking #1 with qualifying tournament points! Enjoy your free access this week."
+          : "Your account has full permission to practice all competitive examination categories.";
       }
-      showView(accessGrantedView);
-      loadCategories();
+      if (catalogUnlockedBanner) catalogUnlockedBanner.style.display = "flex";
+      if (catalogPendingBanner) catalogPendingBanner.style.display = "none";
+      if (catalogPromoBanner) catalogPromoBanner.style.display = "none";
       return;
     }
 
-    // 3. Listen to user's paymentRequests in real time
-    if (userRequestsUnsubscribe) userRequestsUnsubscribe();
+    if (userPendingRequest && userPendingRequest.status === "pending") {
+      if (catalogUnlockedBanner) catalogUnlockedBanner.style.display = "none";
+      if (catalogPendingBanner) catalogPendingBanner.style.display = "flex";
+      if (catalogPromoBanner) catalogPromoBanner.style.display = "none";
+      return;
+    }
 
-    userRequestsUnsubscribe = db.collection("premiumRequests")
-      .where("userId", "==", user.uid)
-      .onSnapshot(snap => {
-        if (snap.empty) {
-          showView(paymentFormView);
-          return;
-        }
-
-        // Get latest request
-        const docs = snap.docs.map(d => Object.assign({ id: d.id }, d.data()));
-        docs.sort((a, b) => {
-          const ta = a.createdAt && a.createdAt.toMillis ? a.createdAt.toMillis() : 0;
-          const tb = b.createdAt && b.createdAt.toMillis ? b.createdAt.toMillis() : 0;
-          return tb - ta;
-        });
-
-        const latest = docs[0];
-
-        if (latest.status === "approved") {
-          // If approved, refresh access
-          showView(accessGrantedView);
-          loadCategories();
-        } else if (latest.status === "pending") {
-          // Render pending review card
-          if (pendingRefCode) pendingRefCode.textContent = latest.referenceCode || "-";
-          if (pendingMethod) pendingMethod.textContent = latest.paymentMethod || "-";
-          if (pendingAmount) pendingAmount.textContent = `NPR ${latest.amountNpr || 200}`;
-          if (pendingDate) {
-            pendingDate.textContent = latest.createdAt && latest.createdAt.toDate
-              ? latest.createdAt.toDate().toLocaleString()
-              : "Just now";
-          }
-          if (latest.screenshotUrl && pendingReceiptImg) {
-            pendingReceiptImg.src = latest.screenshotUrl;
-            pendingReceiptThumbBox.style.display = "block";
-            pendingReceiptImg.onclick = () => {
-              const w = window.open("");
-              w.document.write(`<img src="${latest.screenshotUrl}" style="max-width:100%; height:auto;" />`);
-            };
-          } else {
-            pendingReceiptThumbBox.style.display = "none";
-          }
-          showView(pendingView);
-        } else {
-          // Rejected or other -> show form with rejection message
-          showView(paymentFormView);
-          showFormAlert("Your previous submission was rejected. Please check your transaction details and attach a clear payment screenshot.", "error");
-        }
-      }, err => {
-        console.error("Error listening to premium requests:", err);
-        showView(paymentFormView);
-      });
+    // Default unpaid / not yet approved
+    if (catalogUnlockedBanner) catalogUnlockedBanner.style.display = "none";
+    if (catalogPendingBanner) catalogPendingBanner.style.display = "none";
+    if (catalogPromoBanner) catalogPromoBanner.style.display = "flex";
   }
 
   /* ---------- Auth State Listener ---------- */
-  auth.onAuthStateChanged(async user => {
-    currentUser = user;
-    if (userProfileUnsubscribe) userProfileUnsubscribe();
+  if (typeof auth !== "undefined" && auth) {
+    auth.onAuthStateChanged(async user => {
+      currentUser = user;
+      if (userProfileUnsubscribe) userProfileUnsubscribe();
+      if (userRequestsUnsubscribe) userRequestsUnsubscribe();
 
-    if (!user) {
-      currentUserProfile = null;
-      showView(authGateView);
-      return;
-    }
-
-    // Listen to user profile changes (e.g. when admin approves hasPremiumAccess)
-    userProfileUnsubscribe = db.collection("users").doc(user.uid).onSnapshot(doc => {
-      if (doc.exists) {
-        currentUserProfile = doc.data();
-      } else {
-        currentUserProfile = {};
+      if (!user) {
+        currentUserProfile = null;
+        userPendingRequest = null;
+        syncUserStatusBanners();
+        return;
       }
-      evaluateUserAccess(user);
-    }, err => {
-      console.warn("Could not fetch user profile:", err);
-      evaluateUserAccess(user);
+
+      if (payFormEmail) payFormEmail.value = user.email || "";
+      if (payFormName && !payFormName.value) {
+        payFormName.value = user.displayName || "";
+      }
+
+      // 1. Listen to user profile doc
+      if (db) {
+        userProfileUnsubscribe = db.collection("users").doc(user.uid).onSnapshot(doc => {
+          currentUserProfile = doc.exists ? doc.data() : {};
+          syncUserStatusBanners();
+        }, err => {
+          console.warn("Could not fetch user profile:", err);
+          syncUserStatusBanners();
+        });
+
+        // 2. Listen to payment requests for this user
+        userRequestsUnsubscribe = db.collection("premiumRequests")
+          .where("userId", "==", user.uid)
+          .onSnapshot(snap => {
+            if (snap.empty) {
+              userPendingRequest = null;
+              syncUserStatusBanners();
+              return;
+            }
+
+            const docs = snap.docs.map(d => Object.assign({ id: d.id }, d.data()));
+            docs.sort((a, b) => {
+              const ta = a.createdAt && a.createdAt.toMillis ? a.createdAt.toMillis() : 0;
+              const tb = b.createdAt && b.createdAt.toMillis ? b.createdAt.toMillis() : 0;
+              return tb - ta;
+            });
+
+            const latest = docs[0];
+            userPendingRequest = latest;
+
+            // Update pending view details
+            if (pendingRefCode) pendingRefCode.textContent = latest.referenceCode || "-";
+            if (pendingMethod) pendingMethod.textContent = latest.paymentMethod || "-";
+            if (pendingAmount) pendingAmount.textContent = `NPR ${latest.amountNpr || 200}`;
+            if (pendingDate) {
+              pendingDate.textContent = latest.createdAt && latest.createdAt.toDate
+                ? latest.createdAt.toDate().toLocaleString()
+                : "Just now";
+            }
+            if (latest.screenshotUrl && pendingReceiptImg) {
+              pendingReceiptImg.src = latest.screenshotUrl;
+              if (pendingReceiptThumbBox) pendingReceiptThumbBox.style.display = "block";
+              pendingReceiptImg.onclick = () => {
+                const w = window.open("");
+                w.document.write(`<img src="${latest.screenshotUrl}" style="max-width:100%; height:auto;" />`);
+              };
+            } else {
+              if (pendingReceiptThumbBox) pendingReceiptThumbBox.style.display = "none";
+            }
+
+            syncUserStatusBanners();
+          }, err => {
+            console.warn("Error listening to user payment requests:", err);
+            syncUserStatusBanners();
+          });
+      }
     });
-  });
+  }
 
   /* ============================================================
-     Categories & Interactive Quiz Player
+     Categories Loader & Card Renderer
+     Always runs immediately so quiz cards are shown first!
      ============================================================ */
   async function loadCategories() {
     if (!categoriesGrid) return;
-    categoriesGrid.innerHTML = '<p class="quiz-muted">Loading categories…</p>';
+    categoriesGrid.innerHTML = '<p class="quiz-muted">Loading available premium quizzes…</p>';
 
     try {
       const snap = await db.collection("premiumQuizContent").get();
       if (snap.empty) {
         categoriesGrid.innerHTML = `
-          <div style="grid-column:1/-1; text-align:center; padding:32px; background:#f8fafc; border-radius:12px;">
-            <h3 style="margin-bottom:6px;">No Categories Available Yet</h3>
-            <p style="color:#64748b; font-size:0.9rem;">The administrator hasn't added any premium categories yet. Please check back shortly!</p>
+          <div style="grid-column:1/-1; text-align:center; padding:40px 20px; background:#fff; border:1px solid #e2e8f0; border-radius:14px;">
+            <h3 style="margin-bottom:8px; font-size:1.2rem;">No Quizzes Published Yet</h3>
+            <p style="color:#64748b; font-size:0.92rem; max-width:480px; margin:0 auto;">
+              The administrator has not added any premium quizzes yet. Please check back shortly or check out the Live Quiz and MCQ Hub!
+            </p>
           </div>
         `;
         return;
       }
 
-      const categories = [];
+      allLoadedCategories = [];
       snap.forEach(d => {
-        categories.push(Object.assign({ id: d.id }, d.data()));
+        allLoadedCategories.push(Object.assign({ id: d.id }, d.data()));
       });
 
+      // Sort alphabetically by category name
+      allLoadedCategories.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+
       categoriesGrid.innerHTML = "";
-      categories.forEach(cat => {
+      allLoadedCategories.forEach(cat => {
         const card = document.createElement("div");
         card.className = "category-card";
 
-        const bgImg = cat.imageUrl ? `background-image:url('${cat.imageUrl}');` : "";
+        const bgImg = cat.imageUrl
+          ? `background-image:url('${escapeHtml(cat.imageUrl)}');`
+          : "background: linear-gradient(135deg, #1e293b 0%, #3b82f6 100%);";
+        
+        const qCount = Array.isArray(cat.questions) ? cat.questions.length : (cat.questionCount || 0);
+        const countBadge = qCount > 0 ? `${qCount} Questions` : `${cat.credits || 3} Credits`;
+
         card.innerHTML = `
-          <div class="category-card-img" style="${bgImg}"></div>
+          <div class="category-card-img" style="${bgImg}">
+            <span class="category-card-badge">${escapeHtml(countBadge)}</span>
+          </div>
           <div class="category-card-body">
-            <h3 style="margin:0 0 6px; font-size:1.15rem; font-weight:700;">${escapeHtml(cat.name || "Category")}</h3>
-            <p style="color:#64748b; font-size:0.85rem; line-height:1.5; flex:1; margin-bottom:16px;">
-              ${escapeHtml(cat.description || "Comprehensive competitive practice questions.")}
+            <h3 style="margin:0 0 8px; font-size:1.15rem; font-weight:700;">${escapeHtml(cat.name || "Premium Quiz")}</h3>
+            <p style="color:#64748b; font-size:0.86rem; line-height:1.55; flex:1; margin-bottom:18px;">
+              ${escapeHtml(cat.description || "Comprehensive timed competitive examination practice questions.")}
             </p>
-            <button type="button" class="btn btn-primary btn-sm start-cat-btn" style="width:100%; font-weight:700; padding:10px;">
-              Start Quiz
+            <button type="button" class="btn btn-primary btn-sm start-cat-btn" style="width:100%; font-weight:700; padding:11px 16px; display:flex; align-items:center; justify-content:center; gap:8px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              <span>Play Quiz</span>
             </button>
           </div>
         `;
 
-        card.querySelector(".start-cat-btn").addEventListener("click", () => {
-          startCategoryQuiz(cat);
+        // Card click or button click
+        card.querySelector(".start-cat-btn").addEventListener("click", (e) => {
+          e.stopPropagation();
+          handleQuizCardClick(cat);
+        });
+        card.addEventListener("click", () => {
+          handleQuizCardClick(cat);
         });
 
         categoriesGrid.appendChild(card);
       });
     } catch (err) {
       console.error("Error loading categories:", err);
-      categoriesGrid.innerHTML = `<p class="quiz-muted">Could not load categories: ${err.message}</p>`;
+      categoriesGrid.innerHTML = `
+        <div style="grid-column:1/-1; text-align:center; padding:32px; background:#fef2f2; border:1px solid #fecaca; border-radius:12px;">
+          <p style="color:#dc2626; font-size:0.95rem; margin:0;">Could not load quizzes: ${escapeHtml(err.message)}</p>
+        </div>
+      `;
     }
   }
 
+  /* ============================================================
+     Quiz Card Click Handler (Gate: Sign Up -> Pay -> Play)
+     ============================================================ */
+  async function handleQuizCardClick(category) {
+    if (!category) return;
+
+    // 1. If user is NOT signed in: ask them to first signup/signin
+    if (!currentUser) {
+      openPromptModal({
+        iconSvg: '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>',
+        iconBg: '#eff6ff',
+        iconColor: '#2563eb',
+        title: "Account Required",
+        desc: `To play or try "${category.name || 'this quiz'}", please create a free account or sign in first.`,
+        actionText: "Sign Up / Sign In",
+        onAction: () => {
+          if (typeof window.openAuthModal === "function") {
+            window.openAuthModal({ mode: "signup" });
+          }
+        }
+      });
+      return;
+    }
+
+    // 2. If user IS signed in: check if they have active unlocked access
+    const hasAccess = await checkUserHasAccess(currentUser);
+    if (hasAccess) {
+      startCategoryQuiz(category);
+      return;
+    }
+
+    // 3. User is signed in, but does NOT have unlocked access yet
+    // Check if user has a pending verification request
+    if (userPendingRequest && userPendingRequest.status === "pending") {
+      openPromptModal({
+        iconSvg: '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+        iconBg: '#fffbeb',
+        iconColor: '#d97706',
+        title: "Verification Under Review",
+        desc: `Your payment verification request for NPR ${userPendingRequest.amountNpr || 200} is currently awaiting administrator review. Once approved, you will have instant access to all premium quizzes.`,
+        actionText: "View Submission Details",
+        onAction: () => {
+          showView("pending");
+        }
+      });
+      return;
+    }
+
+    // 4. User is signed in, but has not yet submitted payment:
+    // Ask them to make payment and open payment options
+    openPromptModal({
+      iconSvg: '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
+      iconBg: '#fef3c7',
+      iconColor: '#b45309',
+      title: "Unlock Premium Access",
+      desc: `"${category.name || 'This quiz'}" is part of the premium examination bank. To play this and all other premium quizzes, please make a one-time payment of NPR 200.`,
+      actionText: "Open Payment Options",
+      onAction: () => {
+        showView("payment");
+      }
+    });
+  }
+
+  /* ============================================================
+     Interactive Quiz Arena Runner
+     ============================================================ */
   async function startCategoryQuiz(category) {
     if (!category) return;
     
-    // Switch to quiz arena
-    categoriesSection.style.display = "none";
-    quizResults.style.display = "none";
-    quizArena.style.display = "block";
-    arenaCatName.textContent = category.name;
-    questionText.textContent = "Loading questions…";
-    optionsGrid.innerHTML = "";
-    feedbackBar.style.display = "none";
-    nextQuestionBtn.style.display = "none";
+    // Switch view to arena
+    showView("arena");
+    if (arenaCatName) arenaCatName.textContent = category.name || "Premium Quiz";
+    if (questionText) questionText.textContent = "Loading questions…";
+    if (optionsGrid) optionsGrid.innerHTML = "";
+    if (feedbackBar) feedbackBar.style.display = "none";
+    if (nextQuestionBtn) nextQuestionBtn.style.display = "none";
 
     try {
-      const snap = await db.collection("premiumQuizContent")
-        .doc(category.id)
-        .collection("questions")
-        .get();
+      activeQuestions = [];
 
-      if (snap.empty) {
-        questionText.textContent = "No questions have been added to this category yet.";
+      // Case A: Questions stored in array on the category document (Admin manager format)
+      if (Array.isArray(category.questions) && category.questions.length > 0) {
+        activeQuestions = [...category.questions];
+      } else {
+        // Fetch freshest doc from Firestore
+        const docSnap = await db.collection("premiumQuizContent").doc(category.id).get();
+        if (docSnap.exists && Array.isArray(docSnap.data().questions) && docSnap.data().questions.length > 0) {
+          activeQuestions = [...docSnap.data().questions];
+        } else {
+          // Fallback to questions subcollection if any
+          const subSnap = await db.collection("premiumQuizContent").doc(category.id).collection("questions").get();
+          if (!subSnap.empty) {
+            subSnap.forEach(d => activeQuestions.push(Object.assign({ id: d.id }, d.data())));
+          }
+        }
+      }
+
+      if (activeQuestions.length === 0) {
+        if (questionText) {
+          questionText.textContent = "No questions have been published for this category yet. Please check back soon!";
+        }
         return;
       }
 
-      activeQuestions = [];
-      snap.forEach(d => {
-        activeQuestions.push(Object.assign({ id: d.id }, d.data()));
-      });
-
-      // Shuffle questions
+      // Shuffle questions for varied practice
       activeQuestions.sort(() => Math.random() - 0.5);
 
       currentQIdx = 0;
       currentScore = 0;
       correctCount = 0;
-      pointsCounter.textContent = "0 pts";
+      if (pointsCounter) pointsCounter.textContent = "0 pts";
 
       renderQuestion();
     } catch (err) {
-      console.error("Error loading questions:", err);
-      questionText.textContent = "Failed to load questions: " + err.message;
+      console.error("Error loading questions for quiz:", err);
+      if (questionText) questionText.textContent = "Failed to load questions: " + err.message;
     }
   }
 
   function renderQuestion() {
     clearInterval(timerInterval);
-    feedbackBar.style.display = "none";
-    nextQuestionBtn.style.display = "none";
+    if (feedbackBar) feedbackBar.style.display = "none";
+    if (nextQuestionBtn) nextQuestionBtn.style.display = "none";
 
     if (currentQIdx >= activeQuestions.length) {
       finishQuiz();
@@ -516,14 +729,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const q = activeQuestions[currentQIdx];
-    questionCounter.textContent = `Question ${currentQIdx + 1} of ${activeQuestions.length}`;
-    questionText.textContent = q.question || "";
-    optionsGrid.innerHTML = "";
+    if (questionCounter) questionCounter.textContent = `Question ${currentQIdx + 1} of ${activeQuestions.length}`;
+    if (questionText) questionText.textContent = q.question || "";
+    if (optionsGrid) optionsGrid.innerHTML = "";
 
     const opts = q.options || [];
     let answered = false;
 
-    // Reset and start timer
+    // Reset and start countdown timer
     secondsLeft = QUESTION_TIME_LIMIT;
     updateTimerDisplay();
     timerInterval = setInterval(() => {
@@ -541,16 +754,21 @@ document.addEventListener("DOMContentLoaded", () => {
       btn.className = "mcq-opt";
       btn.style.width = "100%";
       btn.style.textAlign = "left";
-      btn.style.padding = "12px 16px";
+      btn.style.padding = "13px 16px";
       btn.style.fontSize = "0.95rem";
       btn.style.display = "flex";
       btn.style.alignItems = "center";
-      btn.style.gap = "10px";
+      btn.style.gap = "12px";
+      btn.style.borderRadius = "10px";
+      btn.style.border = "1px solid var(--line, #cbd5e1)";
+      btn.style.background = "var(--bg, #fff)";
+      btn.style.cursor = "pointer";
+      btn.style.transition = "all 0.15s ease";
       btn.innerHTML = `
-        <span style="display:inline-flex; width:26px; height:26px; border-radius:50%; background:#f1f5f9; align-items:center; justify-content:center; font-size:0.8rem; font-weight:700; flex-shrink:0;">
+        <span style="display:inline-flex; width:28px; height:28px; border-radius:50%; background:#f1f5f9; color:#0f172a; align-items:center; justify-content:center; font-size:0.82rem; font-weight:800; flex-shrink:0;">
           ${String.fromCharCode(65 + idx)}
         </span>
-        <span>${escapeHtml(optText)}</span>
+        <span style="flex:1;">${escapeHtml(optText)}</span>
       `;
 
       btn.addEventListener("click", () => {
@@ -564,6 +782,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Disable all buttons and highlight
         optionsGrid.querySelectorAll(".mcq-opt").forEach((b, i) => {
           b.disabled = true;
+          b.style.cursor = "default";
           if (i === correctIdx) {
             b.classList.add("is-correct");
             b.style.borderColor = "#10b981";
@@ -576,20 +795,20 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         if (isCorrect) {
-          playBeep(880, "sine", 0.2);
+          playBeep(880, "sine", 0.18);
           correctCount++;
           const speedBonus = Math.round((secondsLeft / QUESTION_TIME_LIMIT) * MAX_SPEED_BONUS);
           const pts = BASE_POINTS + speedBonus;
           currentScore += pts;
-          pointsCounter.textContent = `${currentScore} pts`;
+          if (pointsCounter) pointsCounter.textContent = `${currentScore} pts`;
 
           showFeedback(`Correct! +${BASE_POINTS} pts${speedBonus > 0 ? ` (+${speedBonus} speed bonus)` : ""}`, true, q.explanation);
         } else {
-          playBeep(220, "sawtooth", 0.3);
+          playBeep(220, "sawtooth", 0.28);
           showFeedback(`Incorrect. Correct answer: Option ${String.fromCharCode(65 + correctIdx)}.`, false, q.explanation);
         }
 
-        nextQuestionBtn.style.display = "inline-flex";
+        if (nextQuestionBtn) nextQuestionBtn.style.display = "inline-flex";
       });
 
       optionsGrid.appendChild(btn);
@@ -598,11 +817,12 @@ document.addEventListener("DOMContentLoaded", () => {
     function handleTimeout() {
       if (answered) return;
       answered = true;
-      playBeep(220, "sawtooth", 0.3);
+      playBeep(220, "sawtooth", 0.28);
       const correctIdx = Number(q.correctIndex || 0);
 
       optionsGrid.querySelectorAll(".mcq-opt").forEach((b, i) => {
         b.disabled = true;
+        b.style.cursor = "default";
         if (i === correctIdx) {
           b.classList.add("is-correct");
           b.style.borderColor = "#10b981";
@@ -611,7 +831,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       showFeedback(`Time's up! Correct answer: Option ${String.fromCharCode(65 + correctIdx)}.`, false, q.explanation);
-      nextQuestionBtn.style.display = "inline-flex";
+      if (nextQuestionBtn) nextQuestionBtn.style.display = "inline-flex";
     }
   }
 
@@ -646,30 +866,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function finishQuiz() {
     clearInterval(timerInterval);
-    quizArena.style.display = "none";
-    quizResults.style.display = "block";
+    showView("results");
 
     if (resultsFinalScore) resultsFinalScore.textContent = `${currentScore} pts`;
     if (resultsCorrectCount) resultsCorrectCount.textContent = `${correctCount} / ${activeQuestions.length}`;
   }
 
-  if (exitQuizBtn) {
-    exitQuizBtn.addEventListener("click", () => {
-      clearInterval(timerInterval);
-      quizArena.style.display = "none";
-      categoriesSection.style.display = "block";
-    });
-  }
-
-  if (resultsReturnBtn) {
-    resultsReturnBtn.addEventListener("click", () => {
-      quizResults.style.display = "none";
-      categoriesSection.style.display = "block";
-    });
-  }
-
+  /* ---------- Utility: HTML Escaping ---------- */
   function escapeHtml(str) {
-    if (typeof str !== "string") return String(str || "");
+    if (typeof str !== "string") return String(str ?? "");
     return str
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
@@ -677,4 +882,8 @@ document.addEventListener("DOMContentLoaded", () => {
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#39;");
   }
+
+  // Initial call: load categories immediately on page load!
+  showView("catalog");
+  loadCategories();
 });

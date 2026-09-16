@@ -944,6 +944,50 @@ function initPremiumQuizAdmin() {
   const saveMinScoreBtn = document.getElementById("savePremiumMinScoreBtn");
   const settingsStatus  = document.getElementById("premiumSettingsStatus");
 
+  // Load current premium min score setting
+  if (minScoreInput) {
+    db.collection("siteSettings").doc("liveQuiz").get().then((doc) => {
+      if (doc.exists && doc.data().premiumMinScore != null) {
+        minScoreInput.value = doc.data().premiumMinScore;
+      }
+    }).catch((err) => console.warn("Could not load premiumMinScore:", err));
+  }
+
+  if (saveMinScoreBtn && minScoreInput) {
+    saveMinScoreBtn.addEventListener("click", async () => {
+      const val = parseInt(minScoreInput.value, 10);
+      if (isNaN(val) || val < 1) {
+        if (settingsStatus) {
+          settingsStatus.textContent = "Please enter a valid positive number.";
+          settingsStatus.style.color = "crimson";
+        }
+        return;
+      }
+      saveMinScoreBtn.disabled = true;
+      if (settingsStatus) {
+        settingsStatus.textContent = "Saving threshold…";
+        settingsStatus.style.color = "var(--mist)";
+      }
+      try {
+        await db.collection("siteSettings").doc("liveQuiz").set({
+          premiumMinScore: val,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+        if (settingsStatus) {
+          settingsStatus.textContent = "Minimum score threshold saved successfully!";
+          settingsStatus.style.color = "#10b981";
+        }
+      } catch (err) {
+        if (settingsStatus) {
+          settingsStatus.textContent = "Error saving threshold: " + err.message;
+          settingsStatus.style.color = "crimson";
+        }
+      } finally {
+        saveMinScoreBtn.disabled = false;
+      }
+    });
+  }
+
   // Payment Verification Requests DOM
   const reqListEl         = document.getElementById("premiumRequestsList");
   const reqFilterBtns     = document.querySelectorAll(".req-filter-btn");
@@ -1218,19 +1262,38 @@ function initPremiumQuizAdmin() {
   const qCatSelect      = document.getElementById("premiumQCategorySelect");
   const qListEl         = document.getElementById("premiumQList");
 
+  // ---- Question Manager DOM refs ----
+  const qForm       = document.getElementById("premiumQuestionForm");
+  const qIdField    = document.getElementById("premiumQId");
+  const qTextField  = document.getElementById("premiumQText");
+  const qOpts       = [
+    document.getElementById("premiumOpt0"),
+    document.getElementById("premiumOpt1"),
+    document.getElementById("premiumOpt2"),
+    document.getElementById("premiumOpt3")
+  ];
+  const qCorrectSel = document.getElementById("premiumCorrectIndex");
+  const qExplField  = document.getElementById("premiumQExplanation");
+  const qSubmitBtn  = document.getElementById("premiumQSubmitBtn");
+  const cancelQBtn  = document.getElementById("cancelPremiumQEdit");
+  const qStatus     = document.getElementById("premiumQStatus");
+
   // ---- Auto-generate slug from name ----
-  catNameInput.addEventListener("input", () => {
-    catSlugInput.value = catNameInput.value
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "");
-  });
+  if (catNameInput && catSlugInput) {
+    catNameInput.addEventListener("input", () => {
+      catSlugInput.value = catNameInput.value
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+    });
+  }
 
   // ---- Category CRUD ----
   let categoryDocs = []; // [{id, name, imageUrl, description, credits}] live list
 
   function subscribeCategories() {
+    if (!catListEl) return;
     db.collection("premiumQuizContent")
       .onSnapshot(snap => {
         categoryDocs = snap.docs.map(d => ({
@@ -1249,7 +1312,11 @@ function initPremiumQuizAdmin() {
       });
   }
 
+  // Subscribe immediately to categories
+  subscribeCategories();
+
   function renderCategoryList() {
+    if (!catListEl) return;
     if (categoryDocs.length === 0) {
       catListEl.innerHTML = `<p class="updates-loading">No categories yet. Add one above.</p>`;
       return;
@@ -1274,13 +1341,13 @@ function initPremiumQuizAdmin() {
       `;
 
       row.querySelector("[data-edit-cat]").addEventListener("click", () => {
-        catNameInput.value = cat.name;
-        catSlugInput.value = cat.id;
+        if (catNameInput) catNameInput.value = cat.name;
+        if (catSlugInput) catSlugInput.value = cat.id;
         if (catImageInput) catImageInput.value = cat.imageUrl || "";
         if (catCreditsInput) catCreditsInput.value = cat.credits ?? 3;
         if (catDescInput) catDescInput.value = cat.description || "";
-        addCatBtn.textContent = "Save Changes to Category";
-        catNameInput.scrollIntoView({ behavior: "smooth" });
+        if (addCatBtn) addCatBtn.textContent = "Save Changes to Category";
+        if (catNameInput) catNameInput.scrollIntoView({ behavior: "smooth" });
       });
 
       row.querySelector("[data-del]").addEventListener("click", () => {
@@ -1294,6 +1361,7 @@ function initPremiumQuizAdmin() {
   }
 
   function syncCategorySelect() {
+    if (!qCatSelect) return;
     const prev = qCatSelect.value;
     qCatSelect.innerHTML = `<option value="">-- Select a category --</option>`;
     categoryDocs.forEach(cat => {
@@ -1307,76 +1375,92 @@ function initPremiumQuizAdmin() {
     }
   }
 
-  addCatBtn.addEventListener("click", async () => {
-    const name = catNameInput.value.trim();
-    const slug = catSlugInput.value.trim();
-    const imageUrl = catImageInput ? catImageInput.value.trim() : "";
-    const credits = catCreditsInput ? parseInt(catCreditsInput.value, 10) : 3;
-    const desc = catDescInput ? catDescInput.value.trim() : "";
+  if (addCatBtn && catNameInput && catSlugInput) {
+    addCatBtn.addEventListener("click", async () => {
+      const name = catNameInput.value.trim();
+      const slug = catSlugInput.value.trim();
+      const imageUrl = catImageInput ? catImageInput.value.trim() : "";
+      const credits = catCreditsInput ? parseInt(catCreditsInput.value, 10) : 3;
+      const desc = catDescInput ? catDescInput.value.trim() : "";
 
-    if (!name || !slug) {
-      catStatus.textContent = "Both name and slug are required.";
-      catStatus.style.color = "crimson";
-      return;
-    }
-    if (!/^[a-z0-9-]+$/.test(slug)) {
-      catStatus.textContent = "Slug must be lowercase letters, digits, and hyphens only.";
-      catStatus.style.color = "crimson";
-      return;
-    }
-    try {
-      catStatus.textContent = "Saving category…";
-      await db.collection("premiumQuizContent").doc(slug).set({
-        name: name,
-        imageUrl: imageUrl,
-        description: desc,
-        credits: isNaN(credits) || credits < 1 ? 3 : credits,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      }, { merge: true });
+      if (!name || !slug) {
+        if (catStatus) {
+          catStatus.textContent = "Both name and slug are required.";
+          catStatus.style.color = "crimson";
+        }
+        return;
+      }
+      if (!/^[a-z0-9-]+$/.test(slug)) {
+        if (catStatus) {
+          catStatus.textContent = "Slug must be lowercase letters, digits, and hyphens only.";
+          catStatus.style.color = "crimson";
+        }
+        return;
+      }
+      try {
+        if (catStatus) {
+          catStatus.textContent = "Saving category…";
+          catStatus.style.color = "var(--mist)";
+        }
+        await db.collection("premiumQuizContent").doc(slug).set({
+          name: name,
+          imageUrl: imageUrl,
+          description: desc,
+          credits: isNaN(credits) || credits < 1 ? 3 : credits,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
 
-      catNameInput.value = "";
-      catSlugInput.value = "";
-      if (catImageInput) catImageInput.value = "";
-      if (catCreditsInput) catCreditsInput.value = "3";
-      if (catDescInput) catDescInput.value = "";
-      addCatBtn.textContent = "Save / Add Category";
+        catNameInput.value = "";
+        catSlugInput.value = "";
+        if (catImageInput) catImageInput.value = "";
+        if (catCreditsInput) catCreditsInput.value = "3";
+        if (catDescInput) catDescInput.value = "";
+        addCatBtn.textContent = "Save / Add Category";
 
-      catStatus.textContent = `Category "${name}" saved successfully.`;
-      catStatus.style.color = "#10b981";
-    } catch (err) {
-      catStatus.textContent = err.message;
-      catStatus.style.color = "crimson";
-    }
-  });
+        if (catStatus) {
+          catStatus.textContent = `Category "${name}" saved successfully.`;
+          catStatus.style.color = "#10b981";
+        }
+      } catch (err) {
+        if (catStatus) {
+          catStatus.textContent = err.message;
+          catStatus.style.color = "crimson";
+        }
+      }
+    });
+  }
 
   // ---- Question CRUD (stored as array inside category doc) ----
   let currentCatQuestions = [];
   let currentCatId = "";
   let questionUnsub = null;
 
-  qCatSelect.addEventListener("change", () => {
-    currentCatId = qCatSelect.value;
-    resetQForm();
-    if (!currentCatId) {
-      qListEl.innerHTML = `<p class="updates-loading">Select a category to view its questions.</p>`;
-      return;
-    }
-    loadCatQuestions(currentCatId);
-  });
+  if (qCatSelect) {
+    qCatSelect.addEventListener("change", () => {
+      currentCatId = qCatSelect.value;
+      resetQForm();
+      if (!currentCatId) {
+        if (qListEl) qListEl.innerHTML = `<p class="updates-loading">Select a category to view its questions.</p>`;
+        return;
+      }
+      loadCatQuestions(currentCatId);
+    });
+  }
 
   function loadCatQuestions(catId) {
     if (questionUnsub) questionUnsub();
-    qListEl.innerHTML = `<p class="updates-loading">Loading questions…</p>`;
+    if (qListEl) qListEl.innerHTML = `<p class="updates-loading">Loading questions…</p>`;
     questionUnsub = db.collection("premiumQuizContent").doc(catId)
       .onSnapshot(snap => {
         currentCatQuestions = snap.exists ? (snap.data().questions || []) : [];
         renderQList();
       }, err => {
-        qListEl.innerHTML = `<p class="updates-loading">Error: ${err.message}</p>`;
+        if (qListEl) qListEl.innerHTML = `<p class="updates-loading">Error: ${err.message}</p>`;
       });
   }
 
   function renderQList() {
+    if (!qListEl) return;
     if (currentCatQuestions.length === 0) {
       qListEl.innerHTML = `<p class="updates-loading">No questions yet for this category. Add one above.</p>`;
       return;
@@ -1398,14 +1482,14 @@ function initPremiumQuizAdmin() {
       `;
       row.querySelector("[data-action='edit']").addEventListener("click", () => {
         const q2 = currentCatQuestions[idx];
-        qIdField.value = String(idx);
-        qTextField.value = q2.question || "";
+        if (qIdField) qIdField.value = String(idx);
+        if (qTextField) qTextField.value = q2.question || "";
         (q2.options || []).forEach((o, i) => { if (qOpts[i]) qOpts[i].value = o; });
-        qCorrectSel.value = String(q2.correctIndex ?? 0);
-        qExplField.value = q2.explanation || "";
-        qSubmitBtn.textContent = "Save changes";
-        cancelQBtn.hidden = false;
-        qForm.scrollIntoView({ behavior: "smooth" });
+        if (qCorrectSel) qCorrectSel.value = String(q2.correctIndex ?? 0);
+        if (qExplField) qExplField.value = q2.explanation || "";
+        if (qSubmitBtn) qSubmitBtn.textContent = "Save changes";
+        if (cancelQBtn) cancelQBtn.hidden = false;
+        if (qForm) qForm.scrollIntoView({ behavior: "smooth" });
       });
       row.querySelector("[data-action='delete']").addEventListener("click", async () => {
         if (!confirm("Delete this question?")) return;
@@ -1419,49 +1503,60 @@ function initPremiumQuizAdmin() {
     });
   }
 
-  qForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    if (!currentCatId) {
-      qStatus.textContent = "Select a category first.";
-      qStatus.style.color = "crimson";
-      return;
-    }
-    const qPayload = {
-      question:     qTextField.value.trim(),
-      options:      qOpts.map(o => o.value.trim()),
-      correctIndex: Number(qCorrectSel.value),
-      explanation:  qExplField.value.trim(),
-    };
-    const editingIdx = qIdField.value !== "" ? parseInt(qIdField.value, 10) : -1;
-    const updated = [...currentCatQuestions];
+  if (qForm) {
+    qForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!currentCatId) {
+        if (qStatus) {
+          qStatus.textContent = "Select a category first.";
+          qStatus.style.color = "crimson";
+        }
+        return;
+      }
+      const qPayload = {
+        question:     qTextField ? qTextField.value.trim() : "",
+        options:      qOpts.map(o => o ? o.value.trim() : ""),
+        correctIndex: qCorrectSel ? Number(qCorrectSel.value) : 0,
+        explanation:  qExplField ? qExplField.value.trim() : "",
+      };
+      const editingIdx = (qIdField && qIdField.value !== "") ? parseInt(qIdField.value, 10) : -1;
+      const updated = [...currentCatQuestions];
 
-    if (editingIdx >= 0 && editingIdx < updated.length) {
-      updated[editingIdx] = qPayload;
-    } else {
-      updated.push(qPayload);
-    }
+      if (editingIdx >= 0 && editingIdx < updated.length) {
+        updated[editingIdx] = qPayload;
+      } else {
+        updated.push(qPayload);
+      }
 
-    try {
-      qStatus.textContent = "Saving…";
-      await db.collection("premiumQuizContent").doc(currentCatId).update({ questions: updated });
-      qStatus.textContent = editingIdx >= 0 ? "Question updated successfully." : "Question added successfully.";
-      qStatus.style.color = "#10b981";
-      resetQForm();
-    } catch (err) {
-      qStatus.textContent = err.message;
-      qStatus.style.color = "crimson";
-    }
-  });
-
-  cancelQBtn.addEventListener("click", resetQForm);
-
-  function resetQForm() {
-    qForm.reset();
-    qIdField.value = "";
-    qSubmitBtn.textContent = "Add Question";
-    cancelQBtn.hidden = true;
-    qStatus.textContent = "";
+      try {
+        if (qStatus) {
+          qStatus.textContent = "Saving…";
+          qStatus.style.color = "var(--mist)";
+        }
+        await db.collection("premiumQuizContent").doc(currentCatId).update({ questions: updated });
+        if (qStatus) {
+          qStatus.textContent = editingIdx >= 0 ? "Question updated successfully." : "Question added successfully.";
+          qStatus.style.color = "#10b981";
+        }
+        resetQForm();
+      } catch (err) {
+        if (qStatus) {
+          qStatus.textContent = err.message;
+          qStatus.style.color = "crimson";
+        }
+      }
+    });
   }
 
-  subscribeCategories();
+  if (cancelQBtn) {
+    cancelQBtn.addEventListener("click", resetQForm);
+  }
+
+  function resetQForm() {
+    if (qForm) qForm.reset();
+    if (qIdField) qIdField.value = "";
+    if (qSubmitBtn) qSubmitBtn.textContent = "Add Question";
+    if (cancelQBtn) cancelQBtn.hidden = true;
+    if (qStatus) qStatus.textContent = "";
+  }
 }

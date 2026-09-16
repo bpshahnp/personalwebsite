@@ -196,6 +196,61 @@
       display: flex;
       flex-direction: column;
     }
+    .category-card-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      letter-spacing: 0.02em;
+    }
+    .prompt-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .prompt-modal-card {
+      background: #fff;
+      border-radius: 16px;
+      max-width: 460px;
+      width: 100%;
+      padding: 28px 24px;
+      text-align: center;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.2);
+      position: relative;
+      animation: modalFadeUp 0.2s ease both;
+    }
+    @keyframes modalFadeUp {
+      from { opacity: 0; transform: translateY(8px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    [data-theme="dark"] .prompt-modal-card {
+      background: #1e293b;
+      color: #f8fafc;
+      border: 1px solid #334155;
+    }
+    .prompt-modal-icon {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 14px;
+    }
   </style>
 </head>
 <body>
@@ -295,29 +350,11 @@
   <!-- Main Container -->
   <main class="premium-container">
 
-    <!-- Loading State -->
-    <div id="premiumLoading" style="text-align:center; padding:48px 0;">
-      <p class="quiz-muted">Checking your account and access permissions…</p>
-    </div>
+    <!-- CATALOG VIEW: Displayed by default so all learners see quiz cards immediately -->
+    <div id="premiumCatalogView">
 
-    <!-- STATE 1: Unauthenticated Gate -->
-    <div id="premiumAuthGate" class="premium-card" style="display:none; text-align:center; max-width:540px; margin:0 auto 32px;">
-      <div style="width:54px; height:54px; border-radius:50%; background:#f1f5f9; display:inline-flex; align-items:center; justify-content:center; color:#0f172a; margin-bottom:14px;">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-      </div>
-      <h2 style="margin:0 0 8px; font-size:1.5rem;">Sign In Required</h2>
-      <p style="color:#64748b; font-size:0.95rem; margin-bottom:24px;">
-        Please sign in or create a free account to access premium quizzes or submit your payment verification.
-      </p>
-      <div style="display:flex; gap:12px; justify-content:center;">
-        <button type="button" class="btn btn-primary" id="premiumGateSigninBtn">Sign In</button>
-        <button type="button" class="btn btn-outline" id="premiumGateSignupBtn">Create Account</button>
-      </div>
-    </div>
-
-    <!-- STATE 2: Access Granted (Categories & Quiz Runner) -->
-    <div id="premiumAccessGranted" style="display:none;">
-      <div class="status-alert success" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+      <!-- Banner 1: Unlocked Active Access -->
+      <div id="catalogUnlockedBanner" class="status-alert success" style="display:none; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
         <div>
           <strong id="accessBadgeTitle">Access Granted: Full Premium Access Unlocked</strong>
           <div style="font-size:0.84rem; color:#047857;" id="accessBadgeSubtitle">
@@ -327,62 +364,93 @@
         <span class="premium-pill" style="background:#059669; color:#fff; border-color:transparent;">Active</span>
       </div>
 
-      <!-- Categories View -->
-      <div id="premiumCategoriesSection">
-        <h2 style="font-size:1.4rem; margin-bottom:16px;">Available Premium Categories</h2>
+      <!-- Banner 2: Payment Verification Under Review -->
+      <div id="catalogPendingBanner" class="status-alert warning" style="display:none; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+        <div>
+          <strong>Payment Verification Pending Review</strong>
+          <div style="font-size:0.84rem; color:#92400e;">
+            Your payment receipt has been submitted and is currently being verified by the administrator.
+          </div>
+        </div>
+        <button type="button" class="btn btn-outline btn-sm" id="catalogViewPendingBtn" style="border-color:#b45309; color:#92400e; font-weight:600;">View Details</button>
+      </div>
+
+      <!-- Banner 3: Membership Promotion for guests & unpaid learners -->
+      <div id="catalogPromoBanner" class="status-alert info" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+        <div>
+          <strong>Competitive Examination Practice Hub</strong>
+          <div style="font-size:0.84rem; color:#1e40af;">
+            Select any quiz card below to try or play. Unlock unlimited access to all question banks with a one-time fee of NPR 200, or rank #1 in the weekly tournament!
+          </div>
+        </div>
+        <button type="button" class="btn btn-primary btn-sm" id="catalogPayBtn" style="font-size:0.82rem; padding:6px 14px; font-weight:600;">Unlock Access</button>
+      </div>
+
+      <!-- Categories Section: Cards of Quizzes -->
+      <div id="premiumCategoriesSection" style="margin-top:20px;">
+        <div style="margin-bottom:18px;">
+          <h2 style="font-size:1.4rem; margin:0 0 4px;">Available Premium Quizzes</h2>
+          <p style="color:#64748b; font-size:0.9rem; margin:0;">Select any category card below to test your knowledge with interactive timed questions.</p>
+        </div>
         <div class="category-grid" id="premiumCategoriesGrid">
           <p class="quiz-muted">Loading categories…</p>
         </div>
       </div>
 
-      <!-- Active Quiz Arena -->
-      <div id="premiumQuizArena" class="premium-card" style="display:none; max-width:760px; margin:0 auto;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; padding-bottom:12px; border-bottom:1px solid #e2e8f0;">
-          <button type="button" class="btn btn-outline btn-sm" id="premiumExitQuizBtn">← Back to Categories</button>
-          <span style="font-weight:700; color:#3b82f6;" id="premiumArenaCatName">Category</span>
-          <div style="display:flex; align-items:center; gap:8px;">
-            <span id="premiumTimerBadge" style="background:#fee2e2; color:#b91c1c; font-weight:800; padding:4px 10px; border-radius:9999px; font-size:0.85rem;">20s</span>
-          </div>
-        </div>
+    </div>
 
-        <div style="display:flex; justify-content:space-between; font-size:0.82rem; color:#64748b; margin-bottom:8px;">
-          <span id="premiumQuestionCounter">Question 1 of 10</span>
-          <span id="premiumPointsCounter">0 pts</span>
-        </div>
-
-        <h3 id="premiumQuestionText" style="font-size:1.2rem; line-height:1.5; margin-bottom:20px;"></h3>
-
-        <div id="premiumOptionsGrid" style="display:grid; grid-template-columns:1fr; gap:10px; margin-bottom:18px;"></div>
-
-        <div id="premiumFeedbackBar" class="status-alert" style="display:none;"></div>
-
-        <div style="display:flex; justify-content:flex-end; margin-top:16px;">
-          <button type="button" class="btn btn-primary" id="premiumNextQuestionBtn" style="display:none;">Next Question →</button>
+    <!-- ACTIVE QUIZ ARENA VIEW -->
+    <div id="premiumQuizArena" class="premium-card" style="display:none; max-width:760px; margin:0 auto;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; padding-bottom:12px; border-bottom:1px solid #e2e8f0;">
+        <button type="button" class="btn btn-outline btn-sm" id="premiumExitQuizBtn">← Back to Quizzes</button>
+        <span style="font-weight:700; color:#3b82f6;" id="premiumArenaCatName">Category</span>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span id="premiumTimerBadge" style="background:#fee2e2; color:#b91c1c; font-weight:800; padding:4px 10px; border-radius:9999px; font-size:0.85rem;">20s</span>
         </div>
       </div>
 
-      <!-- Quiz Results Card -->
-      <div id="premiumQuizResults" class="premium-card" style="display:none; max-width:540px; margin:0 auto; text-align:center;">
-        <h2 style="margin-bottom:8px;">Quiz Completed!</h2>
-        <p style="color:#64748b; margin-bottom:20px;">Here is your performance summary for this session:</p>
-        
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:24px;">
-          <div style="background:#f8fafc; padding:16px; border-radius:10px; border:1px solid #e2e8f0;">
-            <div style="font-size:0.8rem; color:#64748b;">SCORE</div>
-            <div style="font-size:1.6rem; font-weight:800; color:#0f172a;" id="resultsFinalScore">0 pts</div>
-          </div>
-          <div style="background:#f8fafc; padding:16px; border-radius:10px; border:1px solid #e2e8f0;">
-            <div style="font-size:0.8rem; color:#64748b;">CORRECT</div>
-            <div style="font-size:1.6rem; font-weight:800; color:#10b981;" id="resultsCorrectCount">0 / 0</div>
-          </div>
-        </div>
+      <div style="display:flex; justify-content:space-between; font-size:0.82rem; color:#64748b; margin-bottom:8px;">
+        <span id="premiumQuestionCounter">Question 1 of 10</span>
+        <span id="premiumPointsCounter">0 pts</span>
+      </div>
 
-        <button type="button" class="btn btn-primary" id="resultsReturnBtn">Explore Other Categories</button>
+      <h3 id="premiumQuestionText" style="font-size:1.2rem; line-height:1.5; margin-bottom:20px;"></h3>
+
+      <div id="premiumOptionsGrid" style="display:grid; grid-template-columns:1fr; gap:10px; margin-bottom:18px;"></div>
+
+      <div id="premiumFeedbackBar" class="status-alert" style="display:none;"></div>
+
+      <div style="display:flex; justify-content:flex-end; margin-top:16px;">
+        <button type="button" class="btn btn-primary" id="premiumNextQuestionBtn" style="display:none;">Next Question →</button>
       </div>
     </div>
 
-    <!-- STATE 3: Payment Verification Pending -->
+    <!-- QUIZ RESULTS CARD -->
+    <div id="premiumQuizResults" class="premium-card" style="display:none; max-width:540px; margin:0 auto; text-align:center;">
+      <h2 style="margin-bottom:8px;">Quiz Completed!</h2>
+      <p style="color:#64748b; margin-bottom:20px;">Here is your performance summary for this session:</p>
+      
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:24px;">
+        <div style="background:#f8fafc; padding:16px; border-radius:10px; border:1px solid #e2e8f0;">
+          <div style="font-size:0.8rem; color:#64748b;">SCORE</div>
+          <div style="font-size:1.6rem; font-weight:800; color:#0f172a;" id="resultsFinalScore">0 pts</div>
+        </div>
+        <div style="background:#f8fafc; padding:16px; border-radius:10px; border:1px solid #e2e8f0;">
+          <div style="font-size:0.8rem; color:#64748b;">CORRECT</div>
+          <div style="font-size:1.6rem; font-weight:800; color:#10b981;" id="resultsCorrectCount">0 / 0</div>
+        </div>
+      </div>
+
+      <button type="button" class="btn btn-primary" id="resultsReturnBtn">← Back to All Quizzes</button>
+    </div>
+
+    <!-- PAYMENT VERIFICATION PENDING VIEW -->
     <div id="premiumPendingView" class="premium-card" style="display:none; max-width:680px; margin:0 auto;">
+      <div style="margin-bottom:18px; display:flex; justify-content:space-between; align-items:center;">
+        <button type="button" class="btn btn-outline btn-sm" id="backToQuizzesFromPendingBtn">← Back to Quizzes</button>
+        <span style="font-size:0.86rem; color:#64748b;">Payment Verification</span>
+      </div>
+
       <div class="status-alert warning" style="margin-bottom:18px;">
         <strong style="display:block; margin-bottom:4px; font-size:1rem;">Payment Verification Pending Admin Approval</strong>
         Your payment details and screenshot have been submitted successfully. The administrator is reviewing your transaction. Once approved, your account will be granted instant access.
@@ -413,13 +481,18 @@
         <img id="pendingReceiptImg" src="" alt="Payment Receipt" style="max-height:160px; border-radius:8px; border:1px solid #cbd5e1; cursor:pointer;" />
       </div>
 
-      <div style="text-align:right;">
-        <button type="button" class="btn btn-outline btn-sm" id="resubmitPaymentBtn">Submit Another Proof</button>
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <button type="button" class="btn btn-outline btn-sm" id="pendingReturnToCatalogBtn">Browse Quizzes</button>
+        <button type="button" class="btn btn-primary btn-sm" id="resubmitPaymentBtn">Submit Another Proof</button>
       </div>
     </div>
 
-    <!-- STATE 4: Payment Instructions & Proof Submission Form -->
+    <!-- PAYMENT INSTRUCTIONS & PROOF SUBMISSION FORM VIEW -->
     <div id="premiumPaymentFormView" style="display:none;">
+      <div style="margin-bottom:18px; display:flex; justify-content:space-between; align-items:center;">
+        <button type="button" class="btn btn-outline btn-sm" id="backToQuizzesFromPaymentBtn">← Back to Quizzes</button>
+        <span style="font-size:0.86rem; color:#64748b;">Unlock Premium Membership</span>
+      </div>
       
       <div class="payment-layout">
         
@@ -531,6 +604,23 @@
 
       </div>
 
+    </div>
+
+    <!-- Interactive Prompt Modal (Sign up or Pay) -->
+    <div id="premiumPromptModal" class="prompt-modal-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="promptModalTitle">
+      <div class="prompt-modal-card">
+        <div id="promptModalIcon" class="prompt-modal-icon" style="background:#eff6ff; color:#2563eb;">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        </div>
+        <h3 id="promptModalTitle" style="margin:0 0 8px; font-size:1.3rem;">Unlock Premium Quiz</h3>
+        <p id="promptModalDesc" style="color:#64748b; font-size:0.92rem; line-height:1.5; margin-bottom:24px;">
+          To play this premium quiz, please complete the verification.
+        </p>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <button type="button" class="btn btn-primary" id="promptModalActionBtn" style="padding:12px; font-weight:700;">Proceed</button>
+          <button type="button" class="btn btn-outline" id="promptModalCancelBtn" style="padding:10px;">Cancel</button>
+        </div>
+      </div>
     </div>
 
   </main>

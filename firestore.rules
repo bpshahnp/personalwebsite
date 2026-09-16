@@ -77,10 +77,10 @@ service cloud.firestore {
     }
 
     // ---- Premium Quiz Content (categories + questions) --------------------
-    // Only authenticated users may read (client-side gates by unlock status).
-    // Admin-only writes.
+    // Public read so quiz catalog/cards can be displayed to all learners;
+    // admin-only writes. Client gates quiz playing by unlock/payment status.
     match /premiumQuizContent/{categoryId} {
-      allow read: if request.auth != null;
+      allow read: if true;
       allow create, update, delete: if isAdmin();
     }
 
