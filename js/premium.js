@@ -243,7 +243,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* ---------- Credit Package Selection & Buy Modal ---------- */
-  function selectCreditPackage(pkgOrId) {
+  // navigateToPayment: true when called from buyCreditsModal (needs to switch view),
+  //                    false when called from pills already on the payment view.
+  function selectCreditPackage(pkgOrId, navigateToPayment) {
     const pkg = typeof pkgOrId === "string"
       ? (CREDIT_PACKAGES.find(p => p.id === pkgOrId) || CREDIT_PACKAGES[0])
       : (pkgOrId || CREDIT_PACKAGES[0]);
@@ -270,11 +272,13 @@ document.addEventListener("DOMContentLoaded", () => {
       btn.classList.toggle("active", match);
     });
 
-    closeBuyCreditsModal();
-    showView("payment");
+    if (navigateToPayment) {
+      closeBuyCreditsModal();
+      showView("payment");
+    }
   }
 
-  function openBuyCreditsModal(category, cost, userCredits) {
+  async function openBuyCreditsModal(category, cost, userCredits) {
     if (!currentUser) {
       openPromptModal({
         iconSvg: '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>',
@@ -288,6 +292,25 @@ document.addEventListener("DOMContentLoaded", () => {
             window.openAuthModal({ mode: "signup" });
           }
         }
+      });
+      return;
+    }
+
+    // Check if user already has unlimited access — warn them, no need to buy
+    const hasUnlimited = await checkUserHasAccess(currentUser);
+    if (hasUnlimited) {
+      const isChamp = await checkIsWeeklyChampion(currentUser.uid);
+      const bal = Number(currentUserProfile?.credits ?? 0);
+      openPromptModal({
+        iconSvg: '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>',
+        iconBg: '#ecfdf5',
+        iconColor: '#059669',
+        title: "You Already Have Full Access",
+        desc: isChamp
+          ? "You are a Weekly Tournament Champion with unlimited free access to all premium quizzes. You do not need to purchase credits."
+          : `Your account has full premium membership active. All quizzes are free for you. Your current credit balance is ${bal} credit${bal === 1 ? "" : "s"}.`,
+        actionText: "Play a Quiz",
+        onAction: () => showView("catalog")
       });
       return;
     }
@@ -330,19 +353,19 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Wire package cards in buyCreditsModal
+  // Wire package cards in buyCreditsModal — navigate to payment view on click
   document.querySelectorAll(".credit-pack-card").forEach(card => {
     card.addEventListener("click", () => {
       const pkgId = card.getAttribute("data-pkg-id");
-      selectCreditPackage(pkgId);
+      selectCreditPackage(pkgId, true);
     });
   });
 
-  // Wire package pills in payment view
+  // Wire package pills in payment view — already on payment view, just update fields in place
   document.querySelectorAll(".package-pill-btn").forEach(btn => {
     btn.addEventListener("click", () => {
       const pkgId = btn.getAttribute("data-pkg-id");
-      selectCreditPackage(pkgId);
+      selectCreditPackage(pkgId, false);
     });
   });
 
