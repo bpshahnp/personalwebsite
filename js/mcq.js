@@ -403,9 +403,13 @@ function closeRail() {
   overlay.classList.remove("visible");
   railToggle.setAttribute("aria-expanded", "false");
 }
+const railCloseBtn = document.getElementById("railCloseBtn");
 railToggle.addEventListener("click", () =>
   mcqRail.classList.contains("open") ? closeRail() : openRail()
 );
+if (railCloseBtn) {
+  railCloseBtn.addEventListener("click", closeRail);
+}
 overlay.addEventListener("click", closeRail);
 
 const quizQuestionClass = document.getElementById("quizQuestionClass");

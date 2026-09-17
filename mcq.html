@@ -6,7 +6,7 @@
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1694584663544438" crossorigin="anonymous"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MCQ Hub | B. Prasad Shah</title>
-  <link rel="stylesheet" href="css/style.css?v=20260917_02" />
+  <link rel="stylesheet" href="css/style.css?v=20260917_03" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -80,7 +80,7 @@
   <div class="drawer-overlay" id="drawerOverlay"></div>
 
   <!-- Live Quiz Banner Notification -->
-  <div style="background: linear-gradient(90deg, #0f1729, #1e293b); border-bottom: 1px solid var(--line); padding: 10px 16px; text-align: center;">
+  <div class="live-quiz-banner" style="background: linear-gradient(90deg, #0f1729, #1e293b); border-bottom: 1px solid var(--line); padding: 10px 16px; text-align: center;">
     <div class="container" style="display: flex; align-items: center; justify-content: center; gap: 12px; font-size: 0.88rem; color: #f1f5f9; flex-wrap: wrap;">
       <span class="live-pill" style="padding: 3px 10px; font-size: 0.74rem;"><span class="live-dot"></span> COMING SOON</span>
       <span>7-Day Live Timed Quiz tournament kicks off this Monday (Day 1)!</span>
@@ -116,6 +116,7 @@
     <aside class="mcqhub-rail" id="mcqRail" aria-label="Question list">
       <div class="rail-head">
         <h2 class="rail-group-title" id="railTitle">Topic Progress</h2>
+        <button type="button" class="rail-close-btn" id="railCloseBtn" aria-label="Close drawer">&times;</button>
       </div>
 
       <!-- Before quiz: Topic & Overall progress -->
@@ -305,9 +306,9 @@
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
   <script src="js/firebase-config.js"></script>
-  <script src="js/auth-widget.js?v=20260917_02"></script>
-  <script src="js/nav-drawer.js?v=20260917_02"></script>
-  <script src="js/mcq.js?v=20260917_02"></script>
+  <script src="js/auth-widget.js?v=20260917_03"></script>
+  <script src="js/nav-drawer.js?v=20260917_03"></script>
+  <script src="js/mcq.js?v=20260917_03"></script>
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
   </script>

@@ -2908,46 +2908,293 @@ img { max-width: 100%; display: block; }
   padding-top: 26px;
 }
 
+/* Rail header & close button */
+.rail-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.rail-close-btn {
+  display: none;
+}
+
 /* Phones and small tablets: rail becomes a drawer */
 @media (max-width: 900px) {
   .mcqhub-layout {
     grid-template-columns: minmax(0, 1fr);
-    padding: 0 16px 72px;
+    padding: 0 12px 64px;
   }
   .rail-toggle { display: inline-flex; }
   .rail-toggle[hidden] { display: none !important; }
 
+  .rail-close-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    background: transparent;
+    font-size: 1.35rem;
+    line-height: 1;
+    color: var(--mist);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .rail-close-btn:hover {
+    color: var(--navy-deep);
+    background: var(--line);
+  }
+
   .mcqhub-hero {
-    position: static; /* don't pin on mobile — takes too much space */
+    position: static;
   }
   .mcqhub-hero-inner {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 16px 16px 14px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 14px;
   }
-  .mcqhub-hero-title { font-size: 1.3rem; }
-  .mcqhub-hero-subtitle { font-size: 0.82rem; }
-  .mcqhub-hero-right { width: 100%; justify-content: flex-end; }
-  .mcqhub-bar-actions { margin-left: 0; }
+  .mcqhub-hero-badge {
+    font-size: 0.68rem;
+    padding: 2px 7px;
+    margin-bottom: 3px;
+  }
+  .mcqhub-hero-title {
+    font-size: 1.35rem;
+    line-height: 1.15;
+    margin: 0 0 2px;
+  }
+  .mcqhub-hero-subtitle {
+    font-size: 0.78rem;
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .mcqhub-hero-right {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .mcqhub-hero .rail-toggle {
+    padding: 6px 11px;
+    font-size: 0.8rem;
+    border-radius: 6px;
+    gap: 5px;
+  }
+  .mcqhub-hero .rail-toggle svg {
+    width: 14px;
+    height: 14px;
+  }
+  .mcqhub-bar-actions {
+    margin-left: 0;
+  }
 
   .mcqhub-rail {
     position: fixed;
     top: 0;
     left: 0;
     bottom: 0;
-    width: min(340px, 88vw);
-    max-height: none;
+    width: min(340px, 86vw);
+    max-height: 100vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     margin: 0;
-    padding: 20px;
-    background: var(--cream);
+    padding: 16px;
+    background: var(--white);
     transform: translateX(-100%);
-    transition: transform 0.22s ease;
-    z-index: 60;
+    transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 1000;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.25);
   }
   .mcqhub-rail.open { transform: translateX(0); }
 
-  .mcqhub-workspace { padding-top: 16px; }
+  .mcqhub-workspace { padding-top: 14px; }
+}
+
+/* Extra mobile refinements for phones <= 640px */
+@media (max-width: 640px) {
+  .live-quiz-banner {
+    padding: 8px 10px !important;
+  }
+  .live-quiz-banner .container {
+    gap: 8px !important;
+    font-size: 0.8rem !important;
+  }
+  .live-quiz-banner .btn {
+    padding: 3px 10px !important;
+    font-size: 0.76rem !important;
+  }
+
+  .quiz-card {
+    padding: 18px 15px;
+    border-radius: 12px;
+  }
+  .card-head {
+    margin-bottom: 2px;
+  }
+  .card-head h2 {
+    font-size: 1.25rem;
+  }
+  .quiz-muted {
+    font-size: 0.84rem;
+    margin-bottom: 12px;
+  }
+
+  .quiz-fields-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 0;
+  }
+  .quiz-field {
+    margin-bottom: 10px;
+    font-size: 0.82rem;
+  }
+  .quiz-field select {
+    min-height: 44px;
+    font-size: 16px; /* Prevents unwanted iOS Safari auto-zoom on input focus */
+    padding: 10px 12px;
+    border-radius: 8px;
+  }
+
+  /* Question count options */
+  .pick {
+    margin-bottom: 16px;
+  }
+  .pick legend {
+    font-size: 0.82rem;
+    margin-bottom: 8px;
+  }
+  #countPick .pick-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+  #countPick .pick-opt {
+    width: 100%;
+    display: flex;
+  }
+  #countPick .pick-opt span {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+    padding: 9px 2px;
+    min-height: 42px;
+    font-size: 0.84rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  #startQuizBtn {
+    min-height: 46px;
+    font-size: 1rem;
+    font-weight: 700;
+    border-radius: 8px;
+    margin-top: 6px;
+  }
+
+  /* Quiz Play Screen */
+  .stage-tools {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  .stage-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .stage-tags .mcq-category,
+  .stage-tags .mcq-class {
+    font-size: 0.72rem;
+    padding: 2px 7px;
+  }
+  .stage-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .stage-actions .ghost-btn {
+    padding: 4px 8px;
+    font-size: 0.78rem;
+  }
+
+  .stage-question {
+    font-size: 1.15rem !important;
+    line-height: 1.4 !important;
+    margin: 8px 0 16px !important;
+  }
+
+  /* MCQ option items */
+  .mcq-options {
+    gap: 8px;
+  }
+  .mcq-option {
+    padding: 11px 12px;
+    min-height: 48px;
+    font-size: 0.92rem;
+    gap: 10px;
+    grid-template-columns: 24px minmax(0, 1fr) 20px;
+  }
+  .opt-key {
+    width: 24px;
+    height: 24px;
+    font-size: 0.76rem;
+  }
+  .opt-text {
+    font-size: 0.92rem;
+    line-height: 1.4;
+  }
+
+  /* Answer feedback */
+  .answer-report {
+    padding: 12px 14px;
+    font-size: 0.88rem;
+    margin-top: 14px;
+  }
+
+  .quiz-nav .btn {
+    width: 100%;
+    min-height: 46px;
+  }
+
+  /* Result screen */
+  .result-top {
+    flex-direction: column-reverse;
+    align-items: center;
+    text-align: center;
+    gap: 14px;
+  }
+  .result-facts {
+    text-align: center;
+    width: 100%;
+  }
+  .quiz-final-score {
+    font-size: 1.35rem;
+  }
+  .score-ring {
+    width: 110px;
+    height: 110px;
+  }
+  .ring-pct {
+    font-size: 1.45rem;
+  }
+  .quiz-nav {
+    flex-direction: column;
+    gap: 10px;
+  }
 }
 
 /* Custom rail items for MCQ */
@@ -3065,7 +3312,7 @@ img { max-width: 100%; display: block; }
   .quiz-card-play { min-height: 0; }
 }
 
-   Review panel (answer list shown on the results screen)
+/* ── Review panel (answer list shown on the results screen)
    These classes are written by JS but were missing from CSS.
    ────────────────────────────────────────────────────────── */
 .review-head {
