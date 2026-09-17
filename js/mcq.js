@@ -318,6 +318,7 @@ function topicKey(cls, category) {
    which subject is selected. Subject + category filtering is applied
    together in currentPool() when the quiz starts. */
 function selectedSubject() {
+  if (subjectSelect) return subjectSelect.value || DEFAULT_SUBJECT;
   return pickedValue(subjectRadios, DEFAULT_SUBJECT);
 }
 
@@ -329,8 +330,7 @@ function questionsInClassAndSubject(classValue, subjectValue) {
   return pool;
 }
 
-/* Categories for a class — NOT filtered by subject so the Topic/Chapter
-   dropdown is always populated as long as the class has questions. */
+/* Categories for a class and optional subject */
 function categoriesInClass(classValue) {
   const pool = questionsInClass(classValue);
   return [...new Set(pool.map((q) => q.category).filter(Boolean))].sort((a, b) =>
@@ -351,6 +351,8 @@ const quizPlay = document.getElementById("quizPlay");
 const quizResult = document.getElementById("quizResult");
 
 const questionBankStatus = document.getElementById("questionBankStatus");
+const classSelect = document.getElementById("classSelect");
+const subjectSelect = document.getElementById("subjectSelect");
 const classRadios = [...document.querySelectorAll('input[name="quizClass"]')];
 const subjectRadios = [...document.querySelectorAll('input[name="quizSubject"]')];
 const countRadios = [...document.querySelectorAll('input[name="quizCount"]')];
@@ -658,6 +660,7 @@ function pickedValue(radios, fallback) {
 }
 
 function selectedClass() {
+  if (classSelect) return classSelect.value || DEFAULT_CLASS;
   return pickedValue(classRadios, DEFAULT_CLASS);
 }
 
@@ -676,10 +679,35 @@ function currentPool() {
   return category === "All" ? [...pool] : pool.filter((q) => q.category === category);
 }
 
-/* Class picker: each choice carries its own question count, so an empty
-   class is visible before you pick it — and unpickable, rather than
-   letting someone select Class 9 and find nothing there. */
+/* Class picker: updates class dropdown and radio count chips */
 function refreshClassOptions() {
+  if (classSelect) {
+    const previous = classSelect.value || "10";
+    const options = [
+      { value: "All", label: "All classes" },
+      { value: "8", label: "Class 8" },
+      { value: "9", label: "Class 9" },
+      { value: "10", label: "Class 10" },
+    ];
+
+    classSelect.innerHTML = options
+      .map((opt) => {
+        const count = questionsInClass(opt.value).length;
+        const disabled = opt.value !== "All" && count === 0 ? " disabled" : "";
+        return `<option value="${opt.value}"${disabled}>${opt.label} (${count})</option>`;
+      })
+      .join("");
+
+    const available = options
+      .filter((opt) => opt.value === "All" || questionsInClass(opt.value).length > 0)
+      .map((opt) => opt.value);
+
+    classSelect.value = available.includes(previous)
+      ? previous
+      : (available.includes("10") ? "10" : available[0] || "All");
+  }
+
+  // Also update radios if present
   classRadios.forEach((radio) => {
     const count = questionsInClass(radio.value).length;
     const chip = document.querySelector(`.pick-count[data-count-for="${radio.value}"]`);
@@ -691,7 +719,6 @@ function refreshClassOptions() {
     );
   });
 
-  // Never open on a class that has nothing in it.
   const checked = classRadios.find((r) => r.checked);
   if (!checked || checked.disabled) {
     const fallback = classRadios.find((r) => !r.disabled);
@@ -699,13 +726,31 @@ function refreshClassOptions() {
   }
 }
 
-/* Category dropdown, scoped to the classes currently in play — picking
-   Class 8 shouldn't offer a category that only exists in Class 10. */
-
 /* Subject picker: updates question counts per subject for the current class */
 function refreshSubjectOptions() {
   const currentClass = selectedClass();
   const poolForClass = questionsInClass(currentClass);
+
+  if (subjectSelect) {
+    const previous = subjectSelect.value || DEFAULT_SUBJECT;
+
+    subjectSelect.innerHTML = SUBJECTS.map((sVal) => {
+      const count = sVal === "All"
+        ? poolForClass.length
+        : poolForClass.filter((q) => q.subject === sVal).length;
+      const disabled = sVal !== "All" && count === 0 ? " disabled" : "";
+      const label = sVal === "All" ? "All subjects" : sVal;
+      return `<option value="${sVal}"${disabled}>${label} (${count})</option>`;
+    }).join("");
+
+    const available = SUBJECTS.filter((sVal) => {
+      if (sVal === "All") return poolForClass.length > 0;
+      return poolForClass.filter((q) => q.subject === sVal).length > 0;
+    });
+
+    subjectSelect.value = available.includes(previous) ? previous : (available[0] || "All");
+  }
+
   subjectRadios.forEach((radio) => {
     const sVal = radio.value;
     const count = sVal === "All"
@@ -731,10 +776,16 @@ function refreshSubjectOptions() {
 
 function refreshCategoryOptions() {
   const previous = categorySelect.value;
-  const categories = categoriesInClass(selectedClass());
+  const currentClass = selectedClass();
+  const currentSubj = selectedSubject();
+
+  // Filter categories by BOTH selected class and selected subject
+  const categories = (currentSubj && currentSubj !== "All")
+    ? categoriesInClassAndSubject(currentClass, currentSubj)
+    : categoriesInClass(currentClass);
 
   categorySelect.innerHTML = [
-    `<option value="All">All topics</option>`,
+    `<option value="All">All topics (${categories.length} available)</option>`,
     ...categories.map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`),
   ].join("");
 
@@ -908,6 +959,23 @@ function refreshStatus() {
     questionBankStatus.textContent = `${available} question${available === 1 ? "" : "s"} available ${label}.`;
   }
   startQuizBtn.disabled = available === 0;
+}
+
+if (classSelect) {
+  classSelect.addEventListener("change", () => {
+    refreshSubjectOptions();
+    refreshCategoryOptions();
+    refreshStatus();
+    renderTopicProgress();
+  });
+}
+
+if (subjectSelect) {
+  subjectSelect.addEventListener("change", () => {
+    refreshCategoryOptions();
+    refreshStatus();
+    renderTopicProgress();
+  });
 }
 
 classRadios.forEach((radio) => {

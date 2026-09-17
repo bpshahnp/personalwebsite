@@ -170,57 +170,29 @@
         </div>
         <p class="quiz-muted" id="questionBankStatus">Loading question bank…</p>
 
-        <fieldset class="pick" id="classPick">
-          <legend>Class</legend>
-          <div class="pick-row">
-            <label class="pick-opt">
-              <input type="radio" name="quizClass" value="All" />
-              <span>All classes<em class="pick-count" data-count-for="All"></em></span>
-            </label>
-            <label class="pick-opt">
-              <input type="radio" name="quizClass" value="8" />
-              <span>Class 8<em class="pick-count" data-count-for="8"></em></span>
-            </label>
-            <label class="pick-opt">
-              <input type="radio" name="quizClass" value="9" />
-              <span>Class 9<em class="pick-count" data-count-for="9"></em></span>
-            </label>
-            <label class="pick-opt">
-              <input type="radio" name="quizClass" value="10" checked />
-              <span>Class 10<em class="pick-count" data-count-for="10"></em></span>
-            </label>
-          </div>
-        </fieldset>
+        <div class="quiz-fields-grid">
+          <label class="quiz-field">
+            Class
+            <select id="classSelect">
+              <option value="All">All classes</option>
+              <option value="8">Class 8</option>
+              <option value="9">Class 9</option>
+              <option value="10" selected>Class 10</option>
+            </select>
+          </label>
 
-        <fieldset class="pick" id="subjectPick">
-          <legend>Subject</legend>
-          <div class="pick-row" id="subjectPickRow">
-            <label class="pick-opt">
-              <input type="radio" name="quizSubject" value="All" checked />
-              <span>All subjects<em class="pick-count" data-subject-count-for="All"></em></span>
-            </label>
-            <label class="pick-opt">
-              <input type="radio" name="quizSubject" value="Computer Science" />
-              <span>Computer Science<em class="pick-count" data-subject-count-for="Computer Science"></em></span>
-            </label>
-            <label class="pick-opt">
-              <input type="radio" name="quizSubject" value="Science" />
-              <span>Science<em class="pick-count" data-subject-count-for="Science"></em></span>
-            </label>
-            <label class="pick-opt">
-              <input type="radio" name="quizSubject" value="Mathematics" />
-              <span>Mathematics<em class="pick-count" data-subject-count-for="Mathematics"></em></span>
-            </label>
-            <label class="pick-opt">
-              <input type="radio" name="quizSubject" value="English" />
-              <span>English<em class="pick-count" data-subject-count-for="English"></em></span>
-            </label>
-            <label class="pick-opt">
-              <input type="radio" name="quizSubject" value="General Knowledge" />
-              <span>General Knowledge<em class="pick-count" data-subject-count-for="General Knowledge"></em></span>
-            </label>
-          </div>
-        </fieldset>
+          <label class="quiz-field">
+            Subject
+            <select id="subjectSelect">
+              <option value="All">All subjects</option>
+              <option value="Computer Science">Computer Science</option>
+              <option value="Science">Science</option>
+              <option value="Mathematics">Mathematics</option>
+              <option value="English">English</option>
+              <option value="General Knowledge">General Knowledge</option>
+            </select>
+          </label>
+        </div>
 
         <label class="quiz-field">
           Topic / Chapter
