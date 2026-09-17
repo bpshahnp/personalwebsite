@@ -28,7 +28,11 @@ const SUBJECTS = ["All", "Computer Science", "Science", "Mathematics", "English"
 const DEFAULT_SUBJECT = "All";
 
 function normalizeSubject(q) {
-  if (q && q.subject && String(q.subject).trim()) return String(q.subject).trim();
+  const rawSubj = q && q.subject ? String(q.subject).trim() : "";
+  if (rawSubj) {
+    const matched = SUBJECTS.find(s => s.toLowerCase() === rawSubj.toLowerCase());
+    if (matched) return matched;
+  }
   const cat = String((q && q.category) || "").toLowerCase();
   if (cat.includes("science") && !cat.includes("computer")) return "Science";
   if (cat.includes("math") || cat.includes("algebra") || cat.includes("geometry") || cat.includes("arithmetic")) return "Mathematics";
@@ -318,6 +322,8 @@ function topicKey(cls, category) {
    which subject is selected. Subject + category filtering is applied
    together in currentPool() when the quiz starts. */
 function selectedSubject() {
+  const el = document.getElementById("subjectSelect");
+  if (el && el.value) return el.value;
   if (subjectSelect) return subjectSelect.value || DEFAULT_SUBJECT;
   return pickedValue(subjectRadios, DEFAULT_SUBJECT);
 }
@@ -325,7 +331,8 @@ function selectedSubject() {
 function questionsInClassAndSubject(classValue, subjectValue) {
   let pool = questionsInClass(classValue);
   if (subjectValue && subjectValue !== "All") {
-    pool = pool.filter((q) => q.subject === subjectValue);
+    const targetSubj = String(subjectValue).trim().toLowerCase();
+    pool = pool.filter((q) => String(q.subject).trim().toLowerCase() === targetSubj);
   }
   return pool;
 }
@@ -660,15 +667,17 @@ function pickedValue(radios, fallback) {
 }
 
 function selectedClass() {
+  const el = document.getElementById("classSelect");
+  if (el && el.value) return el.value;
   if (classSelect) return classSelect.value || DEFAULT_CLASS;
   return pickedValue(classRadios, DEFAULT_CLASS);
 }
 
 /* Questions in a given class ("All" = every class). */
 function questionsInClass(classValue) {
-  return classValue === "All"
-    ? questionBank
-    : questionBank.filter((q) => q.classLevel === classValue);
+  if (!classValue || classValue === "All") return questionBank;
+  const target = String(classValue).trim();
+  return questionBank.filter((q) => String(q.classLevel).trim() === target);
 }
 
 /* The pool the Start button would actually use right now.
@@ -737,7 +746,7 @@ function refreshSubjectOptions() {
     subjectSelect.innerHTML = SUBJECTS.map((sVal) => {
       const count = sVal === "All"
         ? poolForClass.length
-        : poolForClass.filter((q) => q.subject === sVal).length;
+        : poolForClass.filter((q) => String(q.subject).trim().toLowerCase() === sVal.toLowerCase()).length;
       const disabled = sVal !== "All" && count === 0 ? " disabled" : "";
       const label = sVal === "All" ? "All subjects" : sVal;
       return `<option value="${sVal}"${disabled}>${label} (${count})</option>`;
@@ -745,7 +754,7 @@ function refreshSubjectOptions() {
 
     const available = SUBJECTS.filter((sVal) => {
       if (sVal === "All") return poolForClass.length > 0;
-      return poolForClass.filter((q) => q.subject === sVal).length > 0;
+      return poolForClass.filter((q) => String(q.subject).trim().toLowerCase() === sVal.toLowerCase()).length > 0;
     });
 
     subjectSelect.value = available.includes(previous) ? previous : (available[0] || "All");
