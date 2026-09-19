@@ -18,6 +18,7 @@
 /* ---------- Elements ---------- */
 const railToggle = document.getElementById("railToggle");
 const programRail = document.getElementById("programRail");
+const railCloseBtn = document.getElementById("railCloseBtn");
 const overlay = document.getElementById("overlay");
 const railList = document.getElementById("rail-list");
 const railCount = document.getElementById("rail-count");
@@ -50,6 +51,7 @@ function closeRail() {
 railToggle.addEventListener("click", () =>
   programRail.classList.contains("open") ? closeRail() : openRail()
 );
+if (railCloseBtn) railCloseBtn.addEventListener("click", closeRail);
 overlay.addEventListener("click", closeRail);
 
 /* ---------- Small helpers ---------- */
