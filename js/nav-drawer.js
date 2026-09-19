@@ -10,22 +10,69 @@
   const drawerOverlay = document.getElementById("drawerOverlay");
   const drawerClose = document.getElementById("drawerClose");
 
-  if (navToggle && navDrawer && drawerOverlay) {
-    function openDrawer() {
+  if (navDrawer) {
+    function openDrawer(e) {
+      if (e && e.type === "touchend") e.preventDefault();
       navDrawer.classList.add("open");
-      drawerOverlay.classList.add("visible");
-    }
-    function closeDrawer() {
-      navDrawer.classList.remove("open");
-      drawerOverlay.classList.remove("visible");
+      if (drawerOverlay) drawerOverlay.classList.add("visible");
+      document.body.style.overflow = "hidden";
     }
 
-    navToggle.addEventListener("click", openDrawer);
-    if (drawerClose) drawerClose.addEventListener("click", closeDrawer);
-    drawerOverlay.addEventListener("click", closeDrawer);
+    function closeDrawer(e) {
+      if (e) {
+        if (e.type === "touchend") e.preventDefault();
+        e.stopPropagation();
+      }
+      navDrawer.classList.remove("open");
+      if (drawerOverlay) drawerOverlay.classList.remove("visible");
+      document.body.style.overflow = "";
+    }
+
+    if (navToggle) {
+      navToggle.addEventListener("click", openDrawer);
+      navToggle.addEventListener("touchend", openDrawer);
+    }
+
+    if (drawerClose) {
+      drawerClose.addEventListener("click", closeDrawer);
+      drawerClose.addEventListener("touchend", closeDrawer);
+    }
+
+    if (drawerOverlay) {
+      drawerOverlay.addEventListener("click", closeDrawer);
+      drawerOverlay.addEventListener("touchend", closeDrawer);
+    }
+
     navDrawer.querySelectorAll(".drawer-nav a").forEach((a) => {
       a.addEventListener("click", closeDrawer);
     });
+
+    // Touch swipe gestures to open (swipe left from right screen edge) or close (swipe right)
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    document.addEventListener("touchstart", (e) => {
+      if (e.touches.length === 1) {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+      }
+    }, { passive: true });
+
+    document.addEventListener("touchend", (e) => {
+      if (e.changedTouches.length === 1) {
+        const deltaX = e.changedTouches[0].clientX - touchStartX;
+        const deltaY = e.changedTouches[0].clientY - touchStartY;
+        const screenWidth = window.innerWidth;
+
+        if (Math.abs(deltaX) > 50 && Math.abs(deltaY) < 60) {
+          if (deltaX < -50 && touchStartX > screenWidth - 50 && !navDrawer.classList.contains("open")) {
+            openDrawer();
+          } else if (deltaX > 50 && navDrawer.classList.contains("open")) {
+            closeDrawer();
+          }
+        }
+      }
+    }, { passive: true });
   }
 
   // Dropdown toggle inside the drawer and desktop nav — tap-to-toggle

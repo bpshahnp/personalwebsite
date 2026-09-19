@@ -426,14 +426,32 @@ img { max-width: 100%; display: block; }
 .nav-drawer.open { transform: translateX(0); }
 
 .drawer-close {
-  display: block;
-  margin: 0 0 12px auto;
-  background: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin: -4px -4px 8px auto;
+  background: transparent;
   border: none;
-  font-size: 1.7rem;
+  border-radius: 50%;
+  font-size: 1.8rem;
   line-height: 1;
-  color: var(--mist);
+  color: var(--ink);
   cursor: pointer;
+  position: relative;
+  z-index: 10;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.drawer-close:hover,
+.drawer-close:focus-visible,
+.drawer-close:active {
+  background-color: var(--line, rgba(0, 0, 0, 0.08));
+  color: var(--orange);
+  outline: none;
 }
 
 .drawer-nav a {
