@@ -4965,3 +4965,232 @@ img { max-width: 100%; display: block; }
 [data-theme="dark"] .leaderboard-table { border-color: var(--line); }
 [data-theme="dark"] .leaderboard-row { border-color: var(--line); }
 [data-theme="dark"] .leaderboard-row.header-row { background: #0f172a; }
+
+
+/* ============================================================
+   MCQ HUB — FINAL MOBILE OVERRIDES  (v20260919)
+   Placed last so these always beat earlier declarations.
+   ============================================================ */
+
+/* ── Tablets & phones ≤ 900px ── */
+@media (max-width: 900px) {
+
+  /* Layout: single column, comfortable horizontal breathing room */
+  .mcqhub-layout {
+    grid-template-columns: minmax(0, 1fr) !important;
+    padding: 0 14px 72px !important;
+    gap: 0 !important;
+  }
+
+  /* Rail becomes a full-height slide-in drawer */
+  .mcqhub-rail {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    bottom: 0 !important;
+    width: min(340px, 88vw) !important;
+    max-height: 100dvh !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    margin: 0 !important;
+    padding: 18px 16px !important;
+    border-right: none !important;
+    background: var(--white) !important;
+    transform: translateX(-100%) !important;
+    transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    z-index: 1000 !important;
+    box-shadow: 4px 0 32px rgba(0, 0, 0, 0.22) !important;
+  }
+  .mcqhub-rail.open { transform: translateX(0) !important; }
+
+  /* Show the "Progress" toggle button in the hero on mobile */
+  .rail-toggle {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 6px;
+  }
+  .rail-toggle[hidden] { display: none !important; }
+
+  /* Rail × close button */
+  .rail-close-btn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    background: transparent;
+    font-size: 1.4rem;
+    line-height: 1;
+    color: var(--mist);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  /* Hero header — compact row on mobile */
+  .mcqhub-hero-inner {
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 12px 14px !important;
+    gap: 10px !important;
+  }
+  .mcqhub-hero-badge { font-size: 0.67rem !important; margin-bottom: 4px !important; }
+  .mcqhub-hero-title { font-size: 1.3rem !important; margin-bottom: 2px !important; }
+  .mcqhub-hero-subtitle {
+    font-size: 0.77rem !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+  }
+
+  /* Workspace: no extra top padding needed */
+  .mcqhub-workspace { padding-top: 14px !important; }
+
+  /* Quiz card: reduce padding on tablet */
+  .quiz-card { padding: 22px 18px !important; }
+}
+
+/* ── Phones ≤ 640px ── */
+@media (max-width: 640px) {
+
+  /* Tighter horizontal padding on tiny screens */
+  .mcqhub-layout { padding: 0 10px 64px !important; }
+
+  /* Hero — even more compact */
+  .mcqhub-hero-inner { padding: 10px 12px !important; gap: 8px !important; }
+  .mcqhub-hero-title { font-size: 1.15rem !important; }
+  .mcqhub-hero-subtitle { display: none !important; } /* hide subtitle on tiny screens */
+
+  /* Banner bar */
+  .live-quiz-banner { padding: 7px 10px !important; }
+  .live-quiz-banner .container {
+    gap: 6px !important;
+    font-size: 0.78rem !important;
+    justify-content: center !important;
+  }
+  .live-quiz-banner .btn { padding: 3px 10px !important; font-size: 0.75rem !important; }
+
+  /* Quiz card: tight padding on phones */
+  .quiz-card {
+    padding: 16px 14px !important;
+    border-radius: 12px !important;
+  }
+  .card-head { margin-bottom: 6px !important; }
+  .card-head h2 { font-size: 1.2rem !important; }
+  .quiz-muted { font-size: 0.83rem !important; margin-bottom: 10px !important; }
+
+  /* Class + Subject dropdowns: stacked, full width */
+  .quiz-fields-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0 !important;
+  }
+  .quiz-field {
+    margin-bottom: 10px !important;
+    font-size: 0.82rem !important;
+  }
+  /* Prevent iOS Safari auto-zoom (font-size must be ≥ 16px) */
+  .quiz-field select {
+    font-size: 16px !important;
+    min-height: 44px !important;
+    padding: 10px 12px !important;
+    border-radius: 8px !important;
+    width: 100% !important;
+  }
+
+  /* Question count pills: 4-column grid, full width touch targets */
+  .pick { margin-bottom: 14px !important; }
+  .pick legend { font-size: 0.82rem !important; margin-bottom: 6px !important; }
+  #countPick .pick-row {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 6px !important;
+  }
+  #countPick .pick-opt { width: 100% !important; display: flex !important; }
+  #countPick .pick-opt span {
+    width: 100% !important;
+    justify-content: center !important;
+    text-align: center !important;
+    padding: 10px 2px !important;
+    min-height: 42px !important;
+    font-size: 0.83rem !important;
+  }
+
+  /* Start button */
+  #startQuizBtn {
+    min-height: 46px !important;
+    font-size: 1rem !important;
+    font-weight: 700 !important;
+    width: 100% !important;
+    border-radius: 8px !important;
+    margin-top: 4px !important;
+  }
+
+  /* Quiz play screen */
+  .stage-tools {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    margin-bottom: 10px !important;
+    padding-bottom: 10px !important;
+    border-bottom: 1px solid var(--line) !important;
+  }
+  .stage-tags { flex-wrap: wrap !important; gap: 5px !important; }
+  .stage-tags .mcq-category,
+  .stage-tags .mcq-class { font-size: 0.72rem !important; padding: 2px 7px !important; }
+  .stage-actions { gap: 6px !important; }
+  .stage-actions .ghost-btn { padding: 4px 8px !important; font-size: 0.78rem !important; }
+
+  .stage-question {
+    font-size: 1.1rem !important;
+    line-height: 1.45 !important;
+    margin: 8px 0 14px !important;
+  }
+
+  /* MCQ option items */
+  .mcq-options { gap: 8px !important; }
+  .mcq-option {
+    padding: 12px 12px !important;
+    min-height: 48px !important;
+    font-size: 0.9rem !important;
+    gap: 10px !important;
+  }
+  .opt-key { width: 24px !important; height: 24px !important; font-size: 0.75rem !important; }
+  .opt-text { font-size: 0.9rem !important; line-height: 1.45 !important; }
+
+  /* Answer feedback */
+  .answer-report {
+    padding: 12px 14px !important;
+    font-size: 0.87rem !important;
+    margin-top: 14px !important;
+  }
+
+  /* Next / nav buttons: full width, taller touch target */
+  .quiz-nav { flex-direction: column !important; gap: 10px !important; }
+  .quiz-nav .btn { width: 100% !important; min-height: 46px !important; }
+
+  /* Result screen */
+  .result-top {
+    flex-direction: column-reverse !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 14px !important;
+  }
+  .result-facts { text-align: center !important; width: 100% !important; }
+  .quiz-final-score { font-size: 1.3rem !important; }
+  .score-ring { width: 100px !important; height: 100px !important; }
+  .ring-pct { font-size: 1.4rem !important; }
+
+  /* Overall progress box in rail */
+  .overall-progress-box { padding: 12px !important; }
+}
+
+/* ── Dark mode mobile adjustments ── */
+@media (max-width: 900px) {
+  [data-theme="dark"] .mcqhub-rail {
+    background: #0f172a !important;
+    box-shadow: 4px 0 32px rgba(0, 0, 0, 0.5) !important;
+  }
+}
