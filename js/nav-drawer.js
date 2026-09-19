@@ -92,15 +92,15 @@
     const isDark = theme === "dark";
     const title = isDark ? "Switch to light theme" : "Switch to dark theme";
 
-    // Desktop toggle sits in .header-actions
-    document.querySelectorAll(".header-actions .theme-toggle-btn").forEach((btn) => {
+    // Header toggles (desktop .header-actions and mobile .mobile-header-icons)
+    document.querySelectorAll(".header-actions .theme-toggle-btn, .mobile-header-icons .theme-toggle-btn").forEach((btn) => {
       btn.innerHTML = isDark ? SUN_SVG : MOON_SVG;
       btn.title = title;
       btn.setAttribute("aria-label", title);
       btn.setAttribute("aria-pressed", String(isDark));
     });
 
-    // Mobile toggle sits in .drawer-nav
+    // Mobile drawer nav toggle
     document.querySelectorAll(".drawer-nav .theme-toggle-btn").forEach((btn) => {
       btn.innerHTML = `${isDark ? SUN_SVG : MOON_SVG} <span>${isDark ? "Light Theme" : "Dark Theme"}</span>`;
       btn.title = title;
@@ -137,6 +137,18 @@
       }
     });
 
+    // Mobile header icons: wire up in .mobile-header-icons
+    document.querySelectorAll(".mobile-header-icons").forEach((icons) => {
+      let btn = icons.querySelector(".theme-toggle-btn");
+      if (!btn) {
+        btn = makeToggleBtn();
+        icons.insertBefore(btn, icons.firstChild);
+      } else if (!btn.dataset.wired) {
+        btn.dataset.wired = "true";
+        btn.addEventListener("click", toggleTheme);
+      }
+    });
+
     // Mobile: wire up in .drawer-nav
     document.querySelectorAll(".drawer-nav").forEach((nav) => {
       let btn = nav.querySelector(".theme-toggle-btn");
@@ -149,8 +161,8 @@
       }
     });
 
-    // Remove any stale toggles from .main-nav or .mobile-header-icons
-    document.querySelectorAll(".main-nav .theme-toggle-btn, .mobile-header-icons .theme-toggle-btn").forEach((btn) => {
+    // Remove any stale toggles from .main-nav
+    document.querySelectorAll(".main-nav .theme-toggle-btn").forEach((btn) => {
       btn.remove();
     });
 

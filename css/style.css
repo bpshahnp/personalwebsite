@@ -354,10 +354,26 @@ img { max-width: 100%; display: block; }
 .mobile-header-icons {
   display: none;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 .mobile-header-icons .auth-widget {
-  margin-left: 10px;
+  margin-left: 4px;
+}
+.mobile-header-icons .theme-toggle-btn {
+  background: transparent;
+  border-color: var(--line);
+  color: var(--ink);
+}
+.mobile-header-icons .theme-toggle-btn:hover {
+  background: rgba(232, 131, 78, 0.12);
+  border-color: var(--orange);
+  color: var(--orange);
+  transform: scale(1.08);
+}
+[data-theme="dark"] .mobile-header-icons .theme-toggle-btn {
+  background: #1e293b;
+  border-color: var(--line);
+  color: #fbbf24;
 }
 .search-toggle {
   display: none;
@@ -3459,7 +3475,7 @@ img { max-width: 100%; display: block; }
 }
 .leaderboard-row {
   display: grid;
-  grid-template-columns: 48px 1fr auto;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
   align-items: center;
   gap: 14px;
   padding: 14px 20px;
@@ -3484,7 +3500,14 @@ img { max-width: 100%; display: block; }
 .leaderboard-row:nth-child(2) .leaderboard-rank { color: #d4af37; }
 .leaderboard-row:nth-child(3) .leaderboard-rank { color: #9aa0a6; }
 .leaderboard-row:nth-child(4) .leaderboard-rank { color: #b9793f; }
-.leaderboard-name { font-weight: 600; color: var(--ink); }
+.leaderboard-name {
+  font-weight: 600;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
 .leaderboard-meta { font-size: 0.8rem; color: var(--mist); font-weight: 400; }
 .leaderboard-score { font-weight: 700; color: var(--navy-deep); text-align: right; white-space: nowrap; }
 
@@ -3641,10 +3664,14 @@ img { max-width: 100%; display: block; }
    OUTSIDE .leaderboard-table — the medal colours key off nth-child. */
 .board-filter {
   display: flex;
-  flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 18px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 4px;
 }
+.board-filter::-webkit-scrollbar { display: none; }
 .board-chip {
   font: inherit;
   font-size: 0.85rem;
@@ -3655,6 +3682,7 @@ img { max-width: 100%; display: block; }
   border-radius: 999px;
   padding: 8px 16px;
   cursor: pointer;
+  flex-shrink: 0;
   transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 .board-chip:hover { color: var(--navy-deep); border-color: var(--navy-deep); }
@@ -3693,6 +3721,50 @@ img { max-width: 100%; display: block; }
 @media (max-width: 640px) {
   .admin-form-grid { grid-template-columns: 1fr; }
   .board-chip { padding: 7px 13px; font-size: 0.8rem; }
+
+  /* Prevent automatic iOS Safari zoom on focus by ensuring font-size is at least 16px */
+  input:not([type=radio]):not([type=checkbox]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+
+  .admin-dashboard {
+    padding: 24px 0 60px;
+  }
+  .admin-tabs {
+    gap: 6px;
+    margin-bottom: 20px;
+  }
+  .admin-tab {
+    padding: 8px 14px;
+    font-size: 0.82rem;
+  }
+  .admin-form {
+    padding: 16px 14px;
+    border-radius: 10px;
+  }
+  .admin-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .admin-row-actions {
+    width: 100%;
+    justify-content: flex-end;
+    border-top: 1px solid var(--line);
+    padding-top: 8px;
+    margin-top: 4px;
+  }
+  .admin-list-filter label {
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  .admin-list-filter select {
+    width: 100%;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
