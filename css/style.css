@@ -1475,18 +1475,19 @@ img { max-width: 100%; display: block; }
 }
 
 
-/* ---------- Page hero (MCQ Hub) ---------- */
+/* ---------- Page hero (MCQ Hub, Leaderboard, Contact, Resources, Privacy, Video) ---------- */
 .page-hero {
   background: linear-gradient(120deg, var(--navy-deep), var(--navy));
-  color: var(--white);
+  color: #ffffff;
   padding: 56px 0;
 }
 .page-hero h1 {
   font-family: var(--font-display);
   font-size: clamp(1.8rem, 4vw, 2.6rem);
   margin: 0 0 8px;
+  color: #ffffff;
 }
-.page-hero p { color: rgba(255,255,255,0.78); margin: 0; max-width: 520px; }
+.page-hero p { color: rgba(255,255,255,0.85); margin: 0; max-width: 540px; }
 
 .filter-input {
   padding: 9px 12px;
@@ -2926,12 +2927,16 @@ img { max-width: 100%; display: block; }
   padding-top: 26px;
 }
 
-/* Rail header & close button */
-.rail-head {
+/* MCQ Hub Rail header & close button */
+.mcqhub-rail .rail-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 10px;
+}
+.pyhub-rail .rail-head {
+  display: block;
+  flex: none;
 }
 .rail-close-btn {
   display: none;
@@ -3950,9 +3955,26 @@ img { max-width: 100%; display: block; }
 
 
 /* ---------- Buttons ---------- */
+[data-theme="dark"] .btn-primary {
+  background: var(--orange);
+  color: #ffffff;
+}
+[data-theme="dark"] .btn-primary:hover {
+  background: var(--orange-dark);
+}
+[data-theme="dark"] .btn-secondary {
+  background: #334155;
+  color: #f8fafc;
+  border: 1px solid #475569;
+}
+[data-theme="dark"] .btn-secondary:hover {
+  background: #475569;
+  border-color: var(--orange);
+  color: #ffffff;
+}
 [data-theme="dark"] .btn-outline {
-  border-color: var(--line);
-  color: var(--ink);
+  border-color: #475569;
+  color: #f1f5f9;
 }
 [data-theme="dark"] .btn-outline:hover {
   background: #334155;
@@ -3962,21 +3984,71 @@ img { max-width: 100%; display: block; }
 [data-theme="dark"] .ghost-btn {
   background: #1e293b;
   border-color: var(--line);
-  color: var(--ink);
+  color: #f1f5f9;
 }
 [data-theme="dark"] .ghost-btn:hover {
   background: #334155;
-  border-color: var(--navy-deep);
+  border-color: var(--orange);
+  color: var(--orange);
 }
 
-/* ---------- Hub Cards ---------- */
+/* ---------- Typography & Section Headings ---------- */
+[data-theme="dark"] .section-title,
+[data-theme="dark"] .section-head h2 {
+  color: #f8fafc;
+}
+[data-theme="dark"] .section-subtitle {
+  color: #94a3b8;
+}
+
+/* ---------- Hub Cards & Home Components ---------- */
 [data-theme="dark"] .hub-card {
   background: #1e293b;
   border-color: var(--line);
 }
 [data-theme="dark"] .hub-card:hover { border-color: var(--orange); }
-[data-theme="dark"] .hub-card h3,
-[data-theme="dark"] .hub-card p { color: var(--ink); }
+[data-theme="dark"] .hub-card h3 { color: #f8fafc; }
+[data-theme="dark"] .hub-card p { color: #94a3b8; }
+[data-theme="dark"] .hub-pill {
+  background: rgba(232, 131, 78, 0.15);
+  color: var(--orange);
+  border: 1px solid rgba(232, 131, 78, 0.3);
+}
+
+[data-theme="dark"] .step-card {
+  background: #1e293b;
+  border-color: var(--line);
+}
+[data-theme="dark"] .step-card h3 { color: #f8fafc; }
+[data-theme="dark"] .step-card p { color: #94a3b8; }
+[data-theme="dark"] .step-num {
+  background: rgba(232, 131, 78, 0.16);
+  color: var(--orange);
+  border: 1.5px solid rgba(232, 131, 78, 0.4);
+}
+
+[data-theme="dark"] .cta-inner {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  border: 1px solid var(--line);
+  color: #f8fafc;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+}
+[data-theme="dark"] .cta-content h2 { color: #ffffff; }
+[data-theme="dark"] .cta-content p { color: #94a3b8; }
+
+[data-theme="dark"] .updates-list {
+  background: #1e293b;
+  border-color: var(--line);
+}
+[data-theme="dark"] .updates-list li {
+  border-bottom-color: var(--line);
+  color: #f1f5f9;
+}
+[data-theme="dark"] .update-tag {
+  background: rgba(232, 131, 78, 0.15);
+  color: var(--orange);
+  border: 1px solid rgba(232, 131, 78, 0.3);
+}
 
 /* ---------- MCQ Hub ---------- */
 [data-theme="dark"] .mcqhub-bar {
@@ -4005,6 +4077,14 @@ img { max-width: 100%; display: block; }
   color: var(--ink);
 }
 [data-theme="dark"] .pick-opt:hover { border-color: var(--orange); }
+[data-theme="dark"] .pick-opt input:checked + span {
+  background: var(--orange) !important;
+  border-color: var(--orange) !important;
+  color: #ffffff !important;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(232, 131, 78, 0.35);
+}
+
 [data-theme="dark"] #quizQuestionSubject {
   background: #0c4a6e !important;
   color: #7dd3fc !important;
@@ -4040,19 +4120,92 @@ img { max-width: 100%; display: block; }
   border-right-color: var(--line);
 }
 
-/* ---------- Leaderboard ---------- */
+/* ---------- Leaderboard & Chips ---------- */
+[data-theme="dark"] .board-chip,
+[data-theme="dark"] .class-chip,
+[data-theme="dark"] .video-filter-btn {
+  background: #1e293b;
+  border-color: var(--line);
+  color: var(--mist);
+}
+[data-theme="dark"] .board-chip:hover,
+[data-theme="dark"] .class-chip:hover,
+[data-theme="dark"] .video-filter-btn:hover {
+  border-color: var(--orange);
+  color: #f8fafc;
+}
+[data-theme="dark"] .board-chip.active,
+[data-theme="dark"] .class-chip.active,
+[data-theme="dark"] .video-filter-btn.active {
+  background: var(--orange) !important;
+  border-color: var(--orange) !important;
+  color: #ffffff !important;
+}
+
 [data-theme="dark"] .leaderboard-table {
   background: #1e293b;
   border-color: var(--line);
 }
 [data-theme="dark"] .leaderboard-row { border-bottom-color: var(--line); }
 [data-theme="dark"] .leaderboard-row.header-row { background: #0f172a; }
+[data-theme="dark"] .leaderboard-row:hover:not(.header-row) { background: rgba(255, 255, 255, 0.03); }
+[data-theme="dark"] .your-rank-card {
+  background: #1e293b;
+  border: 1.5px solid var(--orange);
+  color: #f8fafc;
+}
+[data-theme="dark"] .your-rank-card .leaderboard-name,
+[data-theme="dark"] .your-rank-card .leaderboard-score {
+  color: #ffffff;
+}
+[data-theme="dark"] .leaderboard-row.is-you {
+  background: rgba(232, 131, 78, 0.12);
+  border-left-color: var(--orange);
+}
+
+/* ---------- Contact Page ---------- */
+[data-theme="dark"] .profile-card {
+  background: #1e293b;
+  border-color: var(--line);
+}
+[data-theme="dark"] .profile-photo {
+  border-color: #0f172a;
+}
+[data-theme="dark"] .profile-card h2 {
+  color: #f8fafc;
+}
+[data-theme="dark"] .contact-details a {
+  color: #cbd5e1;
+}
+[data-theme="dark"] .contact-details a:hover {
+  color: var(--orange);
+}
+[data-theme="dark"] .social-links a {
+  color: var(--orange);
+}
+[data-theme="dark"] .social-links a:hover {
+  color: #ffffff;
+}
+[data-theme="dark"] .contact-form-card {
+  background: #1e293b;
+  border-color: var(--line);
+}
+[data-theme="dark"] .contact-form-card h2 {
+  color: #f8fafc;
+}
 
 /* ---------- Resource / Video Cards ---------- */
 [data-theme="dark"] .resource-card,
 [data-theme="dark"] .video-card {
   background: #1e293b;
   border-color: var(--line);
+}
+[data-theme="dark"] .resource-head h3,
+[data-theme="dark"] .video-body h3 {
+  color: #f8fafc;
+}
+[data-theme="dark"] .resource-desc {
+  color: #94a3b8;
 }
 
 /* ---------- Modals & Auth Dropdown ---------- */
@@ -4126,18 +4279,58 @@ img { max-width: 100%; display: block; }
 [data-theme="dark"] .auth-user-name { color: #f8fafc; }
 [data-theme="dark"] .auth-user-email { color: #94a3b8; }
 
-
-/* ---------- Forms ---------- */
+/* ---------- Forms & Inputs ---------- */
 [data-theme="dark"] input:not([type=radio]):not([type=checkbox]),
 [data-theme="dark"] select,
-[data-theme="dark"] textarea {
+[data-theme="dark"] textarea,
+[data-theme="dark"] .filter-input {
   background: #0f172a;
-  color: var(--ink);
-  border-color: var(--line);
+  color: #f8fafc;
+  border: 1px solid #334155;
+}
+[data-theme="dark"] input:not([type=radio]):not([type=checkbox]):focus,
+[data-theme="dark"] select:focus,
+[data-theme="dark"] textarea:focus,
+[data-theme="dark"] .filter-input:focus {
+  border-color: var(--orange);
+  box-shadow: 0 0 0 3px rgba(232, 131, 78, 0.2);
+  outline: none;
+}
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder,
+[data-theme="dark"] .filter-input::placeholder {
+  color: #64748b;
+  opacity: 1;
 }
 [data-theme="dark"] select option {
   background: #1e293b;
-  color: var(--ink);
+  color: #f8fafc;
+}
+[data-theme="dark"] .admin-form label,
+[data-theme="dark"] .quiz-field,
+[data-theme="dark"] .admin-list-filter label {
+  color: #94a3b8;
+}
+
+/* ---------- Status Alerts ---------- */
+[data-theme="dark"] .status-alert.info {
+  background: rgba(30, 58, 138, 0.28) !important;
+  border: 1px solid rgba(59, 130, 246, 0.45) !important;
+  color: #bfdbfe !important;
+}
+[data-theme="dark"] .status-alert.info div,
+[data-theme="dark"] .status-alert.info strong {
+  color: #dbeafe !important;
+}
+[data-theme="dark"] .status-alert.success {
+  background: rgba(6, 78, 59, 0.28) !important;
+  border: 1px solid rgba(16, 185, 129, 0.45) !important;
+  color: #a7f3d0 !important;
+}
+[data-theme="dark"] .status-alert.warning {
+  background: rgba(120, 53, 15, 0.28) !important;
+  border: 1px solid rgba(245, 158, 11, 0.45) !important;
+  color: #fde68a !important;
 }
 
 /* ---------- Footer ---------- */
@@ -4151,10 +4344,18 @@ img { max-width: 100%; display: block; }
 
 /* ---------- Page-level hero (MCQ Hub, Leaderboard etc.) ---------- */
 [data-theme="dark"] .page-hero {
-  background: linear-gradient(120deg, #080d1a, #1e293b);
+  background: linear-gradient(120deg, #0b1120 0%, #1e293b 100%);
+  color: #f8fafc;
+  border-bottom: 1px solid var(--line);
+}
+[data-theme="dark"] .page-hero h1 {
+  color: #ffffff !important;
+}
+[data-theme="dark"] .page-hero p {
+  color: #94a3b8 !important;
 }
 
-/* ---------- Admin Panel ---------- */
+/* ---------- Admin Panel & Gate ---------- */
 [data-theme="dark"] .admin-tab {
   background: #1e293b;
   border-color: var(--line);
@@ -4198,6 +4399,17 @@ img { max-width: 100%; display: block; }
   color: var(--mist);
 }
 [data-theme="dark"] .admin-list-filter select { background: #0f172a; color: var(--ink); }
+[data-theme="dark"] #notAuthorized > div {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+  color: #f8fafc !important;
+}
+[data-theme="dark"] #notAuthorized #notAuthorizedEmail {
+  color: #f8fafc !important;
+}
+[data-theme="dark"] #adminForgotPassLink {
+  color: #60a5fa !important;
+}
 
 /* ---------- Mobile search bar ---------- */
 [data-theme="dark"] .mobile-search { background: #1e293b; border-bottom-color: var(--line); }
