@@ -5,7 +5,7 @@
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin | B. Prasad Shah</title>
-  <link rel="stylesheet" href="css/style.css?v=20260920_03" />
+  <link rel="stylesheet" href="css/style.css?v=20260921_01" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -473,37 +473,83 @@
 
         <hr style="margin:24px 0; border-color: var(--border, #e5e7eb);" />
 
-        <!-- Category Manager -->
+        <!-- Category / Level Configuration Manager -->
         <div class="admin-form" style="margin-bottom:28px">
-          <h3>Premium Categories</h3>
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:8px;">
+            <h3 style="margin:0;">Premium Quiz Categories &amp; Levels</h3>
+            <button type="button" class="btn btn-outline btn-sm" id="resetDefaultCatLevelsBtn" style="font-size:0.8rem;">Reset Standard Levels</button>
+          </div>
           <p class="quiz-muted">
-            Add or remove categories displayed in the <strong>Premium Quiz Arena</strong>. Each category card displays an image, title, description, and required credits.
+            Manage the categories and difficulty levels displayed as filter chips on the <strong>Premium Quiz Portal</strong> (e.g. <em>Beginners Level, Intermediate Level, Higher Level, Loksewa</em>). You can add custom categories or remove unused ones.
+          </p>
+          
+          <div id="adminCategoryTagsWrap" style="display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 16px;">
+            <span class="updates-loading">Loading categories…</span>
+          </div>
+
+          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; max-width:560px;">
+            <input type="text" id="newCatLevelInput" placeholder="New category name (e.g. Banking Exam, Civil Service)" style="flex:1; min-width:220px;" />
+            <button type="button" class="btn btn-primary btn-sm" id="addNewCatLevelBtn">+ Add Category</button>
+          </div>
+          <p class="modal-status" id="adminCatLevelStatus"></p>
+        </div>
+
+        <hr style="margin:24px 0; border-color: var(--border, #e5e7eb);" />
+
+        <!-- Quiz Content / Category Manager -->
+        <div class="admin-form" style="margin-bottom:28px">
+          <h3 id="catFormHeader">Premium Quizzes</h3>
+          <p class="quiz-muted">
+            Add or edit quiz cards displayed in the Premium Quiz Portal. Assign each quiz to a Category / Level so learners can filter them easily.
           </p>
           <div class="admin-form-grid">
-            <label>Category Name
-              <input type="text" id="premiumCatName" placeholder="e.g. Current Affairs 2026" />
+            <label>Quiz Title
+              <input type="text" id="premiumCatName" placeholder="e.g. General Knowledge - I (Beginner Level)" />
             </label>
-            <label>Category Slug (no spaces, lowercase)
-              <input type="text" id="premiumCatSlug" placeholder="e.g. current-affairs" />
+            <label>Quiz Slug (unique, lowercase, hyphens)
+              <input type="text" id="premiumCatSlug" placeholder="e.g. gk-beginner-1" />
             </label>
           </div>
           <div class="admin-form-grid">
-            <label>Card Image URL
-              <input type="url" id="premiumCatImage" placeholder="https://example.com/banner.jpg or leave empty" />
+            <label>Category / Level
+              <select id="premiumCatLevelSelect">
+                <!-- Dynamically populated from active categories + custom option -->
+              </select>
+            </label>
+            <label id="customCatLevelWrap" style="display:none;">Custom Category Name
+              <input type="text" id="premiumCustomCatLevel" placeholder="Enter custom category" />
             </label>
             <label>Credits Required to Play
               <input type="number" id="premiumCatCredits" value="3" min="1" max="50" />
             </label>
           </div>
-          <label>Category Description
+          <div class="admin-form-grid">
+            <label>Card Banner Image URL (optional)
+              <input type="url" id="premiumCatImage" placeholder="https://example.com/banner.jpg or leave empty" />
+            </label>
+          </div>
+          <label>Quiz Overview &amp; Description
             <textarea id="premiumCatDesc" rows="2" placeholder="Brief overview of the questions, topics, and competitive exams covered…"></textarea>
           </label>
           <div class="admin-form-actions">
-            <button type="button" class="btn btn-primary btn-sm" id="addPremiumCategoryBtn">Save / Add Category</button>
+            <button type="button" class="btn btn-primary btn-sm" id="addPremiumCategoryBtn">Save / Add Quiz</button>
+            <button type="button" class="btn btn-outline btn-sm" id="cancelEditCatBtn" style="display:none;">Cancel Edit</button>
           </div>
           <p class="modal-status" id="premiumCatStatus"></p>
-          <div id="premiumCatList" class="admin-list" style="margin-top:12px">
-            <p class="updates-loading">Loading categories…</p>
+
+          <div style="margin-top:22px; padding-top:16px; border-top:1px solid var(--border, #e2e8f0);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
+              <h4 style="margin:0; font-size:1rem;">Published Quizzes</h4>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <label style="font-size:0.84rem; color:var(--mist); margin:0;">Filter by Level:</label>
+                <select id="adminCatFilterByLevel" style="padding:4px 10px; font-size:0.84rem; border-radius:6px; border:1px solid var(--line);">
+                  <option value="all">All Levels</option>
+                </select>
+              </div>
+            </div>
+            <div id="premiumCatList" class="admin-list">
+              <p class="updates-loading">Loading quizzes…</p>
+            </div>
           </div>
         </div>
 

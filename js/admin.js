@@ -1384,6 +1384,12 @@ function initPremiumQuizAdmin() {
   // ---- Category Manager DOM refs ----
   const catNameInput    = document.getElementById("premiumCatName");
   const catSlugInput    = document.getElementById("premiumCatSlug");
+  const catLevelSelect  = document.getElementById("premiumCatLevelSelect");
+  const customCatWrap   = document.getElementById("customCatLevelWrap");
+  const customCatInput  = document.getElementById("premiumCustomCatLevel");
+  const catFilterByLevel= document.getElementById("adminCatFilterByLevel");
+  const cancelEditCatBtn= document.getElementById("cancelEditCatBtn");
+  const catFormHeader   = document.getElementById("catFormHeader");
   const catImageInput   = document.getElementById("premiumCatImage");
   const catCreditsInput = document.getElementById("premiumCatCredits");
   const catDescInput    = document.getElementById("premiumCatDesc");
@@ -1392,6 +1398,217 @@ function initPremiumQuizAdmin() {
   const catListEl       = document.getElementById("premiumCatList");
   const qCatSelect      = document.getElementById("premiumQCategorySelect");
   const qListEl         = document.getElementById("premiumQList");
+
+  // Category Configuration DOM refs
+  const categoryTagsWrap  = document.getElementById("adminCategoryTagsWrap");
+  const newCatInput       = document.getElementById("newCatLevelInput");
+  const addCatLevelBtn    = document.getElementById("addNewCatLevelBtn");
+  const resetCatLevelsBtn = document.getElementById("resetDefaultCatLevelsBtn");
+  const catLevelStatus    = document.getElementById("adminCatLevelStatus");
+
+  // Default Standard Categories / Levels
+  const DEFAULT_PREMIUM_LEVELS = ["Beginners Level", "Intermediate Level", "Higher Level", "Loksewa"];
+  let activeCategoryLevels = [...DEFAULT_PREMIUM_LEVELS];
+  let editingCatId = null;
+
+  function getQuizLevel(cat) {
+    if (cat && cat.category && String(cat.category).trim()) return String(cat.category).trim();
+    if (cat && cat.level && String(cat.level).trim()) return String(cat.level).trim();
+    const name = (cat && cat.name ? cat.name : "").toLowerCase();
+    if (name.includes("beginner")) return "Beginners Level";
+    if (name.includes("intermediate")) return "Intermediate Level";
+    if (name.includes("higher") || name.includes("advanced")) return "Higher Level";
+    if (name.includes("loksewa") || name.includes("lok sewa")) return "Loksewa";
+    return "Beginners Level";
+  }
+
+  /* ---------- Category / Level Config Manager ---------- */
+  function subscribeCategoryLevels() {
+    db.collection("siteSettings").doc("premiumCategories")
+      .onSnapshot(doc => {
+        if (doc.exists && Array.isArray(doc.data().list) && doc.data().list.length > 0) {
+          activeCategoryLevels = doc.data().list.filter(Boolean);
+        } else {
+          activeCategoryLevels = [...DEFAULT_PREMIUM_LEVELS];
+        }
+        renderCategoryTags();
+        syncCatLevelSelect();
+        renderCategoryList();
+      }, err => {
+        console.warn("Could not load premiumCategories:", err);
+        activeCategoryLevels = [...DEFAULT_PREMIUM_LEVELS];
+        renderCategoryTags();
+        syncCatLevelSelect();
+        renderCategoryList();
+      });
+  }
+
+  function renderCategoryTags() {
+    if (!categoryTagsWrap) return;
+    categoryTagsWrap.innerHTML = "";
+    activeCategoryLevels.forEach((levelName) => {
+      const tag = document.createElement("span");
+      tag.className = "admin-tag";
+      tag.style.cssText = "display:inline-flex; align-items:center; gap:8px; padding:6px 14px; font-size:0.86rem; border-radius:9999px; background:#eff6ff; color:#1d4ed8; font-weight:600; border:1px solid #bfdbfe;";
+      tag.innerHTML = `
+        <span>${escapeHtml(levelName)}</span>
+        <button type="button" title="Remove ${escapeHtml(levelName)}" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:1.1rem; line-height:1; padding:0 2px; font-weight:700; display:inline-flex; align-items:center;">&times;</button>
+      `;
+      tag.querySelector("button").addEventListener("click", async () => {
+        if (activeCategoryLevels.length <= 1) {
+          alert("You must keep at least one category level.");
+          return;
+        }
+        if (confirm(`Remove category level "${levelName}"? Existing quizzes with this category will still retain their assigned level.`)) {
+          const updated = activeCategoryLevels.filter(l => l !== levelName);
+          await saveCategoryLevelsToFirestore(updated);
+        }
+      });
+      categoryTagsWrap.appendChild(tag);
+    });
+  }
+
+  async function saveCategoryLevelsToFirestore(newList) {
+    try {
+      if (catLevelStatus) {
+        catLevelStatus.textContent = "Updating categories…";
+        catLevelStatus.style.color = "var(--mist)";
+      }
+      await db.collection("siteSettings").doc("premiumCategories").set({
+        list: newList,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+      if (catLevelStatus) {
+        catLevelStatus.textContent = "Categories updated successfully.";
+        catLevelStatus.style.color = "#10b981";
+        setTimeout(() => { if (catLevelStatus) catLevelStatus.textContent = ""; }, 3000);
+      }
+    } catch (err) {
+      if (catLevelStatus) {
+        catLevelStatus.textContent = err.message;
+        catLevelStatus.style.color = "crimson";
+      }
+    }
+  }
+
+  if (addCatLevelBtn && newCatInput) {
+    addCatLevelBtn.addEventListener("click", async () => {
+      const val = newCatInput.value.trim();
+      if (!val) {
+        alert("Please enter a category name.");
+        return;
+      }
+      if (activeCategoryLevels.some(l => l.toLowerCase() === val.toLowerCase())) {
+        alert("This category already exists.");
+        return;
+      }
+      const updated = [...activeCategoryLevels, val];
+      await saveCategoryLevelsToFirestore(updated);
+      newCatInput.value = "";
+    });
+    newCatInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        addCatLevelBtn.click();
+      }
+    });
+  }
+
+  if (resetCatLevelsBtn) {
+    resetCatLevelsBtn.addEventListener("click", async () => {
+      if (confirm("Reset categories to standard defaults (Beginners Level, Intermediate Level, Higher Level, Loksewa)?")) {
+        await saveCategoryLevelsToFirestore([...DEFAULT_PREMIUM_LEVELS]);
+      }
+    });
+  }
+
+  function syncCatLevelSelect(selectedVal) {
+    if (catLevelSelect) {
+      const prev = selectedVal || catLevelSelect.value;
+      catLevelSelect.innerHTML = "";
+      activeCategoryLevels.forEach(lvl => {
+        const opt = document.createElement("option");
+        opt.value = lvl;
+        opt.textContent = lvl;
+        catLevelSelect.appendChild(opt);
+      });
+      const customOpt = document.createElement("option");
+      customOpt.value = "__custom__";
+      customOpt.textContent = "+ Type new custom category…";
+      catLevelSelect.appendChild(customOpt);
+
+      if (prev && activeCategoryLevels.includes(prev)) {
+        catLevelSelect.value = prev;
+      } else if (prev && prev !== "__custom__") {
+        const extOpt = document.createElement("option");
+        extOpt.value = prev;
+        extOpt.textContent = prev;
+        catLevelSelect.insertBefore(extOpt, customOpt);
+        catLevelSelect.value = prev;
+      } else {
+        catLevelSelect.value = activeCategoryLevels[0] || "Beginners Level";
+      }
+
+      if (customCatWrap) {
+        customCatWrap.style.display = catLevelSelect.value === "__custom__" ? "block" : "none";
+      }
+    }
+
+    if (catFilterByLevel) {
+      const prevFilter = catFilterByLevel.value || "all";
+      catFilterByLevel.innerHTML = `<option value="all">All Levels</option>`;
+      activeCategoryLevels.forEach(lvl => {
+        const opt = document.createElement("option");
+        opt.value = lvl;
+        opt.textContent = lvl;
+        catFilterByLevel.appendChild(opt);
+      });
+      catFilterByLevel.value = prevFilter;
+    }
+  }
+
+  if (catLevelSelect) {
+    catLevelSelect.addEventListener("change", () => {
+      if (customCatWrap) {
+        const isCustom = catLevelSelect.value === "__custom__";
+        customCatWrap.style.display = isCustom ? "block" : "none";
+        if (isCustom && customCatInput) {
+          customCatInput.focus();
+        }
+      }
+    });
+  }
+
+  if (catFilterByLevel) {
+    catFilterByLevel.addEventListener("change", () => {
+      renderCategoryList();
+    });
+  }
+
+  function resetCategoryForm() {
+    editingCatId = null;
+    if (catNameInput) catNameInput.value = "";
+    if (catSlugInput) {
+      catSlugInput.value = "";
+      catSlugInput.disabled = false;
+    }
+    if (catImageInput) catImageInput.value = "";
+    if (catCreditsInput) catCreditsInput.value = "3";
+    if (catDescInput) catDescInput.value = "";
+    if (customCatInput) customCatInput.value = "";
+    if (customCatWrap) customCatWrap.style.display = "none";
+    if (catLevelSelect) catLevelSelect.value = activeCategoryLevels[0] || "Beginners Level";
+    if (addCatBtn) addCatBtn.textContent = "Save / Add Quiz";
+    if (cancelEditCatBtn) cancelEditCatBtn.style.display = "none";
+    if (catFormHeader) catFormHeader.textContent = "Premium Quizzes";
+  }
+
+  if (cancelEditCatBtn) {
+    cancelEditCatBtn.addEventListener("click", resetCategoryForm);
+  }
+
+  // Subscribe immediately to category levels
+  subscribeCategoryLevels();
 
   // ---- Question Manager DOM refs ----
   const qForm       = document.getElementById("premiumQuestionForm");
@@ -1412,16 +1629,18 @@ function initPremiumQuizAdmin() {
   // ---- Auto-generate slug from name ----
   if (catNameInput && catSlugInput) {
     catNameInput.addEventListener("input", () => {
-      catSlugInput.value = catNameInput.value
-        .toLowerCase()
-        .trim()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "");
+      if (!editingCatId) {
+        catSlugInput.value = catNameInput.value
+          .toLowerCase()
+          .trim()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-+|-+$/g, "");
+      }
     });
   }
 
   // ---- Category CRUD ----
-  let categoryDocs = []; // [{id, name, imageUrl, description, credits}] live list
+  let categoryDocs = []; // [{id, name, category, imageUrl, description, credits, questions}] live list
 
   function subscribeCategories() {
     if (!catListEl) return;
@@ -1430,6 +1649,7 @@ function initPremiumQuizAdmin() {
         categoryDocs = snap.docs.map(d => ({
           id: d.id,
           name: d.data().name || d.id,
+          category: getQuizLevel(d.data()),
           imageUrl: d.data().imageUrl || "",
           description: d.data().description || "",
           credits: d.data().credits ?? 3,
@@ -1448,21 +1668,38 @@ function initPremiumQuizAdmin() {
 
   function renderCategoryList() {
     if (!catListEl) return;
+    const filterLevel = catFilterByLevel ? catFilterByLevel.value : "all";
+    const filteredDocs = filterLevel === "all"
+      ? categoryDocs
+      : categoryDocs.filter(c => (c.category || getQuizLevel(c)) === filterLevel);
+
     if (categoryDocs.length === 0) {
-      catListEl.innerHTML = `<p class="updates-loading">No categories yet. Add one above.</p>`;
+      catListEl.innerHTML = `<p class="updates-loading">No quizzes yet. Add one above.</p>`;
       return;
     }
+    if (filteredDocs.length === 0) {
+      catListEl.innerHTML = `<p class="updates-loading">No quizzes in level "${escapeHtml(filterLevel)}".</p>`;
+      return;
+    }
+
     catListEl.innerHTML = "";
-    categoryDocs.forEach(cat => {
+    filteredDocs.forEach(cat => {
+      const catLvl = cat.category || getQuizLevel(cat);
       const row = document.createElement("div");
       row.className = "admin-row";
       row.style.cssText = "display:flex; justify-content:space-between; align-items:center; gap:12px; padding:12px 14px; border:1px solid var(--border); border-radius:8px; margin-bottom:8px;";
       row.innerHTML = `
-        <div style="display:flex; align-items:center; gap:12px;">
-          ${cat.imageUrl ? `<img src="${escapeHtml(cat.imageUrl)}" alt="${escapeHtml(cat.name)}" style="width:48px; height:48px; object-fit:cover; border-radius:6px; border:1px solid var(--border);" onerror="this.style.display='none'" />` : `<div style="width:48px; height:48px; background:var(--border); border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:0.8rem; font-weight:700; color:var(--mist);">CAT</div>`}
-          <div>
-            <div><strong>${escapeHtml(cat.name)}</strong> <span class="admin-tag">${escapeHtml(cat.id)}</span> <span class="admin-tag" style="background:#fef3c7; color:#92400e;">${cat.credits} Credits</span></div>
-            <p style="margin:4px 0 0; font-size:0.85rem; color:var(--mist);">${escapeHtml(cat.description || "No description provided.")}</p>
+        <div style="display:flex; align-items:center; gap:12px; min-width:0;">
+          ${cat.imageUrl ? `<img src="${escapeHtml(cat.imageUrl)}" alt="${escapeHtml(cat.name)}" style="width:48px; height:48px; object-fit:cover; border-radius:6px; border:1px solid var(--border); flex-shrink:0;" onerror="this.style.display='none'" />` : `<div style="width:48px; height:48px; background:var(--border); border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:0.8rem; font-weight:700; color:var(--mist); flex-shrink:0;">QUIZ</div>`}
+          <div style="min-width:0;">
+            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+              <strong>${escapeHtml(cat.name)}</strong>
+              <span class="admin-tag" style="background:#eff6ff; color:#1d4ed8; font-weight:600; border:1px solid #bfdbfe;">${escapeHtml(catLvl)}</span>
+              <span class="admin-tag">${escapeHtml(cat.id)}</span>
+              <span class="admin-tag" style="background:#fef3c7; color:#92400e;">${cat.credits} Credits</span>
+              <span class="admin-tag" style="background:#f1f5f9; color:#475569;">${(cat.questions || []).length} Qs</span>
+            </div>
+            <p style="margin:4px 0 0; font-size:0.85rem; color:var(--mist); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(cat.description || "No description provided.")}</p>
           </div>
         </div>
         <div class="admin-row-actions" style="display:flex; gap:6px; flex-shrink:0;">
@@ -1472,17 +1709,28 @@ function initPremiumQuizAdmin() {
       `;
 
       row.querySelector("[data-edit-cat]").addEventListener("click", () => {
+        editingCatId = cat.id;
         if (catNameInput) catNameInput.value = cat.name;
-        if (catSlugInput) catSlugInput.value = cat.id;
+        if (catSlugInput) {
+          catSlugInput.value = cat.id;
+          catSlugInput.disabled = true; // Lock slug when editing to preserve questions
+        }
         if (catImageInput) catImageInput.value = cat.imageUrl || "";
         if (catCreditsInput) catCreditsInput.value = cat.credits ?? 3;
         if (catDescInput) catDescInput.value = cat.description || "";
-        if (addCatBtn) addCatBtn.textContent = "Save Changes to Category";
+        
+        syncCatLevelSelect(catLvl);
+        if (catLevelSelect) catLevelSelect.value = catLvl;
+        if (customCatWrap) customCatWrap.style.display = "none";
+
+        if (addCatBtn) addCatBtn.textContent = "Save Changes to Quiz";
+        if (cancelEditCatBtn) cancelEditCatBtn.style.display = "inline-block";
+        if (catFormHeader) catFormHeader.textContent = `Edit Quiz: "${cat.name}"`;
         if (catNameInput) catNameInput.scrollIntoView({ behavior: "smooth" });
       });
 
       row.querySelector("[data-del]").addEventListener("click", () => {
-        if (confirm(`Delete category "${cat.name}" and ALL its questions? This cannot be undone.`)) {
+        if (confirm(`Delete quiz "${cat.name}" and ALL its questions? This cannot be undone.`)) {
           db.collection("premiumQuizContent").doc(cat.id).delete()
             .catch(err => alert(err.message));
         }
@@ -1498,7 +1746,8 @@ function initPremiumQuizAdmin() {
     categoryDocs.forEach(cat => {
       const opt = document.createElement("option");
       opt.value = cat.id;
-      opt.textContent = `${cat.name} (${(cat.questions || []).length} questions)`;
+      const lvl = cat.category || getQuizLevel(cat);
+      opt.textContent = `${cat.name} [${lvl}] (${(cat.questions || []).length} questions)`;
       qCatSelect.appendChild(opt);
     });
     if (prev && categoryDocs.find(c => c.id === prev)) {
@@ -1514,9 +1763,24 @@ function initPremiumQuizAdmin() {
       const credits = catCreditsInput ? parseInt(catCreditsInput.value, 10) : 3;
       const desc = catDescInput ? catDescInput.value.trim() : "";
 
+      let categoryLevel = catLevelSelect ? catLevelSelect.value : "Beginners Level";
+      if (categoryLevel === "__custom__") {
+        categoryLevel = customCatInput ? customCatInput.value.trim() : "";
+        if (!categoryLevel) {
+          alert("Please type a name for the custom category.");
+          if (customCatInput) customCatInput.focus();
+          return;
+        }
+        // Save to activeCategoryLevels if not present
+        if (!activeCategoryLevels.some(l => l.toLowerCase() === categoryLevel.toLowerCase())) {
+          activeCategoryLevels.push(categoryLevel);
+          saveCategoryLevelsToFirestore(activeCategoryLevels);
+        }
+      }
+
       if (!name || !slug) {
         if (catStatus) {
-          catStatus.textContent = "Both name and slug are required.";
+          catStatus.textContent = "Both title and slug are required.";
           catStatus.style.color = "crimson";
         }
         return;
@@ -1530,27 +1794,24 @@ function initPremiumQuizAdmin() {
       }
       try {
         if (catStatus) {
-          catStatus.textContent = "Saving category…";
+          catStatus.textContent = "Saving quiz…";
           catStatus.style.color = "var(--mist)";
         }
         await db.collection("premiumQuizContent").doc(slug).set({
           name: name,
+          category: categoryLevel,
           imageUrl: imageUrl,
           description: desc,
           credits: isNaN(credits) || credits < 1 ? 3 : credits,
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true });
 
-        catNameInput.value = "";
-        catSlugInput.value = "";
-        if (catImageInput) catImageInput.value = "";
-        if (catCreditsInput) catCreditsInput.value = "3";
-        if (catDescInput) catDescInput.value = "";
-        addCatBtn.textContent = "Save / Add Category";
+        resetCategoryForm();
 
         if (catStatus) {
-          catStatus.textContent = `Category "${name}" saved successfully.`;
+          catStatus.textContent = `Quiz "${name}" (${categoryLevel}) saved successfully.`;
           catStatus.style.color = "#10b981";
+          setTimeout(() => { if (catStatus) catStatus.textContent = ""; }, 4000);
         }
       } catch (err) {
         if (catStatus) {

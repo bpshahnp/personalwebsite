@@ -14,7 +14,7 @@
 1. **MCQ Hub (`mcq.html` / `js/mcq.js`)**: Interactive practice quiz with instant feedback, time tracking, class-filtered question banks, topic mastery tracking, and results review.
 2. **Python Hub (`python.html` / `js/python-hub.js`)**: Searchable, categorized repository of runnable Python programs powered by client-side WebAssembly via **Pyodide** (no backend server required).
 3. **Live Weekly Challenge (`live-quiz.html` / `live.html` / `js/live-quiz.js`)**: 7-day timed tournament with 10 rotating daily questions, speed bonuses, live countdowns, and weekly winner podiums.
-4. **Premium Quiz Portal (`premium.html` / `js/premium.js`)**: Specialized question banks for competitive exams (Loksewa, Banking, Geography), gated by weekly tournament performance, manual payment verification (eSewa / Khalti), or credit packs.
+4. **Premium Quiz Portal (`premium.html` / `js/premium.js`)**: Specialized question banks for competitive exams (Loksewa, Banking, Geography), gated by weekly tournament performance, manual payment verification (eSewa / Khalti), or credit packs. Includes responsive **Category / Level filter chips** (Beginners Level, Intermediate Level, Higher Level, Loksewa, + custom) dynamically managed from the Admin Panel.
 5. **Leaderboard (`leaderboard.html` / `js/leaderboard.js`)**: Real-time ranking with filters for Class 8, 9, 10, All Classes, and timeframe filters (Today, This Week, This Month, All Time).
 6. **Additional Resources (`resources.html` / `js/resources.js`)**: Class study notes, PDFs, and slide decks linked to Google Drive.
 7. **Video Hub (`video.html`)**: Filterable curated tutorial videos with responsive modals.

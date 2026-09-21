@@ -5,7 +5,7 @@
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Premium Quiz Portal | B. Prasad Shah</title>
-  <link rel="stylesheet" href="css/style.css?v=20260920_03" />
+  <link rel="stylesheet" href="css/style.css?v=20260921_01" />
   <link rel="stylesheet" href="css/live.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -209,6 +209,138 @@
     .category-card:hover {
       transform: translateY(-2px);
       box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+    }
+    /* Premium Category / Level Filter Chips */
+    .premium-filter-bar {
+      margin: 18px 0 22px;
+    }
+    .premium-cat-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+    .premium-cat-chip {
+      background: #fff;
+      border: 1px solid #cbd5e1;
+      color: #475569;
+      font: inherit;
+      font-size: 0.86rem;
+      font-weight: 600;
+      padding: 7px 16px;
+      border-radius: 9999px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    .premium-cat-chip:hover {
+      border-color: var(--orange, #e8834e);
+      color: var(--orange, #e8834e);
+      background: #fffaf5;
+    }
+    .premium-cat-chip.active {
+      background: var(--orange, #e8834e) !important;
+      border-color: var(--orange, #e8834e) !important;
+      color: #ffffff !important;
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(232, 131, 78, 0.32);
+    }
+    [data-theme="dark"] .premium-cat-chip {
+      background: #1e293b;
+      border-color: #334155;
+      color: #94a3b8;
+    }
+    [data-theme="dark"] .premium-cat-chip:hover {
+      background: #283548;
+      border-color: var(--orange, #e8834e);
+      color: #f8fafc;
+    }
+    [data-theme="dark"] .premium-cat-chip.active {
+      background: var(--orange, #e8834e) !important;
+      border-color: var(--orange, #e8834e) !important;
+      color: #ffffff !important;
+    }
+    .premium-card-level-badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #2563eb;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      padding: 3px 10px;
+      border-radius: 9999px;
+      margin-bottom: 8px;
+      width: fit-content;
+      letter-spacing: 0.02em;
+    }
+    [data-theme="dark"] .premium-card-level-badge {
+      color: #93c5fd;
+      background: rgba(37, 99, 235, 0.2);
+      border-color: rgba(59, 130, 246, 0.35);
+    }
+    .premium-empty-card {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 42px 24px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+    }
+    .premium-empty-card h3 {
+      margin: 0 0 8px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .premium-empty-card p {
+      color: #64748b;
+      font-size: 0.92rem;
+      line-height: 1.55;
+      max-width: 460px;
+      margin: 0 auto 18px;
+    }
+    [data-theme="dark"] .premium-empty-card {
+      background: #1e293b !important;
+      border-color: #334155 !important;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3) !important;
+    }
+    [data-theme="dark"] .premium-empty-card h3 {
+      color: #f8fafc !important;
+    }
+    [data-theme="dark"] .premium-empty-card p {
+      color: #94a3b8 !important;
+    }
+    [data-theme="dark"] .premium-empty-card .btn-outline {
+      background: #0f172a !important;
+      border-color: #475569 !important;
+      color: #f1f5f9 !important;
+    }
+    [data-theme="dark"] .premium-empty-card .btn-outline:hover {
+      border-color: var(--orange, #e8834e) !important;
+      color: var(--orange, #e8834e) !important;
+    }
+    .user-credits-pill {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 9999px;
+      padding: 6px 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    }
+    [data-theme="dark"] .user-credits-pill {
+      background: #1e293b !important;
+      border-color: #334155 !important;
+    }
+    [data-theme="dark"] .user-credits-pill span {
+      color: #94a3b8 !important;
+    }
+    [data-theme="dark"] .user-credits-pill #userCreditsDisplay {
+      color: #34d399 !important;
     }
     .category-card-img {
       height: 150px;
@@ -493,12 +625,24 @@
             <h2 style="font-size:1.4rem; margin:0 0 4px;">Available Premium Quizzes</h2>
             <p style="color:#64748b; font-size:0.9rem; margin:0;">Select any category card below to test your knowledge with interactive timed questions.</p>
           </div>
-          <div id="userCreditsDisplayWrap" style="display:none; align-items:center; gap:8px; background:#fff; border:1px solid #e2e8f0; border-radius:9999px; padding:6px 14px; box-shadow:0 2px 6px rgba(0,0,0,0.04);">
-            <span style="font-size:0.8rem; color:#64748b; font-weight:600;">Your Balance:</span>
+          <div id="userCreditsDisplayWrap" class="user-credits-pill">
+            <span style="font-size:0.8rem; font-weight:600;">Your Balance:</span>
             <span id="userCreditsDisplay" style="font-weight:800; color:#059669; font-size:0.95rem;">0 Credits</span>
             <button type="button" id="buyCreditsHeaderBtn" class="btn btn-primary btn-sm" style="font-size:0.75rem; padding:3px 10px; border-radius:9999px; margin-left:4px; font-weight:700;">+ Buy Credits</button>
           </div>
         </div>
+
+        <!-- Category / Level Filter Selector -->
+        <div class="premium-filter-bar" id="premiumFilterBar">
+          <div class="premium-cat-chips" id="premiumCategoryChips">
+            <button type="button" class="premium-cat-chip active" data-cat="all">All Quizzes</button>
+            <button type="button" class="premium-cat-chip" data-cat="Beginners Level">Beginners Level</button>
+            <button type="button" class="premium-cat-chip" data-cat="Intermediate Level">Intermediate Level</button>
+            <button type="button" class="premium-cat-chip" data-cat="Higher Level">Higher Level</button>
+            <button type="button" class="premium-cat-chip" data-cat="Loksewa">Loksewa</button>
+          </div>
+        </div>
+
         <div class="category-grid" id="premiumCategoriesGrid">
           <p class="quiz-muted">Loading categories…</p>
         </div>
@@ -642,7 +786,7 @@
           <div class="payment-method-item">
             <div>
               <div style="font-weight:700; font-size:0.95rem; color:#059669;">eSewa</div>
-              <div style="font-size:0.82rem; color:#64748b;">eSewa ID: <strong>Coming Soon</strong></strong></div>
+              <div style="font-size:0.82rem; color:#64748b;">eSewa ID: <strong>9800000000</strong></div>
               <div style="font-size:0.75rem; color:#94a3b8;">Name: B. Prasad Shah</div>
             </div>
             <span style="background:#ecfdf5; color:#059669; font-size:0.75rem; font-weight:700; padding:4px 8px; border-radius:6px;">eSewa Transfer</span>
@@ -651,8 +795,8 @@
           <div class="payment-method-item">
             <div>
               <div style="font-weight:700; font-size:0.95rem; color:#7c3aed;">Khalti</div>
-              <div style="font-size:0.82rem; color:#64748b;">Khalti ID: <strong>9865351506</strong></div>
-              <div style="font-size:0.75rem; color:#94a3b8;">Name: Bhola Prasad Shah</div>
+              <div style="font-size:0.82rem; color:#64748b;">Khalti ID: <strong>9800000000</strong></div>
+              <div style="font-size:0.75rem; color:#94a3b8;">Name: B. Prasad Shah</div>
             </div>
             <span style="background:#f5f3ff; color:#7c3aed; font-size:0.75rem; font-weight:700; padding:4px 8px; border-radius:6px;">Khalti Send</span>
           </div>
@@ -660,9 +804,8 @@
           <div class="payment-method-item">
             <div>
               <div style="font-weight:700; font-size:0.95rem; color:#2563eb;">Bank Transfer</div>
-              <div style="font-size:0.82rem; color:#64748b;">Kumari Bank Pvt. Ltd.</div>
-              <div style="font-size:0.75rem; color:#94a3b8;">A/C: 1500295181100001</div>
-              <img src="assets/bankqr.png" width="200" height="200">
+              <div style="font-size:0.82rem; color:#64748b;">Global IME Bank</div>
+              <div style="font-size:0.75rem; color:#94a3b8;">A/C: 0000000000000000</div>
             </div>
             <span style="background:#eff6ff; color:#2563eb; font-size:0.75rem; font-weight:700; padding:4px 8px; border-radius:6px;">Bank</span>
           </div>
@@ -769,6 +912,7 @@
             <div>
               <span style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:#64748b; background:#f1f5f9; padding:3px 8px; border-radius:9999px; display:inline-block; margin-bottom:8px;">Starter</span>
               <div style="font-size:1.3rem; font-weight:800; color:#0f172a; margin-bottom:2px;">3 Credits</div>
+              <div style="font-size:0.78rem; color:#64748b; margin-bottom:12px;">1 Quiz Attempt</div>
             </div>
             <div>
               <div style="font-size:1.25rem; font-weight:800; color:#2563eb; margin-bottom:10px;">Rs. 15</div>
@@ -781,6 +925,7 @@
             <div>
               <span style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:#0369a1; background:#e0f2fe; padding:3px 8px; border-radius:9999px; display:inline-block; margin-bottom:8px;">Popular</span>
               <div style="font-size:1.3rem; font-weight:800; color:#0f172a; margin-bottom:2px;">12 Credits</div>
+              <div style="font-size:0.78rem; color:#64748b; margin-bottom:12px;">4 Quiz Attempts</div>
             </div>
             <div>
               <div style="font-size:1.25rem; font-weight:800; color:#2563eb; margin-bottom:10px;">Rs. 50</div>
@@ -793,6 +938,7 @@
             <div>
               <span style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:#047857; background:#d1fae5; padding:3px 8px; border-radius:9999px; display:inline-block; margin-bottom:8px;">Value Pack</span>
               <div style="font-size:1.3rem; font-weight:800; color:#0f172a; margin-bottom:2px;">30 Credits</div>
+              <div style="font-size:0.78rem; color:#64748b; margin-bottom:12px;">10 Quiz Attempts</div>
             </div>
             <div>
               <div style="font-size:1.25rem; font-weight:800; color:#2563eb; margin-bottom:10px;">Rs. 100</div>

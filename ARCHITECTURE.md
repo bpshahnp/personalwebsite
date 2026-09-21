@@ -83,6 +83,10 @@
   1. *Weekly Tournament Champions*: Automatically unlocked via `premiumUnlocks`.
   2. *Credit Balances*: Users consume credits (e.g. 3 credits per attempt) stored in `users/{uid}.credits`.
   3. *Annual Pass / Manual Verification*: Learners submit transaction screenshots & reference numbers from eSewa / Khalti. Submissions enter `premiumRequests` for administrator approval in `admin.html`.
+- **Category / Level Filtering**:
+  - Quizzes belong to categorized levels: `Beginners Level`, `Intermediate Level`, `Higher Level`, `Loksewa`, or custom admin-defined groups.
+  - Category list configuration is stored in `siteSettings/premiumCategories`.
+  - Frontend renders responsive filter chips with real-time question counts and instant card grid filtering.
 
 ---
 

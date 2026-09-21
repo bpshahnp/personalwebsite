@@ -31,6 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const accessBadgeTitle        = document.getElementById("accessBadgeTitle");
   const accessBadgeSubtitle     = document.getElementById("accessBadgeSubtitle");
   const categoriesGrid          = document.getElementById("premiumCategoriesGrid");
+  const categoryChipsWrap       = document.getElementById("premiumCategoryChips");
 
   // User Credits Display
   const userCreditsDisplayWrap  = document.getElementById("userCreditsDisplayWrap");
@@ -708,74 +709,193 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* ============================================================
-     Categories Loader & Card Renderer
-     Always runs immediately so quiz cards are shown first!
+     Categories & Level Filter System
+     - Supports: Beginners Level, Intermediate Level, Higher Level, Loksewa, + Custom
+     - Changeable dynamically from Admin via siteSettings/premiumCategories
+     - Filter chips update card grid in real time with count badges
      ============================================================ */
+  const DEFAULT_PREMIUM_LEVELS = ["Beginners Level", "Intermediate Level", "Higher Level", "Loksewa"];
+  let configuredCategories = [...DEFAULT_PREMIUM_LEVELS];
+  let activeCategoryFilter = "all";
+
+  function getQuizCategoryLevel(cat) {
+    if (cat && cat.category && String(cat.category).trim()) return String(cat.category).trim();
+    if (cat && cat.level && String(cat.level).trim()) return String(cat.level).trim();
+    const name = (cat && cat.name ? cat.name : "").toLowerCase();
+    if (name.includes("beginner")) return "Beginners Level";
+    if (name.includes("intermediate")) return "Intermediate Level";
+    if (name.includes("higher") || name.includes("advanced")) return "Higher Level";
+    if (name.includes("loksewa") || name.includes("lok sewa")) return "Loksewa";
+    return "Beginners Level";
+  }
+
+  // Subscribe to category definitions from admin
+  function subscribeConfiguredCategories() {
+    db.collection("siteSettings").doc("premiumCategories")
+      .onSnapshot(doc => {
+        if (doc.exists && Array.isArray(doc.data().list) && doc.data().list.length > 0) {
+          configuredCategories = doc.data().list.filter(Boolean);
+        } else {
+          configuredCategories = [...DEFAULT_PREMIUM_LEVELS];
+        }
+        renderCategoryChips();
+        renderCategoryCards();
+      }, err => {
+        console.warn("Could not load premiumCategories:", err);
+        configuredCategories = [...DEFAULT_PREMIUM_LEVELS];
+        renderCategoryChips();
+        renderCategoryCards();
+      });
+  }
+
+  function renderCategoryChips() {
+    if (!categoryChipsWrap) return;
+
+    // Gather all distinct categories (configured list + any present on loaded quizzes)
+    const allCategoriesSet = new Set(configuredCategories);
+    allLoadedCategories.forEach(cat => {
+      const lvl = getQuizCategoryLevel(cat);
+      if (lvl) allCategoriesSet.add(lvl);
+    });
+
+    const categoryList = Array.from(allCategoriesSet);
+
+    // If active category was removed, fallback to "all"
+    if (activeCategoryFilter !== "all" && !allCategoriesSet.has(activeCategoryFilter)) {
+      activeCategoryFilter = "all";
+    }
+
+    categoryChipsWrap.innerHTML = "";
+
+    // 1. "All Quizzes" Chip
+    const allBtn = document.createElement("button");
+    allBtn.type = "button";
+    allBtn.className = `premium-cat-chip ${activeCategoryFilter === "all" ? "active" : ""}`;
+    allBtn.innerHTML = `All Quizzes <span style="opacity:0.8; font-size:0.78rem;">(${allLoadedCategories.length})</span>`;
+    allBtn.addEventListener("click", () => {
+      activeCategoryFilter = "all";
+      renderCategoryChips();
+      renderCategoryCards();
+    });
+    categoryChipsWrap.appendChild(allBtn);
+
+    // 2. Individual Category Chips
+    categoryList.forEach(catName => {
+      const count = allLoadedCategories.filter(c => getQuizCategoryLevel(c) === catName).length;
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = `premium-cat-chip ${activeCategoryFilter === catName ? "active" : ""}`;
+      btn.innerHTML = `${escapeHtml(catName)} <span style="opacity:0.8; font-size:0.78rem;">(${count})</span>`;
+      btn.addEventListener("click", () => {
+        activeCategoryFilter = catName;
+        renderCategoryChips();
+        renderCategoryCards();
+      });
+      categoryChipsWrap.appendChild(btn);
+    });
+  }
+
+  function renderCategoryCards() {
+    if (!categoriesGrid) return;
+
+    if (allLoadedCategories.length === 0) {
+      categoriesGrid.innerHTML = `
+        <div class="premium-empty-card">
+          <h3>No Quizzes Published Yet</h3>
+          <p>
+            The administrator has not added any premium quizzes yet. Please check back shortly or explore the Live Quiz and MCQ Hub!
+          </p>
+        </div>
+      `;
+      return;
+    }
+
+    const filtered = activeCategoryFilter === "all"
+      ? allLoadedCategories
+      : allLoadedCategories.filter(c => getQuizCategoryLevel(c) === activeCategoryFilter);
+
+    if (filtered.length === 0) {
+      categoriesGrid.innerHTML = `
+        <div class="premium-empty-card">
+          <h3>No Quizzes in "${escapeHtml(activeCategoryFilter)}"</h3>
+          <p>
+            There are currently no quizzes published under this category. Choose another level or view all available quizzes.
+          </p>
+          <button type="button" class="btn btn-outline btn-sm" id="viewAllQuizzesBtn" style="font-weight:600;">
+            View All Quizzes (${allLoadedCategories.length})
+          </button>
+        </div>
+      `;
+      const viewAllBtn = document.getElementById("viewAllQuizzesBtn");
+      if (viewAllBtn) {
+        viewAllBtn.addEventListener("click", () => {
+          activeCategoryFilter = "all";
+          renderCategoryChips();
+          renderCategoryCards();
+        });
+      }
+      return;
+    }
+
+    categoriesGrid.innerHTML = "";
+    filtered.forEach(cat => {
+      const card = document.createElement("div");
+      card.className = "category-card";
+
+      const bgImg = cat.imageUrl
+        ? `background-image:url('${escapeHtml(cat.imageUrl)}');`
+        : "background: linear-gradient(135deg, #1e293b 0%, #3b82f6 100%);";
+      
+      const qCount = Array.isArray(cat.questions) ? cat.questions.length : (cat.questionCount || 0);
+      const cost = Math.max(1, Number(cat.credits || 3));
+      const countBadge = qCount > 0 ? `${qCount} Qs · ${cost} Credits` : `${cost} Credits`;
+      const catLevel = getQuizCategoryLevel(cat);
+
+      card.innerHTML = `
+        <div class="category-card-img" style="${bgImg}">
+          <span class="category-card-badge">${escapeHtml(countBadge)}</span>
+        </div>
+        <div class="category-card-body" style="padding:18px; display:flex; flex-direction:column; flex:1;">
+          <span class="premium-card-level-badge">${escapeHtml(catLevel)}</span>
+          <h3 style="margin:0 0 8px; font-size:1.15rem; font-weight:700;">${escapeHtml(cat.name || "Premium Quiz")}</h3>
+          <p style="color:#64748b; font-size:0.86rem; line-height:1.55; flex:1; margin-bottom:18px;">
+            ${escapeHtml(cat.description || "Comprehensive timed competitive examination practice questions.")}
+          </p>
+          <button type="button" class="btn btn-primary btn-sm start-cat-btn" style="width:100%; font-weight:700; padding:11px 16px; display:flex; align-items:center; justify-content:center; gap:8px;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            <span>Play Quiz (${cost} Credits)</span>
+          </button>
+        </div>
+      `;
+
+      card.querySelector(".start-cat-btn").addEventListener("click", (e) => {
+        e.stopPropagation();
+        handleQuizCardClick(cat);
+      });
+      card.addEventListener("click", () => {
+        handleQuizCardClick(cat);
+      });
+
+      categoriesGrid.appendChild(card);
+    });
+  }
+
   async function loadCategories() {
     if (!categoriesGrid) return;
     categoriesGrid.innerHTML = '<p class="quiz-muted">Loading available premium quizzes…</p>';
 
     try {
       const snap = await db.collection("premiumQuizContent").get();
-      if (snap.empty) {
-        categoriesGrid.innerHTML = `
-          <div style="grid-column:1/-1; text-align:center; padding:40px 20px; background:#fff; border:1px solid #e2e8f0; border-radius:14px;">
-            <h3 style="margin-bottom:8px; font-size:1.2rem;">No Quizzes Published Yet</h3>
-            <p style="color:#64748b; font-size:0.92rem; max-width:480px; margin:0 auto;">
-              The administrator has not added any premium quizzes yet. Please check back shortly or check out the Live Quiz and MCQ Hub!
-            </p>
-          </div>
-        `;
-        return;
+      allLoadedCategories = [];
+      if (!snap.empty) {
+        snap.forEach(d => {
+          allLoadedCategories.push(Object.assign({ id: d.id }, d.data()));
+        });
+        allLoadedCategories.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
       }
 
-      allLoadedCategories = [];
-      snap.forEach(d => {
-        allLoadedCategories.push(Object.assign({ id: d.id }, d.data()));
-      });
-
-      // Sort alphabetically by category name
-      allLoadedCategories.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
-
-      categoriesGrid.innerHTML = "";
-      allLoadedCategories.forEach(cat => {
-        const card = document.createElement("div");
-        card.className = "category-card";
-
-        const bgImg = cat.imageUrl
-          ? `background-image:url('${escapeHtml(cat.imageUrl)}');`
-          : "background: linear-gradient(135deg, #1e293b 0%, #3b82f6 100%);";
-        
-        const qCount = Array.isArray(cat.questions) ? cat.questions.length : (cat.questionCount || 0);
-        const cost = Math.max(1, Number(cat.credits || 3));
-        const countBadge = qCount > 0 ? `${qCount} Qs · ${cost} Credits` : `${cost} Credits`;
-
-        card.innerHTML = `
-          <div class="category-card-img" style="${bgImg}">
-            <span class="category-card-badge">${escapeHtml(countBadge)}</span>
-          </div>
-          <div class="category-card-body">
-            <h3 style="margin:0 0 8px; font-size:1.15rem; font-weight:700;">${escapeHtml(cat.name || "Premium Quiz")}</h3>
-            <p style="color:#64748b; font-size:0.86rem; line-height:1.55; flex:1; margin-bottom:18px;">
-              ${escapeHtml(cat.description || "Comprehensive timed competitive examination practice questions.")}
-            </p>
-            <button type="button" class="btn btn-primary btn-sm start-cat-btn" style="width:100%; font-weight:700; padding:11px 16px; display:flex; align-items:center; justify-content:center; gap:8px;">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-              <span>Play Quiz (${cost} Credits)</span>
-            </button>
-          </div>
-        `;
-
-        card.querySelector(".start-cat-btn").addEventListener("click", (e) => {
-          e.stopPropagation();
-          handleQuizCardClick(cat);
-        });
-        card.addEventListener("click", () => {
-          handleQuizCardClick(cat);
-        });
-
-        categoriesGrid.appendChild(card);
-      });
+      renderCategoryChips();
+      renderCategoryCards();
     } catch (err) {
       console.error("Error loading categories:", err);
       categoriesGrid.innerHTML = `
@@ -785,6 +905,9 @@ document.addEventListener("DOMContentLoaded", () => {
       `;
     }
   }
+
+  // Subscribe to category level configuration changes in real time
+  subscribeConfiguredCategories();
 
   /* ============================================================
      Quiz Card Click Handler (Gate: Sign Up -> Credit Check/Deduction -> Pay/Play)

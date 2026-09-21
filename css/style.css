@@ -4123,20 +4123,23 @@ img { max-width: 100%; display: block; }
 /* ---------- Leaderboard & Chips ---------- */
 [data-theme="dark"] .board-chip,
 [data-theme="dark"] .class-chip,
-[data-theme="dark"] .video-filter-btn {
+[data-theme="dark"] .video-filter-btn,
+[data-theme="dark"] .premium-cat-chip {
   background: #1e293b;
   border-color: var(--line);
   color: var(--mist);
 }
 [data-theme="dark"] .board-chip:hover,
 [data-theme="dark"] .class-chip:hover,
-[data-theme="dark"] .video-filter-btn:hover {
+[data-theme="dark"] .video-filter-btn:hover,
+[data-theme="dark"] .premium-cat-chip:hover {
   border-color: var(--orange);
   color: #f8fafc;
 }
 [data-theme="dark"] .board-chip.active,
 [data-theme="dark"] .class-chip.active,
-[data-theme="dark"] .video-filter-btn.active {
+[data-theme="dark"] .video-filter-btn.active,
+[data-theme="dark"] .premium-cat-chip.active {
   background: var(--orange) !important;
   border-color: var(--orange) !important;
   color: #ffffff !important;
