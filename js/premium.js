@@ -891,7 +891,10 @@ document.addEventListener("DOMContentLoaded", () => {
         snap.forEach(d => {
           allLoadedCategories.push(Object.assign({ id: d.id }, d.data()));
         });
-        allLoadedCategories.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+        allLoadedCategories.sort((a, b) => {
+          const od = (a.displayOrder ?? 99) - (b.displayOrder ?? 99);
+          return od !== 0 ? od : (a.name || "").localeCompare(b.name || "");
+        });
       }
 
       renderCategoryChips();

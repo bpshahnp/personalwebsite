@@ -1392,6 +1392,7 @@ function initPremiumQuizAdmin() {
   const catFormHeader   = document.getElementById("catFormHeader");
   const catImageInput   = document.getElementById("premiumCatImage");
   const catCreditsInput = document.getElementById("premiumCatCredits");
+  const catOrderInput   = document.getElementById("premiumCatOrder");
   const catDescInput    = document.getElementById("premiumCatDesc");
   const addCatBtn       = document.getElementById("addPremiumCategoryBtn");
   const catStatus       = document.getElementById("premiumCatStatus");
@@ -1594,6 +1595,7 @@ function initPremiumQuizAdmin() {
     }
     if (catImageInput) catImageInput.value = "";
     if (catCreditsInput) catCreditsInput.value = "3";
+    if (catOrderInput) catOrderInput.value = "99";
     if (catDescInput) catDescInput.value = "";
     if (customCatInput) customCatInput.value = "";
     if (customCatWrap) customCatWrap.style.display = "none";
@@ -1653,8 +1655,12 @@ function initPremiumQuizAdmin() {
           imageUrl: d.data().imageUrl || "",
           description: d.data().description || "",
           credits: d.data().credits ?? 3,
+          displayOrder: d.data().displayOrder ?? 99,
           questions: d.data().questions || []
-        })).sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+        })).sort((a, b) => {
+          const od = (a.displayOrder ?? 99) - (b.displayOrder ?? 99);
+          return od !== 0 ? od : (a.name || "").localeCompare(b.name || "");
+        });
         renderCategoryList();
         syncCategorySelect();
       }, err => {
@@ -1698,6 +1704,7 @@ function initPremiumQuizAdmin() {
               <span class="admin-tag">${escapeHtml(cat.id)}</span>
               <span class="admin-tag" style="background:#fef3c7; color:#92400e;">${cat.credits} Credits</span>
               <span class="admin-tag" style="background:#f1f5f9; color:#475569;">${(cat.questions || []).length} Qs</span>
+              <span class="admin-tag" style="background:#f0fdf4; color:#166534; font-weight:700;" title="Display order position">#${cat.displayOrder ?? 99}</span>
             </div>
             <p style="margin:4px 0 0; font-size:0.85rem; color:var(--mist); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(cat.description || "No description provided.")}</p>
           </div>
@@ -1717,6 +1724,7 @@ function initPremiumQuizAdmin() {
         }
         if (catImageInput) catImageInput.value = cat.imageUrl || "";
         if (catCreditsInput) catCreditsInput.value = cat.credits ?? 3;
+        if (catOrderInput) catOrderInput.value = cat.displayOrder ?? 99;
         if (catDescInput) catDescInput.value = cat.description || "";
         
         syncCatLevelSelect(catLvl);
@@ -1761,6 +1769,7 @@ function initPremiumQuizAdmin() {
       const slug = catSlugInput.value.trim();
       const imageUrl = catImageInput ? catImageInput.value.trim() : "";
       const credits = catCreditsInput ? parseInt(catCreditsInput.value, 10) : 3;
+      const displayOrder = catOrderInput ? (parseInt(catOrderInput.value, 10) || 99) : 99;
       const desc = catDescInput ? catDescInput.value.trim() : "";
 
       let categoryLevel = catLevelSelect ? catLevelSelect.value : "Beginners Level";
@@ -1803,6 +1812,7 @@ function initPremiumQuizAdmin() {
           imageUrl: imageUrl,
           description: desc,
           credits: isNaN(credits) || credits < 1 ? 3 : credits,
+          displayOrder: isNaN(displayOrder) || displayOrder < 1 ? 99 : displayOrder,
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true });
 
