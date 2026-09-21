@@ -5,7 +5,7 @@
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Premium Quiz Portal | B. Prasad Shah</title>
-  <link rel="stylesheet" href="css/style.css?v=20260921_01" />
+  <link rel="stylesheet" href="css/style.css?v=20260921_02" />
   <link rel="stylesheet" href="css/live.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -377,9 +377,10 @@
       -webkit-backdrop-filter: blur(5px);
       z-index: 9999;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
-      padding: 16px;
+      padding: 20px 16px;
+      overflow-y: auto;
     }
     .prompt-modal-card {
       background: #fff;
@@ -391,6 +392,7 @@
       box-shadow: 0 20px 45px rgba(0, 0, 0, 0.2);
       position: relative;
       animation: modalFadeUp 0.2s ease both;
+      margin: auto; /* vertically centers when content is shorter than viewport */
     }
     @keyframes modalFadeUp {
       from { opacity: 0; transform: translateY(8px) scale(0.97); }

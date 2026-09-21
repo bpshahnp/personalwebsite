@@ -51,16 +51,17 @@ body {
 }
 
 /* ---------- Page Transitions ---------- */
+/* Note: Never apply transform to body because any transform establishes a
+   containing block that breaks position:fixed on modal dialogs across the site. */
 @keyframes pageEnter {
-  from { opacity: 0; transform: translateY(5px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 /* JS-driven fade-out class — applied just before navigating away */
 body.page-leaving {
   opacity: 0;
-  transform: translateY(-4px);
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  transition: opacity 0.15s ease;
   pointer-events: none;
 }
 

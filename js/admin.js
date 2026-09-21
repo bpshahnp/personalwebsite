@@ -1173,10 +1173,10 @@ function initPremiumQuizAdmin() {
     filtered.forEach(req => {
       const card = document.createElement("div");
       card.className = "admin-row";
-      card.style.cssText = "display:flex; justify-content:space-between; align-items:flex-start; gap:14px; padding:14px; border:1px solid var(--border); border-radius:10px; margin-bottom:10px; background:var(--bg, #fff);";
+      card.style.cssText = "display:flex; justify-content:space-between; align-items:flex-start; gap:14px; padding:14px; border:1px solid var(--border, var(--line)); border-radius:10px; margin-bottom:10px;";
 
       const statusColor = req.status === "approved" ? "#10b981" : (req.status === "rejected" ? "#ef4444" : "#f59e0b");
-      const statusBg = req.status === "approved" ? "#ecfdf5" : (req.status === "rejected" ? "#fef2f2" : "#fffbeb");
+      const statusBorder = req.status === "approved" ? "#10b981" : (req.status === "rejected" ? "#ef4444" : "#f59e0b");
       const formattedDate = req.createdAt && req.createdAt.toDate ? req.createdAt.toDate().toLocaleString() : "Recently";
 
       card.innerHTML = `
@@ -1184,11 +1184,11 @@ function initPremiumQuizAdmin() {
           <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px; flex-wrap:wrap;">
             <strong>${escapeHtml(req.userName || "User")}</strong>
             <span class="admin-tag">${escapeHtml(req.userEmail || "")}</span>
-            <span class="admin-tag" style="background:${statusBg}; color:${statusColor}; font-weight:700; text-transform:uppercase;">${escapeHtml(req.status || "pending")}</span>
+            <span class="admin-tag" style="border:1.5px solid ${statusBorder}; color:${statusColor}; font-weight:700; text-transform:uppercase; background:transparent;">${escapeHtml(req.status || "pending")}</span>
           </div>
 
-          <div style="font-size:0.86rem; color:var(--text); line-height:1.6;">
-            <div><strong>Method:</strong> ${escapeHtml(req.paymentMethod || "eSewa")} · <strong>Amount:</strong> NPR ${escapeHtml(String(req.amountNpr || 200))} · <strong>Ref Code:</strong> <code style="background:#f1f5f9; padding:2px 6px; border-radius:4px; font-weight:700;">${escapeHtml(req.referenceCode || "-")}</code></div>
+          <div style="font-size:0.86rem; color:var(--text, var(--ink)); line-height:1.6;">
+            <div><strong>Method:</strong> ${escapeHtml(req.paymentMethod || "eSewa")} · <strong>Amount:</strong> NPR ${escapeHtml(String(req.amountNpr || 200))} · <strong>Ref Code:</strong> <code style="background:var(--cream, #f1f5f9); border:1px solid var(--line); padding:2px 6px; border-radius:4px; font-weight:700; color:var(--ink);">${escapeHtml(req.referenceCode || "-")}</code></div>
             <div><strong>Phone:</strong> ${escapeHtml(req.userPhone || "Not provided")} · <strong>Submitted:</strong> ${formattedDate}</div>
             ${req.remarks ? `<div><strong>Remarks:</strong> <em>${escapeHtml(req.remarks)}</em></div>` : ""}
           </div>

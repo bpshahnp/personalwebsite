@@ -89,6 +89,7 @@ personalwebsite-main/
 
 ### 4.2. Mobile Layout & Overflow Rules
 - Both `html` and `body` have `overflow-x: hidden; max-width: 100%;`.
+- **CRITICAL Modal & Viewport Invariant**: Never apply CSS `transform` (e.g. via `pageEnter` keyframes with `fill-mode: both`) to `<body>` or root elements. Under the W3C CSS Transforms specification, any active `transform` on an ancestor causes it to act as the containing block for `position: fixed` descendants, which breaks modals by anchoring them to document coordinates (top of the page) instead of the browser viewport.
 - All off-canvas drawers (`.nav-drawer`, `.mcqhub-rail`, `.pyhub-rail`):
   - Must include `visibility: hidden; pointer-events: none;` when closed to prevent off-screen geometry from blowing out mobile viewport widths (320px–480px).
   - Transition into view using `visibility: visible; pointer-events: auto; transform: translateX(0);` when active.

@@ -228,10 +228,12 @@ document.addEventListener("DOMContentLoaded", () => {
       };
     }
     promptModal.style.display = "flex";
+    document.body.style.overflow = "hidden";
   }
 
   function closePromptModal() {
     if (promptModal) promptModal.style.display = "none";
+    document.body.style.overflow = "";
   }
 
   if (promptModalCancelBtn) {
@@ -339,11 +341,15 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    if (buyCreditsModal) buyCreditsModal.style.display = "flex";
+    if (buyCreditsModal) {
+      buyCreditsModal.style.display = "flex";
+      document.body.style.overflow = "hidden";
+    }
   }
 
   function closeBuyCreditsModal() {
     if (buyCreditsModal) buyCreditsModal.style.display = "none";
+    document.body.style.overflow = "";
   }
 
   if (buyCreditsCloseBtn) buyCreditsCloseBtn.addEventListener("click", closeBuyCreditsModal);
