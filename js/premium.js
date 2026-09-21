@@ -1238,4 +1238,36 @@ document.addEventListener("DOMContentLoaded", () => {
   // Initial call: load categories immediately on page load!
   showView("catalog");
   loadCategories();
+
+  /* ---------- Bank QR Lightbox ---------- */
+  (function () {
+    const lightbox    = document.getElementById("qrLightbox");
+    const closeBtn    = document.getElementById("qrLightboxClose");
+    const thumbBtn    = document.getElementById("bankQrThumbBtn");
+    if (!lightbox || !thumbBtn) return;
+
+    function openQrLightbox() {
+      lightbox.style.display = "flex";
+      document.body.style.overflow = "hidden";
+      closeBtn && closeBtn.focus();
+    }
+    function closeQrLightbox() {
+      lightbox.style.display = "none";
+      document.body.style.overflow = "";
+      thumbBtn.focus();
+    }
+
+    thumbBtn.addEventListener("click", openQrLightbox);
+    if (closeBtn) closeBtn.addEventListener("click", closeQrLightbox);
+
+    // Click backdrop to close
+    lightbox.addEventListener("click", function (e) {
+      if (e.target === lightbox) closeQrLightbox();
+    });
+
+    // Escape key to close
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && lightbox.style.display === "flex") closeQrLightbox();
+    });
+  })();
 });
