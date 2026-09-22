@@ -818,48 +818,103 @@ function initPythonAdmin() {
   const cancelBtn = document.getElementById("cancelPythonEdit");
   const idField = document.getElementById("pyId");
 
+  const categoryFilter = document.getElementById("pythonCategoryFilter");
+  const countLabel = document.getElementById("pythonCountLabel");
+
+  let allPrograms = []; // latest snapshot ordered by order desc
+
+  if (categoryFilter) categoryFilter.addEventListener("change", renderProgramList);
+
   pythonUnsub = db.collection("pythonPrograms").orderBy("order", "desc").onSnapshot(
     (snapshot) => {
-      if (snapshot.empty) {
-        listEl.innerHTML = `<p class="updates-loading">No programs yet — add one above.</p>`;
-        return;
-      }
-      listEl.innerHTML = "";
-      snapshot.forEach((doc) => {
-        const p = doc.data();
-        const row = document.createElement("div");
-        row.className = "admin-row";
-        row.innerHTML = `
-          <div>
-            <strong>${escapeHtml(p.title || "")}</strong>
-            ${p.category ? `<span class="admin-tag">${escapeHtml(p.category)}</span>` : ""}
-          </div>
-          <div class="admin-row-actions">
-            <button class="btn btn-outline btn-sm" data-action="edit">Edit</button>
-            <button class="btn btn-outline btn-sm btn-danger" data-action="delete">Delete</button>
-          </div>
-        `;
-        row.querySelector('[data-action="edit"]').addEventListener("click", () => {
-          idField.value = doc.id;
-          document.getElementById("pyTitle").value = p.title || "";
-          document.getElementById("pyCategory").value = p.category || "";
-          document.getElementById("pyOrder").value = p.order ?? 1;
-          document.getElementById("pyDescription").value = p.description || "";
-          document.getElementById("pyCode").value = p.code || "";
-          submitBtn.textContent = "Save changes";
-          cancelBtn.hidden = false;
-          form.scrollIntoView({ behavior: "smooth" });
-        });
-        row.querySelector('[data-action="delete"]').addEventListener("click", () => {
-          if (confirm("Delete this program?")) db.collection("pythonPrograms").doc(doc.id).delete();
-        });
-        listEl.appendChild(row);
-      });
+      allPrograms = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      syncProgramCategoryFilter();
+      renderProgramList();
     },
     (err) => {
       listEl.innerHTML = `<p class="updates-loading">Could not load programs (${err.message}).</p>`;
     }
   );
+
+  /* Rebuild the category filter dropdown from actual program data */
+  function syncProgramCategoryFilter() {
+    if (!categoryFilter) return;
+    const prev = categoryFilter.value;
+    const cats = Array.from(
+      new Set(allPrograms.map((p) => (p.category || "").trim()).filter(Boolean))
+    ).sort((a, b) => a.localeCompare(b));
+
+    categoryFilter.innerHTML =
+      `<option value="All">All categories</option>` +
+      cats.map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+
+    if ([...categoryFilter.options].some((o) => o.value === prev)) {
+      categoryFilter.value = prev;
+    }
+  }
+
+  function renderProgramList() {
+    const filterCat = categoryFilter ? categoryFilter.value : "All";
+
+    // Count label — total and per-category breakdown
+    const cats = Array.from(
+      new Set(allPrograms.map((p) => (p.category || "").trim()).filter(Boolean))
+    ).sort((a, b) => a.localeCompare(b));
+
+    const breakdown = cats
+      .map((c) => `${c}: ${allPrograms.filter((p) => (p.category || "").trim() === c).length}`)
+      .join(" \u00b7 ");
+
+    if (countLabel) {
+      countLabel.textContent = allPrograms.length
+        ? `${allPrograms.length} total${breakdown ? " \u2014 " + breakdown : ""}`
+        : "";
+    }
+
+    const visible = filterCat === "All"
+      ? allPrograms
+      : allPrograms.filter((p) => (p.category || "").trim() === filterCat);
+
+    if (!visible.length) {
+      listEl.innerHTML = `<p class="updates-loading">${
+        allPrograms.length
+          ? "No programs in this category."
+          : "No programs yet \u2014 add one above."
+      }</p>`;
+      return;
+    }
+
+    listEl.innerHTML = "";
+    visible.forEach((p) => {
+      const row = document.createElement("div");
+      row.className = "admin-row";
+      row.innerHTML = `
+        <div>
+          <strong>${escapeHtml(p.title || "")}</strong>
+          ${p.category ? `<span class="admin-tag">${escapeHtml(p.category)}</span>` : ""}
+        </div>
+        <div class="admin-row-actions">
+          <button class="btn btn-outline btn-sm" data-action="edit">Edit</button>
+          <button class="btn btn-outline btn-sm btn-danger" data-action="delete">Delete</button>
+        </div>
+      `;
+      row.querySelector('[data-action="edit"]').addEventListener("click", () => {
+        idField.value = p.id;
+        document.getElementById("pyTitle").value = p.title || "";
+        document.getElementById("pyCategory").value = p.category || "";
+        document.getElementById("pyOrder").value = p.order ?? 1;
+        document.getElementById("pyDescription").value = p.description || "";
+        document.getElementById("pyCode").value = p.code || "";
+        submitBtn.textContent = "Save changes";
+        cancelBtn.hidden = false;
+        form.scrollIntoView({ behavior: "smooth" });
+      });
+      row.querySelector('[data-action="delete"]').addEventListener("click", () => {
+        if (confirm("Delete this program?")) db.collection("pythonPrograms").doc(p.id).delete();
+      });
+      listEl.appendChild(row);
+    });
+  }
 
   cancelBtn.addEventListener("click", () => resetPythonForm());
 
