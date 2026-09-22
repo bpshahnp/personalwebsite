@@ -14,32 +14,52 @@ service cloud.firestore {
         ];
     }
 
+    // ---- Moderator check -----------------------------------------------
+    function isModerator() {
+      return request.auth != null && exists(/databases/$(database)/documents/moderators/$(request.auth.uid));
+    }
+
+    function modPerms() {
+      return get(/databases/$(database)/documents/moderators/$(request.auth.uid)).data.permissions;
+    }
+
+    // ---- Moderators collection -----------------------------------------
+    // Admin can manage all moderators. Any signed-in user can check their own moderator record.
+    match /moderators/{uid} {
+      allow read: if isAdmin() || (request.auth != null && request.auth.uid == uid);
+      allow write: if isAdmin();
+    }
+
     // ---- Latest Updates -------------------------------------------------
-    // Shown on index.html. Public read, admin-only write.
+    // Shown on index.html. Public read, admin or authorized moderator write.
     match /updates/{updateId} {
       allow read: if true;
-      allow create, update, delete: if isAdmin();
+      allow create, update, delete: if isAdmin() || (isModerator() && modPerms().updates == true);
     }
 
     // ---- MCQ Hub questions ----------------------------------------------
-    // Shown on mcq.html. Public read, admin-only write.
+    // Shown on mcq.html. Public read, admin or authorized moderator write.
     match /questions/{questionId} {
       allow read: if true;
-      allow create, update, delete: if isAdmin();
+      allow create, update, delete: if isAdmin() || (isModerator() && (
+        modPerms().mcq.class8 == true ||
+        modPerms().mcq.class9 == true ||
+        modPerms().mcq.class10 == true
+      ));
     }
 
     // ---- Python Hub programs ---------------------------------------------
-    // Shown on python.html. Public read, admin-only write.
+    // Shown on python.html. Public read, admin or authorized moderator write.
     match /pythonPrograms/{programId} {
       allow read: if true;
-      allow create, update, delete: if isAdmin();
+      allow create, update, delete: if isAdmin() || (isModerator() && modPerms().pythonHub == true);
     }
 
     // ---- Additional Resources (Google Drive links) -----------------------
-    // Shown on resources.html. Public read, admin-only write.
+    // Shown on resources.html. Public read, admin or authorized moderator write.
     match /resources/{resourceId} {
       allow read: if true;
-      allow create, update, delete: if isAdmin();
+      allow create, update, delete: if isAdmin() || (isModerator() && modPerms().resources == true);
     }
 
     // ---- Contact form messages ---------------------------------------------
@@ -70,18 +90,18 @@ service cloud.firestore {
     }
 
     // ---- Live Quiz custom questions ----------------------------------------
-    // Public read, admin-only write.
+    // Public read, admin or authorized moderator write.
     match /liveQuizQuestions/{questionId} {
       allow read: if true;
-      allow create, update, delete: if isAdmin();
+      allow create, update, delete: if isAdmin() || (isModerator() && modPerms().liveQuiz == true);
     }
 
     // ---- Premium Quiz Content (categories + questions) --------------------
     // Public read so quiz catalog/cards can be displayed to all learners;
-    // admin-only writes. Client gates quiz playing by unlock/payment status.
+    // admin or authorized moderator writes.
     match /premiumQuizContent/{categoryId} {
       allow read: if true;
-      allow create, update, delete: if isAdmin();
+      allow create, update, delete: if isAdmin() || (isModerator() && modPerms().premiumQuiz == true);
     }
 
     // ---- Premium Unlock records -------------------------------------------

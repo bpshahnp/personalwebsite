@@ -2329,10 +2329,32 @@ function applyMcqClassRestriction(mcqPerms) {
 
 /* ============================================
    MODERATORS ADMIN — owner-only section
-   Allows the owner to add/edit/revoke moderators
-   and assign granular permissions.
+   Allows the owner to:
+   1. Directly CREATE a new moderator account (name, email, password, permissions)
+   2. Search and promote existing registered users
+   3. Manage, edit, or revoke existing moderators
    ============================================ */
 function initModeratorsAdmin() {
+  // 1. Create New Moderator Form DOM
+  const createModForm       = document.getElementById("createModForm");
+  const createModName       = document.getElementById("createModName");
+  const createModEmail      = document.getElementById("createModEmail");
+  const createModPassword   = document.getElementById("createModPassword");
+  const createModSubmitBtn  = document.getElementById("createModSubmitBtn");
+  const createModStatus     = document.getElementById("createModStatus");
+
+  const newPermFields = {
+    mcqClass8:   document.getElementById("newPermMcqClass8"),
+    mcqClass9:   document.getElementById("newPermMcqClass9"),
+    mcqClass10:  document.getElementById("newPermMcqClass10"),
+    pythonHub:   document.getElementById("newPermPythonHub"),
+    premiumQuiz: document.getElementById("newPermPremiumQuiz"),
+    resources:   document.getElementById("newPermResources"),
+    updates:     document.getElementById("newPermUpdates"),
+    liveQuiz:    document.getElementById("newPermLiveQuiz"),
+  };
+
+  // 2. Existing User Search & Edit DOM
   const modSearchEmail  = document.getElementById("modSearchEmail");
   const modSearchBtn    = document.getElementById("modSearchBtn");
   const modSearchStatus = document.getElementById("modSearchStatus");
@@ -2357,13 +2379,13 @@ function initModeratorsAdmin() {
     liveQuiz:    document.getElementById("permLiveQuiz"),
   };
 
-  if (!modSearchBtn || !modList) return;
+  if (!modList) return;
 
   /* ---------- Live list of current moderators ---------- */
   db.collection("moderators").orderBy("createdAt", "desc").onSnapshot(snap => {
     if (!modList) return;
     if (snap.empty) {
-      modList.innerHTML = `<p class="updates-loading">No moderators yet. Add one above.</p>`;
+      modList.innerHTML = `<p class="updates-loading">No moderators yet. Create or add one above.</p>`;
       return;
     }
     modList.innerHTML = "";
@@ -2400,8 +2422,10 @@ function initModeratorsAdmin() {
       `;
 
       row.querySelector('[data-action="edit"]').addEventListener("click", () => {
+        // Open the details accordion if closed
+        const detailsEl = document.querySelector("details.admin-import");
+        if (detailsEl) detailsEl.open = true;
         if (modSearchEmail) modSearchEmail.value = m.email || "";
-        // Pre-fill the card with existing data
         fillModCard(doc.id, m.displayName || m.email, m.email, m.permissions || {}, true);
       });
 
@@ -2422,10 +2446,140 @@ function initModeratorsAdmin() {
       modList.appendChild(row);
     });
   }, err => {
-    if (modList) modList.innerHTML = `<p class="updates-loading">Error loading moderators: ${err.message}</p>`;
+    console.error("Moderators snapshot error:", err);
+    if (modList) {
+      let extraTip = "";
+      if (err.code === "permission-denied" || (err.message && err.message.toLowerCase().includes("permission"))) {
+        extraTip = `<br/><span style="color:var(--mist); font-size:0.85rem; font-weight:normal;">
+          Note: Please ensure the updated <code>firestore.rules</code> file is published in your Firebase Console (Firestore Database &rarr; Rules).
+        </span>`;
+      }
+      modList.innerHTML = `<p class="updates-loading" style="color:crimson;">Could not load moderators: ${escapeHtml(err.message)}.${extraTip}</p>`;
+    }
   });
 
-  /* ---------- Find user by email ---------- */
+  /* ---------- 1. CREATE NEW MODERATOR ACCOUNT DIRECTLY ---------- */
+  if (createModSubmitBtn && createModForm) {
+    createModSubmitBtn.addEventListener("click", async (e) => {
+      e.preventDefault();
+      const name = createModName ? createModName.value.trim() : "";
+      const email = createModEmail ? createModEmail.value.trim().toLowerCase() : "";
+      const password = createModPassword ? createModPassword.value : "";
+
+      if (!name) {
+        setCreateStatus("Please enter the moderator's full name.", "crimson");
+        if (createModName) createModName.focus();
+        return;
+      }
+      if (!email || !email.includes("@")) {
+        setCreateStatus("Please enter a valid email address.", "crimson");
+        if (createModEmail) createModEmail.focus();
+        return;
+      }
+      if (!password || password.length < 6) {
+        setCreateStatus("Password must be at least 6 characters long.", "crimson");
+        if (createModPassword) createModPassword.focus();
+        return;
+      }
+
+      const permissions = {
+        mcq: {
+          class8:  !!(newPermFields.mcqClass8  && newPermFields.mcqClass8.checked),
+          class9:  !!(newPermFields.mcqClass9  && newPermFields.mcqClass9.checked),
+          class10: !!(newPermFields.mcqClass10 && newPermFields.mcqClass10.checked),
+        },
+        pythonHub:   !!(newPermFields.pythonHub   && newPermFields.pythonHub.checked),
+        premiumQuiz: !!(newPermFields.premiumQuiz && newPermFields.premiumQuiz.checked),
+        resources:   !!(newPermFields.resources   && newPermFields.resources.checked),
+        updates:     !!(newPermFields.updates     && newPermFields.updates.checked),
+        liveQuiz:    !!(newPermFields.liveQuiz    && newPermFields.liveQuiz.checked),
+      };
+
+      const hasAnyPerm = permissions.mcq.class8 || permissions.mcq.class9 || permissions.mcq.class10
+        || permissions.pythonHub || permissions.premiumQuiz || permissions.resources
+        || permissions.updates || permissions.liveQuiz;
+
+      if (!hasAnyPerm) {
+        setCreateStatus("Please check at least one permission to grant.", "crimson");
+        return;
+      }
+
+      createModSubmitBtn.disabled = true;
+      createModSubmitBtn.textContent = "Creating Account…";
+      setCreateStatus("Creating new authentication account…", "var(--mist)");
+
+      let tempApp = null;
+      try {
+        // Use a unique secondary Firebase App instance so the active admin session is not signed out
+        const tempAppName = "ModCreator_" + Date.now();
+        tempApp = firebase.initializeApp(firebaseConfig, tempAppName);
+        const tempAuth = tempApp.auth();
+
+        // 1. Create account in Firebase Auth
+        const cred = await tempAuth.createUserWithEmailAndPassword(email, password);
+        const newUid = cred.user.uid;
+
+        if (name) {
+          await cred.user.updateProfile({ displayName: name });
+        }
+
+        // Clean up secondary auth
+        await tempAuth.signOut();
+
+        setCreateStatus("Account created! Saving moderator permissions in database…", "var(--mist)");
+
+        // 2. Save user profile in Firestore 'users' collection (via primary admin db connection)
+        await db.collection("users").doc(newUid).set({
+          email: email,
+          displayName: name,
+          role: "moderator",
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+
+        // 3. Save permissions in 'moderators' collection
+        const currentUser = auth.currentUser;
+        await db.collection("moderators").doc(newUid).set({
+          email: email,
+          displayName: name,
+          permissions: permissions,
+          grantedBy: currentUser ? currentUser.email : "",
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        }, { merge: true });
+
+        // Reset form
+        createModName.value = "";
+        createModEmail.value = "";
+        createModPassword.value = "";
+        Object.values(newPermFields).forEach(chk => { if (chk) chk.checked = false; });
+
+        setCreateStatus(`Moderator account for "${name}" (${email}) created successfully! They can now log in at this admin page with their credentials.`, "#10b981");
+      } catch (err) {
+        console.error("Create moderator error:", err);
+        let errorMsg = err.message || "Failed to create account.";
+        if (err.code === "auth/email-already-in-use") {
+          errorMsg = `An account with email "${email}" already exists. You can assign permissions to them using the "Promote / Edit Existing User" section below.`;
+        }
+        setCreateStatus("Error: " + errorMsg, "crimson");
+      } finally {
+        if (tempApp) {
+          try { await tempApp.delete(); } catch (e) { /* ignore */ }
+        }
+        createModSubmitBtn.disabled = false;
+        createModSubmitBtn.textContent = "Create Moderator Account";
+      }
+    });
+  }
+
+  function setCreateStatus(msg, color) {
+    if (createModStatus) {
+      createModStatus.textContent = msg;
+      createModStatus.style.color = color;
+    }
+  }
+
+  /* ---------- 2. FIND AND PROMOTE EXISTING USER ---------- */
   if (modSearchBtn) {
     modSearchBtn.addEventListener("click", async () => {
       const email = modSearchEmail ? modSearchEmail.value.trim().toLowerCase() : "";
@@ -2434,15 +2588,14 @@ function initModeratorsAdmin() {
         return;
       }
       modSearchBtn.disabled = true;
-      modSearchBtn.textContent = "Searching...";
-      setModSearchStatus("Looking up user...", "var(--mist)");
+      modSearchBtn.textContent = "Searching…";
+      setModSearchStatus("Looking up user…", "var(--mist)");
       resetModCard();
 
       try {
-        // Search users collection for matching email
         const userSnap = await db.collection("users").where("email", "==", email).limit(1).get();
         if (userSnap.empty) {
-          setModSearchStatus(`No registered account found for "${email}". The user must sign up on the site first.`, "crimson");
+          setModSearchStatus(`No registered account found for "${email}". You can create a new moderator account using the form above.`, "crimson");
           return;
         }
         const userDoc = userSnap.docs[0];
@@ -2463,7 +2616,7 @@ function initModeratorsAdmin() {
         modSearchBtn.textContent = "Find User";
       }
     });
-    // Also trigger on Enter key
+
     if (modSearchEmail) {
       modSearchEmail.addEventListener("keydown", (e) => {
         if (e.key === "Enter") { e.preventDefault(); modSearchBtn.click(); }
@@ -2471,7 +2624,7 @@ function initModeratorsAdmin() {
     }
   }
 
-  /* ---------- Fill the user card with data ---------- */
+  /* ---------- Fill existing user card with data ---------- */
   function fillModCard(uid, name, email, existingPerms, isAlreadyMod) {
     if (!modUserCard) return;
     modTargetUid.value = uid;
@@ -2485,7 +2638,6 @@ function initModeratorsAdmin() {
       modRevokeBtn.style.display = isAlreadyMod ? "inline-flex" : "none";
     }
 
-    // Load existing permissions into checkboxes
     const mcqP = existingPerms.mcq || {};
     if (permFields.mcqClass8)   permFields.mcqClass8.checked   = !!mcqP.class8;
     if (permFields.mcqClass9)   permFields.mcqClass9.checked   = !!mcqP.class9;
@@ -2514,13 +2666,13 @@ function initModeratorsAdmin() {
     }
   }
 
-  /* ---------- Save permissions ---------- */
+  /* ---------- Save updated permissions for existing user ---------- */
   if (modSaveBtn) {
     modSaveBtn.addEventListener("click", async () => {
       const uid = modTargetUid ? modTargetUid.value.trim() : "";
       if (!uid) {
         if (modSaveStatus) {
-          modSaveStatus.textContent = "No user selected. Use Find User first.";
+          modSaveStatus.textContent = "No user selected.";
           modSaveStatus.style.color = "crimson";
         }
         return;
@@ -2542,7 +2694,6 @@ function initModeratorsAdmin() {
         liveQuiz:    !!(permFields.liveQuiz    && permFields.liveQuiz.checked),
       };
 
-      // Verify at least one permission is checked
       const anyPerm = permissions.mcq.class8 || permissions.mcq.class9 || permissions.mcq.class10
         || permissions.pythonHub || permissions.premiumQuiz || permissions.resources
         || permissions.updates || permissions.liveQuiz;
@@ -2556,9 +2707,9 @@ function initModeratorsAdmin() {
       }
 
       modSaveBtn.disabled = true;
-      modSaveBtn.textContent = "Saving...";
+      modSaveBtn.textContent = "Saving…";
       if (modSaveStatus) {
-        modSaveStatus.textContent = "Saving permissions...";
+        modSaveStatus.textContent = "Saving permissions…";
         modSaveStatus.style.color = "var(--mist)";
       }
 
@@ -2574,7 +2725,7 @@ function initModeratorsAdmin() {
         }, { merge: true });
 
         if (modSaveStatus) {
-          modSaveStatus.textContent = `Permissions saved for ${email}.`;
+          modSaveStatus.textContent = `Permissions saved successfully for ${email}.`;
           modSaveStatus.style.color = "#10b981";
         }
         if (modCurrentBadge) modCurrentBadge.style.display = "inline-flex";
@@ -2591,7 +2742,7 @@ function initModeratorsAdmin() {
     });
   }
 
-  /* ---------- Revoke moderator ---------- */
+  /* ---------- Revoke moderator access ---------- */
   if (modRevokeBtn) {
     modRevokeBtn.addEventListener("click", async () => {
       const uid   = modTargetUid ? modTargetUid.value.trim() : "";
@@ -2615,3 +2766,4 @@ function initModeratorsAdmin() {
     });
   }
 }
+

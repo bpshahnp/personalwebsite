@@ -641,70 +641,117 @@
     <div class="container">
       <div class="admin-panel" id="tab-moderators">
 
-        <!-- Add / Edit Moderator -->
+        <!-- 1. Create New Moderator Account -->
         <div class="admin-form" style="margin-bottom:28px;">
-          <h3>Add or Update a Moderator</h3>
+          <h3>Create New Moderator Account</h3>
           <p class="quiz-muted">
-            Enter the email of a registered user to look them up, then assign permissions and save.
-            The user must already have an account on this site before you can promote them.
+            Directly create an account for a new moderator with their name, email, and password, and assign the exact permissions they can manage.
           </p>
 
-          <div class="admin-form-grid" style="align-items:flex-end; max-width:600px;">
-            <label>Registered User Email
-              <input type="email" id="modSearchEmail" placeholder="user@example.com" />
-            </label>
-            <div style="padding-bottom:2px;">
-              <button type="button" class="btn btn-primary btn-sm" id="modSearchBtn">Find User</button>
-            </div>
-          </div>
-          <p class="modal-status" id="modSearchStatus" style="margin-top:8px;"></p>
-
-          <!-- Found user info + permissions form (hidden until user found) -->
-          <div id="modUserCard" hidden style="margin-top:18px; padding:16px 18px; border:1px solid var(--border, #e2e8f0); border-radius:12px; background:var(--cream, #f8fafc);">
-            <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px; flex-wrap:wrap;">
-              <div>
-                <strong id="modUserName" style="font-size:1rem;"></strong>
-                <span id="modUserEmail" class="admin-tag" style="margin-left:6px;"></span>
-                <span id="modCurrentBadge" class="admin-tag" style="display:none; background:#fef9c3; color:#854d0e; border:1px solid #fde68a; font-weight:700; margin-left:4px;">Current moderator</span>
-              </div>
+          <form id="createModForm" onsubmit="return false;" style="margin-top:16px;">
+            <div class="admin-form-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+              <label>Moderator Full Name
+                <input type="text" id="createModName" placeholder="e.g. Rohan Sharma" required />
+              </label>
+              <label>Moderator Email
+                <input type="email" id="createModEmail" placeholder="e.g. rohan@example.com" required autocomplete="off" />
+              </label>
+              <label>Initial Password
+                <input type="password" id="createModPassword" placeholder="Min 6 characters" minlength="6" required autocomplete="new-password" />
+              </label>
             </div>
 
-            <p style="font-size:0.88rem; font-weight:600; margin:0 0 10px; color:var(--ink);">Assign Permissions:</p>
+            <p style="font-size:0.88rem; font-weight:600; margin:16px 0 10px; color:var(--ink);">Assign Permissions:</p>
 
             <div class="mod-perms-grid">
               <!-- MCQ Questions -->
               <div class="mod-perm-section">
                 <p class="mod-perm-label">MCQ Questions</p>
-                <label class="mod-perm-check"><input type="checkbox" id="permMcqClass8" /> Class 8</label>
-                <label class="mod-perm-check"><input type="checkbox" id="permMcqClass9" /> Class 9</label>
-                <label class="mod-perm-check"><input type="checkbox" id="permMcqClass10" /> Class 10</label>
+                <label class="mod-perm-check"><input type="checkbox" id="newPermMcqClass8" /> Class 8</label>
+                <label class="mod-perm-check"><input type="checkbox" id="newPermMcqClass9" /> Class 9</label>
+                <label class="mod-perm-check"><input type="checkbox" id="newPermMcqClass10" /> Class 10</label>
               </div>
 
               <!-- Other sections -->
               <div class="mod-perm-section">
                 <p class="mod-perm-label">Other Sections</p>
-                <label class="mod-perm-check"><input type="checkbox" id="permPythonHub" /> Python Programs</label>
-                <label class="mod-perm-check"><input type="checkbox" id="permPremiumQuiz" /> Premium Quiz</label>
-                <label class="mod-perm-check"><input type="checkbox" id="permResources" /> Resources</label>
-                <label class="mod-perm-check"><input type="checkbox" id="permUpdates" /> Latest Updates</label>
-                <label class="mod-perm-check"><input type="checkbox" id="permLiveQuiz" /> Live Quiz Schedule</label>
+                <label class="mod-perm-check"><input type="checkbox" id="newPermPythonHub" /> Python Programs</label>
+                <label class="mod-perm-check"><input type="checkbox" id="newPermPremiumQuiz" /> Premium Quiz</label>
+                <label class="mod-perm-check"><input type="checkbox" id="newPermResources" /> Resources</label>
+                <label class="mod-perm-check"><input type="checkbox" id="newPermUpdates" /> Latest Updates</label>
+                <label class="mod-perm-check"><input type="checkbox" id="newPermLiveQuiz" /> Live Quiz Schedule</label>
               </div>
             </div>
 
-            <!-- Hidden fields for UID -->
-            <input type="hidden" id="modTargetUid" />
-
-            <div class="admin-form-actions" style="margin-top:16px;">
-              <button type="button" class="btn btn-primary" id="modSaveBtn">Save Permissions</button>
-              <button type="button" class="btn btn-outline btn-sm btn-danger" id="modRevokeBtn" style="display:none;">Revoke Moderator</button>
+            <div class="admin-form-actions" style="margin-top:18px;">
+              <button type="submit" class="btn btn-primary" id="createModSubmitBtn">Create Moderator Account</button>
             </div>
-            <p class="modal-status" id="modSaveStatus" style="margin-top:8px;"></p>
-          </div>
+            <p class="modal-status" id="createModStatus" style="margin-top:10px;"></p>
+          </form>
         </div>
 
-        <!-- Current Moderator List -->
+        <!-- 2. Promote or Edit Existing Registered User -->
+        <details class="admin-import" style="margin-bottom:28px;">
+          <summary style="font-weight:600; cursor:pointer;">Or Promote / Edit an Existing Registered User</summary>
+          <div class="admin-import-body" style="padding-top:14px;">
+            <p class="quiz-muted">
+              If a user has already created an account on the website, type their email here to look them up and update their permissions.
+            </p>
+            <div class="admin-form-grid" style="align-items:flex-end; max-width:600px;">
+              <label>User Email Address
+                <input type="email" id="modSearchEmail" placeholder="user@example.com" />
+              </label>
+              <div style="padding-bottom:2px;">
+                <button type="button" class="btn btn-primary btn-sm" id="modSearchBtn">Find User</button>
+              </div>
+            </div>
+            <p class="modal-status" id="modSearchStatus" style="margin-top:8px;"></p>
+
+            <!-- Found user info + permissions form -->
+            <div id="modUserCard" hidden style="margin-top:18px; padding:16px 18px; border:1px solid var(--border, #e2e8f0); border-radius:12px; background:var(--cream, #f8fafc);">
+              <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px; flex-wrap:wrap;">
+                <div>
+                  <strong id="modUserName" style="font-size:1rem;"></strong>
+                  <span id="modUserEmail" class="admin-tag" style="margin-left:6px;"></span>
+                  <span id="modCurrentBadge" class="admin-tag" style="display:none; background:#fef9c3; color:#854d0e; border:1px solid #fde68a; font-weight:700; margin-left:4px;">Current moderator</span>
+                </div>
+              </div>
+
+              <p style="font-size:0.88rem; font-weight:600; margin:0 0 10px; color:var(--ink);">Permissions:</p>
+
+              <div class="mod-perms-grid">
+                <div class="mod-perm-section">
+                  <p class="mod-perm-label">MCQ Questions</p>
+                  <label class="mod-perm-check"><input type="checkbox" id="permMcqClass8" /> Class 8</label>
+                  <label class="mod-perm-check"><input type="checkbox" id="permMcqClass9" /> Class 9</label>
+                  <label class="mod-perm-check"><input type="checkbox" id="permMcqClass10" /> Class 10</label>
+                </div>
+                <div class="mod-perm-section">
+                  <p class="mod-perm-label">Other Sections</p>
+                  <label class="mod-perm-check"><input type="checkbox" id="permPythonHub" /> Python Programs</label>
+                  <label class="mod-perm-check"><input type="checkbox" id="permPremiumQuiz" /> Premium Quiz</label>
+                  <label class="mod-perm-check"><input type="checkbox" id="permResources" /> Resources</label>
+                  <label class="mod-perm-check"><input type="checkbox" id="permUpdates" /> Latest Updates</label>
+                  <label class="mod-perm-check"><input type="checkbox" id="permLiveQuiz" /> Live Quiz Schedule</label>
+                </div>
+              </div>
+
+              <input type="hidden" id="modTargetUid" />
+
+              <div class="admin-form-actions" style="margin-top:16px;">
+                <button type="button" class="btn btn-primary" id="modSaveBtn">Save Permissions</button>
+                <button type="button" class="btn btn-outline btn-sm btn-danger" id="modRevokeBtn" style="display:none;">Revoke Moderator</button>
+              </div>
+              <p class="modal-status" id="modSaveStatus" style="margin-top:8px;"></p>
+            </div>
+          </div>
+        </details>
+
+        <!-- 3. Current Moderator List -->
         <div class="admin-form">
-          <h3>Current Moderators</h3>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
+            <h3 style="margin:0;">Current Moderators</h3>
+          </div>
           <div id="modList" class="admin-list">
             <p class="updates-loading">Loading moderators...</p>
           </div>
@@ -729,6 +776,6 @@
   <script src="js/firebase-config.js"></script>
   <script src="js/auth-widget.js"></script>
   <script src="js/nav-drawer.js"></script>
-  <script src="js/admin.js"></script>
+  <script src="js/admin.js?v=20260922_08"></script>
 </body>
 </html>
