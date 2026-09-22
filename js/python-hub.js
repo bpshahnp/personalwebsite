@@ -570,7 +570,7 @@ class _TurtleEngine:
         self.commands = []
         self.width = 540
         self.height = 420
-        self.bgcolor = "#ffffff"
+        self.bgcolor = None
         self.colormode_val = 1.0
         self.turtles = []
         self.default_turtle = None
@@ -579,7 +579,7 @@ class _TurtleEngine:
         self.commands = []
         self.width = 540
         self.height = 420
-        self.bgcolor = "#ffffff"
+        self.bgcolor = None
         self.colormode_val = 1.0
         self.turtles = []
         self.default_turtle = Turtle(self)
@@ -590,7 +590,7 @@ class _TurtleEngine:
         if len(args) == 1:
             val = args[0]
             if isinstance(val, str):
-                return val
+                return val.strip()
             if isinstance(val, (tuple, list)):
                 args = val
         if len(args) >= 3:
@@ -599,7 +599,7 @@ class _TurtleEngine:
                 return f"rgb({int(r)}, {int(g)}, {int(b)})"
             else:
                 return f"rgb({int(r*255)}, {int(g*255)}, {int(b*255)})"
-        return str(args[0])
+        return str(args[0]).strip()
 
 _engine = _TurtleEngine()
 
@@ -1003,19 +1003,21 @@ _out
 }
 
 function drawTurtlePointer(ctx, cx, cy, angleDeg, color) {
+  const cleanColor = String(color || "").trim() || "#10b981";
   ctx.save();
   ctx.translate(cx, cy);
   ctx.rotate((-angleDeg * Math.PI) / 180);
   ctx.beginPath();
-  ctx.moveTo(9, 0);
-  ctx.lineTo(-7, -6);
-  ctx.lineTo(-4, 0);
-  ctx.lineTo(-7, 6);
+  // Classic turtle pointer arrow
+  ctx.moveTo(11, 0);
+  ctx.lineTo(-7, -7);
+  ctx.lineTo(-3, 0);
+  ctx.lineTo(-7, 7);
   ctx.closePath();
-  ctx.fillStyle = color || "#10b981";
+  ctx.fillStyle = cleanColor;
   ctx.fill();
-  ctx.strokeStyle = "#0f172a";
-  ctx.lineWidth = 1;
+  ctx.strokeStyle = "#ffffff";
+  ctx.lineWidth = 1.2;
   ctx.stroke();
   ctx.restore();
 }
@@ -1024,10 +1026,66 @@ function renderTurtleCanvas(data) {
   if (!data || (!data.commands || !data.commands.length) && (!data.turtles || !data.turtles.length)) {
     return null;
   }
-  const w = Math.min(680, Math.max(340, data.width || 540));
+
+  const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+  const defaultBg = isDark ? "#0f172a" : "#ffffff";
+  const bg = data.bgcolor ? String(data.bgcolor).trim() : defaultBg;
+
+  const w = Math.min(720, Math.max(360, data.width || 540));
   const h = Math.min(540, Math.max(280, data.height || 420));
   const cx = w / 2;
   const cy = h / 2;
+
+  // Auto-fit bounding box: calculate min/max coordinates of all drawn elements & turtle cursors
+  let minX = 0, maxX = 0, minY = 0, maxY = 0;
+  function addPoint(x, y) {
+    if (typeof x !== "number" || typeof y !== "number") return;
+    if (x < minX) minX = x;
+    if (x > maxX) maxX = x;
+    if (y < minY) minY = y;
+    if (y > maxY) maxY = y;
+  }
+
+  if (Array.isArray(data.commands)) {
+    for (const cmd of data.commands) {
+      if (cmd[0] === "line") {
+        addPoint(cmd[1], cmd[2]);
+        addPoint(cmd[3], cmd[4]);
+      } else if (cmd[0] === "fill" && Array.isArray(cmd[1])) {
+        for (const pt of cmd[1]) addPoint(pt[0], pt[1]);
+      } else if (cmd[0] === "dot" || cmd[0] === "write" || cmd[0] === "stamp") {
+        addPoint(cmd[1], cmd[2]);
+      }
+    }
+  }
+  if (Array.isArray(data.turtles)) {
+    for (const t of data.turtles) {
+      addPoint(t[0], t[1]);
+    }
+  }
+
+  const pad = 36;
+  const availW = w - pad * 2;
+  const availH = h - pad * 2;
+  const halfW = availW / 2;
+  const halfH = availH / 2;
+
+  let scale = 1;
+  let midX = 0;
+  let midY = 0;
+
+  // If the drawing extends beyond standard centered bounds, center and scale it
+  const fitsDefault = minX >= -halfW && maxX <= halfW && minY >= -halfH && maxY <= halfH;
+  if (!fitsDefault) {
+    const spanX = Math.max(maxX - minX, 1);
+    const spanY = Math.max(maxY - minY, 1);
+    scale = Math.min(1, availW / spanX, availH / spanY);
+    midX = (minX + maxX) / 2;
+    midY = (minY + maxY) / 2;
+  }
+
+  const toX = (x) => cx + (x - midX) * scale;
+  const toY = (y) => cy - (y - midY) * scale;
 
   const canvas = document.createElement("canvas");
   const dpr = typeof window !== "undefined" && window.devicePixelRatio ? window.devicePixelRatio : 1;
@@ -1041,29 +1099,31 @@ function renderTurtleCanvas(data) {
   canvas.style.margin = "12px auto";
   canvas.style.borderRadius = "8px";
   canvas.style.border = "1px solid var(--py-edge, #24314f)";
-  canvas.style.background = data.bgcolor || "#ffffff";
+  canvas.style.background = bg;
   canvas.className = "snippet-turtle-canvas";
 
   const ctx = canvas.getContext("2d");
   ctx.scale(dpr, dpr);
 
-  ctx.fillStyle = data.bgcolor || "#ffffff";
+  ctx.fillStyle = bg;
   ctx.fillRect(0, 0, w, h);
-
-  const toX = (x) => cx + x;
-  const toY = (y) => cy - y;
 
   if (Array.isArray(data.commands)) {
     for (const cmd of data.commands) {
       const type = cmd[0];
       if (type === "bgcolor") {
-        ctx.fillStyle = cmd[1];
+        ctx.fillStyle = String(cmd[1] || "").trim();
         ctx.fillRect(0, 0, w, h);
       } else if (type === "line") {
         const [_, x1, y1, x2, y2, color, size] = cmd;
+        let lineCol = String(color || "").trim();
+        // In dark mode with dark canvas, flip default black line to light so it is clearly visible
+        if (isDark && !data.bgcolor && (lineCol === "black" || lineCol === "#000000")) {
+          lineCol = "#e2e8f0";
+        }
         ctx.beginPath();
-        ctx.strokeStyle = color;
-        ctx.lineWidth = size;
+        ctx.strokeStyle = lineCol;
+        ctx.lineWidth = Math.max(1, (size || 2) * scale);
         ctx.lineCap = "round";
         ctx.lineJoin = "round";
         ctx.moveTo(toX(x1), toY(y1));
@@ -1073,7 +1133,7 @@ function renderTurtleCanvas(data) {
         const [_, points, color] = cmd;
         if (points && points.length > 1) {
           ctx.beginPath();
-          ctx.fillStyle = color;
+          ctx.fillStyle = String(color || "").trim();
           ctx.moveTo(toX(points[0][0]), toY(points[0][1]));
           for (let i = 1; i < points.length; i++) {
             ctx.lineTo(toX(points[i][0]), toY(points[i][1]));
@@ -1084,14 +1144,14 @@ function renderTurtleCanvas(data) {
       } else if (type === "dot") {
         const [_, x, y, size, color] = cmd;
         ctx.beginPath();
-        ctx.fillStyle = color;
-        ctx.arc(toX(x), toY(y), size / 2, 0, Math.PI * 2);
+        ctx.fillStyle = String(color || "").trim();
+        ctx.arc(toX(x), toY(y), (size / 2) * scale, 0, Math.PI * 2);
         ctx.fill();
       } else if (type === "write") {
         const [_, text, x, y, align, font, color] = cmd;
         ctx.font = font;
         ctx.textAlign = align;
-        ctx.fillStyle = color;
+        ctx.fillStyle = String(color || "").trim();
         ctx.fillText(text, toX(x), toY(y));
       } else if (type === "stamp") {
         const [_, x, y, angle, color] = cmd;
