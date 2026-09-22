@@ -337,7 +337,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const current = userCredits ?? (currentUserProfile?.credits ?? 0);
         buyCreditsSubtitle.innerHTML = `"${escapeHtml(category.name || 'This quiz')}" requires <strong>${required} credits</strong> (you currently have <strong>${current}</strong>). Select a credit package below:`;
       } else {
-        buyCreditsSubtitle.innerHTML = `Each quiz requires <strong>3 credits</strong> to play. Select a package below to top up your balance:`;
+        buyCreditsSubtitle.innerHTML = `Each quiz requires <strong>some credits</strong> to play. Select a package below to top up your balance:`;
       }
     }
 
@@ -1082,6 +1082,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const opts = q.options || [];
     let answered = false;
 
+    // Shuffle options with Fisher-Yates, tracking where the correct answer lands
+    const shuffled = opts.map((text, i) => ({ text, originalIdx: i }));
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    const shuffledCorrectIdx = shuffled.findIndex(o => o.originalIdx === Number(q.correctIndex || 0));
+
     // Reset and start countdown timer
     secondsLeft = QUESTION_TIME_LIMIT;
     updateTimerDisplay();
@@ -1094,7 +1102,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }, 1000);
 
-    opts.forEach((optText, idx) => {
+    shuffled.forEach(({ text: optText }, idx) => {
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className = "mcq-opt";
@@ -1122,14 +1130,13 @@ document.addEventListener("DOMContentLoaded", () => {
         answered = true;
         clearInterval(timerInterval);
 
-        const correctIdx = Number(q.correctIndex || 0);
-        const isCorrect = idx === correctIdx;
+        const isCorrect = idx === shuffledCorrectIdx;
 
-        // Disable all buttons and highlight
+        // Disable all buttons and highlight correct / wrong
         optionsGrid.querySelectorAll(".mcq-opt").forEach((b, i) => {
           b.disabled = true;
           b.style.cursor = "default";
-          if (i === correctIdx) {
+          if (i === shuffledCorrectIdx) {
             b.classList.add("is-correct");
             b.style.borderColor = "#10b981";
             b.style.background = "#ecfdf5";
@@ -1151,7 +1158,7 @@ document.addEventListener("DOMContentLoaded", () => {
           showFeedback(`Correct! +${BASE_POINTS} pts${speedBonus > 0 ? ` (+${speedBonus} speed bonus)` : ""}`, true, q.explanation);
         } else {
           playBeep(220, "sawtooth", 0.28);
-          showFeedback(`Incorrect. Correct answer: Option ${String.fromCharCode(65 + correctIdx)}.`, false, q.explanation);
+          showFeedback(`Incorrect. Correct answer: Option ${String.fromCharCode(65 + shuffledCorrectIdx)}.`, false, q.explanation);
         }
 
         if (nextQuestionBtn) nextQuestionBtn.style.display = "inline-flex";
@@ -1164,19 +1171,18 @@ document.addEventListener("DOMContentLoaded", () => {
       if (answered) return;
       answered = true;
       playBeep(220, "sawtooth", 0.28);
-      const correctIdx = Number(q.correctIndex || 0);
 
       optionsGrid.querySelectorAll(".mcq-opt").forEach((b, i) => {
         b.disabled = true;
         b.style.cursor = "default";
-        if (i === correctIdx) {
+        if (i === shuffledCorrectIdx) {
           b.classList.add("is-correct");
           b.style.borderColor = "#10b981";
           b.style.background = "#ecfdf5";
         }
       });
 
-      showFeedback(`Time's up! Correct answer: Option ${String.fromCharCode(65 + correctIdx)}.`, false, q.explanation);
+      showFeedback(`Time's up! Correct answer: Option ${String.fromCharCode(65 + shuffledCorrectIdx)}.`, false, q.explanation);
       if (nextQuestionBtn) nextQuestionBtn.style.display = "inline-flex";
     }
   }

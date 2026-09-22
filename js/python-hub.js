@@ -17,6 +17,7 @@
 
 /* ---------- Elements ---------- */
 const railToggle = document.getElementById("railToggle");
+const blankEditorBtn = document.getElementById("blankEditorBtn");
 const programRail = document.getElementById("programRail");
 const overlay = document.getElementById("overlay");
 const railList = document.getElementById("rail-list");
@@ -25,6 +26,10 @@ const searchInput = document.getElementById("search-input");
 const workspace = document.getElementById("workspace");
 
 /* ---------- State ---------- */
+const BLANK_CODE_DEFAULT =
+  "# Write or paste your Python code here and click Run\n\n" +
+  "print(\"Hello from Python Hub!\")\n";
+let blankCode = BLANK_CODE_DEFAULT;
 let allPrograms = [];
 let selectedId = null;
 let currentCode = "";   // what the code panel shows right now (may be edited)
@@ -69,15 +74,26 @@ function slugify(str) {
 /* "Binary search" -> "binary_search.py" — the name a student would save it
    under, which also tells them what the file is called when it runs. */
 function fileNameFor(program) {
+  if (program && program.isCustomBlank) return "scratchpad.py";
   const base = slugify(program && program.title).replace(/-/g, "_");
   return (base || "program") + ".py";
 }
 
 function programById(id) {
+  if (id === "__blank__") {
+    return {
+      id: "__blank__",
+      title: "Blank Editor",
+      description: "Write, edit, and run your own custom Python code directly in your browser.",
+      code: blankCode,
+      isCustomBlank: true
+    };
+  }
   return allPrograms.find((p) => p.id === id) || null;
 }
 
 function originalCodeOf(id, list) {
+  if (id === "__blank__") return BLANK_CODE_DEFAULT;
   const hit = (list || allPrograms).find((p) => p.id === id);
   return (hit && hit.code) || "";
 }
@@ -204,6 +220,32 @@ function writeHash(program) {
   }
 }
 
+function updateBlankBtnState() {
+  if (!blankEditorBtn) return;
+  const isBlank = selectedId === "__blank__";
+  blankEditorBtn.classList.toggle("active", isBlank);
+  blankEditorBtn.setAttribute("aria-pressed", isBlank ? "true" : "false");
+}
+
+function selectBlankEditor(opts) {
+  selectedId = "__blank__";
+  currentCode = blankCode;
+  editing = true;
+  if (!(opts && opts.keepHash)) {
+    try {
+      history.replaceState(null, "", "#blank-editor");
+    } catch (_) {}
+  }
+  updateBlankBtnState();
+  renderRail();
+  renderWorkspace();
+  closeRail();
+}
+
+if (blankEditorBtn) {
+  blankEditorBtn.addEventListener("click", () => selectBlankEditor());
+}
+
 function selectProgram(id, opts) {
   const program = programById(id);
   if (!program) return;
@@ -211,6 +253,7 @@ function selectProgram(id, opts) {
   currentCode = program.code || "";
   editing = false;
   if (!(opts && opts.keepHash)) writeHash(program);
+  updateBlankBtnState();
   renderRail();
   renderWorkspace();
   closeRail();
@@ -274,7 +317,13 @@ function renderWorkspace() {
   /* Reset stays reachable for as long as the code differs from what was
      published — saving an edit no longer strands the original. */
   function syncActions() {
-    resetBtn.hidden = currentCode === original;
+    if (program.isCustomBlank) {
+      resetBtn.textContent = "Clear";
+      resetBtn.hidden = !currentCode.trim();
+    } else {
+      resetBtn.textContent = "Reset";
+      resetBtn.hidden = currentCode === original;
+    }
     editBtn.textContent = editing ? "Done" : "Edit";
     runBtn.disabled = running;
   }
@@ -316,6 +365,9 @@ function renderWorkspace() {
 
     function sync() {
       currentCode = area.value;
+      if (program.isCustomBlank) {
+        blankCode = area.value;
+      }
       area.rows = Math.max(8, area.value.split("\n").length);
       gutter.textContent = gutterFor(area.value);
       syncActions();
@@ -333,7 +385,12 @@ function renderWorkspace() {
   });
 
   resetBtn.addEventListener("click", () => {
-    currentCode = original;
+    if (program.isCustomBlank) {
+      currentCode = "";
+      blankCode = "";
+    } else {
+      currentCode = original;
+    }
     if (editing) showEditor();
     else showCode();
   });
@@ -726,6 +783,7 @@ async function runProgram(code, panel, syncActions) {
 /* ---------- Load programs live from Firestore ---------- */
 function initialSelection() {
   const hash = typeof location !== "undefined" ? (location.hash || "").replace(/^#/, "") : "";
+  if (hash === "blank-editor" || hash === "blank") return "__blank__";
   if (hash) {
     const linked = allPrograms.find((p) => slugify(p.title) === hash);
     if (linked) return linked.id;
@@ -748,16 +806,24 @@ function applyPrograms(docs) {
   const previousId = selectedId;
   const previousCode = currentCode;
   const previous = programById(previousId);
-  // Compare against the code as published *before* this snapshot landed, so a
-  // half-finished edit is recognised and kept.
   const dirty = previousId != null && previousCode !== originalCodeOf(previousId);
 
   allPrograms = docs;
+
+  if (previousId === "__blank__") {
+    selectedId = "__blank__";
+    currentCode = blankCode;
+    editing = true;
+    updateBlankBtnState();
+    renderRail();
+    return;
+  }
 
   const stillThere = programById(previousId);
   if (previousId != null && stillThere) {
     selectedId = previousId;
     currentCode = dirty ? previousCode : originalCodeOf(previousId);
+    updateBlankBtnState();
     renderRail();
     // Someone else editing a different program shouldn't wipe this pane —
     // output, edit mode and caret all survive.
@@ -765,9 +831,15 @@ function applyPrograms(docs) {
     return;
   }
 
-  editing = false;
   selectedId = initialSelection();
-  currentCode = selectedId ? originalCodeOf(selectedId) : "";
+  if (selectedId === "__blank__") {
+    currentCode = blankCode;
+    editing = true;
+  } else {
+    editing = false;
+    currentCode = selectedId ? originalCodeOf(selectedId) : "";
+  }
+  updateBlankBtnState();
   renderRail();
   renderWorkspace();
 }
@@ -788,6 +860,10 @@ if (typeof window !== "undefined") {
   window.addEventListener("hashchange", () => {
     const hash = (location.hash || "").replace(/^#/, "");
     if (!hash) return;
+    if (hash === "blank-editor" || hash === "blank") {
+      if (selectedId !== "__blank__") selectBlankEditor({ keepHash: true });
+      return;
+    }
     const linked = allPrograms.find((p) => slugify(p.title) === hash);
     if (linked && linked.id !== selectedId) selectProgram(linked.id, { keepHash: true });
   });

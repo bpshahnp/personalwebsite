@@ -6,14 +6,14 @@
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1694584663544438" crossorigin="anonymous"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Python Hub | B. Prasad Shah</title>
-  <link rel="stylesheet" href="css/style.css?v=20260921_02">
+  <link rel="stylesheet" href="css/style.css?v=20260922_01">
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
 
   <!-- Pyodide: runs Python in the browser, main thread, loaded on first Run -->
   <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
-  <!-- Prism tokenises the code; the token colours live in css/style.css?v=20260921_02 so the
+  <!-- Prism tokenises the code; the token colours live in css/style.css?v=20260922_01 so the
        editor matches this site's navy instead of a borrowed theme. -->
 </head>
 <body>
@@ -85,10 +85,16 @@
   <div class="pyhub-bar">
     <div class="container pyhub-bar-inner">
       <h1>Python Hub</h1>
-      <button class="rail-toggle" id="railToggle" aria-controls="programRail" aria-expanded="false">
-        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><circle cx="3.5" cy="6" r="1.2" fill="currentColor" stroke="none"></circle><circle cx="3.5" cy="12" r="1.2" fill="currentColor" stroke="none"></circle><circle cx="3.5" cy="18" r="1.2" fill="currentColor" stroke="none"></circle></svg>
-        Programs
-      </button>
+      <div class="pyhub-bar-actions">
+        <button class="blank-editor-btn" id="blankEditorBtn" type="button" aria-label="Open blank editor" title="Open blank editor to write custom Python code">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          <span>Blank Editor</span>
+        </button>
+        <button class="rail-toggle" id="railToggle" aria-controls="programRail" aria-expanded="false">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><circle cx="3.5" cy="6" r="1.2" fill="currentColor" stroke="none"></circle><circle cx="3.5" cy="12" r="1.2" fill="currentColor" stroke="none"></circle><circle cx="3.5" cy="18" r="1.2" fill="currentColor" stroke="none"></circle></svg>
+          Programs
+        </button>
+      </div>
     </div>
   </div>
 

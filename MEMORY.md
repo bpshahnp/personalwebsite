@@ -104,6 +104,10 @@ personalwebsite-main/
 - Legacy / untagged questions in Firestore default to Class 10 automatically without requiring database migration.
 - When adding new classes, update `CLASS_LEVELS` array in both `js/mcq.js` and `js/admin.js`.
 
+### 4.5. Python Hub Blank Editor
+- `python.html` features a **Blank Editor** scratchpad accessible via the `[+ Blank Editor]` button in the top bar beside the `[Programs]` button.
+- Selecting it sets `selectedId = "__blank__"`, opens `scratchpad.py` directly in live editing mode, and preserves learner-typed custom code across program switches in session memory.
+
 ---
 
 ## 5. Firebase Security & Allowlist
