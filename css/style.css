@@ -37,6 +37,7 @@ html {
   scroll-behavior: smooth;
   overflow-x: hidden;
   max-width: 100%;
+  height: 100%;
 }
 
 body {
@@ -47,6 +48,9 @@ body {
   line-height: 1.5;
   overflow-x: hidden;
   max-width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   animation: pageEnter 0.22s ease both;
 }
 
@@ -867,6 +871,7 @@ img { max-width: 100%; display: block; }
   color: rgba(255, 255, 255, 0.75);
   padding: 22px 0;
   font-size: 0.9rem;
+  margin-top: auto;
 }
 .footer-inner {
   display: flex;
