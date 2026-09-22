@@ -115,6 +115,11 @@ personalwebsite-main/
   - Both elements share exact font metrics (`var(--py-mono)`, `font-size: 0.855rem`, `line-height: 1.65`, `padding: 14px 18px`, `tab-size: 4`).
   - Dark mode generic `[data-theme="dark"] textarea` rules explicitly exclude `.code-editor` via `:not(.code-editor)` to prevent overriding text opacity or background.
 
+### 4.7. Python Hub Automatic External Library Execution
+- `runProgram()` automatically analyzes user code for imports using Pyodide's `loadPackagesFromImports(code)` before execution.
+- Libraries with compiled C/WASM wheels (e.g. `pandas`, `matplotlib`, `numpy`, `scipy`, `scikit-learn`, `sympy`) and pure-Python PyPI packages via `micropip` are automatically downloaded and installed on demand.
+- Matplotlib plot figures (via `plt.show()` or open figures) are intercepted and rendered directly as high-resolution PNGs in the interactive output panel.
+
 ---
 
 ## 5. Firebase Security & Allowlist

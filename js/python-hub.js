@@ -644,11 +644,23 @@ function extractMissingModule(message) {
   return m ? m[1].split(".")[0] : null;
 }
 
-/* ---------- matplotlib support: capture any open figures as images ---------- */
+/* ---------- matplotlib support: capture any open or shown figures as images ---------- */
 const MPL_SETUP = `
 try:
     import matplotlib
     matplotlib.use("AGG")
+    import matplotlib.pyplot as _plt
+    import io as _io, base64 as _base64
+    if not hasattr(_plt, "_captured_figures"):
+        _plt._captured_figures = []
+    def _hub_show(*args, **kwargs):
+        for _num in _plt.get_fignums():
+            _fig = _plt.figure(_num)
+            _buf = _io.BytesIO()
+            _fig.savefig(_buf, format="png", bbox_inches="tight")
+            _plt._captured_figures.append(_base64.b64encode(_buf.getvalue()).decode("ascii"))
+        _plt.close("all")
+    _plt.show = _hub_show
 except Exception:
     pass
 `;
@@ -663,6 +675,9 @@ import io, base64
 _out = []
 try:
     import matplotlib.pyplot as _plt
+    if hasattr(_plt, "_captured_figures"):
+        _out.extend(_plt._captured_figures)
+        _plt._captured_figures = []
     for _num in _plt.get_fignums():
         _fig = _plt.figure(_num)
         _buf = io.BytesIO()
@@ -710,6 +725,20 @@ async function runProgram(code, panel, syncActions) {
     });
     body.textContent = "";
 
+    // Automatically detect and load external libraries (pandas, matplotlib, numpy, scipy, etc.)
+    if (typeof py.loadPackagesFromImports === "function") {
+      try {
+        await py.loadPackagesFromImports(code, {
+          messageCallback: (msg) => {
+            body.textContent = msg + "…\n";
+          }
+        });
+      } catch (pkgErr) {
+        console.warn("loadPackagesFromImports warning:", pkgErr);
+      }
+      body.textContent = "";
+    }
+
     // Every input() value is collected up front, one field at a time, inline in
     // the terminal and in source order — so snippets with two or more input()
     // calls get the right value in each.
@@ -751,11 +780,18 @@ async function runProgram(code, panel, syncActions) {
       if (!missing) throw err;
       body.textContent += 'Installing "' + missing + '"…\n';
       try {
-        const micropip = py.pyimport("micropip");
-        await micropip.install(missing);
+        try {
+          await py.loadPackage(missing);
+        } catch (_) {
+          const micropip = py.pyimport("micropip");
+          await micropip.install(missing);
+        }
         output = "";
         queue.length = 0;
         values.forEach((v) => queue.push(v));
+        try {
+          await py.runPythonAsync(MPL_SETUP, { globals: freshGlobals });
+        } catch (_) {}
         await execute();
       } catch (_) {
         throw err;
