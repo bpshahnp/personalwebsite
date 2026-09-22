@@ -2301,41 +2301,215 @@ function initModeratorDashboard(user, perms) {
   if (perms.premiumQuiz) initPremiumQuizAdmin();
 }
 
-/* Locks the MCQ class selector to only the permitted classes for moderators */
+/* Helper to get allowed subjects for a given class level */
+function getAllowedSubjectsForClass(mcqPerms, classLevel) {
+  if (!mcqPerms) return [];
+  const cData = mcqPerms["class" + classLevel];
+  if (!cData) return [];
+  if (cData === true) return ["ALL"];
+  if (typeof cData === "object") {
+    if (!cData.enabled) return [];
+    if (cData.allSubjects || !cData.subjects || !cData.subjects.length || cData.subjects.includes("ALL")) {
+      return ["ALL"];
+    }
+    return cData.subjects;
+  }
+  return [];
+}
+
+/* Locks the MCQ class & subject selector to only the permitted classes & subjects for moderators */
 function applyMcqClassRestriction(mcqPerms) {
   const classSelect = document.getElementById("qClass");
   const classFilter = document.getElementById("questionClassFilter");
-  const allowed = [];
-  if (mcqPerms.class8)  allowed.push("8");
-  if (mcqPerms.class9)  allowed.push("9");
-  if (mcqPerms.class10) allowed.push("10");
-  if (!allowed.length)  return;
+  const subjectSelect = document.getElementById("qSubject");
+  const subjectFilter = document.getElementById("questionSubjectFilter");
 
+  const allowedClasses = [];
+  ["8", "9", "10"].forEach(lvl => {
+    const subjs = getAllowedSubjectsForClass(mcqPerms, lvl);
+    if (subjs.length > 0) allowedClasses.push(lvl);
+  });
+
+  if (!allowedClasses.length) return;
+
+  // 1. Restrict class select & filter options
   [classSelect, classFilter].forEach(sel => {
     if (!sel) return;
     Array.from(sel.options).forEach(opt => {
-      if (opt.value !== "All" && !allowed.includes(opt.value)) {
+      if (opt.value !== "All" && !allowedClasses.includes(opt.value)) {
         opt.disabled = true;
         opt.style.color = "#94a3b8";
       }
     });
-    // Force value to first allowed option if current not permitted
-    if (sel.value !== "All" && !allowed.includes(sel.value)) {
-      sel.value = allowed[0];
+    if (sel.value !== "All" && !allowedClasses.includes(sel.value)) {
+      sel.value = allowedClasses[0];
       sel.dispatchEvent(new Event("change"));
     }
   });
+
+  // 2. Dynamically restrict subjects based on the selected class
+  function updateSubjectOptions() {
+    const currentClass = classSelect ? classSelect.value : allowedClasses[0];
+    const allowedSubjects = getAllowedSubjectsForClass(mcqPerms, currentClass);
+
+    if (subjectSelect) {
+      Array.from(subjectSelect.options).forEach(opt => {
+        if (allowedSubjects.includes("ALL")) {
+          opt.disabled = false;
+          opt.style.color = "";
+        } else {
+          const isAllowed = allowedSubjects.includes(opt.value);
+          opt.disabled = !isAllowed;
+          opt.style.color = isAllowed ? "" : "#94a3b8";
+        }
+      });
+      // If current selected subject is not allowed, switch to the first allowed subject
+      if (!allowedSubjects.includes("ALL") && !allowedSubjects.includes(subjectSelect.value)) {
+        const firstAllowed = Array.from(subjectSelect.options).find(o => !o.disabled && o.value !== "Other");
+        if (firstAllowed) {
+          subjectSelect.value = firstAllowed.value;
+          subjectSelect.dispatchEvent(new Event("change"));
+        }
+      }
+    }
+
+    if (subjectFilter) {
+      Array.from(subjectFilter.options).forEach(opt => {
+        if (opt.value === "All") return;
+        if (allowedSubjects.includes("ALL")) {
+          opt.disabled = false;
+          opt.style.color = "";
+        } else {
+          const isAllowed = allowedSubjects.includes(opt.value);
+          opt.disabled = !isAllowed;
+          opt.style.color = isAllowed ? "" : "#94a3b8";
+        }
+      });
+    }
+  }
+
+  if (classSelect) {
+    classSelect.addEventListener("change", updateSubjectOptions);
+  }
+  updateSubjectOptions();
 }
 
 /* ============================================
    MODERATORS ADMIN — owner-only section
    Allows the owner to:
-   1. Directly CREATE a new moderator account (name, email, password, permissions)
+   1. Directly CREATE a new moderator account (name, email, password, class & subject permissions)
    2. Search and promote existing registered users
    3. Manage, edit, or revoke existing moderators
    ============================================ */
 function initModeratorsAdmin() {
-  // 1. Create New Moderator Form DOM
+  // Helpers to read/write per-class subject permissions
+  function setupClassToggle(mainChk, wrapEl, allChk, gridEl) {
+    if (!mainChk || !wrapEl) return;
+    mainChk.addEventListener("change", () => {
+      wrapEl.style.display = mainChk.checked ? "block" : "none";
+    });
+    if (allChk && gridEl) {
+      allChk.addEventListener("change", () => {
+        gridEl.style.display = allChk.checked ? "none" : "grid";
+      });
+    }
+  }
+
+  function readClassPerm(mainChk, allChk, itemSelector) {
+    if (!mainChk || !mainChk.checked) {
+      return { enabled: false, allSubjects: false, subjects: [] };
+    }
+    const isAll = allChk ? allChk.checked : true;
+    if (isAll) {
+      return { enabled: true, allSubjects: true, subjects: ["ALL"] };
+    }
+    const selected = [];
+    document.querySelectorAll(itemSelector + ":checked").forEach(c => {
+      selected.push(c.value);
+    });
+    if (!selected.length) {
+      return { enabled: true, allSubjects: true, subjects: ["ALL"] };
+    }
+    return { enabled: true, allSubjects: false, subjects: selected };
+  }
+
+  function setClassPerm(cData, mainChk, allChk, gridEl, wrapEl, itemSelector) {
+    if (!mainChk) return;
+    if (!cData) {
+      mainChk.checked = false;
+      if (wrapEl) wrapEl.style.display = "none";
+      return;
+    }
+    const enabled = (cData === true) || (typeof cData === "object" && !!cData.enabled);
+    mainChk.checked = enabled;
+    if (!enabled) {
+      if (wrapEl) wrapEl.style.display = "none";
+      return;
+    }
+    if (wrapEl) wrapEl.style.display = "block";
+    const isAll = (cData === true) || (typeof cData === "object" && (cData.allSubjects || !cData.subjects || !cData.subjects.length || cData.subjects.includes("ALL")));
+    if (allChk) allChk.checked = isAll;
+    if (gridEl) gridEl.style.display = isAll ? "none" : "grid";
+
+    const subjs = (typeof cData === "object" && Array.isArray(cData.subjects)) ? cData.subjects : [];
+    document.querySelectorAll(itemSelector).forEach(c => {
+      c.checked = subjs.includes(c.value);
+    });
+  }
+
+  function formatClassBadge(lvl, cData) {
+    if (!cData) return null;
+    if (cData === true) return `MCQ Class ${lvl} (All Subjects)`;
+    if (typeof cData === "object" && cData.enabled) {
+      if (cData.allSubjects || !cData.subjects || !cData.subjects.length || cData.subjects.includes("ALL")) {
+        return `MCQ Class ${lvl} (All Subjects)`;
+      }
+      return `MCQ Class ${lvl} (${cData.subjects.join(", ")})`;
+    }
+    return null;
+  }
+
+  // 1. Create Form Toggles
+  setupClassToggle(
+    document.getElementById("newPermMcqClass8"),
+    document.getElementById("newSubjWrap8"),
+    document.getElementById("newSubjAll8"),
+    document.getElementById("newSubjGrid8")
+  );
+  setupClassToggle(
+    document.getElementById("newPermMcqClass9"),
+    document.getElementById("newSubjWrap9"),
+    document.getElementById("newSubjAll9"),
+    document.getElementById("newSubjGrid9")
+  );
+  setupClassToggle(
+    document.getElementById("newPermMcqClass10"),
+    document.getElementById("newSubjWrap10"),
+    document.getElementById("newSubjAll10"),
+    document.getElementById("newSubjGrid10")
+  );
+
+  // 2. Edit Form Toggles
+  setupClassToggle(
+    document.getElementById("permMcqClass8"),
+    document.getElementById("editSubjWrap8"),
+    document.getElementById("editSubjAll8"),
+    document.getElementById("editSubjGrid8")
+  );
+  setupClassToggle(
+    document.getElementById("permMcqClass9"),
+    document.getElementById("editSubjWrap9"),
+    document.getElementById("editSubjAll9"),
+    document.getElementById("editSubjGrid9")
+  );
+  setupClassToggle(
+    document.getElementById("permMcqClass10"),
+    document.getElementById("editSubjWrap10"),
+    document.getElementById("editSubjAll10"),
+    document.getElementById("editSubjGrid10")
+  );
+
+  // Form DOM refs
   const createModForm       = document.getElementById("createModForm");
   const createModName       = document.getElementById("createModName");
   const createModEmail      = document.getElementById("createModEmail");
@@ -2343,10 +2517,7 @@ function initModeratorsAdmin() {
   const createModSubmitBtn  = document.getElementById("createModSubmitBtn");
   const createModStatus     = document.getElementById("createModStatus");
 
-  const newPermFields = {
-    mcqClass8:   document.getElementById("newPermMcqClass8"),
-    mcqClass9:   document.getElementById("newPermMcqClass9"),
-    mcqClass10:  document.getElementById("newPermMcqClass10"),
+  const otherNewPermFields = {
     pythonHub:   document.getElementById("newPermPythonHub"),
     premiumQuiz: document.getElementById("newPermPremiumQuiz"),
     resources:   document.getElementById("newPermResources"),
@@ -2354,7 +2525,6 @@ function initModeratorsAdmin() {
     liveQuiz:    document.getElementById("newPermLiveQuiz"),
   };
 
-  // 2. Existing User Search & Edit DOM
   const modSearchEmail  = document.getElementById("modSearchEmail");
   const modSearchBtn    = document.getElementById("modSearchBtn");
   const modSearchStatus = document.getElementById("modSearchStatus");
@@ -2368,10 +2538,7 @@ function initModeratorsAdmin() {
   const modSaveStatus   = document.getElementById("modSaveStatus");
   const modList         = document.getElementById("modList");
 
-  const permFields = {
-    mcqClass8:   document.getElementById("permMcqClass8"),
-    mcqClass9:   document.getElementById("permMcqClass9"),
-    mcqClass10:  document.getElementById("permMcqClass10"),
+  const otherEditPermFields = {
     pythonHub:   document.getElementById("permPythonHub"),
     premiumQuiz: document.getElementById("permPremiumQuiz"),
     resources:   document.getElementById("permResources"),
@@ -2394,9 +2561,14 @@ function initModeratorsAdmin() {
       const perms = m.permissions || {};
       const mcqP  = perms.mcq || {};
       const permLabels = [];
-      if (mcqP.class8)       permLabels.push("MCQ Class 8");
-      if (mcqP.class9)       permLabels.push("MCQ Class 9");
-      if (mcqP.class10)      permLabels.push("MCQ Class 10");
+
+      const b8 = formatClassBadge("8", mcqP.class8);
+      if (b8) permLabels.push(b8);
+      const b9 = formatClassBadge("9", mcqP.class9);
+      if (b9) permLabels.push(b9);
+      const b10 = formatClassBadge("10", mcqP.class10);
+      if (b10) permLabels.push(b10);
+
       if (perms.pythonHub)   permLabels.push("Python Hub");
       if (perms.premiumQuiz) permLabels.push("Premium Quiz");
       if (perms.resources)   permLabels.push("Resources");
@@ -2422,7 +2594,6 @@ function initModeratorsAdmin() {
       `;
 
       row.querySelector('[data-action="edit"]').addEventListener("click", () => {
-        // Open the details accordion if closed
         const detailsEl = document.querySelector("details.admin-import");
         if (detailsEl) detailsEl.open = true;
         if (modSearchEmail) modSearchEmail.value = m.email || "";
@@ -2482,25 +2653,29 @@ function initModeratorsAdmin() {
         return;
       }
 
+      const mcqClass8 = readClassPerm(document.getElementById("newPermMcqClass8"), document.getElementById("newSubjAll8"), ".new-subj-item-8");
+      const mcqClass9 = readClassPerm(document.getElementById("newPermMcqClass9"), document.getElementById("newSubjAll9"), ".new-subj-item-9");
+      const mcqClass10 = readClassPerm(document.getElementById("newPermMcqClass10"), document.getElementById("newSubjAll10"), ".new-subj-item-10");
+
       const permissions = {
         mcq: {
-          class8:  !!(newPermFields.mcqClass8  && newPermFields.mcqClass8.checked),
-          class9:  !!(newPermFields.mcqClass9  && newPermFields.mcqClass9.checked),
-          class10: !!(newPermFields.mcqClass10 && newPermFields.mcqClass10.checked),
+          class8: mcqClass8,
+          class9: mcqClass9,
+          class10: mcqClass10,
         },
-        pythonHub:   !!(newPermFields.pythonHub   && newPermFields.pythonHub.checked),
-        premiumQuiz: !!(newPermFields.premiumQuiz && newPermFields.premiumQuiz.checked),
-        resources:   !!(newPermFields.resources   && newPermFields.resources.checked),
-        updates:     !!(newPermFields.updates     && newPermFields.updates.checked),
-        liveQuiz:    !!(newPermFields.liveQuiz    && newPermFields.liveQuiz.checked),
+        pythonHub:   !!(otherNewPermFields.pythonHub   && otherNewPermFields.pythonHub.checked),
+        premiumQuiz: !!(otherNewPermFields.premiumQuiz && otherNewPermFields.premiumQuiz.checked),
+        resources:   !!(otherNewPermFields.resources   && otherNewPermFields.resources.checked),
+        updates:     !!(otherNewPermFields.updates     && otherNewPermFields.updates.checked),
+        liveQuiz:    !!(otherNewPermFields.liveQuiz    && otherNewPermFields.liveQuiz.checked),
       };
 
-      const hasAnyPerm = permissions.mcq.class8 || permissions.mcq.class9 || permissions.mcq.class10
+      const hasAnyPerm = mcqClass8.enabled || mcqClass9.enabled || mcqClass10.enabled
         || permissions.pythonHub || permissions.premiumQuiz || permissions.resources
         || permissions.updates || permissions.liveQuiz;
 
       if (!hasAnyPerm) {
-        setCreateStatus("Please check at least one permission to grant.", "crimson");
+        setCreateStatus("Please check at least one class or permission to grant.", "crimson");
         return;
       }
 
@@ -2510,12 +2685,10 @@ function initModeratorsAdmin() {
 
       let tempApp = null;
       try {
-        // Use a unique secondary Firebase App instance so the active admin session is not signed out
         const tempAppName = "ModCreator_" + Date.now();
         tempApp = firebase.initializeApp(firebaseConfig, tempAppName);
         const tempAuth = tempApp.auth();
 
-        // 1. Create account in Firebase Auth
         const cred = await tempAuth.createUserWithEmailAndPassword(email, password);
         const newUid = cred.user.uid;
 
@@ -2523,12 +2696,10 @@ function initModeratorsAdmin() {
           await cred.user.updateProfile({ displayName: name });
         }
 
-        // Clean up secondary auth
         await tempAuth.signOut();
 
         setCreateStatus("Account created! Saving moderator permissions in database…", "var(--mist)");
 
-        // 2. Save user profile in Firestore 'users' collection (via primary admin db connection)
         await db.collection("users").doc(newUid).set({
           email: email,
           displayName: name,
@@ -2537,7 +2708,6 @@ function initModeratorsAdmin() {
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true });
 
-        // 3. Save permissions in 'moderators' collection
         const currentUser = auth.currentUser;
         await db.collection("moderators").doc(newUid).set({
           email: email,
@@ -2548,11 +2718,17 @@ function initModeratorsAdmin() {
           updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
         }, { merge: true });
 
-        // Reset form
         createModName.value = "";
         createModEmail.value = "";
         createModPassword.value = "";
-        Object.values(newPermFields).forEach(chk => { if (chk) chk.checked = false; });
+        ["8", "9", "10"].forEach(lvl => {
+          const chk = document.getElementById("newPermMcqClass" + lvl);
+          if (chk) { chk.checked = false; chk.dispatchEvent(new Event("change")); }
+          const all = document.getElementById("newSubjAll" + lvl);
+          if (all) { all.checked = true; all.dispatchEvent(new Event("change")); }
+          document.querySelectorAll(".new-subj-item-" + lvl).forEach(i => i.checked = false);
+        });
+        Object.values(otherNewPermFields).forEach(chk => { if (chk) chk.checked = false; });
 
         setCreateStatus(`Moderator account for "${name}" (${email}) created successfully! They can now log in at this admin page with their credentials.`, "#10b981");
       } catch (err) {
@@ -2602,7 +2778,6 @@ function initModeratorsAdmin() {
         const uid = userDoc.id;
         const userData = userDoc.data();
 
-        // Check if already a moderator
         const modDoc = await db.collection("moderators").doc(uid).get();
         const existingPerms = modDoc.exists ? (modDoc.data().permissions || {}) : {};
         const isAlreadyMod = modDoc.exists;
@@ -2639,14 +2814,36 @@ function initModeratorsAdmin() {
     }
 
     const mcqP = existingPerms.mcq || {};
-    if (permFields.mcqClass8)   permFields.mcqClass8.checked   = !!mcqP.class8;
-    if (permFields.mcqClass9)   permFields.mcqClass9.checked   = !!mcqP.class9;
-    if (permFields.mcqClass10)  permFields.mcqClass10.checked  = !!mcqP.class10;
-    if (permFields.pythonHub)   permFields.pythonHub.checked   = !!existingPerms.pythonHub;
-    if (permFields.premiumQuiz) permFields.premiumQuiz.checked = !!existingPerms.premiumQuiz;
-    if (permFields.resources)   permFields.resources.checked   = !!existingPerms.resources;
-    if (permFields.updates)     permFields.updates.checked     = !!existingPerms.updates;
-    if (permFields.liveQuiz)    permFields.liveQuiz.checked    = !!existingPerms.liveQuiz;
+    setClassPerm(
+      mcqP.class8,
+      document.getElementById("permMcqClass8"),
+      document.getElementById("editSubjAll8"),
+      document.getElementById("editSubjGrid8"),
+      document.getElementById("editSubjWrap8"),
+      ".edit-subj-item-8"
+    );
+    setClassPerm(
+      mcqP.class9,
+      document.getElementById("permMcqClass9"),
+      document.getElementById("editSubjAll9"),
+      document.getElementById("editSubjGrid9"),
+      document.getElementById("editSubjWrap9"),
+      ".edit-subj-item-9"
+    );
+    setClassPerm(
+      mcqP.class10,
+      document.getElementById("permMcqClass10"),
+      document.getElementById("editSubjAll10"),
+      document.getElementById("editSubjGrid10"),
+      document.getElementById("editSubjWrap10"),
+      ".edit-subj-item-10"
+    );
+
+    if (otherEditPermFields.pythonHub)   otherEditPermFields.pythonHub.checked   = !!existingPerms.pythonHub;
+    if (otherEditPermFields.premiumQuiz) otherEditPermFields.premiumQuiz.checked = !!existingPerms.premiumQuiz;
+    if (otherEditPermFields.resources)   otherEditPermFields.resources.checked   = !!existingPerms.resources;
+    if (otherEditPermFields.updates)     otherEditPermFields.updates.checked     = !!existingPerms.updates;
+    if (otherEditPermFields.liveQuiz)    otherEditPermFields.liveQuiz.checked    = !!existingPerms.liveQuiz;
 
     modUserCard.hidden = false;
     modUserCard.scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -2655,7 +2852,14 @@ function initModeratorsAdmin() {
   function resetModCard() {
     if (modUserCard) modUserCard.hidden = true;
     if (modTargetUid) modTargetUid.value = "";
-    Object.values(permFields).forEach(f => { if (f) f.checked = false; });
+    ["8", "9", "10"].forEach(lvl => {
+      const chk = document.getElementById("permMcqClass" + lvl);
+      if (chk) { chk.checked = false; chk.dispatchEvent(new Event("change")); }
+      const all = document.getElementById("editSubjAll" + lvl);
+      if (all) { all.checked = true; all.dispatchEvent(new Event("change")); }
+      document.querySelectorAll(".edit-subj-item-" + lvl).forEach(i => i.checked = false);
+    });
+    Object.values(otherEditPermFields).forEach(f => { if (f) f.checked = false; });
     if (modSaveStatus) modSaveStatus.textContent = "";
   }
 
@@ -2681,20 +2885,24 @@ function initModeratorsAdmin() {
       const email = modUserEmail ? modUserEmail.textContent.trim() : "";
       const name  = modUserName  ? modUserName.textContent.trim()  : "";
 
+      const mcqClass8 = readClassPerm(document.getElementById("permMcqClass8"), document.getElementById("editSubjAll8"), ".edit-subj-item-8");
+      const mcqClass9 = readClassPerm(document.getElementById("permMcqClass9"), document.getElementById("editSubjAll9"), ".edit-subj-item-9");
+      const mcqClass10 = readClassPerm(document.getElementById("permMcqClass10"), document.getElementById("editSubjAll10"), ".edit-subj-item-10");
+
       const permissions = {
         mcq: {
-          class8:  !!(permFields.mcqClass8  && permFields.mcqClass8.checked),
-          class9:  !!(permFields.mcqClass9  && permFields.mcqClass9.checked),
-          class10: !!(permFields.mcqClass10 && permFields.mcqClass10.checked),
+          class8: mcqClass8,
+          class9: mcqClass9,
+          class10: mcqClass10,
         },
-        pythonHub:   !!(permFields.pythonHub   && permFields.pythonHub.checked),
-        premiumQuiz: !!(permFields.premiumQuiz && permFields.premiumQuiz.checked),
-        resources:   !!(permFields.resources   && permFields.resources.checked),
-        updates:     !!(permFields.updates     && permFields.updates.checked),
-        liveQuiz:    !!(permFields.liveQuiz    && permFields.liveQuiz.checked),
+        pythonHub:   !!(otherEditPermFields.pythonHub   && otherEditPermFields.pythonHub.checked),
+        premiumQuiz: !!(otherEditPermFields.premiumQuiz && otherEditPermFields.premiumQuiz.checked),
+        resources:   !!(otherEditPermFields.resources   && otherEditPermFields.resources.checked),
+        updates:     !!(otherEditPermFields.updates     && otherEditPermFields.updates.checked),
+        liveQuiz:    !!(otherEditPermFields.liveQuiz    && otherEditPermFields.liveQuiz.checked),
       };
 
-      const anyPerm = permissions.mcq.class8 || permissions.mcq.class9 || permissions.mcq.class10
+      const anyPerm = mcqClass8.enabled || mcqClass9.enabled || mcqClass10.enabled
         || permissions.pythonHub || permissions.premiumQuiz || permissions.resources
         || permissions.updates || permissions.liveQuiz;
 

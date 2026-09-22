@@ -5,7 +5,7 @@
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin | B. Prasad Shah</title>
-  <link rel="stylesheet" href="css/style.css?v=20260922_07" />
+  <link rel="stylesheet" href="css/style.css?v=20260922_09" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -666,10 +666,71 @@
             <div class="mod-perms-grid">
               <!-- MCQ Questions -->
               <div class="mod-perm-section">
-                <p class="mod-perm-label">MCQ Questions</p>
-                <label class="mod-perm-check"><input type="checkbox" id="newPermMcqClass8" /> Class 8</label>
-                <label class="mod-perm-check"><input type="checkbox" id="newPermMcqClass9" /> Class 9</label>
-                <label class="mod-perm-check"><input type="checkbox" id="newPermMcqClass10" /> Class 10</label>
+                <p class="mod-perm-label">MCQ Questions &amp; Subjects</p>
+                
+                <!-- Class 8 -->
+                <div class="mod-class-box">
+                  <label class="mod-perm-check">
+                    <input type="checkbox" id="newPermMcqClass8" />
+                    <strong>Class 8</strong>
+                  </label>
+                  <div class="mod-subjects-wrap" id="newSubjWrap8" style="display:none;">
+                    <div style="font-size:0.78rem; font-weight:600; color:var(--mist); margin-bottom:4px;">Subjects allowed:</div>
+                    <label class="mod-perm-check" style="font-size:0.83rem;">
+                      <input type="checkbox" id="newSubjAll8" checked /> All Subjects
+                    </label>
+                    <div class="mod-subject-grid" id="newSubjGrid8" style="display:none;">
+                      <label class="mod-perm-check" style="font-size:0.82rem;"><input type="checkbox" class="new-subj-item-8" value="Computer Science" /> Computer Science</label>
+                      <label class="mod-perm-check" style="font-size:0.82rem;"><input type="checkbox" class="new-subj-item-8" value="Science" /> Science</label>
+                      <label class="mod-perm-check" style="font-size:0.82rem;"><input type="checkbox" class="new-subj-item-8" value="Mathematics" /> Mathematics</label>
+                      <label class="mod-perm-check" style="font-size:0.82rem;"><input type="checkbox" class="new-subj-item-8" value="English" /> English</label>
+                      <label class="mod-perm-check" style="font-size:0.82rem;"><input type="checkbox" class="new-subj-item-8" value="General Knowledge" /> General Knowledge</label>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Class 9 -->
+                <div class="mod-class-box">
+                  <label class="mod-perm-check">
+                    <input type="checkbox" id="newPermMcqClass9" />
+                    <strong>Class 9</strong>
+                  </label>
+                  <div class="mod-subjects-wrap" id="newSubjWrap9" style="display:none;">
+                    <div style="font-size:0.78rem; font-weight:600; color:var(--mist); margin-bottom:4px;">Subjects allowed:</div>
+                    <label class="mod-perm-check" style="font-size:0.83rem;">
+                      <input type="checkbox" id="newSubjAll9" checked /> All Subjects
+                    </label>
+                    <div class="mod-subject-grid" id="newSubjGrid9" style="display:none;">
+                      <label class="mod-perm-check" style="font-size:0.82rem;"><input type="checkbox" class="new-subj-item-9" value="Computer Science" /> Computer Science</label>
+                      <label class="mod-perm-check" style="font-size:0.82rem;"><input type="checkbox" class="new-subj-item-9" value="Science" /> Science</label>
+                      <label class="mod-perm-check" style="font-size:0.82rem;"><input type="checkbox" class="new-subj-item-9" value="Mathematics" /> Mathematics</label>
+                      <label class="mod-perm-check" style="font-size:0.82rem;"><input type="checkbox" class="new-subj-item-9" value="English" /> English</label>
+                      <label class="mod-perm-check" style="font-size:0.82rem;"><input type="checkbox" class="new-subj-item-9" value="General Knowledge" /> General Knowledge</label>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Class 10 -->
+                <div class="mod-class-box">
+                  <label class="mod-perm-check">
+                    <input type="checkbox" id="newPermMcqClass10" />
+                    <strong>Class 10</strong>
+                  </label>
+                  <div class="mod-subjects-wrap" id="newSubjWrap10" style="display:none;">
+                    <div style="font-size:0.78rem; font-weight:600; color:var(--mist); margin-bottom:4px;">Subjects allowed:</div>
+                    <label class="mod-perm-check" style="font-size:0.83rem;">
+                      <input type="checkbox" id="newSubjAll10" checked /> All Subjects
+                    </label>
+                    <div class="mod-subject-grid" id="newSubjGrid10" style="display:none;">
+                      <label class="mod-perm-check" style="font-size:0.82rem;"><input type="checkbox" class="new-subj-item-10" value="Computer Science" /> Computer Science</label>
+                      <label class="mod-perm-check" style="font-size:0.82rem;"><input type="checkbox" class="new-subj-item-10" value="Science" /> Science</label>
+                      <label class="mod-perm-check" style="font-size:0.82rem;"><input type="checkbox" class="new-subj-item-10" value="Mathematics" /> Mathematics</label>
+                      <label class="mod-perm-check" style="font-size:0.82rem;"><input type="checkbox" class="new-subj-item-10" value="English" /> English</label>
+                      <label class="mod-perm-check" style="font-size:0.82rem;"><input type="checkbox" class="new-subj-item-10" value="General Knowledge" /> General Knowledge</label>
+                    </div>
+                  </div>
+                </div>
+
               </div>
 
               <!-- Other sections -->
@@ -721,10 +782,71 @@
 
               <div class="mod-perms-grid">
                 <div class="mod-perm-section">
-                  <p class="mod-perm-label">MCQ Questions</p>
-                  <label class="mod-perm-check"><input type="checkbox" id="permMcqClass8" /> Class 8</label>
-                  <label class="mod-perm-check"><input type="checkbox" id="permMcqClass9" /> Class 9</label>
-                  <label class="mod-perm-check"><input type="checkbox" id="permMcqClass10" /> Class 10</label>
+                  <p class="mod-perm-label">MCQ Questions &amp; Subjects</p>
+
+                  <!-- Class 8 (Edit) -->
+                  <div class="mod-class-box">
+                    <label class="mod-perm-check">
+                      <input type="checkbox" id="permMcqClass8" />
+                      <strong>Class 8</strong>
+                    </label>
+                    <div class="mod-subjects-wrap" id="editSubjWrap8" style="display:none;">
+                      <div style="font-size:0.78rem; font-weight:600; color:var(--mist); margin-bottom:4px;">Subjects allowed:</div>
+                      <label class="mod-perm-check" style="font-size:0.83rem;">
+                        <input type="checkbox" id="editSubjAll8" checked /> All Subjects
+                      </label>
+                      <div class="mod-subject-grid" id="editSubjGrid8" style="display:none;">
+                        <label class="mod-perm-check" style="font-size:0.82rem;"><input type="checkbox" class="edit-subj-item-8" value="Computer Science" /> Computer Science</label>
+                        <label class="mod-perm-check" style="font-size:0.82rem;"><input type="checkbox" class="edit-subj-item-8" value="Science" /> Science</label>
+                        <label class="mod-perm-check" style="font-size:0.82rem;"><input type="checkbox" class="edit-subj-item-8" value="Mathematics" /> Mathematics</label>
+                        <label class="mod-perm-check" style="font-size:0.82rem;"><input type="checkbox" class="edit-subj-item-8" value="English" /> English</label>
+                        <label class="mod-perm-check" style="font-size:0.82rem;"><input type="checkbox" class="edit-subj-item-8" value="General Knowledge" /> General Knowledge</label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Class 9 (Edit) -->
+                  <div class="mod-class-box">
+                    <label class="mod-perm-check">
+                      <input type="checkbox" id="permMcqClass9" />
+                      <strong>Class 9</strong>
+                    </label>
+                    <div class="mod-subjects-wrap" id="editSubjWrap9" style="display:none;">
+                      <div style="font-size:0.78rem; font-weight:600; color:var(--mist); margin-bottom:4px;">Subjects allowed:</div>
+                      <label class="mod-perm-check" style="font-size:0.83rem;">
+                        <input type="checkbox" id="editSubjAll9" checked /> All Subjects
+                      </label>
+                      <div class="mod-subject-grid" id="editSubjGrid9" style="display:none;">
+                        <label class="mod-perm-check" style="font-size:0.82rem;"><input type="checkbox" class="edit-subj-item-9" value="Computer Science" /> Computer Science</label>
+                        <label class="mod-perm-check" style="font-size:0.82rem;"><input type="checkbox" class="edit-subj-item-9" value="Science" /> Science</label>
+                        <label class="mod-perm-check" style="font-size:0.82rem;"><input type="checkbox" class="edit-subj-item-9" value="Mathematics" /> Mathematics</label>
+                        <label class="mod-perm-check" style="font-size:0.82rem;"><input type="checkbox" class="edit-subj-item-9" value="English" /> English</label>
+                        <label class="mod-perm-check" style="font-size:0.82rem;"><input type="checkbox" class="edit-subj-item-9" value="General Knowledge" /> General Knowledge</label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Class 10 (Edit) -->
+                  <div class="mod-class-box">
+                    <label class="mod-perm-check">
+                      <input type="checkbox" id="permMcqClass10" />
+                      <strong>Class 10</strong>
+                    </label>
+                    <div class="mod-subjects-wrap" id="editSubjWrap10" style="display:none;">
+                      <div style="font-size:0.78rem; font-weight:600; color:var(--mist); margin-bottom:4px;">Subjects allowed:</div>
+                      <label class="mod-perm-check" style="font-size:0.83rem;">
+                        <input type="checkbox" id="editSubjAll10" checked /> All Subjects
+                      </label>
+                      <div class="mod-subject-grid" id="editSubjGrid10" style="display:none;">
+                        <label class="mod-perm-check" style="font-size:0.82rem;"><input type="checkbox" class="edit-subj-item-10" value="Computer Science" /> Computer Science</label>
+                        <label class="mod-perm-check" style="font-size:0.82rem;"><input type="checkbox" class="edit-subj-item-10" value="Science" /> Science</label>
+                        <label class="mod-perm-check" style="font-size:0.82rem;"><input type="checkbox" class="edit-subj-item-10" value="Mathematics" /> Mathematics</label>
+                        <label class="mod-perm-check" style="font-size:0.82rem;"><input type="checkbox" class="edit-subj-item-10" value="English" /> English</label>
+                        <label class="mod-perm-check" style="font-size:0.82rem;"><input type="checkbox" class="edit-subj-item-10" value="General Knowledge" /> General Knowledge</label>
+                      </div>
+                    </div>
+                  </div>
+
                 </div>
                 <div class="mod-perm-section">
                   <p class="mod-perm-label">Other Sections</p>
@@ -776,6 +898,6 @@
   <script src="js/firebase-config.js"></script>
   <script src="js/auth-widget.js"></script>
   <script src="js/nav-drawer.js"></script>
-  <script src="js/admin.js?v=20260922_08"></script>
+  <script src="js/admin.js?v=20260922_09"></script>
 </body>
 </html>
