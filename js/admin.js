@@ -531,12 +531,49 @@ function initQuestionsAdmin() {
     });
   }
 
+  /* Standard subjects shown in dropdowns (always present) */
+  const STD_SUBJECTS = ["Computer Science", "Science", "Mathematics", "English", "General Knowledge"];
+
+  /* Rebuild subject dropdowns to include any custom subjects found in Firestore */
+  function syncSubjectDropdowns() {
+    const customSubjects = Array.from(
+      new Set(allQuestions.map((q) => q.subject).filter(Boolean))
+    ).filter((s) => !STD_SUBJECTS.includes(s)).sort((a, b) => a.localeCompare(b));
+
+    // Update the filter dropdown (keeps selection if still valid)
+    if (subjectFilter) {
+      const prevFilter = subjectFilter.value;
+      subjectFilter.innerHTML =
+        `<option value="All">All subjects</option>` +
+        STD_SUBJECTS.map((s) => `<option value="${s}">${s}</option>`).join("") +
+        customSubjects.map((s) => `<option value="${s}">${s}</option>`).join("");
+      if ([...subjectFilter.options].some((o) => o.value === prevFilter)) {
+        subjectFilter.value = prevFilter;
+      }
+    }
+
+    // Update the add/edit form dropdown (keeps selection if still valid)
+    if (qSubjectSelect) {
+      const prevSubj = qSubjectSelect.value;
+      qSubjectSelect.innerHTML =
+        STD_SUBJECTS.map((s) =>
+          `<option value="${s}"${s === "Computer Science" ? " selected" : ""}>${s}</option>`
+        ).join("") +
+        customSubjects.map((s) => `<option value="${s}">${s}</option>`).join("") +
+        `<option value="Other">Other (Custom)</option>`;
+      if ([...qSubjectSelect.options].some((o) => o.value === prevSubj)) {
+        qSubjectSelect.value = prevSubj;
+      }
+    }
+  }
+
   questionsUnsub = db.collection("questions").orderBy("order", "desc").onSnapshot(
     (snapshot) => {
       allQuestions = snapshot.docs.map((doc) => {
         const data = doc.data();
         return { id: doc.id, ...data, subject: normalizeSubject(data), classLevel: normalizeClass(data.classLevel ?? data.class) };
       });
+      syncSubjectDropdowns();
       renderQuestionList();
     },
     (err) => {
@@ -633,8 +670,14 @@ function initQuestionsAdmin() {
     e.preventDefault();
     let chosenSubject = "Computer Science";
     if (qSubjectSelect) {
-      if (qSubjectSelect.value === "Other" && qCustomSubjectInput && qCustomSubjectInput.value.trim()) {
-        chosenSubject = qCustomSubjectInput.value.trim();
+      if (qSubjectSelect.value === "Other") {
+        const customVal = qCustomSubjectInput ? qCustomSubjectInput.value.trim() : "";
+        if (!customVal) {
+          alert("Please enter a custom subject name in the \"Custom Subject\" field.");
+          if (qCustomSubjectInput) qCustomSubjectInput.focus();
+          return;
+        }
+        chosenSubject = customVal;
       } else {
         chosenSubject = qSubjectSelect.value;
       }

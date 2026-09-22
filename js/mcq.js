@@ -31,7 +31,7 @@ function normalizeSubject(q) {
   const rawSubj = q && q.subject ? String(q.subject).trim() : "";
   if (rawSubj) {
     const matched = SUBJECTS.find(s => s.toLowerCase() === rawSubj.toLowerCase());
-    if (matched) return matched;
+    return matched || rawSubj;
   }
   const cat = String((q && q.category) || "").toLowerCase();
   if (cat.includes("science") && !cat.includes("computer")) return "Science";
@@ -744,10 +744,17 @@ function refreshSubjectOptions() {
   const currentClass = selectedClass();
   const poolForClass = questionsInClass(currentClass);
 
+  // Collect distinct custom subjects from questionBank
+  const distinctBankSubjects = Array.from(
+    new Set(questionBank.map((q) => q.subject).filter(Boolean))
+  ).filter((s) => !SUBJECTS.includes(s)).sort((a, b) => a.localeCompare(b));
+
+  const allSubjs = [...SUBJECTS, ...distinctBankSubjects];
+
   if (subjectSelect) {
     const previous = subjectSelect.value || DEFAULT_SUBJECT;
 
-    subjectSelect.innerHTML = SUBJECTS.map((sVal) => {
+    subjectSelect.innerHTML = allSubjs.map((sVal) => {
       const count = sVal === "All"
         ? poolForClass.length
         : poolForClass.filter((q) => String(q.subject).trim().toLowerCase() === sVal.toLowerCase()).length;
@@ -756,7 +763,7 @@ function refreshSubjectOptions() {
       return `<option value="${sVal}"${disabled}>${label} (${count})</option>`;
     }).join("");
 
-    const available = SUBJECTS.filter((sVal) => {
+    const available = allSubjs.filter((sVal) => {
       if (sVal === "All") return poolForClass.length > 0;
       return poolForClass.filter((q) => String(q.subject).trim().toLowerCase() === sVal.toLowerCase()).length > 0;
     });
