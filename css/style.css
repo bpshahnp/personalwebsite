@@ -2107,22 +2107,80 @@ img { max-width: 100%; display: block; }
   color: inherit;
   white-space: pre;
 }
-.code-editor {
+.code-editor,
+[data-theme="dark"] textarea.code-editor,
+[data-theme="dark"] textarea.code-editor:focus {
   flex: 1;
   min-width: 0;
   margin: 0;
   padding: 14px 18px;
-  border: none;
-  background: rgba(255, 255, 255, 0.025);
-  color: var(--py-fore);
-  font: inherit;
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
+  caret-color: var(--orange) !important;
+  font-family: var(--py-mono) !important;
+  font-size: 0.855rem !important;
+  line-height: 1.65 !important;
   white-space: pre;
   overflow-x: auto;
   resize: none;
-  caret-color: var(--orange);
+  -moz-tab-size: 4;
   tab-size: 4;
+  position: relative;
+  z-index: 1;
+  outline: none !important;
 }
-.code-editor:focus { outline: 2px solid var(--orange); outline-offset: -2px; }
+
+/* Selection tint while keeping syntax highlight underneath visible */
+.code-editor::selection {
+  background: rgba(232, 131, 78, 0.35);
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ---- Highlight backdrop: sits behind the textarea ---- */
+.code-editor-wrap {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+}
+.code-editor-wrap:focus-within {
+  outline: 2px solid var(--orange);
+  outline-offset: -2px;
+}
+
+.code-highlight-backdrop {
+  /* Positioned behind the textarea, same geometry */
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 14px 18px;
+  overflow: hidden;           /* scroll synced via JS, never shows own scrollbar */
+  pointer-events: none;
+  white-space: pre;
+  word-break: normal;
+  font-family: var(--py-mono) !important;
+  font-size: 0.855rem !important;
+  line-height: 1.65 !important;
+  -moz-tab-size: 4;
+  tab-size: 4;
+  color: var(--py-fore);
+  background: none;
+  border: none;
+}
+.code-highlight-backdrop code {
+  font-family: inherit !important;
+  font-size: inherit !important;
+  line-height: inherit !important;
+  background: transparent;
+  padding: 0;
+  color: inherit;
+  white-space: pre;
+}
 
 /* Four hues only: keywords, strings, numbers, comments. Function and class
    names get weight instead of another colour. */
@@ -4379,7 +4437,7 @@ img { max-width: 100%; display: block; }
 /* ---------- Forms & Inputs ---------- */
 [data-theme="dark"] input:not([type=radio]):not([type=checkbox]),
 [data-theme="dark"] select,
-[data-theme="dark"] textarea,
+[data-theme="dark"] textarea:not(.code-editor),
 [data-theme="dark"] .filter-input {
   background: #0f172a;
   color: #f8fafc;
@@ -4387,14 +4445,14 @@ img { max-width: 100%; display: block; }
 }
 [data-theme="dark"] input:not([type=radio]):not([type=checkbox]):focus,
 [data-theme="dark"] select:focus,
-[data-theme="dark"] textarea:focus,
+[data-theme="dark"] textarea:not(.code-editor):focus,
 [data-theme="dark"] .filter-input:focus {
   border-color: var(--orange);
   box-shadow: 0 0 0 3px rgba(232, 131, 78, 0.2);
   outline: none;
 }
 [data-theme="dark"] input::placeholder,
-[data-theme="dark"] textarea::placeholder,
+[data-theme="dark"] textarea:not(.code-editor):placeholder,
 [data-theme="dark"] .filter-input::placeholder {
   color: #64748b;
   opacity: 1;

@@ -108,6 +108,13 @@ personalwebsite-main/
 - `python.html` features a **Blank Editor** scratchpad accessible via the `[+ Blank Editor]` button in the top bar beside the `[Programs]` button.
 - Selecting it sets `selectedId = "__blank__"`, opens `scratchpad.py` directly in live editing mode, and preserves learner-typed custom code across program switches in session memory.
 
+### 4.6. Python Hub Live Syntax-Highlighted Editor
+- When in edit mode (`showEditor()`), the editor renders a synchronized dual-layer structure inside `.code-editor-wrap`:
+  - Background: `<pre class="code-highlight-backdrop"><code class="language-python"></code></pre>` tokenized in real-time with Prism.js on every input event.
+  - Foreground: `<textarea class="code-editor">` with transparent text (`color: transparent; -webkit-text-fill-color: transparent; background: transparent;`) and high-visibility caret (`caret-color: var(--orange)`).
+  - Both elements share exact font metrics (`var(--py-mono)`, `font-size: 0.855rem`, `line-height: 1.65`, `padding: 14px 18px`, `tab-size: 4`).
+  - Dark mode generic `[data-theme="dark"] textarea` rules explicitly exclude `.code-editor` via `:not(.code-editor)` to prevent overriding text opacity or background.
+
 ---
 
 ## 5. Firebase Security & Allowlist

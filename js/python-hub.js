@@ -356,12 +356,36 @@ function renderWorkspace() {
     host.innerHTML =
       '<div class="code-body editing">' +
       '<div class="code-gutter" aria-hidden="true"></div>' +
-      '<textarea class="code-editor" spellcheck="false" wrap="off"></textarea>' +
+      '<div class="code-editor-wrap">' +
+      '<pre class="code-highlight-backdrop" aria-hidden="true"><code class="language-python"></code></pre>' +
+      '<textarea class="code-editor" spellcheck="false" wrap="off" autocorrect="off" autocapitalize="off"></textarea>' +
+      '</div>' +
       "</div>";
-    const gutter = host.querySelector(".code-gutter");
-    const area = host.querySelector("textarea");
+    const gutter    = host.querySelector(".code-gutter");
+    const area      = host.querySelector("textarea");
+    const backdrop  = host.querySelector(".code-highlight-backdrop");
+    const codeEl    = backdrop.querySelector("code");
+
     area.value = currentCode;
     area.setAttribute("aria-label", "Edit " + fileNameFor(program));
+
+    function updateHighlight() {
+      // Prism needs a trailing newline so the last line is highlighted properly
+      const text = area.value.endsWith("\n") ? area.value : area.value + "\n";
+      codeEl.textContent = text;
+      if (typeof Prism !== "undefined" && Prism.highlightElement) {
+        Prism.highlightElement(codeEl);
+      }
+      // Keep backdrop scroll in sync with textarea
+      backdrop.scrollTop  = area.scrollTop;
+      backdrop.scrollLeft = area.scrollLeft;
+    }
+
+    // Sync scroll from textarea → backdrop
+    area.addEventListener("scroll", () => {
+      backdrop.scrollTop  = area.scrollTop;
+      backdrop.scrollLeft = area.scrollLeft;
+    });
 
     function sync() {
       currentCode = area.value;
@@ -370,6 +394,7 @@ function renderWorkspace() {
       }
       area.rows = Math.max(8, area.value.split("\n").length);
       gutter.textContent = gutterFor(area.value);
+      updateHighlight();
       syncActions();
     }
     sync();
