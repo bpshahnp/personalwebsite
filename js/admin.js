@@ -42,6 +42,7 @@ const adminLoginStatus = document.getElementById("adminLoginStatus");
 const adminEmailSubmitBtn = document.getElementById("adminEmailSubmitBtn");
 
 let adminInitialized = false;
+let activeModeratorPerms = null;
 
 function isUserAdmin(email) {
   if (!email) return false;
@@ -49,53 +50,183 @@ function isUserAdmin(email) {
   return ADMIN_EMAILS.some((e) => String(e).trim().toLowerCase() === normalized);
 }
 
+/* Helper to get allowed subjects for a given class level */
+function getAllowedSubjectsForClass(mcqPerms, classLevel) {
+  if (!mcqPerms) return [];
+  const cData = mcqPerms["class" + classLevel];
+  if (!cData) return [];
+  if (cData === true) return ["ALL"];
+  if (typeof cData === "object") {
+    if (!cData.enabled) return [];
+    if (cData.allSubjects || !cData.subjects || !cData.subjects.length || cData.subjects.includes("ALL")) {
+      return ["ALL"];
+    }
+    return cData.subjects;
+  }
+  return [];
+}
+
+function canModeratorManageQuestion(q) {
+  if (!activeModeratorPerms) return true;
+  const subj = q.subject || normalizeSubject(q);
+  const classLvl = normalizeClass(q.classLevel ?? q.class);
+  const allowedSubjs = getAllowedSubjectsForClass(activeModeratorPerms.mcq, classLvl);
+  if (!allowedSubjs.length) return false;
+  return allowedSubjs.includes("ALL") || allowedSubjs.includes(subj);
+}
+
+function applyOwnerAccess() {
+  activeModeratorPerms = null;
+  const titleEl = document.getElementById("adminHeaderTitle");
+  if (titleEl) titleEl.textContent = "Admin Panel";
+  const subEl = document.getElementById("adminHeaderSubtitle");
+  if (subEl) subEl.hidden = true;
+
+  // Show all 8 tabs
+  document.querySelectorAll(".admin-tab").forEach((btn) => {
+    btn.style.display = "";
+  });
+
+  // Show owner-only sections
+  document.querySelectorAll(".owner-only-section").forEach((el) => {
+    el.style.display = "";
+  });
+
+  // Unrestrict MCQ class & subject dropdowns
+  const classSelect = document.getElementById("qClass");
+  const classFilter = document.getElementById("questionClassFilter");
+  const subjectSelect = document.getElementById("qSubject");
+  const subjectFilter = document.getElementById("questionSubjectFilter");
+
+  [classSelect, classFilter, subjectSelect, subjectFilter].forEach((sel) => {
+    if (!sel) return;
+    Array.from(sel.options).forEach((opt) => {
+      opt.disabled = false;
+      opt.style.color = "";
+    });
+  });
+
+  const noPermMsg = document.getElementById("moderatorNoPermsMsg");
+  if (noPermMsg) noPermMsg.hidden = true;
+
+  show(dashboard);
+  hide(signInGate, notAuthorized);
+
+  if (!adminInitialized) {
+    adminInitialized = true;
+    initQuestionsAdmin();
+    initPythonAdmin();
+    initResourcesAdmin();
+    initMessagesAdmin();
+    initUpdatesAdmin();
+    initLiveQuizAdmin();
+    initPremiumQuizAdmin();
+    initModeratorsAdmin();
+  }
+}
+
+function applyModeratorAccess(user, perms, displayName) {
+  activeModeratorPerms = perms;
+  const titleEl = document.getElementById("adminHeaderTitle");
+  if (titleEl) titleEl.textContent = "Moderator Panel";
+  const subEl = document.getElementById("adminHeaderSubtitle");
+  if (subEl) {
+    subEl.hidden = false;
+    subEl.textContent = `Signed in as ${displayName || user.displayName || user.email} (Moderator)`;
+  }
+
+  const mcqP = perms.mcq || {};
+  const hasMcq = (mcqP.class8 && (mcqP.class8 === true || mcqP.class8.enabled)) ||
+                 (mcqP.class9 && (mcqP.class9 === true || mcqP.class9.enabled)) ||
+                 (mcqP.class10 && (mcqP.class10 === true || mcqP.class10.enabled));
+
+  const tabPermMap = {
+    questions: !!hasMcq,
+    python: !!perms.pythonHub,
+    resources: !!perms.resources,
+    messages: false, // owner only
+    updates: !!perms.updates,
+    livequiz: !!perms.liveQuiz,
+    premiumquiz: !!perms.premiumQuiz,
+    moderators: false, // owner only
+  };
+
+  ALL_TABS.forEach((tabKey) => {
+    const btn = document.querySelector(`.admin-tab[data-tab="${tabKey}"]`);
+    if (btn) btn.style.display = tabPermMap[tabKey] ? "" : "none";
+  });
+
+  // Hide owner-only sections (e.g. payment approvals & reward thresholds)
+  document.querySelectorAll(".owner-only-section").forEach((el) => {
+    el.style.display = "none";
+  });
+
+  show(dashboard);
+  hide(signInGate, notAuthorized);
+
+  const firstAllowedTab = ALL_TABS.find((t) => tabPermMap[t]);
+  if (firstAllowedTab) {
+    const noPermMsg = document.getElementById("moderatorNoPermsMsg");
+    if (noPermMsg) noPermMsg.hidden = true;
+    switchToTab(firstAllowedTab);
+  } else {
+    document.querySelectorAll(".admin-panel").forEach((p) => (p.hidden = true));
+    let noPermMsg = document.getElementById("moderatorNoPermsMsg");
+    if (!noPermMsg) {
+      noPermMsg = document.createElement("div");
+      noPermMsg.id = "moderatorNoPermsMsg";
+      noPermMsg.className = "admin-panel";
+      noPermMsg.innerHTML = `<p class="quiz-muted" style="padding:28px 0; text-align:center;">
+        Your moderator account does not have any active permissions assigned yet. Please contact the site owner.
+      </p>`;
+      const container = document.querySelector("#dashboard > .container");
+      if (container) container.appendChild(noPermMsg);
+    }
+    noPermMsg.hidden = false;
+    return;
+  }
+
+  if (!adminInitialized) {
+    adminInitialized = true;
+    if (hasMcq) initQuestionsAdmin();
+    if (perms.pythonHub) initPythonAdmin();
+    if (perms.resources) initResourcesAdmin();
+    if (perms.updates) initUpdatesAdmin();
+    if (perms.liveQuiz) initLiveQuizAdmin();
+    if (perms.premiumQuiz) initPremiumQuizAdmin();
+  }
+
+  if (hasMcq) {
+    applyMcqClassRestriction(mcqP);
+  }
+}
+
 /* ---------- Auth gate ---------- */
 auth.onAuthStateChanged(async (user) => {
   if (!user) {
     adminInitialized = false;
+    activeModeratorPerms = null;
     show(signInGate);
     hide(notAuthorized, dashboard);
-    hideModeratorOuter();
     signOutBtns.forEach((b) => (b.hidden = true));
     return;
   }
   signOutBtns.forEach((b) => (b.hidden = false));
+
   if (isUserAdmin(user.email)) {
-    show(dashboard);
-    hide(signInGate, notAuthorized);
-    hideModeratorOuter();
-    if (!adminInitialized) {
-      adminInitialized = true;
-      initQuestionsAdmin();
-      initPythonAdmin();
-      initResourcesAdmin();
-      initMessagesAdmin();
-      initUpdatesAdmin();
-      initLiveQuizAdmin();
-      initPremiumQuizAdmin();
-      initModeratorsAdmin();
-    }
+    applyOwnerAccess();
   } else {
-    // Check if this user is a moderator
     try {
       const modSnap = await db.collection("moderators").doc(user.uid).get();
       if (modSnap.exists) {
         const modData = modSnap.data();
-        const perms = modData.permissions || {};
-        // Show the moderator outer panel (not the owner dashboard)
-        hide(signInGate, notAuthorized, dashboard);
-        showModeratorOuter(user, modData.displayName || user.displayName || user.email, perms);
-        if (!adminInitialized) {
-          adminInitialized = true;
-          initModeratorDashboard(user, perms);
-        }
+        applyModeratorAccess(user, modData.permissions || {}, modData.displayName);
       } else {
         show(notAuthorized);
         if (notAuthorizedEmail) {
           notAuthorizedEmail.textContent = user.email || "Unknown account";
         }
         hide(signInGate, dashboard);
-        hideModeratorOuter();
       }
     } catch (err) {
       console.error("Moderator check error:", err);
@@ -104,10 +235,10 @@ auth.onAuthStateChanged(async (user) => {
         notAuthorizedEmail.textContent = user.email || "Unknown account";
       }
       hide(signInGate, dashboard);
-      hideModeratorOuter();
     }
   }
 });
+
 
 /* Google Sign-in for Admin */
 if (adminGoogleSignInBtn) {
@@ -219,12 +350,6 @@ function switchToTab(tabName) {
     const panel = document.getElementById("tab-" + t);
     if (panel) panel.hidden = t !== tabName;
   });
-
-  // The Moderators content lives outside #dashboard in its own outer div.
-  const modOuter = document.getElementById("tab-moderators-outer");
-  if (modOuter) {
-    modOuter.hidden = tabName !== "moderators";
-  }
 }
 
 
@@ -447,6 +572,7 @@ function initQuestionsAdmin() {
     listEl.innerHTML = "";
     visible.forEach((q) => {
       const subj = q.subject || normalizeSubject(q);
+      const canManage = canModeratorManageQuestion(q);
       const row = document.createElement("div");
       row.className = "admin-row";
       row.innerHTML = `
@@ -457,14 +583,18 @@ function initQuestionsAdmin() {
           ${q.category ? `<span class="admin-tag">${escapeHtml(q.category)}</span>` : ""}
         </div>
         <div class="admin-row-actions">
-          <button class="btn btn-outline btn-sm" data-action="edit">Edit</button>
-          <button class="btn btn-outline btn-sm btn-danger" data-action="delete">Delete</button>
+          ${canManage ? `
+            <button class="btn btn-outline btn-sm" data-action="edit">Edit</button>
+            <button class="btn btn-outline btn-sm btn-danger" data-action="delete">Delete</button>
+          ` : `<span style="font-size:0.75rem; color:var(--mist); font-style:italic;">Read-only</span>`}
         </div>
       `;
-      row.querySelector('[data-action="edit"]').addEventListener("click", () => startEdit(q));
-      row.querySelector('[data-action="delete"]').addEventListener("click", () => {
-        if (confirm("Delete this question?")) db.collection("questions").doc(q.id).delete();
-      });
+      if (canManage) {
+        row.querySelector('[data-action="edit"]').addEventListener("click", () => startEdit(q));
+        row.querySelector('[data-action="delete"]').addEventListener("click", () => {
+          if (confirm("Delete this question?")) db.collection("questions").doc(q.id).delete();
+        });
+      }
       listEl.appendChild(row);
     });
   }
@@ -525,6 +655,11 @@ function initQuestionsAdmin() {
       classLevel: normalizeClass(document.getElementById("qClass").value),
     };
 
+    if (activeModeratorPerms && !canModeratorManageQuestion(payload)) {
+      alert(`You do not have permission to add or modify questions for Class ${payload.classLevel} (${payload.subject}).`);
+      return;
+    }
+
     const editingId = idField.value;
     const savePromise = editingId
       ? db.collection("questions").doc(editingId).update(payload)
@@ -536,8 +671,12 @@ function initQuestionsAdmin() {
   function resetQuestionForm() {
     form.reset();
     idField.value = "";
-    document.getElementById("qClass").value = DEFAULT_CLASS;
-    if (qSubjectSelect) qSubjectSelect.value = "Computer Science";
+    if (activeModeratorPerms && activeModeratorPerms.mcq) {
+      applyMcqClassRestriction(activeModeratorPerms.mcq);
+    } else {
+      document.getElementById("qClass").value = DEFAULT_CLASS;
+      if (qSubjectSelect) qSubjectSelect.value = "Computer Science";
+    }
     if (qCustomSubjectWrap) qCustomSubjectWrap.style.display = "none";
     if (qCustomSubjectInput) qCustomSubjectInput.value = "";
     submitBtn.textContent = "Add question";
@@ -556,6 +695,14 @@ function initQuestionsAdmin() {
     readImportInput(importFile, importText)
       .then(({ text }) => {
         const parsed = parseQuestionsInput(text);
+
+        if (activeModeratorPerms) {
+          const unpermitted = parsed.filter((q) => !canModeratorManageQuestion(q));
+          if (unpermitted.length > 0) {
+            throw new Error(`Import rejected: ${unpermitted.length} question(s) belong to a class or subject you do not have permission to manage.`);
+          }
+        }
+
         importStatus.textContent = `Importing ${parsed.length} question(s)…`;
         const baseOrder = Date.now();
         const batch = db.batch();
@@ -2183,138 +2330,6 @@ function initPremiumQuizAdmin() {
       downloadTextFile("premium-questions-template.json", json, "application/json");
     });
   }
-}
-
-/* ============================================
-   MODERATOR OUTER PANEL HELPERS
-   Show/hide the separate moderator section outside #dashboard
-   ============================================ */
-function hideModeratorOuter() {
-  const outer = document.getElementById("tab-moderators-outer");
-  if (outer) outer.hidden = true;
-}
-
-function showModeratorOuter(user, displayName, perms) {
-  const outer = document.getElementById("tab-moderators-outer");
-  if (!outer) return;
-  outer.hidden = false;
-  // Build a lightweight header inside the outer container so moderators
-  // see something at the top.  Only add it once.
-  if (!outer.dataset.headerAdded) {
-    outer.dataset.headerAdded = "1";
-    const hdr = document.createElement("div");
-    hdr.style.cssText = "padding:20px 0 0; margin-bottom:4px;";
-    hdr.innerHTML = `
-      <div class="container">
-        <h1 class="section-title" style="margin-bottom:4px;">Moderator Panel</h1>
-        <p class="quiz-muted" style="margin-bottom:0;">
-          Signed in as <strong>${escapeHtml(displayName)}</strong>
-          &mdash; you can only manage the sections your permissions allow.
-        </p>
-      </div>
-    `;
-    outer.prepend(hdr);
-  }
-}
-
-/* ============================================
-   MODERATOR DASHBOARD — limited view for moderators
-   Called instead of the full initX functions.
-   ============================================ */
-function initModeratorDashboard(user, perms) {
-  const mcqPerms = perms.mcq || {};
-  const hasMcq = mcqPerms.class8 || mcqPerms.class9 || mcqPerms.class10;
-
-  // Build a simple tab bar inside the moderator outer panel
-  const modPanel = document.getElementById("tab-moderators");
-  if (!modPanel) return;
-
-  // Clear the default moderator-management content (only owners see that)
-  modPanel.innerHTML = "";
-
-  // Build a tab strip
-  const tabs = [];
-  if (hasMcq)               tabs.push({ key: "questions",   label: "Questions" });
-  if (perms.pythonHub)      tabs.push({ key: "python",      label: "Python Programs" });
-  if (perms.premiumQuiz)    tabs.push({ key: "premiumquiz", label: "Premium Quiz" });
-  if (perms.resources)      tabs.push({ key: "resources",   label: "Resources" });
-  if (perms.updates)        tabs.push({ key: "updates",     label: "Latest Updates" });
-  if (perms.liveQuiz)       tabs.push({ key: "livequiz",    label: "Live Quiz Schedule" });
-
-  if (tabs.length === 0) {
-    modPanel.innerHTML = `<p class="quiz-muted" style="padding:24px 0;">
-      No permissions have been assigned to your account yet. Please contact the site owner.
-    </p>`;
-    return;
-  }
-
-  // Create tab buttons
-  const tabStrip = document.createElement("div");
-  tabStrip.className = "admin-tabs";
-  tabStrip.setAttribute("role", "tablist");
-
-  // Create content areas (reuse existing admin tab panels by moving them here)
-  const contentWrap = document.createElement("div");
-
-  tabs.forEach((t, idx) => {
-    const btn = document.createElement("button");
-    btn.className = "admin-tab" + (idx === 0 ? " active" : "");
-    btn.type = "button";
-    btn.dataset.modTab = t.key;
-    btn.textContent = t.label;
-    btn.addEventListener("click", () => {
-      tabStrip.querySelectorAll(".admin-tab").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      contentWrap.querySelectorAll(".admin-panel").forEach(p => { p.hidden = true; });
-      const panel = contentWrap.querySelector(`[data-mod-panel="${t.key}"]`);
-      if (panel) panel.hidden = false;
-    });
-    tabStrip.appendChild(btn);
-  });
-
-  modPanel.appendChild(tabStrip);
-  modPanel.appendChild(contentWrap);
-
-  // Move (or clone) the relevant existing admin panels into here
-  tabs.forEach((t, idx) => {
-    // These panels already exist in the DOM (inside #dashboard) — grab references
-    const sourcePanel = document.getElementById("tab-" + t.key);
-    if (!sourcePanel) return;
-    // Clone it so the original DOM structure remains intact for the owner path
-    const clone = sourcePanel.cloneNode(true);
-    clone.removeAttribute("id");
-    clone.dataset.modPanel = t.key;
-    clone.hidden = idx !== 0;
-    contentWrap.appendChild(clone);
-  });
-
-  // Initialise permitted sections
-  if (hasMcq) {
-    initQuestionsAdmin();
-    // Restrict class selector after a short delay (let the DOM settle)
-    setTimeout(() => applyMcqClassRestriction(mcqPerms), 300);
-  }
-  if (perms.pythonHub)   initPythonAdmin();
-  if (perms.resources)   initResourcesAdmin();
-  if (perms.updates)     initUpdatesAdmin();
-  if (perms.liveQuiz)    initLiveQuizAdmin();
-  if (perms.premiumQuiz) initPremiumQuizAdmin();
-}
-
-/* Helper to get allowed subjects for a given class level */
-function getAllowedSubjectsForClass(mcqPerms, classLevel) {
-  if (!mcqPerms) return [];
-  const cData = mcqPerms["class" + classLevel];
-  if (!cData) return [];
-  if (cData === true) return ["ALL"];
-  if (typeof cData === "object") {
-    if (!cData.enabled) return [];
-    if (cData.allSubjects || !cData.subjects || !cData.subjects.length || cData.subjects.includes("ALL")) {
-      return ["ALL"];
-    }
-    return cData.subjects;
-  }
-  return [];
 }
 
 /* Locks the MCQ class & subject selector to only the permitted classes & subjects for moderators */

@@ -23,6 +23,11 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/moderators/$(request.auth.uid)).data.permissions;
     }
 
+    function hasClassAccess(lvl) {
+      return (modPerms().mcq[lvl] == true) || 
+             (modPerms().mcq[lvl].enabled == true);
+    }
+
     // ---- Moderators collection -----------------------------------------
     // Admin can manage all moderators. Any signed-in user can check their own moderator record.
     match /moderators/{uid} {
@@ -42,9 +47,9 @@ service cloud.firestore {
     match /questions/{questionId} {
       allow read: if true;
       allow create, update, delete: if isAdmin() || (isModerator() && (
-        modPerms().mcq.class8 == true ||
-        modPerms().mcq.class9 == true ||
-        modPerms().mcq.class10 == true
+        hasClassAccess('class8') ||
+        hasClassAccess('class9') ||
+        hasClassAccess('class10')
       ));
     }
 

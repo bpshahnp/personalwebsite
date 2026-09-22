@@ -5,7 +5,7 @@
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin | B. Prasad Shah</title>
-  <link rel="stylesheet" href="css/style.css?v=20260922_09" />
+  <link rel="stylesheet" href="css/style.css?v=20260922_10" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -139,7 +139,8 @@
   <!-- ===== Admin dashboard ===== -->
   <section class="admin-dashboard" id="dashboard" hidden>
     <div class="container">
-      <h1 class="section-title">Admin Panel</h1>
+      <h1 class="section-title" id="adminHeaderTitle" style="margin-bottom:4px;">Admin Panel</h1>
+      <p id="adminHeaderSubtitle" class="quiz-muted" style="margin-bottom:16px;" hidden></p>
 
       <div class="admin-tabs" role="tablist">
         <button class="admin-tab active" data-tab="questions" role="tab" type="button">
@@ -421,8 +422,8 @@
       <!-- ---- Premium Quiz tab ---- -->
       <div class="admin-panel" id="tab-premiumquiz" hidden>
 
-        <!-- Min score threshold setting -->
-        <div class="admin-form" style="margin-bottom:28px">
+        <!-- Min score threshold setting (Owner only) -->
+        <div class="admin-form owner-only-section" style="margin-bottom:28px">
           <h3>Premium Reward Settings</h3>
           <p class="quiz-muted">
             The weekly tournament <strong>#1 winner</strong> (or all tied leaders) who reach the minimum score gets
@@ -439,8 +440,8 @@
           <p class="modal-status" id="premiumSettingsStatus"></p>
         </div>
 
-        <!-- Payment Verification Requests (Manual Approval) -->
-        <div class="admin-form" style="margin-bottom:28px">
+        <!-- Payment Verification Requests (Manual Approval - Owner only) -->
+        <div class="admin-form owner-only-section" style="margin-bottom:28px">
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:8px;">
             <h3 style="margin:0;">Payment Verification Requests</h3>
             <div class="request-filter-tabs" style="display:flex; gap:6px;">
@@ -458,8 +459,8 @@
           </div>
         </div>
 
-        <!-- Manual Access Override by Email -->
-        <div class="admin-form" style="margin-bottom:28px">
+        <!-- Manual Access Override by Email (Owner only) -->
+        <div class="admin-form owner-only-section" style="margin-bottom:28px">
           <h3>Manual Premium Access Override</h3>
           <p class="quiz-muted">Directly grant or revoke full premium access for any registered user email.</p>
           <div class="admin-form-grid" style="align-items:flex-end;">
@@ -475,7 +476,7 @@
         </div>
 
 
-        <hr style="margin:24px 0; border-color: var(--border, #e5e7eb);" />
+        <hr class="owner-only-section" style="margin:24px 0; border-color: var(--border, #e5e7eb);" />
 
         <!-- Category / Level Configuration Manager -->
         <div class="admin-form" style="margin-bottom:28px">
@@ -633,13 +634,9 @@
           </div>
         </div>
       </div>
-    </div>
-  </section>
 
-  <!-- ---- Moderators tab panel (inside dashboard container, shown/hidden by JS) ---- -->
-  <div id="tab-moderators-outer" hidden>
-    <div class="container">
-      <div class="admin-panel" id="tab-moderators">
+      <!-- ---- Moderators tab panel ---- -->
+      <div class="admin-panel" id="tab-moderators" hidden>
 
         <!-- 1. Create New Moderator Account -->
         <div class="admin-form" style="margin-bottom:28px;">
@@ -881,7 +878,7 @@
 
       </div>
     </div>
-  </div>
+  </section>
 
   <!-- Payment Receipt Preview Modal -->
   <div id="receiptPreviewModal" class="modal" hidden style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.8); align-items:center; justify-content:center; padding:16px;">
@@ -898,6 +895,6 @@
   <script src="js/firebase-config.js"></script>
   <script src="js/auth-widget.js"></script>
   <script src="js/nav-drawer.js"></script>
-  <script src="js/admin.js?v=20260922_09"></script>
+  <script src="js/admin.js?v=20260922_10"></script>
 </body>
 </html>
