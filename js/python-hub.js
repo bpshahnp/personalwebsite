@@ -561,12 +561,316 @@ searchInput.addEventListener("input", renderRail);
 let pyodideInstance = null;
 let pyodideLoading = null;
 
+/* ---------- HTML5 Canvas Turtle Graphics Engine ---------- */
+const TURTLE_PYTHON_MODULE = `
+import math, sys
+
+class _TurtleEngine:
+    def __init__(self):
+        self.commands = []
+        self.width = 540
+        self.height = 420
+        self.bgcolor = "#ffffff"
+        self.colormode_val = 1.0
+        self.turtles = []
+        self.default_turtle = None
+
+    def reset_all(self):
+        self.commands = []
+        self.width = 540
+        self.height = 420
+        self.bgcolor = "#ffffff"
+        self.colormode_val = 1.0
+        self.turtles = []
+        self.default_turtle = Turtle(self)
+
+    def to_color_str(self, *args):
+        if not args:
+            return "black"
+        if len(args) == 1:
+            val = args[0]
+            if isinstance(val, str):
+                return val
+            if isinstance(val, (tuple, list)):
+                args = val
+        if len(args) >= 3:
+            r, g, b = args[0], args[1], args[2]
+            if self.colormode_val == 255:
+                return f"rgb({int(r)}, {int(g)}, {int(b)})"
+            else:
+                return f"rgb({int(r*255)}, {int(g*255)}, {int(b*255)})"
+        return str(args[0])
+
+_engine = _TurtleEngine()
+
+class Turtle:
+    def __init__(self, engine=None):
+        self._engine = engine if engine else _engine
+        self.x = 0.0
+        self.y = 0.0
+        self.angle = 0.0
+        self._pen_down = True
+        self._pen_size = 2
+        self._pen_color = "black"
+        self._fill_color = "black"
+        self._visible = True
+        self._filling = False
+        self._fill_path = []
+        if self not in self._engine.turtles:
+            self._engine.turtles.append(self)
+
+    def forward(self, d):
+        rad = math.radians(self.angle)
+        nx = self.x + d * math.cos(rad)
+        ny = self.y + d * math.sin(rad)
+        if self._pen_down:
+            self._engine.commands.append(["line", self.x, self.y, nx, ny, self._pen_color, self._pen_size])
+        if self._filling:
+            self._fill_path.append([nx, ny])
+        self.x = nx
+        self.y = ny
+
+    fd = forward
+
+    def backward(self, d): self.forward(-d)
+    bk = backward
+    back = backward
+
+    def right(self, a): self.angle = (self.angle - a) % 360
+    rt = right
+
+    def left(self, a): self.angle = (self.angle + a) % 360
+    lt = left
+
+    def penup(self): self._pen_down = False
+    pu = penup
+    up = penup
+
+    def pendown(self): self._pen_down = True
+    pd = pendown
+    down = pendown
+
+    def isdown(self): return self._pen_down
+
+    def pensize(self, w=None):
+        if w is not None: self._pen_size = max(1, float(w))
+        return self._pen_size
+    width = pensize
+
+    def color(self, *args):
+        if len(args) == 1:
+            c = self._engine.to_color_str(args[0])
+            self._pen_color = c
+            self._fill_color = c
+        elif len(args) >= 2:
+            self._pen_color = self._engine.to_color_str(args[0])
+            self._fill_color = self._engine.to_color_str(args[1])
+
+    def pencolor(self, *args):
+        if args: self._pen_color = self._engine.to_color_str(*args)
+        return self._pen_color
+
+    def fillcolor(self, *args):
+        if args: self._fill_color = self._engine.to_color_str(*args)
+        return self._fill_color
+
+    def begin_fill(self):
+        self._filling = True
+        self._fill_path = [[self.x, self.y]]
+
+    def end_fill(self):
+        if self._filling and len(self._fill_path) > 1:
+            self._engine.commands.append(["fill", list(self._fill_path), self._fill_color])
+        self._filling = False
+        self._fill_path = []
+
+    def filling(self): return self._filling
+
+    def goto(self, x, y=None):
+        if y is None and isinstance(x, (tuple, list)):
+            nx, ny = float(x[0]), float(x[1])
+        else:
+            nx, ny = float(x), float(y)
+        if self._pen_down:
+            self._engine.commands.append(["line", self.x, self.y, nx, ny, self._pen_color, self._pen_size])
+        if self._filling:
+            self._fill_path.append([nx, ny])
+        self.x = nx
+        self.y = ny
+    setpos = goto
+    setposition = goto
+
+    def setx(self, x): self.goto(x, self.y)
+    def sety(self, y): self.goto(self.x, y)
+    def setheading(self, a): self.angle = float(a) % 360
+    seth = setheading
+    def home(self):
+        self.goto(0, 0)
+        self.setheading(0)
+
+    def circle(self, radius, extent=360, steps=None):
+        if steps is None:
+            steps = max(18, int(abs(radius) * 3.14159 / 5))
+            steps = min(steps, 72)
+        steps = max(3, steps)
+        frac = extent / 360.0
+        n = max(1, int(round(steps * abs(frac))))
+        step_angle = extent / n
+        step_dist = 2.0 * radius * math.sin(math.radians(step_angle / 2.0))
+        self.left(step_angle / 2.0)
+        for _ in range(n):
+            self.forward(step_dist)
+            self.left(step_angle)
+        self.right(step_angle / 2.0)
+
+    def dot(self, size=None, *color):
+        s = float(size) if size is not None else max(self._pen_size + 4, 2 * self._pen_size)
+        c = self._engine.to_color_str(*color) if color else self._pen_color
+        self._engine.commands.append(["dot", self.x, self.y, s, c])
+
+    def write(self, arg, move=False, align="left", font=("Arial", 11, "normal")):
+        text = str(arg)
+        size = 11; family = "Arial"; style = "normal"
+        if isinstance(font, (tuple, list)):
+            if len(font) > 0: family = font[0]
+            if len(font) > 1: size = font[1]
+            if len(font) > 2: style = font[2]
+        font_str = f"{style} {size}px {family}"
+        self._engine.commands.append(["write", text, self.x, self.y, str(align).lower(), font_str, self._pen_color])
+
+    def stamp(self):
+        self._engine.commands.append(["stamp", self.x, self.y, self.angle, self._pen_color])
+
+    def speed(self, *a): pass
+    def shape(self, s=None): return "classic"
+    def hideturtle(self): self._visible = False
+    ht = hideturtle
+    def showturtle(self): self._visible = True
+    st = showturtle
+    def isvisible(self): return self._visible
+    def pos(self): return (self.x, self.y)
+    position = pos
+    def xcor(self): return self.x
+    def ycor(self): return self.y
+    def heading(self): return self.angle
+    def distance(self, x, y=None):
+        if y is None and isinstance(x, (tuple, list)): tx, ty = x[0], x[1]
+        else: tx, ty = float(x), float(y)
+        return math.hypot(self.x - tx, self.y - ty)
+
+_engine.default_turtle = Turtle(_engine)
+
+def _get_default(): return _engine.default_turtle
+def forward(d): _get_default().forward(d)
+fd = forward
+def backward(d): _get_default().backward(d)
+bk = backward
+back = backward
+def right(a): _get_default().right(a)
+rt = right
+def left(a): _get_default().left(a)
+lt = left
+def penup(): _get_default().penup()
+pu = penup
+up = penup
+def pendown(): _get_default().pendown()
+pd = pendown
+down = pendown
+def isdown(): return _get_default().isdown()
+def pensize(w=None): return _get_default().pensize(w)
+width = pensize
+def color(*a): _get_default().color(*a)
+def pencolor(*a): return _get_default().pencolor(*a)
+def fillcolor(*a): return _get_default().fillcolor(*a)
+def begin_fill(): _get_default().begin_fill()
+def end_fill(): _get_default().end_fill()
+def filling(): return _get_default().filling()
+def goto(x, y=None): _get_default().goto(x, y)
+setpos = goto
+setposition = goto
+def setx(x): _get_default().setx(x)
+def sety(y): _get_default().sety(y)
+def setheading(a): _get_default().setheading(a)
+seth = setheading
+def home(): _get_default().home()
+def circle(r, ext=360, steps=None): _get_default().circle(r, ext, steps)
+def dot(s=None, *c): _get_default().dot(s, *c)
+def write(arg, move=False, align="left", font=("Arial", 11, "normal")): _get_default().write(arg, move, align, font)
+def stamp(): return _get_default().stamp()
+def speed(*a): pass
+def shape(s=None): return _get_default().shape(s)
+def hideturtle(): _get_default().hideturtle()
+ht = hideturtle
+def showturtle(): _get_default().showturtle()
+st = showturtle
+def isvisible(): return _get_default().isvisible()
+def pos(): return _get_default().pos()
+position = pos
+def xcor(): return _get_default().xcor()
+def ycor(): return _get_default().ycor()
+def heading(): return _get_default().heading()
+def distance(*a): return _get_default().distance(*a)
+def towards(*a): return _get_default().towards(*a)
+
+def bgcolor(*args):
+    if args:
+        _engine.bgcolor = _engine.to_color_str(*args)
+        _engine.commands.append(["bgcolor", _engine.bgcolor])
+    return _engine.bgcolor
+
+def screensize(canvwidth=None, canvheight=None, bg=None):
+    if canvwidth: _engine.width = int(canvwidth)
+    if canvheight: _engine.height = int(canvheight)
+    if bg: bgcolor(bg)
+    return (_engine.width, _engine.height)
+
+def setup(width=None, height=None, *a):
+    if width: _engine.width = int(width) if width > 1 else int(540 * width)
+    if height: _engine.height = int(height) if height > 1 else int(420 * height)
+
+def colormode(cmode=None):
+    if cmode in (1.0, 255): _engine.colormode_val = cmode
+    return _engine.colormode_val
+
+def title(t): pass
+def done(): pass
+def mainloop(): pass
+bye = done
+exitonclick = done
+def clearscreen(): _engine.reset_all()
+clear = clearscreen
+reset = clearscreen
+def Screen(): return sys.modules[__name__]
+getscreen = Screen
+
+def _export_render():
+    turtles_data = []
+    for t in _engine.turtles:
+        if t.isvisible():
+            turtles_data.append([t.x, t.y, t.angle, t._pen_color])
+    return {
+        "width": _engine.width,
+        "height": _engine.height,
+        "bgcolor": _engine.bgcolor,
+        "commands": _engine.commands,
+        "turtles": turtles_data
+    }
+
+def _reset(): _engine.reset_all()
+`;
+
 function ensurePyodide(onStatus) {
   if (pyodideInstance) return Promise.resolve(pyodideInstance);
   if (pyodideLoading) return pyodideLoading;
   if (onStatus) onStatus("Starting Python. This happens once, then runs are instant.");
   pyodideLoading = loadPyodide().then(async (py) => {
     await py.loadPackage(["micropip"]);
+    try {
+      const pyMinor = py.runPython("import sys; sys.version_info.minor");
+      py.FS.writeFile(`/lib/python3.${pyMinor}/turtle.py`, TURTLE_PYTHON_MODULE);
+    } catch (e) {
+      console.warn("Could not write turtle module:", e);
+    }
     pyodideInstance = py;
     return py;
   });
@@ -640,8 +944,14 @@ function friendlyHint(message) {
 }
 
 function extractMissingModule(message) {
-  const m = message.match(/No module named ['"]([\w.]+)['"]/);
-  return m ? m[1].split(".")[0] : null;
+  if (!message) return null;
+  const m1 = message.match(/The module ['"]([\w.]+)['"] is included in the Pyodide distribution/i);
+  if (m1) return m1[1].split(".")[0];
+  const m2 = message.match(/No module named ['"]([\w.]+)['"]/i);
+  if (m2) return m2[1].split(".")[0];
+  const m3 = message.match(/cannot import name ['"][\w.]+['"] from ['"]([\w.]+)['"]/i);
+  if (m3) return m3[1].split(".")[0];
+  return null;
 }
 
 /* ---------- matplotlib support: capture any open or shown figures as images ---------- */
@@ -692,6 +1002,113 @@ _out
     .toJs();
 }
 
+function drawTurtlePointer(ctx, cx, cy, angleDeg, color) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate((-angleDeg * Math.PI) / 180);
+  ctx.beginPath();
+  ctx.moveTo(9, 0);
+  ctx.lineTo(-7, -6);
+  ctx.lineTo(-4, 0);
+  ctx.lineTo(-7, 6);
+  ctx.closePath();
+  ctx.fillStyle = color || "#10b981";
+  ctx.fill();
+  ctx.strokeStyle = "#0f172a";
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  ctx.restore();
+}
+
+function renderTurtleCanvas(data) {
+  if (!data || (!data.commands || !data.commands.length) && (!data.turtles || !data.turtles.length)) {
+    return null;
+  }
+  const w = Math.min(680, Math.max(340, data.width || 540));
+  const h = Math.min(540, Math.max(280, data.height || 420));
+  const cx = w / 2;
+  const cy = h / 2;
+
+  const canvas = document.createElement("canvas");
+  const dpr = typeof window !== "undefined" && window.devicePixelRatio ? window.devicePixelRatio : 1;
+  canvas.width = Math.round(w * dpr);
+  canvas.height = Math.round(h * dpr);
+  canvas.style.width = "100%";
+  canvas.style.maxWidth = w + "px";
+  canvas.style.height = "auto";
+  canvas.style.aspectRatio = `${w}/${h}`;
+  canvas.style.display = "block";
+  canvas.style.margin = "12px auto";
+  canvas.style.borderRadius = "8px";
+  canvas.style.border = "1px solid var(--py-edge, #24314f)";
+  canvas.style.background = data.bgcolor || "#ffffff";
+  canvas.className = "snippet-turtle-canvas";
+
+  const ctx = canvas.getContext("2d");
+  ctx.scale(dpr, dpr);
+
+  ctx.fillStyle = data.bgcolor || "#ffffff";
+  ctx.fillRect(0, 0, w, h);
+
+  const toX = (x) => cx + x;
+  const toY = (y) => cy - y;
+
+  if (Array.isArray(data.commands)) {
+    for (const cmd of data.commands) {
+      const type = cmd[0];
+      if (type === "bgcolor") {
+        ctx.fillStyle = cmd[1];
+        ctx.fillRect(0, 0, w, h);
+      } else if (type === "line") {
+        const [_, x1, y1, x2, y2, color, size] = cmd;
+        ctx.beginPath();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = size;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        ctx.moveTo(toX(x1), toY(y1));
+        ctx.lineTo(toX(x2), toY(y2));
+        ctx.stroke();
+      } else if (type === "fill") {
+        const [_, points, color] = cmd;
+        if (points && points.length > 1) {
+          ctx.beginPath();
+          ctx.fillStyle = color;
+          ctx.moveTo(toX(points[0][0]), toY(points[0][1]));
+          for (let i = 1; i < points.length; i++) {
+            ctx.lineTo(toX(points[i][0]), toY(points[i][1]));
+          }
+          ctx.closePath();
+          ctx.fill();
+        }
+      } else if (type === "dot") {
+        const [_, x, y, size, color] = cmd;
+        ctx.beginPath();
+        ctx.fillStyle = color;
+        ctx.arc(toX(x), toY(y), size / 2, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (type === "write") {
+        const [_, text, x, y, align, font, color] = cmd;
+        ctx.font = font;
+        ctx.textAlign = align;
+        ctx.fillStyle = color;
+        ctx.fillText(text, toX(x), toY(y));
+      } else if (type === "stamp") {
+        const [_, x, y, angle, color] = cmd;
+        drawTurtlePointer(ctx, toX(x), toY(y), angle, color);
+      }
+    }
+  }
+
+  if (Array.isArray(data.turtles)) {
+    for (const [tx, ty, angle, color] of data.turtles) {
+      drawTurtlePointer(ctx, toX(tx), toY(ty), angle, color);
+    }
+  }
+
+  return canvas;
+}
+
 /* ---------- Run ---------- */
 function now() {
   return typeof performance !== "undefined" && performance.now ? performance.now() : Date.now();
@@ -724,6 +1141,11 @@ async function runProgram(code, panel, syncActions) {
       body.textContent = msg;
     });
     body.textContent = "";
+
+    // Reset turtle canvas state before fresh run
+    try {
+      py.runPython("import turtle; turtle._reset()");
+    } catch (_) {}
 
     // Automatically detect and load external libraries (pandas, matplotlib, numpy, scipy, etc.)
     if (typeof py.loadPackagesFromImports === "function") {
@@ -773,28 +1195,32 @@ async function runProgram(code, panel, syncActions) {
       await py.runPythonAsync(code, { globals: freshGlobals });
     }
 
-    try {
-      await execute();
-    } catch (err) {
-      const missing = extractMissingModule(err.message);
-      if (!missing) throw err;
-      body.textContent += 'Installing "' + missing + '"…\n';
+    let attempts = 0;
+    while (attempts < 5) {
+      attempts++;
       try {
-        try {
-          await py.loadPackage(missing);
-        } catch (_) {
-          const micropip = py.pyimport("micropip");
-          await micropip.install(missing);
-        }
-        output = "";
-        queue.length = 0;
-        values.forEach((v) => queue.push(v));
-        try {
-          await py.runPythonAsync(MPL_SETUP, { globals: freshGlobals });
-        } catch (_) {}
         await execute();
-      } catch (_) {
-        throw err;
+        break;
+      } catch (err) {
+        const missing = extractMissingModule(err && err.message ? err.message : String(err));
+        if (!missing || attempts >= 5) throw err;
+        body.textContent = (body.textContent ? body.textContent.trim() + "\n" : "") + 'Installing "' + missing + '"…';
+        try {
+          try {
+            await py.loadPackage(missing);
+          } catch (_) {
+            const micropip = py.pyimport("micropip");
+            await micropip.install(missing);
+          }
+          output = "";
+          queue.length = 0;
+          values.forEach((v) => queue.push(v));
+          try {
+            await py.runPythonAsync(MPL_SETUP, { globals: freshGlobals });
+          } catch (_) {}
+        } catch (installErr) {
+          throw err;
+        }
       }
     }
 
@@ -808,6 +1234,21 @@ async function runProgram(code, panel, syncActions) {
         img.alt = "Figure drawn by this program";
         images.appendChild(img);
       });
+    }
+
+    // Check if turtle drew anything and render Canvas
+    try {
+      const hasTurtle = py.runPython(`"turtle" in __import__("sys").modules`);
+      if (hasTurtle) {
+        const turtleData = py.runPython("import turtle; turtle._export_render()").toJs({ dict_converter: Object.fromEntries });
+        const turtleCanvas = renderTurtleCanvas(turtleData);
+        if (turtleCanvas) {
+          images.hidden = false;
+          images.appendChild(turtleCanvas);
+        }
+      }
+    } catch (tErr) {
+      console.warn("Turtle render error:", tErr);
     }
 
     freshGlobals.destroy();

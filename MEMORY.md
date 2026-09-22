@@ -120,6 +120,11 @@ personalwebsite-main/
 - Libraries with compiled C/WASM wheels (e.g. `pandas`, `matplotlib`, `numpy`, `scipy`, `scikit-learn`, `sympy`) and pure-Python PyPI packages via `micropip` are automatically downloaded and installed on demand.
 - Matplotlib plot figures (via `plt.show()` or open figures) are intercepted and rendered directly as high-resolution PNGs in the interactive output panel.
 
+### 4.8. Python Hub HTML5 Canvas Turtle Graphics
+- Built-in `turtle` module injected into Pyodide's standard virtual filesystem (`/lib/python3.x/turtle.py`) so `import turtle` and `from turtle import *` work without desktop Tkinter restrictions.
+- Supports both OOP (`t = turtle.Turtle()`) and procedural (`forward()`, `right()`, `circle()`, `color()`, `begin_fill()`, `end_fill()`) syntax.
+- Renders to high-DPI HTML5 `<canvas>` (`.snippet-turtle-canvas`) centered at origin `(0, 0)` with Cartesian coordinate transformations, supporting colors, line widths, dots, text, stamps, and background colors.
+
 ---
 
 ## 5. Firebase Security & Allowlist

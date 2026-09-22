@@ -2268,6 +2268,13 @@ img { max-width: 100%; display: block; }
   border-radius: 6px;
   background: var(--white);
 }
+.snippet-turtle-canvas {
+  display: block;
+  max-width: 100%;
+  margin: 10px auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.28);
+}
 
 /* ---------- Focus, always visible ---------- */
 .rail-item:focus-visible,
