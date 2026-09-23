@@ -859,17 +859,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
       card.innerHTML = `
         <div class="category-card-img" style="${bgImg}">
-          <span class="category-card-badge">${escapeHtml(countBadge)}</span>
+          <span class="category-card-badge">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:4px;"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M15 9.5a3.5 3.5 0 0 0-7 0c0 2 1.5 3 3.5 3.5s3.5 1.5 3.5 3.5a3.5 3.5 0 0 1-7 0"/></svg>${escapeHtml(countBadge)}
+          </span>
         </div>
-        <div class="category-card-body" style="padding:18px; display:flex; flex-direction:column; flex:1;">
+        <div class="category-card-body">
           <span class="premium-card-level-badge">${escapeHtml(catLevel)}</span>
-          <h3 style="margin:0 0 8px; font-size:1.15rem; font-weight:700;">${escapeHtml(cat.name || "Premium Quiz")}</h3>
-          <p style="color:#64748b; font-size:0.86rem; line-height:1.55; flex:1; margin-bottom:18px;">
+          <h3>${escapeHtml(cat.name || "Premium Quiz")}</h3>
+          <p>
             ${escapeHtml(cat.description || "Comprehensive timed competitive examination practice questions.")}
           </p>
-          <button type="button" class="btn btn-primary btn-sm start-cat-btn" style="width:100%; font-weight:700; padding:11px 16px; display:flex; align-items:center; justify-content:center; gap:8px;">
+          <button type="button" class="btn btn-primary btn-sm start-cat-btn" style="width:100%; font-weight:700; padding:12px 16px; display:flex; align-items:center; justify-content:center; gap:8px;">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-            <span>Play Quiz (${cost} Credits)</span>
+            <span>Play Quiz (${cost} Credit${cost === 1 ? "" : "s"})</span>
           </button>
         </div>
       `;
@@ -1189,13 +1191,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function updateTimerDisplay() {
     if (!timerBadge) return;
-    timerBadge.textContent = `${secondsLeft}s`;
+    timerBadge.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:4px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${secondsLeft}s`;
     if (secondsLeft <= 5) {
       timerBadge.style.background = "#fee2e2";
       timerBadge.style.color = "#dc2626";
+      timerBadge.classList.add("timer-alert");
     } else {
-      timerBadge.style.background = "#f1f5f9";
-      timerBadge.style.color = "#0f172a";
+      timerBadge.style.background = "#eff6ff";
+      timerBadge.style.color = "#1d4ed8";
+      timerBadge.classList.remove("timer-alert");
     }
   }
 

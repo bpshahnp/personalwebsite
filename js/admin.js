@@ -114,7 +114,7 @@ function applyOwnerAccess() {
 
   if (!adminInitialized) {
     adminInitialized = true;
-    initQuestionsAdmin();
+    initQuestionsAdmin(auth.currentUser);
     initPythonAdmin();
     initResourcesAdmin();
     initMessagesAdmin();
@@ -188,7 +188,7 @@ function applyModeratorAccess(user, perms, displayName) {
 
   if (!adminInitialized) {
     adminInitialized = true;
-    if (hasMcq) initQuestionsAdmin();
+    if (hasMcq) initQuestionsAdmin(user);
     if (perms.pythonHub) initPythonAdmin();
     if (perms.resources) initResourcesAdmin();
     if (perms.updates) initUpdatesAdmin();
@@ -505,7 +505,7 @@ function parseProgramsInput(text) {
   });
 }
 
-function initQuestionsAdmin() {
+function initQuestionsAdmin(currentUser) {
   if (questionsUnsub) return; // already listening
   const form = document.getElementById("questionForm");
   const listEl = document.getElementById("questionsAdminList");
@@ -518,6 +518,11 @@ function initQuestionsAdmin() {
   const qSubjectSelect = document.getElementById("qSubject");
   const qCustomSubjectWrap = document.getElementById("qCustomSubjectWrap");
   const qCustomSubjectInput = document.getElementById("qCustomSubject");
+
+  /* Owner (no activeModeratorPerms) sees all questions.
+     Moderators only see the questions they personally created. */
+  const isOwner = !activeModeratorPerms;
+  const myUid = currentUser ? currentUser.uid : null;
 
   let allQuestions = []; // latest snapshot, newest first, class already normalised
 
@@ -567,7 +572,13 @@ function initQuestionsAdmin() {
     }
   }
 
-  questionsUnsub = db.collection("questions").orderBy("order", "desc").onSnapshot(
+  /* Build the Firestore query — owner sees all, moderator only sees their own */
+  let baseQuery = db.collection("questions").orderBy("order", "desc");
+  if (!isOwner && myUid) {
+    baseQuery = baseQuery.where("createdBy", "==", myUid);
+  }
+
+  questionsUnsub = baseQuery.onSnapshot(
     (snapshot) => {
       allQuestions = snapshot.docs.map((doc) => {
         const data = doc.data();
@@ -590,12 +601,18 @@ function initQuestionsAdmin() {
       return matchClass && matchSubject;
     });
 
-    const perClass = CLASS_LEVELS.map(
-      (lvl) => `Class ${lvl}: ${allQuestions.filter((q) => q.classLevel === lvl).length}`
-    ).join(" · ");
-    countLabel.textContent = allQuestions.length
-      ? `${allQuestions.length} total — ${perClass}`
-      : "";
+    if (isOwner) {
+      const perClass = CLASS_LEVELS.map(
+        (lvl) => `Class ${lvl}: ${allQuestions.filter((q) => q.classLevel === lvl).length}`
+      ).join(" · ");
+      countLabel.textContent = allQuestions.length
+        ? `${allQuestions.length} total — ${perClass}`
+        : "";
+    } else {
+      countLabel.textContent = allQuestions.length
+        ? `${allQuestions.length} question${allQuestions.length === 1 ? "" : "s"} added by you`
+        : "";
+    }
 
     if (!visible.length) {
       listEl.innerHTML = `<p class="updates-loading">${
@@ -706,7 +723,12 @@ function initQuestionsAdmin() {
     const editingId = idField.value;
     const savePromise = editingId
       ? db.collection("questions").doc(editingId).update(payload)
-      : db.collection("questions").add({ ...payload, order: Date.now() });
+      : db.collection("questions").add({
+          ...payload,
+          order: Date.now(),
+          createdBy: myUid || null,
+          createdByEmail: currentUser ? currentUser.email : null,
+        });
 
     savePromise.then(() => resetQuestionForm()).catch((err) => alert(err.message));
   });
@@ -751,7 +773,12 @@ function initQuestionsAdmin() {
         const batch = db.batch();
         parsed.forEach((q, i) => {
           const ref = db.collection("questions").doc();
-          batch.set(ref, { ...q, order: baseOrder + i });
+          batch.set(ref, {
+            ...q,
+            order: baseOrder + i,
+            createdBy: myUid || null,
+            createdByEmail: currentUser ? currentUser.email : null,
+          });
         });
         return batch.commit().then(() => parsed.length);
       })

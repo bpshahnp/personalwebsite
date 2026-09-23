@@ -5,68 +5,752 @@
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Premium Quiz Portal | B. Prasad Shah</title>
-  <link rel="stylesheet" href="css/style.css?v=20260922_10" />
-  <link rel="stylesheet" href="css/live.css" />
+  <link rel="stylesheet" href="css/style.css?v=20260923_14" />
+  <link rel="stylesheet" href="css/live.css?v=20260923_14" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
+    /* ============================================================
+       PREMIUM DESIGN SYSTEM — Executive Study & Examination Suite
+       ============================================================ */
+    :root {
+      --gold-primary: #f59e0b;
+      --gold-deep: #d97706;
+      --gold-dark: #b45309;
+      --gold-light: #fef3c7;
+      --gold-shimmer: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+      --gold-metallic: linear-gradient(135deg, #ffffff 25%, #fde68a 70%, #f59e0b 100%);
+      --vip-dark: #090e18;
+      --vip-card-dark: #101827;
+      --vip-border-gold: rgba(245, 158, 11, 0.35);
+    }
+
+    /* ---------- Hero Header ---------- */
     .premium-hero {
-      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-      color: #fff;
-      padding: 48px 0 40px;
-      margin-bottom: 32px;
-      border-bottom: 1px solid #334155;
+      position: relative;
+      background: radial-gradient(circle at 50% -10%, rgba(245, 158, 11, 0.16) 0%, transparent 50%),
+                  radial-gradient(circle at 85% 80%, rgba(59, 130, 246, 0.08) 0%, transparent 45%),
+                  linear-gradient(145deg, #090e18 0%, #0f172a 60%, #171526 100%);
+      color: #ffffff;
+      padding: 56px 0 44px;
+      margin-bottom: 34px;
+      border-bottom: 1px solid rgba(245, 158, 11, 0.22);
+      overflow: hidden;
     }
+    .premium-hero::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent 0%, #f59e0b 30%, #fbbf24 50%, #f59e0b 70%, transparent 100%);
+      opacity: 0.9;
+    }
+    .premium-hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+      background-size: 24px 24px;
+      pointer-events: none;
+      opacity: 0.55;
+    }
+    .premium-hero .container {
+      position: relative;
+      z-index: 2;
+    }
+
+    .premium-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.36);
+      color: #fde68a;
+      padding: 5px 15px;
+      border-radius: 9999px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 14px rgba(245, 158, 11, 0.16);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    .premium-eyebrow svg {
+      color: #f59e0b;
+    }
+
     .premium-hero h1 {
-      font-size: 2.2rem;
-      margin-bottom: 12px;
-      color: #f8fafc;
+      font-family: 'Fraunces', serif;
+      font-size: 2.7rem;
       font-weight: 800;
+      letter-spacing: -0.025em;
+      margin-bottom: 14px;
+      background: linear-gradient(135deg, #ffffff 40%, #fde68a 85%, #f59e0b 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 4px 22px rgba(0, 0, 0, 0.35);
     }
+    @media (max-width: 640px) {
+      .premium-hero h1 {
+        font-size: 2.1rem;
+      }
+    }
+
     .premium-hero p {
-      color: #94a3b8;
+      color: #cbd5e1;
       max-width: 680px;
-      font-size: 1.05rem;
-      line-height: 1.6;
-      margin: 0 auto 20px;
+      font-size: 1.06rem;
+      line-height: 1.65;
+      margin: 0 auto 24px;
     }
+
     .premium-pill-group {
       display: flex;
-      gap: 10px;
+      gap: 12px;
       justify-content: center;
       flex-wrap: wrap;
     }
     .premium-pill {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      color: #e2e8f0;
-      padding: 6px 14px;
+      gap: 7px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: #f1f5f9;
+      padding: 7px 16px;
       border-radius: 9999px;
-      font-size: 0.82rem;
+      font-size: 0.83rem;
       font-weight: 600;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
+    .premium-pill:hover {
+      background: rgba(245, 158, 11, 0.12);
+      border-color: rgba(245, 158, 11, 0.4);
+      color: #fde68a;
+      transform: translateY(-1px);
+    }
+    .premium-pill svg {
+      color: #f59e0b;
+    }
+
+    /* ---------- Layout Container & Cards ---------- */
     .premium-container {
-      max-width: 1080px;
+      max-width: 1100px;
       margin: 0 auto;
-      padding: 0 20px 60px;
+      padding: 0 20px 70px;
     }
+
     .premium-card {
-      background: #fff;
+      background: #ffffff;
       border: 1px solid #e2e8f0;
-      border-radius: 16px;
-      padding: 28px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
-      margin-bottom: 24px;
+      border-radius: 18px;
+      padding: 30px;
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.04);
+      margin-bottom: 26px;
+      transition: box-shadow 0.2s ease, border-color 0.2s ease;
     }
     [data-theme="dark"] .premium-card {
+      background: #111827;
+      border-color: #1f293d;
+      color: #f8fafc;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    /* ---------- VIP Membership Active Banner ---------- */
+    .premium-vip-banner {
+      background: radial-gradient(circle at 100% 0%, rgba(245, 158, 11, 0.18) 0%, transparent 60%),
+                  linear-gradient(135deg, #090e1a 0%, #111a2e 100%) !important;
+      border: 1.5px solid rgba(245, 158, 11, 0.48) !important;
+      border-radius: 16px;
+      padding: 22px 26px;
+      box-shadow: 0 12px 34px -8px rgba(0, 0, 0, 0.45),
+                  0 0 0 1px rgba(245, 158, 11, 0.18),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      position: relative;
+      overflow: hidden;
+      color: #f8fafc;
+      margin-bottom: 24px;
+    }
+    .premium-vip-banner::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      bottom: 0;
+      background: var(--gold-shimmer);
+    }
+    .vip-shield-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.22) 0%, rgba(217, 119, 6, 0.15) 100%);
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      color: #fbbf24;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 4px 14px rgba(245, 158, 11, 0.25);
+    }
+    .vip-badge-tag {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      color: #090e18 !important;
+      font-weight: 800;
+      font-size: 0.76rem;
+      letter-spacing: 0.06em;
+      padding: 7px 16px;
+      border-radius: 9999px;
+      box-shadow: 0 4px 16px rgba(217, 119, 6, 0.42);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-transform: uppercase;
+    }
+
+    /* ---------- Guest Promo & Pending Banners ---------- */
+    .premium-promo-banner {
+      background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+      border: 1.5px solid #e2e8f0;
+      border-left: 5px solid var(--orange, #e8834e);
+      border-radius: 16px;
+      padding: 20px 24px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+      margin-bottom: 24px;
+    }
+    [data-theme="dark"] .premium-promo-banner {
+      background: linear-gradient(135deg, #101827 0%, #172133 100%) !important;
+      border-color: #1f2d42 !important;
+      border-left-color: var(--orange, #e8834e) !important;
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.32);
+    }
+    .promo-gem-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: #fff5ed;
+      border: 1px solid #ffd4ba;
+      color: var(--orange, #e8834e);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    [data-theme="dark"] .promo-gem-icon {
+      background: rgba(232, 131, 78, 0.15);
+      border-color: rgba(232, 131, 78, 0.35);
+    }
+    .luxe-mini-tag {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #2563eb;
+      padding: 2px 8px;
+      border-radius: 9999px;
+    }
+    [data-theme="dark"] .luxe-mini-tag {
+      background: rgba(37, 99, 235, 0.2);
+      border-color: rgba(59, 130, 246, 0.35);
+      color: #93c5fd;
+    }
+
+    .premium-pending-banner {
+      background: #fffdf5;
+      border: 1.5px solid #fde68a;
+      border-left: 5px solid #d97706;
+      border-radius: 16px;
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 6px 20px rgba(217, 119, 6, 0.06);
+    }
+    [data-theme="dark"] .premium-pending-banner {
+      background: rgba(120, 53, 15, 0.25) !important;
+      border-color: rgba(245, 158, 11, 0.4) !important;
+      border-left-color: #f59e0b !important;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+    .pending-clock-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: #fef3c7;
+      border: 1px solid #fde68a;
+      color: #b45309;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    [data-theme="dark"] .pending-clock-icon {
+      background: rgba(245, 158, 11, 0.15);
+      border-color: rgba(245, 158, 11, 0.35);
+      color: #fde68a;
+    }
+
+    /* ---------- User Balance Wallet Pill ---------- */
+    .user-credits-pill {
+      background: linear-gradient(135deg, #ffffff 0%, #fffbeb 100%);
+      border: 1.5px solid #fde68a;
+      border-radius: 9999px;
+      padding: 6px 14px;
+      box-shadow: 0 2px 10px rgba(245, 158, 11, 0.12);
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      transition: all 0.2s ease;
+    }
+    .user-credits-pill:hover {
+      border-color: #f59e0b;
+      box-shadow: 0 4px 16px rgba(245, 158, 11, 0.22);
+    }
+    [data-theme="dark"] .user-credits-pill {
+      background: linear-gradient(135deg, #090e18 0%, #111a2e 100%) !important;
+      border-color: rgba(245, 158, 11, 0.45) !important;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35) !important;
+    }
+    .wallet-icon-wrap {
+      display: inline-flex;
+      color: #d97706;
+    }
+    [data-theme="dark"] .wallet-icon-wrap {
+      color: #fbbf24;
+    }
+    .wallet-label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #64748b;
+    }
+    [data-theme="dark"] .wallet-label {
+      color: #94a3b8;
+    }
+    .wallet-count {
+      font-weight: 800;
+      color: #b45309 !important;
+      font-size: 0.98rem;
+      letter-spacing: -0.01em;
+    }
+    [data-theme="dark"] .wallet-count {
+      color: #fbbf24 !important;
+    }
+    #buyCreditsHeaderBtn {
+      background: linear-gradient(135deg, #e8834e 0%, #d97706 100%);
+      border: none;
+      color: #ffffff;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: 9999px;
+      box-shadow: 0 2px 8px rgba(232, 131, 78, 0.35);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    #buyCreditsHeaderBtn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(232, 131, 78, 0.48);
+    }
+
+    /* ---------- Category Filter Bar & Chips ---------- */
+    .premium-filter-bar {
+      margin: 18px 0 24px;
+    }
+    .premium-cat-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+    .premium-cat-chip {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      color: #475569;
+      font-family: inherit;
+      font-size: 0.88rem;
+      font-weight: 600;
+      padding: 8px 18px;
+      border-radius: 9999px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    }
+    .premium-cat-chip:hover {
+      border-color: var(--orange, #e8834e);
+      color: var(--orange, #e8834e);
+      background: #fffaf5;
+      transform: translateY(-1px);
+    }
+    .premium-cat-chip.active {
+      background: linear-gradient(135deg, #e8834e 0%, #d97706 100%) !important;
+      border-color: #d97706 !important;
+      color: #ffffff !important;
+      font-weight: 700;
+      box-shadow: 0 4px 14px rgba(232, 131, 78, 0.36);
+      transform: translateY(-1px);
+    }
+    [data-theme="dark"] .premium-cat-chip {
+      background: #111827;
+      border-color: #334155;
+      color: #94a3b8;
+    }
+    [data-theme="dark"] .premium-cat-chip:hover {
       background: #1e293b;
+      border-color: var(--orange, #e8834e);
+      color: #f8fafc;
+    }
+    [data-theme="dark"] .premium-cat-chip.active {
+      background: linear-gradient(135deg, #e8834e 0%, #d97706 100%) !important;
+      border-color: #e8834e !important;
+      color: #ffffff !important;
+    }
+
+    /* ---------- Category Quiz Cards Grid ---------- */
+    .category-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 24px;
+    }
+    .category-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      overflow: hidden;
+      background: #ffffff;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+      cursor: pointer;
+    }
+    .category-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 16px 36px -8px rgba(15, 23, 42, 0.12);
+      border-color: rgba(232, 131, 78, 0.5);
+    }
+    [data-theme="dark"] .category-card {
+      background: #111827;
+      border-color: #1f293d;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+    }
+    [data-theme="dark"] .category-card:hover {
+      border-color: rgba(232, 131, 78, 0.65);
+      box-shadow: 0 18px 40px -8px rgba(0, 0, 0, 0.45);
+    }
+
+    .category-card-img {
+      height: 160px;
+      background-size: cover;
+      background-position: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .category-card-img::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.12) 0%, rgba(15, 23, 42, 0.75) 100%);
+      pointer-events: none;
+    }
+    .category-card-badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: rgba(15, 23, 42, 0.78);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      color: #fde68a;
+      border: 1px solid rgba(245, 158, 11, 0.38);
+      font-size: 0.74rem;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      letter-spacing: 0.03em;
+      z-index: 2;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    }
+    .category-card-body {
+      padding: 20px 22px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .premium-card-level-badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #d97706;
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      padding: 3px 11px;
+      border-radius: 9999px;
+      margin-bottom: 10px;
+      width: fit-content;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+    [data-theme="dark"] .premium-card-level-badge {
+      color: #fde68a;
+      background: rgba(245, 158, 11, 0.12);
+      border-color: rgba(245, 158, 11, 0.3);
+    }
+    .category-card h3 {
+      font-family: 'Fraunces', serif;
+      font-size: 1.22rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 0 0 8px;
+      transition: color 0.15s ease;
+      line-height: 1.35;
+    }
+    [data-theme="dark"] .category-card h3 {
+      color: #f8fafc;
+    }
+    .category-card:hover h3 {
+      color: var(--orange, #e8834e);
+    }
+    .category-card p {
+      color: #64748b;
+      font-size: 0.88rem;
+      line-height: 1.55;
+      flex: 1;
+      margin: 0 0 20px;
+    }
+    [data-theme="dark"] .category-card p {
+      color: #94a3b8;
+    }
+    .category-card .start-cat-btn {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      border: 1px solid #334155;
+      color: #ffffff;
+      border-radius: 12px;
+      font-weight: 700;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .category-card:hover .start-cat-btn {
+      background: linear-gradient(135deg, #e8834e 0%, #d97706 100%);
+      border-color: #d97706;
+      box-shadow: 0 4px 16px rgba(232, 131, 78, 0.38);
+    }
+
+    /* ---------- Empty State Card ---------- */
+    .premium-empty-card {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 48px 24px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    }
+    .premium-empty-card h3 {
+      font-family: 'Fraunces', serif;
+      margin: 0 0 10px;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .premium-empty-card p {
+      color: #64748b;
+      font-size: 0.94rem;
+      line-height: 1.6;
+      max-width: 480px;
+      margin: 0 auto 20px;
+    }
+    [data-theme="dark"] .premium-empty-card {
+      background: #111827 !important;
+      border-color: #1f293d !important;
+    }
+    [data-theme="dark"] .premium-empty-card h3 {
+      color: #f8fafc !important;
+    }
+    [data-theme="dark"] .premium-empty-card p {
+      color: #94a3b8 !important;
+    }
+
+    /* ---------- Credit Package Cards & Modals ---------- */
+    .credit-packages-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+    .credit-pack-card {
+      border: 1.5px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 18px 14px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+    }
+    .credit-pack-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 26px rgba(0, 0, 0, 0.08);
+      border-color: #3b82f6;
+    }
+    .credit-pack-card.featured {
+      border: 2px solid #f59e0b;
+      background: radial-gradient(circle at 50% 0%, rgba(245, 158, 11, 0.1) 0%, transparent 75%), #fffef9;
+      box-shadow: 0 6px 24px rgba(245, 158, 11, 0.16);
+    }
+    .credit-pack-card.featured:hover {
+      border-color: #d97706;
+      box-shadow: 0 14px 32px rgba(217, 119, 6, 0.26);
+    }
+    [data-theme="dark"] .credit-pack-card {
+      background: #111827;
+      border-color: #1f293d;
+      color: #f8fafc;
+    }
+    [data-theme="dark"] .credit-pack-card.featured {
+      background: radial-gradient(circle at 50% 0%, rgba(245, 158, 11, 0.15) 0%, transparent 75%), #171526;
+      border-color: #f59e0b;
+      box-shadow: 0 8px 28px rgba(245, 158, 11, 0.25);
+    }
+
+    .package-pill-btn {
+      border: 1.5px solid #cbd5e1;
+      background: #f8fafc;
+      color: #334155;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 0.86rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      text-align: center;
+    }
+    .package-pill-btn:hover {
+      border-color: #94a3b8;
+      background: #f1f5f9;
+    }
+    .package-pill-btn.active {
+      border-color: var(--orange, #e8834e);
+      background: #fffaf5;
+      color: var(--orange, #e8834e);
+      box-shadow: 0 0 0 2px rgba(232, 131, 78, 0.25);
+    }
+    [data-theme="dark"] .package-pill-btn {
+      background: #0b0f19;
+      border-color: #334155;
+      color: #cbd5e1;
+    }
+    [data-theme="dark"] .package-pill-btn.active {
+      background: rgba(232, 131, 78, 0.15);
+      border-color: var(--orange, #e8834e);
+      color: #fde68a;
+    }
+
+    /* ---------- Modal Windows ---------- */
+    .prompt-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(9, 14, 24, 0.78);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 9999;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 24px 16px;
+      overflow-y: auto;
+    }
+    .prompt-modal-card {
+      background: #ffffff;
+      border-radius: 20px;
+      max-width: 480px;
+      width: 100%;
+      padding: 32px 28px;
+      text-align: center;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.3);
+      position: relative;
+      animation: modalFadeUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+      margin: auto;
+    }
+    @keyframes modalFadeUp {
+      from { opacity: 0; transform: translateY(12px) scale(0.96); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    [data-theme="dark"] .prompt-modal-card {
+      background: #111827;
+      color: #f8fafc;
+      border: 1px solid #1f293d;
+      box-shadow: 0 28px 70px rgba(0, 0, 0, 0.55);
+    }
+    .prompt-modal-icon {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    /* ---------- Quiz Arena & Exam Cockpit ---------- */
+    #premiumQuizArena {
+      background: #ffffff;
+      border-radius: 20px;
+      border: 1.5px solid #e2e8f0;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.06);
+    }
+    [data-theme="dark"] #premiumQuizArena {
+      background: #111827;
+      border-color: #1f293d;
+      box-shadow: 0 16px 45px rgba(0, 0, 0, 0.4);
+    }
+    #premiumTimerBadge {
+      transition: all 0.2s ease;
+    }
+    @keyframes timerPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+    }
+    .timer-alert {
+      animation: timerPulse 0.8s ease-in-out infinite;
+    }
+    .mcq-opt {
+      border: 1.5px solid #cbd5e1;
+      border-radius: 12px;
+      background: #ffffff;
+      color: #0f172a;
+      transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .mcq-opt:hover:not(:disabled) {
+      border-color: var(--orange, #e8834e);
+      background: #fffaf5;
+      transform: translateX(3px);
+    }
+    [data-theme="dark"] .mcq-opt {
+      background: #0b0f19;
       border-color: #334155;
       color: #f8fafc;
     }
+    [data-theme="dark"] .mcq-opt:hover:not(:disabled) {
+      background: #1e293b;
+      border-color: var(--orange, #e8834e);
+    }
+
+    /* ---------- Payment Layout ---------- */
     .payment-layout {
       display: grid;
       grid-template-columns: 1fr 1.25fr;
@@ -80,26 +764,31 @@
     .payment-instructions-box {
       background: #f8fafc;
       border: 1px solid #e2e8f0;
-      border-radius: 14px;
-      padding: 24px;
+      border-radius: 16px;
+      padding: 26px;
     }
     [data-theme="dark"] .payment-instructions-box {
-      background: #0f172a;
-      border-color: #334155;
+      background: #0b0f19;
+      border-color: #1f293d;
     }
     .payment-method-item {
-      background: #fff;
+      background: #ffffff;
       border: 1px solid #e2e8f0;
-      border-radius: 10px;
-      padding: 12px 16px;
-      margin-bottom: 12px;
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin-bottom: 14px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      transition: all 0.18s ease;
+    }
+    .payment-method-item:hover {
+      border-color: #cbd5e1;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
     }
     [data-theme="dark"] .payment-method-item {
-      background: #1e293b;
-      border-color: #334155;
+      background: #111827;
+      border-color: #1f293d;
     }
     .payment-form label {
       display: block;
@@ -115,35 +804,43 @@
     .payment-form select,
     .payment-form textarea {
       width: 100%;
-      padding: 10px 12px;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      margin-top: 5px;
+      padding: 11px 14px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 10px;
+      margin-top: 6px;
       font-size: 0.92rem;
       box-sizing: border-box;
-      background: #fff;
+      background: #ffffff;
       color: #0f172a;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .payment-form input:focus,
+    .payment-form select:focus,
+    .payment-form textarea:focus {
+      outline: none;
+      border-color: var(--orange, #e8834e);
+      box-shadow: 0 0 0 3px rgba(232, 131, 78, 0.18);
     }
     [data-theme="dark"] .payment-form input,
     [data-theme="dark"] .payment-form select,
     [data-theme="dark"] .payment-form textarea {
-      background: #0f172a;
-      border-color: #475569;
+      background: #0b0f19;
+      border-color: #334155;
       color: #f8fafc;
     }
     .preview-thumb {
       max-width: 100%;
       max-height: 200px;
-      border-radius: 8px;
+      border-radius: 10px;
       margin-top: 10px;
       border: 1px solid #cbd5e1;
       display: none;
     }
     .status-alert {
-      padding: 14px 18px;
-      border-radius: 10px;
+      padding: 16px 20px;
+      border-radius: 12px;
       margin-bottom: 20px;
-      font-size: 0.9rem;
+      font-size: 0.92rem;
       line-height: 1.5;
     }
     .status-alert.info {
@@ -161,333 +858,8 @@
       border: 1px solid #fde68a;
       color: #92400e;
     }
-    [data-theme="dark"] .status-alert.info {
-      background: rgba(30, 58, 138, 0.28) !important;
-      border: 1px solid rgba(59, 130, 246, 0.45) !important;
-      color: #bfdbfe !important;
-    }
-    [data-theme="dark"] .status-alert.info div,
-    [data-theme="dark"] .status-alert.info strong {
-      color: #dbeafe !important;
-    }
-    [data-theme="dark"] .status-alert.success {
-      background: rgba(6, 78, 59, 0.28) !important;
-      border: 1px solid rgba(16, 185, 129, 0.45) !important;
-      color: #a7f3d0 !important;
-    }
-    [data-theme="dark"] .status-alert.success div,
-    [data-theme="dark"] .status-alert.success strong {
-      color: #6ee7b7 !important;
-    }
-    [data-theme="dark"] .status-alert.warning {
-      background: rgba(120, 53, 15, 0.28) !important;
-      border: 1px solid rgba(245, 158, 11, 0.45) !important;
-      color: #fde68a !important;
-    }
-    [data-theme="dark"] .status-alert.warning div,
-    [data-theme="dark"] .status-alert.warning strong {
-      color: #fde68a !important;
-    }
-    .category-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 22px;
-    }
-    .category-card {
-      border: 1px solid #e2e8f0;
-      border-radius: 14px;
-      overflow: hidden;
-      background: #fff;
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
-      display: flex;
-      flex-direction: column;
-    }
-    [data-theme="dark"] .category-card {
-      background: #1e293b;
-      border-color: #334155;
-    }
-    .category-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
-    }
-    /* Premium Category / Level Filter Chips */
-    .premium-filter-bar {
-      margin: 18px 0 22px;
-    }
-    .premium-cat-chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      align-items: center;
-    }
-    .premium-cat-chip {
-      background: #fff;
-      border: 1px solid #cbd5e1;
-      color: #475569;
-      font: inherit;
-      font-size: 0.86rem;
-      font-weight: 600;
-      padding: 7px 16px;
-      border-radius: 9999px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      transition: all 0.15s ease;
-    }
-    .premium-cat-chip:hover {
-      border-color: var(--orange, #e8834e);
-      color: var(--orange, #e8834e);
-      background: #fffaf5;
-    }
-    .premium-cat-chip.active {
-      background: var(--orange, #e8834e) !important;
-      border-color: var(--orange, #e8834e) !important;
-      color: #ffffff !important;
-      font-weight: 700;
-      box-shadow: 0 2px 8px rgba(232, 131, 78, 0.32);
-    }
-    [data-theme="dark"] .premium-cat-chip {
-      background: #1e293b;
-      border-color: #334155;
-      color: #94a3b8;
-    }
-    [data-theme="dark"] .premium-cat-chip:hover {
-      background: #283548;
-      border-color: var(--orange, #e8834e);
-      color: #f8fafc;
-    }
-    [data-theme="dark"] .premium-cat-chip.active {
-      background: var(--orange, #e8834e) !important;
-      border-color: var(--orange, #e8834e) !important;
-      color: #ffffff !important;
-    }
-    .premium-card-level-badge {
-      display: inline-block;
-      font-size: 0.72rem;
-      font-weight: 700;
-      color: #2563eb;
-      background: #eff6ff;
-      border: 1px solid #bfdbfe;
-      padding: 3px 10px;
-      border-radius: 9999px;
-      margin-bottom: 8px;
-      width: fit-content;
-      letter-spacing: 0.02em;
-    }
-    [data-theme="dark"] .premium-card-level-badge {
-      color: #93c5fd;
-      background: rgba(37, 99, 235, 0.2);
-      border-color: rgba(59, 130, 246, 0.35);
-    }
-    .premium-empty-card {
-      grid-column: 1 / -1;
-      text-align: center;
-      padding: 42px 24px;
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 14px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
-    }
-    .premium-empty-card h3 {
-      margin: 0 0 8px;
-      font-size: 1.2rem;
-      font-weight: 700;
-      color: #0f172a;
-    }
-    .premium-empty-card p {
-      color: #64748b;
-      font-size: 0.92rem;
-      line-height: 1.55;
-      max-width: 460px;
-      margin: 0 auto 18px;
-    }
-    [data-theme="dark"] .premium-empty-card {
-      background: #1e293b !important;
-      border-color: #334155 !important;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3) !important;
-    }
-    [data-theme="dark"] .premium-empty-card h3 {
-      color: #f8fafc !important;
-    }
-    [data-theme="dark"] .premium-empty-card p {
-      color: #94a3b8 !important;
-    }
-    [data-theme="dark"] .premium-empty-card .btn-outline {
-      background: #0f172a !important;
-      border-color: #475569 !important;
-      color: #f1f5f9 !important;
-    }
-    [data-theme="dark"] .premium-empty-card .btn-outline:hover {
-      border-color: var(--orange, #e8834e) !important;
-      color: var(--orange, #e8834e) !important;
-    }
-    .user-credits-pill {
-      display: none;
-      align-items: center;
-      gap: 8px;
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 9999px;
-      padding: 6px 14px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
-    }
-    [data-theme="dark"] .user-credits-pill {
-      background: #1e293b !important;
-      border-color: #334155 !important;
-    }
-    [data-theme="dark"] .user-credits-pill span {
-      color: #94a3b8 !important;
-    }
-    [data-theme="dark"] .user-credits-pill #userCreditsDisplay {
-      color: #34d399 !important;
-    }
-    .category-card-img {
-      height: 150px;
-      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-      background-size: cover;
-      background-position: center;
-      position: relative;
-    }
-    .category-card-body {
-      padding: 18px;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-    .category-card-badge {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: rgba(15, 23, 42, 0.75);
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
-      color: #fff;
-      font-size: 0.75rem;
-      font-weight: 700;
-      padding: 4px 10px;
-      border-radius: 9999px;
-      letter-spacing: 0.02em;
-    }
-    .prompt-modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.65);
-      backdrop-filter: blur(5px);
-      -webkit-backdrop-filter: blur(5px);
-      z-index: 9999;
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-      padding: 20px 16px;
-      overflow-y: auto;
-    }
-    .prompt-modal-card {
-      background: #fff;
-      border-radius: 16px;
-      max-width: 460px;
-      width: 100%;
-      padding: 28px 24px;
-      text-align: center;
-      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.2);
-      position: relative;
-      animation: modalFadeUp 0.2s ease both;
-      margin: auto; /* vertically centers when content is shorter than viewport */
-    }
-    @keyframes modalFadeUp {
-      from { opacity: 0; transform: translateY(8px) scale(0.97); }
-      to   { opacity: 1; transform: translateY(0) scale(1); }
-    }
-    [data-theme="dark"] .prompt-modal-card {
-      background: #1e293b;
-      color: #f8fafc;
-      border: 1px solid #334155;
-    }
-    .prompt-modal-icon {
-      width: 54px;
-      height: 54px;
-      border-radius: 50%;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 14px;
-    }
-    .credit-pack-card {
-      border: 1.5px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 16px 12px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.18s ease;
-      background: #fff;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-    .credit-pack-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-      border-color: #3b82f6;
-    }
-    .credit-pack-card.featured {
-      border: 2px solid #f59e0b;
-      background: #fffdf5;
-    }
-    .credit-pack-card.featured:hover {
-      border-color: #d97706;
-      box-shadow: 0 8px 22px rgba(217, 119, 6, 0.15);
-    }
-    .credit-pack-card.selected {
-      border-color: #2563eb;
-      box-shadow: 0 0 0 2px #2563eb;
-      background: #eff6ff;
-    }
-    [data-theme="dark"] .credit-pack-card {
-      background: #1e293b;
-      border-color: #334155;
-      color: #f8fafc;
-    }
-    [data-theme="dark"] .credit-pack-card.featured {
-      background: #291e0a;
-      border-color: #f59e0b;
-    }
-    [data-theme="dark"] .credit-pack-card.selected {
-      background: #1e3a8a;
-      border-color: #60a5fa;
-    }
-    .package-pill-btn {
-      border: 1px solid #cbd5e1;
-      background: #f8fafc;
-      color: #334155;
-      border-radius: 8px;
-      padding: 9px 12px;
-      font-size: 0.84rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.15s ease;
-      text-align: center;
-    }
-    .package-pill-btn:hover {
-      border-color: #94a3b8;
-      background: #f1f5f9;
-    }
-    .package-pill-btn.active {
-      border-color: #2563eb;
-      background: #eff6ff;
-      color: #1d4ed8;
-      box-shadow: 0 0 0 1.5px #2563eb;
-    }
-    [data-theme="dark"] .package-pill-btn {
-      background: #0f172a;
-      border-color: #334155;
-      color: #cbd5e1;
-    }
-    [data-theme="dark"] .package-pill-btn.active {
-      background: #1e3a8a;
-      border-color: #60a5fa;
-      color: #93c5fd;
-    }
   </style>
+
 </head>
 <body>
 
@@ -560,6 +932,10 @@
   <!-- Hero Header -->
   <header class="premium-hero">
     <div class="container" style="text-align:center;">
+      <div class="premium-eyebrow">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <span>Exclusive Study &amp; Examination Suite</span>
+      </div>
       <h1>Premium Quiz Portal</h1>
       <p>
         Exclusive question banks tailored for Loksewa, Banking, Geography, Current Affairs, and competitive examinations.
@@ -587,50 +963,78 @@
     <!-- CATALOG VIEW: Displayed by default so all learners see quiz cards immediately -->
     <div id="premiumCatalogView">
 
-      <!-- Banner 1: Unlocked Active Access -->
-      <div id="catalogUnlockedBanner" class="status-alert success" style="display:none; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
-        <div>
-          <strong id="accessBadgeTitle">Access Granted: Full Premium Access Unlocked</strong>
-          <div style="font-size:0.84rem; color:#047857;" id="accessBadgeSubtitle">
-            You have full permission to practice all competitive examination categories.
+      <!-- Banner 1: Unlocked Active Access (VIP Card Style) -->
+      <div id="catalogUnlockedBanner" class="status-alert premium-vip-banner" style="display:none; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
+        <div style="display:flex; align-items:center; gap:16px; flex:1; min-width:260px;">
+          <div class="vip-shield-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 4v6c0 5.25-3.5 10-8 11-4.5-1-8-5.75-8-11V6l8-4z"/><polygon points="12 8 13.5 11 17 11.5 14.5 14 15 17.5 12 16 9 17.5 9.5 14 7 11.5 10.5 11 12 8"/></svg>
+          </div>
+          <div>
+            <strong id="accessBadgeTitle" style="font-family:'Fraunces',serif; font-size:1.15rem; color:#fde68a !important; display:block; margin-bottom:3px;">Access Granted: Full Premium Access Unlocked</strong>
+            <div id="accessBadgeSubtitle" style="font-size:0.86rem; color:#cbd5e1 !important; line-height:1.45;">
+              You have full permission to practice all competitive examination categories.
+            </div>
           </div>
         </div>
-        <span class="premium-pill" style="background:#059669; color:#fff; border-color:transparent;">Active</span>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span class="vip-badge-tag">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            VIP Member
+          </span>
+        </div>
       </div>
 
       <!-- Banner 2: Payment Verification Under Review -->
-      <div id="catalogPendingBanner" class="status-alert warning" style="display:none; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
-        <div>
-          <strong>Payment Verification Pending Review</strong>
-          <div style="font-size:0.84rem; color:#92400e;">
-            Your payment receipt has been submitted and is currently being verified by the administrator.
+      <div id="catalogPendingBanner" class="status-alert premium-pending-banner" style="display:none; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
+        <div style="display:flex; align-items:center; gap:14px; flex:1; min-width:260px;">
+          <div class="pending-clock-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <div>
+            <strong style="display:block; font-size:0.98rem; color:#92400e; margin-bottom:2px;">Payment Verification Pending Admin Approval</strong>
+            <div style="font-size:0.85rem; color:#78350f; line-height:1.45;">
+              Your transaction receipt has been submitted and is currently being verified. Once approved, your account receives full access.
+            </div>
           </div>
         </div>
-        <button type="button" class="btn btn-outline btn-sm" id="catalogViewPendingBtn" style="border-color:#b45309; color:#92400e; font-weight:600;">View Details</button>
+        <button type="button" class="btn btn-outline btn-sm" id="catalogViewPendingBtn" style="border-color:#b45309; color:#92400e; font-weight:700; padding:7px 15px; border-radius:9999px;">View Details</button>
       </div>
 
       <!-- Banner 3: Membership Promotion for guests & unpaid learners -->
-      <div id="catalogPromoBanner" class="status-alert info" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
-        <div>
-          <strong>Competitive Examination Practice Hub</strong>
-          <div style="font-size:0.84rem; color:#1e40af;">
-            Select any quiz card below to try or play. Each quiz requires <strong>some credits</strong> to play. Top up from Rs. 15 or get 1-year unlimited access for Rs. 500!
+      <div id="catalogPromoBanner" class="status-alert premium-promo-banner" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
+        <div style="display:flex; align-items:center; gap:14px; flex:1; min-width:280px;">
+          <div class="promo-gem-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 18 3 22 9 12 22 2 9 6 3"/><line x1="2" y1="9" x2="22" y2="9"/><line x1="12" y1="22" x2="8" y2="9"/><line x1="12" y1="22" x2="16" y2="9"/></svg>
+          </div>
+          <div>
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:3px; flex-wrap:wrap;">
+              <strong style="font-size:1.02rem; color:var(--ink);">Competitive Examination Practice Suite</strong>
+              <span class="luxe-mini-tag">Masterclass</span>
+            </div>
+            <div style="font-size:0.86rem; color:#64748b; line-height:1.5;">
+              Practice exclusive questions for Loksewa, Banking, and Higher Level competitive exams. Play with credits or unlock <strong>1-Year Unlimited VIP Access for Rs. 500</strong>!
+            </div>
           </div>
         </div>
-        <button type="button" class="btn btn-primary btn-sm" id="catalogPayBtn" style="font-size:0.82rem; padding:6px 14px; font-weight:600;">Buy Credits</button>
+        <button type="button" class="btn btn-primary btn-sm" id="catalogPayBtn" style="font-size:0.84rem; padding:8px 18px; font-weight:700; border-radius:9999px; white-space:nowrap;">
+          + Buy Credits
+        </button>
       </div>
 
       <!-- Categories Section: Cards of Quizzes -->
       <div id="premiumCategoriesSection" style="margin-top:20px;">
         <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:18px; flex-wrap:wrap; gap:10px;">
           <div>
-            <h2 style="font-size:1.4rem; margin:0 0 4px;">Available Premium Quizzes</h2>
-            <p style="color:#64748b; font-size:0.9rem; margin:0;">Select any category card below to test your knowledge with interactive timed questions.</p>
+            <h2 style="font-family:'Fraunces',serif; font-size:1.5rem; margin:0 0 4px; letter-spacing:-0.01em;">Available Premium Quizzes</h2>
+            <p style="color:#64748b; font-size:0.92rem; margin:0;">Select any category card below to test your knowledge with interactive timed questions.</p>
           </div>
           <div id="userCreditsDisplayWrap" class="user-credits-pill">
-            <span style="font-size:0.8rem; font-weight:600;">Your Balance:</span>
-            <span id="userCreditsDisplay" style="font-weight:800; color:#059669; font-size:0.95rem;">0 Credits</span>
-            <button type="button" id="buyCreditsHeaderBtn" class="btn btn-primary btn-sm" style="font-size:0.75rem; padding:3px 10px; border-radius:9999px; margin-left:4px; font-weight:700;">+ Buy Credits</button>
+            <span class="wallet-icon-wrap">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M15 9.5a3.5 3.5 0 0 0-7 0c0 2 1.5 3 3.5 3.5s3.5 1.5 3.5 3.5a3.5 3.5 0 0 1-7 0"/></svg>
+            </span>
+            <span class="wallet-label">Balance:</span>
+            <span id="userCreditsDisplay" class="wallet-count">0 Credits</span>
+            <button type="button" id="buyCreditsHeaderBtn" class="btn btn-primary btn-sm" style="font-size:0.75rem; padding:4px 12px; border-radius:9999px; margin-left:4px; font-weight:700;">+ Buy Credits</button>
           </div>
         </div>
 
@@ -680,25 +1084,28 @@
 
     <!-- QUIZ RESULTS CARD -->
     <div id="premiumQuizResults" class="premium-card" style="display:none; max-width:540px; margin:0 auto; text-align:center;">
-      <h2 style="margin-bottom:8px;">Quiz Completed!</h2>
-      <p style="color:#64748b; margin-bottom:20px;">Here is your performance summary for this session:</p>
+      <div style="width:64px; height:64px; margin:0 auto 16px; border-radius:50%; background:linear-gradient(135deg, #fef3c7, #fde68a); border:2px solid #f59e0b; display:inline-flex; align-items:center; justify-content:center; color:#b45309; box-shadow:0 6px 20px rgba(245, 158, 11, 0.25);">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+      </div>
+      <h2 style="font-family:'Fraunces',serif; font-size:1.6rem; margin-bottom:8px;">Assessment Completed!</h2>
+      <p style="color:#64748b; margin-bottom:24px; font-size:0.92rem;">Here is your performance summary for this premium examination session:</p>
       
-      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:12px; margin-bottom:24px;">
-        <div style="background:#f8fafc; padding:16px; border-radius:10px; border:1px solid #e2e8f0;">
-          <div style="font-size:0.8rem; color:#64748b;">SCORE</div>
-          <div style="font-size:1.6rem; font-weight:800; color:#0f172a;" id="resultsFinalScore">0 pts</div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:14px; margin-bottom:26px;">
+        <div style="background:var(--cream, #f8fafc); padding:18px 14px; border-radius:14px; border:1px solid var(--line, #e2e8f0);">
+          <div style="font-size:0.75rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px;">SCORE</div>
+          <div style="font-size:1.75rem; font-weight:800; color:#0f172a;" id="resultsFinalScore">0 pts</div>
         </div>
-        <div style="background:#f8fafc; padding:16px; border-radius:10px; border:1px solid #e2e8f0;">
-          <div style="font-size:0.8rem; color:#64748b;">CORRECT</div>
-          <div style="font-size:1.6rem; font-weight:800; color:#10b981;" id="resultsCorrectCount">0 / 0</div>
+        <div style="background:var(--cream, #f8fafc); padding:18px 14px; border-radius:14px; border:1px solid var(--line, #e2e8f0);">
+          <div style="font-size:0.75rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px;">ACCURACY</div>
+          <div style="font-size:1.75rem; font-weight:800; color:#10b981;" id="resultsCorrectCount">0 / 0</div>
         </div>
-        <div style="background:#f8fafc; padding:16px; border-radius:10px; border:1px solid #e2e8f0;">
-          <div style="font-size:0.8rem; color:#64748b;">CREDITS LEFT</div>
-          <div style="font-size:1.6rem; font-weight:800; color:#059669;" id="resultsRemainingCredits">0</div>
+        <div style="background:var(--cream, #f8fafc); padding:18px 14px; border-radius:14px; border:1px solid var(--line, #e2e8f0);">
+          <div style="font-size:0.75rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px;">CREDITS REMAINING</div>
+          <div style="font-size:1.75rem; font-weight:800; color:#059669;" id="resultsRemainingCredits">0</div>
         </div>
       </div>
 
-      <button type="button" class="btn btn-primary" id="resultsReturnBtn">← Back to All Quizzes</button>
+      <button type="button" class="btn btn-primary" id="resultsReturnBtn" style="padding:12px 28px; font-weight:700; border-radius:9999px;">← Back to All Quizzes</button>
     </div>
 
     <!-- PAYMENT VERIFICATION PENDING VIEW -->
@@ -916,57 +1323,60 @@
         </div>
 
         <!-- 4 Credit Package Cards Grid -->
-        <div class="credit-packages-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(135px, 1fr)); gap:12px; margin-bottom:20px;">
+        <div class="credit-packages-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(138px, 1fr)); gap:14px; margin-bottom:20px;">
           
           <!-- Package 1: 3 Credits -->
           <div class="credit-pack-card" data-pkg-id="pack_3" data-amount="15" data-credits="3" data-label="3 Credits" data-remarks="Purchase: 3 Credits (Rs. 15)">
             <div>
-              <span style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:#64748b; background:#f1f5f9; padding:3px 8px; border-radius:9999px; display:inline-block; margin-bottom:8px;">Starter</span>
-              <div style="font-size:1.3rem; font-weight:800; color:#0f172a; margin-bottom:2px;">3 Credits</div>
+              <span style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:#64748b; background:#f1f5f9; padding:3px 9px; border-radius:9999px; display:inline-block; margin-bottom:8px;">Starter</span>
+              <div style="font-size:1.35rem; font-weight:800; color:#0f172a; margin-bottom:2px;">3 Credits</div>
+              <div style="font-size:0.75rem; color:#64748b; margin-bottom:12px;">1 Quiz Attempt</div>
             </div>
             <div>
               <div style="font-size:1.25rem; font-weight:800; color:#2563eb; margin-bottom:10px;">Rs. 15</div>
-              <button type="button" class="btn btn-outline btn-sm buy-pkg-select-btn" style="width:100%; font-size:0.82rem; padding:7px 8px; font-weight:700;">Select & Pay</button>
+              <button type="button" class="btn btn-outline btn-sm buy-pkg-select-btn" style="width:100%; font-size:0.82rem; padding:8px 8px; font-weight:700; border-radius:8px;">Select &amp; Pay</button>
             </div>
           </div>
 
           <!-- Package 2: 12 Credits -->
           <div class="credit-pack-card" data-pkg-id="pack_12" data-amount="50" data-credits="12" data-label="12 Credits" data-remarks="Purchase: 12 Credits (Rs. 50)">
             <div>
-              <span style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:#0369a1; background:#e0f2fe; padding:3px 8px; border-radius:9999px; display:inline-block; margin-bottom:8px;">Popular</span>
-              <div style="font-size:1.3rem; font-weight:800; color:#0f172a; margin-bottom:2px;">12 Credits</div>
+              <span style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:#0369a1; background:#e0f2fe; padding:3px 9px; border-radius:9999px; display:inline-block; margin-bottom:8px;">Popular</span>
+              <div style="font-size:1.35rem; font-weight:800; color:#0f172a; margin-bottom:2px;">12 Credits</div>
+              <div style="font-size:0.75rem; color:#64748b; margin-bottom:12px;">4 Quiz Attempts</div>
             </div>
             <div>
               <div style="font-size:1.25rem; font-weight:800; color:#2563eb; margin-bottom:10px;">Rs. 50</div>
-              <button type="button" class="btn btn-primary btn-sm buy-pkg-select-btn" style="width:100%; font-size:0.82rem; padding:7px 8px; font-weight:700;">Select & Pay</button>
+              <button type="button" class="btn btn-primary btn-sm buy-pkg-select-btn" style="width:100%; font-size:0.82rem; padding:8px 8px; font-weight:700; border-radius:8px;">Select &amp; Pay</button>
             </div>
           </div>
 
           <!-- Package 3: 30 Credits -->
           <div class="credit-pack-card" data-pkg-id="pack_30" data-amount="100" data-credits="30" data-label="30 Credits" data-remarks="Purchase: 30 Credits (Rs. 100)">
             <div>
-              <span style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:#047857; background:#d1fae5; padding:3px 8px; border-radius:9999px; display:inline-block; margin-bottom:8px;">Value Pack</span>
-              <div style="font-size:1.3rem; font-weight:800; color:#0f172a; margin-bottom:2px;">30 Credits</div>
+              <span style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:#047857; background:#d1fae5; padding:3px 9px; border-radius:9999px; display:inline-block; margin-bottom:8px;">Value Pack</span>
+              <div style="font-size:1.35rem; font-weight:800; color:#0f172a; margin-bottom:2px;">30 Credits</div>
+              <div style="font-size:0.75rem; color:#047857; margin-bottom:12px; font-weight:600;">10 Quiz Attempts</div>
             </div>
             <div>
               <div style="font-size:1.25rem; font-weight:800; color:#2563eb; margin-bottom:10px;">Rs. 100</div>
-              <button type="button" class="btn btn-outline btn-sm buy-pkg-select-btn" style="width:100%; font-size:0.82rem; padding:7px 8px; font-weight:700;">Select & Pay</button>
+              <button type="button" class="btn btn-outline btn-sm buy-pkg-select-btn" style="width:100%; font-size:0.82rem; padding:8px 8px; font-weight:700; border-radius:8px;">Select &amp; Pay</button>
             </div>
           </div>
 
           <!-- Package 4: Rs. 500 Unlimited 1 Year -->
           <div class="credit-pack-card featured" data-pkg-id="pack_unlimited" data-amount="500" data-credits="unlimited" data-label="Annual Pass" data-remarks="Purchase: Annual Pass - Unlimited 1 Year (Rs. 500)" style="position:relative;">
-            <div style="position:absolute; top:-10px; left:50%; transform:translateX(-50%); background:#d97706; color:#fff; font-size:0.68rem; font-weight:800; text-transform:uppercase; letter-spacing:0.04em; padding:2px 8px; border-radius:9999px; white-space:nowrap;">
-              Whole Year
+            <div style="position:absolute; top:-11px; left:50%; transform:translateX(-50%); background:linear-gradient(135deg, #f59e0b, #d97706); color:#fff; font-size:0.68rem; font-weight:800; text-transform:uppercase; letter-spacing:0.05em; padding:3px 10px; border-radius:9999px; white-space:nowrap; box-shadow:0 2px 8px rgba(217, 119, 6, 0.4);">
+              VIP Pass · 1 Year
             </div>
-            <div style="margin-top:4px;">
-              <span style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:#b45309; background:#fef3c7; padding:3px 8px; border-radius:9999px; display:inline-block; margin-bottom:8px;">Unlimited</span>
-              <div style="font-size:1.18rem; font-weight:800; color:#0f172a; margin-bottom:2px;">1 Year Pass</div>
-              <div style="font-size:0.78rem; color:#92400e; margin-bottom:12px;">All quizzes freely</div>
+            <div style="margin-top:6px;">
+              <span style="font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; color:#b45309; background:#fef3c7; padding:3px 9px; border-radius:9999px; display:inline-block; margin-bottom:8px;">Unlimited</span>
+              <div style="font-size:1.25rem; font-weight:800; color:#0f172a; margin-bottom:2px;">Annual VIP</div>
+              <div style="font-size:0.75rem; color:#b45309; margin-bottom:12px; font-weight:600;">All Quizzes Freely</div>
             </div>
             <div>
               <div style="font-size:1.25rem; font-weight:800; color:#b45309; margin-bottom:10px;">Rs. 500</div>
-              <button type="button" class="btn btn-primary btn-sm buy-pkg-select-btn" style="width:100%; font-size:0.82rem; padding:7px 8px; font-weight:700; background:#d97706; border-color:#d97706;">Select & Pay</button>
+              <button type="button" class="btn btn-primary btn-sm buy-pkg-select-btn" style="width:100%; font-size:0.82rem; padding:8px 8px; font-weight:700; background:linear-gradient(135deg, #f59e0b, #d97706); border-color:#d97706; border-radius:8px; box-shadow:0 3px 10px rgba(217, 119, 6, 0.35);">Select &amp; Pay</button>
             </div>
           </div>
 
@@ -1029,8 +1439,8 @@
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
   <script src="js/firebase-config.js"></script>
-  <script src="js/auth-widget.js"></script>
-  <script src="js/nav-drawer.js"></script>
-  <script src="js/premium.js"></script>
+  <script src="js/auth-widget.js?v=20260923_14"></script>
+  <script src="js/nav-drawer.js?v=20260923_14"></script>
+  <script src="js/premium.js?v=20260923_14"></script>
 </body>
 </html>
