@@ -43,14 +43,29 @@ service cloud.firestore {
     }
 
     // ---- MCQ Hub questions ----------------------------------------------
-    // Shown on mcq.html. Public read, admin or authorized moderator write.
+    // Public read for learners on mcq.html.
+    // In the Admin Panel:
+    //   - Owner (isAdmin) sees and manages all questions.
+    //   - Moderators only see questions they created (createdBy == uid).
     match /questions/{questionId} {
+      // Learners: always readable
       allow read: if true;
-      allow create, update, delete: if isAdmin() || (isModerator() && (
+
+      // Create: admin anytime; moderator with MCQ permission
+      allow create: if isAdmin() || (isModerator() && (
         hasClassAccess('class8') ||
         hasClassAccess('class9') ||
         hasClassAccess('class10')
       ));
+
+      // Update / delete: admin anytime; moderator only for their own questions
+      allow update, delete: if isAdmin() ||
+        (isModerator() &&
+         request.auth.uid == resource.data.createdBy && (
+           hasClassAccess('class8') ||
+           hasClassAccess('class9') ||
+           hasClassAccess('class10')
+         ));
     }
 
     // ---- Python Hub programs ---------------------------------------------
