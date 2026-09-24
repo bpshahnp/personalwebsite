@@ -1078,6 +1078,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const q = activeQuestions[currentQIdx];
     if (questionCounter) questionCounter.textContent = `Question ${currentQIdx + 1} of ${activeQuestions.length}`;
+    const progressBar = document.getElementById("premiumProgressBar");
+    if (progressBar && activeQuestions.length > 0) {
+      const pct = Math.round(((currentQIdx + 1) / activeQuestions.length) * 100);
+      progressBar.style.width = `${pct}%`;
+    }
     if (questionText) questionText.textContent = q.question || "";
     if (optionsGrid) optionsGrid.innerHTML = "";
 
@@ -1205,11 +1210,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function showFeedback(msg, isCorrect, explanation) {
     if (!feedbackBar) return;
+    const iconSvg = isCorrect
+      ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:#10b981;margin-top:2px;"><polyline points="20 6 9 17 4 12"/></svg>'
+      : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:#d97706;margin-top:2px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
     feedbackBar.innerHTML = `
-      <strong>${escapeHtml(msg)}</strong>
-      ${explanation ? `<div style="font-size:0.84rem; margin-top:4px; opacity:0.9;">${escapeHtml(explanation)}</div>` : ""}
+      <div style="display:flex; align-items:flex-start; gap:10px;">
+        ${iconSvg}
+        <div style="flex:1;">
+          <strong style="font-size:0.95rem; display:block;">${escapeHtml(msg)}</strong>
+          ${explanation ? `<div style="font-size:0.86rem; margin-top:5px; opacity:0.92; line-height:1.45;">${escapeHtml(explanation)}</div>` : ""}
+        </div>
+      </div>
     `;
-    feedbackBar.className = `status-alert ${isCorrect ? "success" : "warning"}`;
+    feedbackBar.className = `status-alert ${isCorrect ? "success" : "warning"} arena-feedback-bar`;
     feedbackBar.style.display = "block";
   }
 
