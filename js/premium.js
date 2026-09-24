@@ -151,6 +151,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let correctCount = 0;
   let timerInterval = null;
   let secondsLeft = 20;
+  let currentUnlimitedAccess = false;
   const QUESTION_TIME_LIMIT = 20;
   const BASE_POINTS = 10;
   const MAX_SPEED_BONUS = 5;
@@ -390,9 +391,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* ---------- Update Credit Balance in UI ---------- */
   function updateUserCreditsUI(credits) {
-    const bal = typeof credits === "number" ? credits : 0;
+    const isUnlimited = credits === "Unlimited";
+    const bal = isUnlimited ? "Unlimited" : (typeof credits === "number" ? credits : 0);
     if (userCreditsDisplay) {
-      userCreditsDisplay.textContent = `${bal} Credit${bal === 1 ? "" : "s"}`;
+      userCreditsDisplay.textContent = isUnlimited
+        ? "Unlimited Credits"
+        : `${bal} Credit${bal === 1 ? "" : "s"}`;
     }
     if (userCreditsDisplayWrap) {
       userCreditsDisplayWrap.style.display = currentUser ? "inline-flex" : "none";
@@ -607,6 +611,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const hasAccess = await checkUserHasAccess(currentUser);
     if (hasAccess) {
+      // Show "Unlimited Credits" in the header for users with unlimited access
+      updateUserCreditsUI("Unlimited");
       const isChamp = await checkIsWeeklyChampion(currentUser.uid);
       if (accessBadgeTitle) {
         accessBadgeTitle.textContent = isChamp
@@ -616,7 +622,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (accessBadgeSubtitle) {
         accessBadgeSubtitle.textContent = isChamp
           ? "Congratulations on ranking #1 in the weekly tournament! Practice all competitive categories freely."
-          : `Your account has full access. Current balance: ${credits} credit${credits === 1 ? "" : "s"}.`;
+          : `Your account has full access. Unlimited credits available.`;
       }
       if (catalogUnlockedBanner) catalogUnlockedBanner.style.display = "flex";
       if (catalogPendingBanner) catalogPendingBanner.style.display = "none";
@@ -1015,6 +1021,9 @@ document.addEventListener("DOMContentLoaded", () => {
   async function startCategoryQuiz(category, remainingCredits) {
     if (!category) return;
     
+    // Track whether this quiz session is for an unlimited-access user
+    currentUnlimitedAccess = remainingCredits === "Unlimited";
+
     // Switch view to arena
     showView("arena");
     const creditsLabel = typeof remainingCredits === "number"
@@ -1240,10 +1249,16 @@ document.addEventListener("DOMContentLoaded", () => {
     if (resultsFinalScore) resultsFinalScore.textContent = `${currentScore} pts`;
     if (resultsCorrectCount) resultsCorrectCount.textContent = `${correctCount} / ${activeQuestions.length}`;
     if (resultsRemainingCredits) {
-      const bal = currentUserProfile && currentUserProfile.credits != null
-        ? currentUserProfile.credits
-        : 0;
-      resultsRemainingCredits.textContent = `${bal}`;
+      // If user has unlimited access (hasUnlimitedAccess flag set during quiz start),
+      // show "Unlimited" instead of the raw credit balance
+      if (currentUnlimitedAccess) {
+        resultsRemainingCredits.textContent = "Unlimited";
+      } else {
+        const bal = currentUserProfile && currentUserProfile.credits != null
+          ? currentUserProfile.credits
+          : 0;
+        resultsRemainingCredits.textContent = `${bal}`;
+      }
     }
   }
 
