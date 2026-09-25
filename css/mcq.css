@@ -114,6 +114,69 @@
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
 }
 
+/* Hero Top Actions & Leave Quiz Button */
+.mcqhub-hero-right {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  flex-shrink: 0 !important;
+}
+.mcqhub-bar-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+.mcqhub-bar-actions .quiz-score {
+  color: #f1f5f9 !important;
+  font-weight: 700 !important;
+  font-size: 0.88rem !important;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.mcqhub-hero #leaveQuizBtnTop,
+.mcqhub-hero .ghost-btn {
+  background: rgba(239, 68, 68, 0.16) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(239, 68, 68, 0.36) !important;
+  border-radius: 999px !important;
+  padding: 8px 16px !important;
+  color: #fca5a5 !important;
+  font-weight: 700 !important;
+  font-size: 0.84rem !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+  transition: all 0.2s ease !important;
+  cursor: pointer;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  white-space: nowrap !important;
+  text-decoration: none !important;
+}
+.mcqhub-hero #leaveQuizBtnTop svg,
+.mcqhub-hero .ghost-btn svg {
+  flex-shrink: 0;
+  stroke: #fca5a5 !important;
+  transition: stroke 0.2s ease, transform 0.2s ease;
+}
+.mcqhub-hero #leaveQuizBtnTop:hover,
+.mcqhub-hero .ghost-btn:hover {
+  background: rgba(239, 68, 68, 0.28) !important;
+  border-color: rgba(239, 68, 68, 0.6) !important;
+  color: #ffffff !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35);
+}
+.mcqhub-hero #leaveQuizBtnTop:hover svg,
+.mcqhub-hero .ghost-btn:hover svg {
+  stroke: #ffffff !important;
+  transform: translateX(-1px);
+}
+.mcqhub-hero #leaveQuizBtnTop:active,
+.mcqhub-hero .ghost-btn:active {
+  transform: scale(0.96) !important;
+}
+
 /* ---------- Quiz Cards Container ---------- */
 .mcqhub-workspace .quiz-card {
   background: radial-gradient(circle at 94% 6%, rgba(232, 131, 78, 0.04) 0%, transparent 40%), #ffffff;
@@ -612,51 +675,84 @@
     margin-bottom: 16px;
   }
 
-  /* Stage header: single compact row */
+  /* Mobile hero controls */
+  .mcqhub-hero-inner {
+    padding: 12px 14px !important;
+  }
+  .mcqhub-hero-right {
+    gap: 6px !important;
+  }
+  .mcqhub-bar-actions {
+    gap: 6px !important;
+  }
+  .mcqhub-hero #leaveQuizBtnTop,
+  .mcqhub-hero .ghost-btn {
+    padding: 6px 12px !important;
+    font-size: 0.76rem !important;
+    gap: 5px !important;
+  }
+  .mcqhub-hero .rail-toggle {
+    padding: 6px 12px !important;
+    font-size: 0.76rem !important;
+    gap: 5px !important;
+  }
+
+  /* Stage header: single compact row with horizontal scrolling tags if needed */
   .stage-tools {
+    display: flex !important;
     flex-direction: row !important;
     align-items: center !important;
     justify-content: space-between !important;
-    gap: 6px !important;
+    gap: 8px !important;
     padding-bottom: 12px !important;
     margin-bottom: 14px !important;
     border-bottom: 1px solid rgba(15, 23, 42, 0.07) !important;
+    flex-wrap: nowrap !important;
   }
   .stage-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    flex: 1;
-    min-width: 0;
+    display: flex !important;
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    gap: 5px !important;
+    flex: 1 !important;
+    min-width: 0 !important;
+  }
+  .stage-tags::-webkit-scrollbar {
+    display: none !important;
   }
   .stage-tags .mcq-class,
   .stage-tags .mcq-category {
-    font-size: 0.68rem !important;
-    padding: 2px 8px !important;
+    font-size: 0.7rem !important;
+    padding: 3px 8px !important;
     border-radius: 6px !important;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 120px;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    max-width: none !important;
+    overflow: visible !important;
   }
   .stage-actions {
-    display: flex;
-    gap: 6px;
-    flex-shrink: 0;
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    flex-shrink: 0 !important;
   }
   .stage-actions .sound-btn {
     padding: 5px 10px !important;
     font-size: 0.74rem !important;
     border-radius: 999px !important;
   }
-  /* "Leave quiz" as a red ghost on mobile */
+  /* "Leave quiz" inside card on mobile */
   .stage-actions .ghost-btn {
     padding: 5px 10px !important;
     font-size: 0.74rem !important;
     border-radius: 999px !important;
     background: #fff5f5 !important;
-    border-color: #fecaca !important;
+    border: 1px solid #fecaca !important;
     color: #ef4444 !important;
+    font-weight: 600 !important;
   }
   .stage-actions .ghost-btn:hover {
     background: #fee2e2 !important;
