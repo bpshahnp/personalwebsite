@@ -574,6 +574,7 @@ class _TurtleEngine:
         self.colormode_val = 1.0
         self.turtles = []
         self.default_turtle = None
+        self.active = False
 
     def reset_all(self):
         self.commands = []
@@ -582,7 +583,8 @@ class _TurtleEngine:
         self.bgcolor = None
         self.colormode_val = 1.0
         self.turtles = []
-        self.default_turtle = Turtle(self)
+        self.default_turtle = None
+        self.active = False
 
     def to_color_str(self, *args):
         if not args:
@@ -606,6 +608,7 @@ _engine = _TurtleEngine()
 class Turtle:
     def __init__(self, engine=None):
         self._engine = engine if engine else _engine
+        self._engine.active = True
         self.x = 0.0
         self.y = 0.0
         self.angle = 0.0
@@ -758,9 +761,12 @@ class Turtle:
         else: tx, ty = float(x), float(y)
         return math.hypot(self.x - tx, self.y - ty)
 
-_engine.default_turtle = Turtle(_engine)
+def _get_default():
+    if _engine.default_turtle is None:
+        _engine.default_turtle = Turtle(_engine)
+    _engine.active = True
+    return _engine.default_turtle
 
-def _get_default(): return _engine.default_turtle
 def forward(d): _get_default().forward(d)
 fd = forward
 def backward(d): _get_default().backward(d)
@@ -813,18 +819,21 @@ def distance(*a): return _get_default().distance(*a)
 def towards(*a): return _get_default().towards(*a)
 
 def bgcolor(*args):
+    _engine.active = True
     if args:
         _engine.bgcolor = _engine.to_color_str(*args)
         _engine.commands.append(["bgcolor", _engine.bgcolor])
     return _engine.bgcolor
 
 def screensize(canvwidth=None, canvheight=None, bg=None):
+    _engine.active = True
     if canvwidth: _engine.width = int(canvwidth)
     if canvheight: _engine.height = int(canvheight)
     if bg: bgcolor(bg)
     return (_engine.width, _engine.height)
 
 def setup(width=None, height=None, *a):
+    _engine.active = True
     if width: _engine.width = int(width) if width > 1 else int(540 * width)
     if height: _engine.height = int(height) if height > 1 else int(420 * height)
 
@@ -840,15 +849,20 @@ exitonclick = done
 def clearscreen(): _engine.reset_all()
 clear = clearscreen
 reset = clearscreen
-def Screen(): return sys.modules[__name__]
+def Screen():
+    _engine.active = True
+    return sys.modules[__name__]
 getscreen = Screen
 
 def _export_render():
+    if not _engine.active and not _engine.commands:
+        return None
     turtles_data = []
     for t in _engine.turtles:
         if t.isvisible():
             turtles_data.append([t.x, t.y, t.angle, t._pen_color])
     return {
+        "active": _engine.active,
         "width": _engine.width,
         "height": _engine.height,
         "bgcolor": _engine.bgcolor,
@@ -1023,7 +1037,10 @@ function drawTurtlePointer(ctx, cx, cy, angleDeg, color) {
 }
 
 function renderTurtleCanvas(data) {
-  if (!data || (!data.commands || !data.commands.length) && (!data.turtles || !data.turtles.length)) {
+  if (!data || (!data.active && (!data.commands || !data.commands.length))) {
+    return null;
+  }
+  if ((!data.commands || !data.commands.length) && (!data.turtles || !data.turtles.length)) {
     return null;
   }
 
@@ -1202,9 +1219,12 @@ async function runProgram(code, panel, syncActions) {
     });
     body.textContent = "";
 
-    // Reset turtle canvas state before fresh run
+    // Reset turtle canvas state before fresh run only if turtle is in sys.modules
     try {
-      py.runPython("import turtle; turtle._reset()");
+      py.runPython(`
+if "turtle" in __import__("sys").modules:
+    __import__("sys").modules["turtle"]._reset()
+`);
     } catch (_) {}
 
     // Automatically detect and load external libraries (pandas, matplotlib, numpy, scipy, etc.)
@@ -1298,13 +1318,18 @@ async function runProgram(code, panel, syncActions) {
 
     // Check if turtle drew anything and render Canvas
     try {
-      const hasTurtle = py.runPython(`"turtle" in __import__("sys").modules`);
+      const hasTurtle = py.runPython(`
+"turtle" in __import__("sys").modules and getattr(__import__("sys").modules["turtle"]._engine, "active", False)
+`);
       if (hasTurtle) {
-        const turtleData = py.runPython("import turtle; turtle._export_render()").toJs({ dict_converter: Object.fromEntries });
-        const turtleCanvas = renderTurtleCanvas(turtleData);
-        if (turtleCanvas) {
-          images.hidden = false;
-          images.appendChild(turtleCanvas);
+        const turtleDataPy = py.runPython("import turtle; turtle._export_render()");
+        if (turtleDataPy) {
+          const turtleData = turtleDataPy.toJs({ dict_converter: Object.fromEntries });
+          const turtleCanvas = renderTurtleCanvas(turtleData);
+          if (turtleCanvas) {
+            images.hidden = false;
+            images.appendChild(turtleCanvas);
+          }
         }
       }
     } catch (tErr) {
