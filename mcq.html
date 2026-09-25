@@ -23,6 +23,7 @@
   <meta name="twitter:description" content="Practice thousands of MCQs on GK, Loksewa, Science, Maths and more. Free multiple-choice quiz practice by B. Prasad Shah." />
   <meta name="twitter:image" content="https://bholaprasadshah.com.np/assets/og-image.jpg" />
   <link rel="stylesheet" href="css/style.css?v=20260922_11" />
+  <link rel="stylesheet" href="css/mcq.css?v=20260925_01" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -94,11 +95,11 @@
   <div class="drawer-overlay" id="drawerOverlay"></div>
 
   <!-- Live Quiz Banner Notification -->
-  <div class="live-quiz-banner" style="background: linear-gradient(90deg, #0f1729, #1e293b); border-bottom: 1px solid var(--line); padding: 10px 16px; text-align: center;">
-    <div class="container" style="display: flex; align-items: center; justify-content: center; gap: 12px; font-size: 0.88rem; color: #f1f5f9; flex-wrap: wrap;">
-      <span class="live-pill" style="padding: 3px 10px; font-size: 0.74rem;"><span class="live-dot"></span> LIVE TOURNAMENT</span>
+  <div class="live-quiz-banner">
+    <div class="container">
+      <span class="live-pill"><span class="live-dot"></span> LIVE TOURNAMENT</span>
       <span>7-Day Live Timed Quiz tournament kicks off this Monday (Day 1)!</span>
-      <a href="live-quiz.html" class="btn btn-primary btn-sm" style="padding: 4px 14px; font-size: 0.82rem;">View Schedule &rarr;</a>
+      <a href="live-quiz.html" class="btn btn-primary btn-sm">View Schedule &rarr;</a>
     </div>
   </div>
 
@@ -226,7 +227,7 @@
           </div>
         </fieldset>
 
-        <button class="btn btn-primary btn-block" id="startQuizBtn" disabled>Start quiz</button>
+        <button class="btn btn-primary btn-block" id="startQuizBtn" disabled>Start quiz &rarr;</button>
       </div>
 
       <!-- ===== Quiz in progress ===== -->
@@ -234,7 +235,7 @@
         <div class="stage-tools">
           <div class="stage-tags">
             <span class="mcq-class" id="quizQuestionClass" hidden></span>
-            <span class="mcq-category" id="quizQuestionSubject" style="background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd; font-weight:600;" hidden></span>
+            <span class="mcq-category" id="quizQuestionSubject" hidden></span>
             <span class="mcq-category" id="quizQuestionCategory" hidden></span>
           </div>
           <div class="stage-actions">
