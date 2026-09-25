@@ -23,7 +23,7 @@
   <meta name="twitter:description" content="Practice thousands of MCQs on GK, Loksewa, Science, Maths and more. Free multiple-choice quiz practice by B. Prasad Shah." />
   <meta name="twitter:image" content="https://bholaprasadshah.com.np/assets/og-image.jpg" />
   <link rel="stylesheet" href="css/style.css?v=20260922_11" />
-  <link rel="stylesheet" href="css/mcq.css?v=20260925_03" />
+  <link rel="stylesheet" href="css/mcq.css?v=20260925_04" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -107,16 +107,11 @@
   <div class="mcqhub-hero">
     <div class="container mcqhub-hero-inner">
       <div class="mcqhub-hero-text">
-        <div class="mcqhub-hero-badge">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-          Practice Quiz
-        </div>
         <h1 class="mcqhub-hero-title">MCQ Hub</h1>
         <p class="mcqhub-hero-subtitle">Timed multiple-choice quizzes for Class 8, 9 &amp; 10 — Computer Science, Science, Math &amp; more.</p>
       </div>
       <div class="mcqhub-hero-right">
         <div class="mcqhub-bar-actions" id="mcqhubBarActions" hidden>
-          <span class="quiz-score" id="quizScoreTop"></span>
           <button type="button" class="ghost-btn" id="leaveQuizBtnTop">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
             Leave quiz
@@ -184,8 +179,14 @@
       <!-- ===== Start screen ===== -->
       <div id="quizStart" class="quiz-card">
         <div class="card-head">
-          <h2>Set up your quiz</h2>
-          <button type="button" class="sound-btn js-sound-toggle"></button>
+          <div>
+            <span class="setup-badge">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+              Practice Quiz
+            </span>
+            <h2>Set up your quiz</h2>
+          </div>
+          <button type="button" class="sound-btn js-sound-toggle" aria-label="Toggle audio" title="Toggle audio"></button>
         </div>
         <p class="quiz-muted" id="questionBankStatus">Loading question bank…</p>
 
@@ -233,25 +234,37 @@
         <button class="btn btn-primary btn-block" id="startQuizBtn" disabled>Start quiz &rarr;</button>
       </div>
 
-      <!-- ===== Quiz in progress ===== -->
-      <div id="quizPlay" class="quiz-card quiz-card-play" hidden>
-        <div class="stage-tools">
-          <div class="stage-tags">
-            <span class="mcq-class" id="quizQuestionClass" hidden></span>
-            <span class="mcq-category" id="quizQuestionSubject" hidden></span>
-            <span class="mcq-category" id="quizQuestionCategory" hidden></span>
+      <!-- ===== Context Card: Subject, Class & Centered Quiz Topic (above quiz card) ===== -->
+      <div id="quizInfoCard" class="quiz-context-card" hidden>
+        <div class="quiz-context-header">
+          <div class="quiz-context-badges">
+            <span class="context-pill context-pill-badge">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+              Practice Quiz
+            </span>
+            <span class="context-pill context-pill-class" id="quizQuestionClass" hidden></span>
+            <span class="context-pill context-pill-subject" id="quizQuestionSubject" hidden></span>
           </div>
-          <div class="stage-actions">
-            <button type="button" class="sound-btn js-sound-toggle"></button>
-            <button type="button" class="ghost-btn" id="leaveQuizBtn">Leave quiz</button>
+          <div class="quiz-context-actions">
+            <button type="button" class="sound-btn js-sound-toggle" aria-label="Toggle audio" title="Toggle audio"></button>
+            <button type="button" class="ghost-btn" id="leaveQuizBtn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              Leave
+            </button>
           </div>
         </div>
+        <div class="quiz-context-topic-wrap">
+          <h2 class="quiz-context-topic" id="quizQuestionCategory" hidden></h2>
+        </div>
+      </div>
 
+      <!-- ===== Quiz in progress ===== -->
+      <div id="quizPlay" class="quiz-card quiz-card-play" hidden>
         <!-- In-Player Progress Strip -->
         <div class="quiz-play-progress-strip" id="quizPlayProgressStrip">
           <div class="quiz-play-progress-info">
             <span class="quiz-counter-badge" id="quizCounterText">Question 1</span>
-            <span class="quiz-score-pill" id="quizScoreBadge">0 pts</span>
+            <span class="quiz-score-pill" id="quizScoreBadge">0 right</span>
           </div>
           <div class="quiz-play-progress-track">
             <div class="quiz-play-progress-fill" id="quizPlayProgressFill" style="width: 0%;"></div>

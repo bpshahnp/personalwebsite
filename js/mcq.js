@@ -355,6 +355,7 @@ function categoriesInClassAndSubject(classValue, subjectValue) {
 /* ---------- Elements ---------- */
 const quizStart = document.getElementById("quizStart");
 const quizPlay = document.getElementById("quizPlay");
+const quizInfoCard = document.getElementById("quizInfoCard");
 const quizResult = document.getElementById("quizResult");
 
 const questionBankStatus = document.getElementById("questionBankStatus");
@@ -1055,7 +1056,9 @@ function startQuizEngine() {
 
   quizStart.hidden = true;
   quizResult.hidden = true;
+  if (quizInfoCard) quizInfoCard.hidden = false;
   quizPlay.hidden = false;
+  document.body.classList.add("quiz-playing");
   renderQuestion();
 }
 
@@ -1172,6 +1175,16 @@ function renderQuestion() {
   if (railProgressText) railProgressText.textContent = progressText;
   if (railProgressFill) railProgressFill.style.width = `${pct}%`;
 
+  // In-card player progress strip
+  const counterTextEl = document.getElementById("quizCounterText");
+  if (counterTextEl) counterTextEl.textContent = progressText;
+  const playFillEl = document.getElementById("quizPlayProgressFill");
+  if (playFillEl) playFillEl.style.width = `${pct}%`;
+  const scoreBadgeEl = document.getElementById("quizScoreBadge");
+  if (scoreBadgeEl) {
+    scoreBadgeEl.textContent = currentIndex === 0 ? "0 right so far" : `${score} of ${currentIndex} right`;
+  }
+
   // Top bar score
   if (quizScoreTop) quizScoreTop.textContent = scoreText;
 
@@ -1268,7 +1281,14 @@ function selectAnswer(chosenIndex) {
 
   const liveScore = `${score} of ${currentIndex + 1} right`;
   if (quizScoreTop) quizScoreTop.textContent = liveScore;
+  const scoreBadgeEl = document.getElementById("quizScoreBadge");
+  if (scoreBadgeEl) scoreBadgeEl.textContent = liveScore;
   nextQuestionBtn.hidden = false;
+  if (window.innerWidth <= 768) {
+    setTimeout(() => {
+      nextQuestionBtn.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }, 120);
+  }
 
   // Mark rail item as correct or incorrect
   updateRailItem(currentIndex, correct);
@@ -1368,11 +1388,13 @@ leaveCancelBtn.addEventListener("click", () => {
 
 leaveConfirmBtn.addEventListener("click", () => {
   hideLeaveConfirm();
+  document.body.classList.remove("quiz-playing");
   quizQuestions = [];
   userAnswers = [];
   currentIndex = 0;
   score = 0;
   answered = false;
+  if (quizInfoCard) quizInfoCard.hidden = true;
   quizPlay.hidden = true;
   quizResult.hidden = true;
   quizStart.hidden = false;
@@ -1389,7 +1411,9 @@ leaveConfirmBtn.addEventListener("click", () => {
 
 /* ---------- Results ---------- */
 function showResults() {
+  document.body.classList.remove("quiz-playing");
   const elapsed = Date.now() - startedAt;
+  if (quizInfoCard) quizInfoCard.hidden = true;
   quizPlay.hidden = true;
   quizResult.hidden = false;
 
