@@ -496,7 +496,308 @@
   box-shadow: 0 6px 18px rgba(234, 88, 12, 0.45) !important;
 }
 
+/* ---------- In-Card Progress Strip ---------- */
+.quiz-play-progress-strip {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, rgba(234, 88, 12, 0.05) 0%, rgba(249, 115, 22, 0.03) 100%);
+  border: 1px solid rgba(234, 88, 12, 0.15);
+  border-radius: 14px;
+  margin-bottom: 22px;
+}
+.quiz-play-progress-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.quiz-counter-badge {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #475569;
+  letter-spacing: 0.02em;
+}
+.quiz-score-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 12px;
+  border-radius: 999px;
+  background: rgba(234, 88, 12, 0.12);
+  border: 1px solid rgba(234, 88, 12, 0.25);
+  color: #c2410c;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.quiz-play-progress-track {
+  height: 6px;
+  background: rgba(15, 23, 42, 0.07);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.quiz-play-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f97316, #ea580c);
+  border-radius: 999px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ---------- Leave Confirm Panel ---------- */
+.leave-confirm {
+  background: #fff7ed !important;
+  border: 1px solid #fed7aa !important;
+  border-left: 3px solid #ea580c !important;
+  border-radius: 12px !important;
+  padding: 14px 16px !important;
+  margin-bottom: 18px !important;
+}
+.leave-confirm p {
+  margin: 0 0 12px !important;
+  font-size: 0.9rem !important;
+  font-weight: 600 !important;
+  color: #7c2d12 !important;
+}
+.leave-confirm-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ---------- Keyboard Hint ---------- */
+.key-hint {
+  margin: 12px 0 0;
+  font-size: 0.78rem;
+  color: #94a3b8;
+}
+.key-hint kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 5px;
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #475569;
+  box-shadow: 0 1px 0 #cbd5e1;
+}
+
+/* ---------- Quiz Nav ---------- */
+.quiz-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+/* ============================================================
+   MOBILE VIEW — Quiz Player (≤ 768px)
+   Fixes the congested layout by reducing padding, making
+   options full-width with proper touch targets, and collapsing
+   the tag/action row cleanly.
+   ============================================================ */
+@media (max-width: 768px) {
+
+  /* Tighter card padding on mobile */
+  .mcqhub-workspace .quiz-card.quiz-card-play {
+    padding: 16px 14px !important;
+    border-radius: 16px !important;
+    margin-bottom: 16px;
+  }
+
+  /* Stage header: single compact row */
+  .stage-tools {
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 6px !important;
+    padding-bottom: 12px !important;
+    margin-bottom: 14px !important;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.07) !important;
+  }
+  .stage-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+  }
+  .stage-tags .mcq-class,
+  .stage-tags .mcq-category {
+    font-size: 0.68rem !important;
+    padding: 2px 8px !important;
+    border-radius: 6px !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
+  }
+  .stage-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .stage-actions .sound-btn {
+    padding: 5px 10px !important;
+    font-size: 0.74rem !important;
+    border-radius: 999px !important;
+  }
+  /* "Leave quiz" as a red ghost on mobile */
+  .stage-actions .ghost-btn {
+    padding: 5px 10px !important;
+    font-size: 0.74rem !important;
+    border-radius: 999px !important;
+    background: #fff5f5 !important;
+    border-color: #fecaca !important;
+    color: #ef4444 !important;
+  }
+  .stage-actions .ghost-btn:hover {
+    background: #fee2e2 !important;
+  }
+
+  /* Progress strip — compact */
+  .quiz-play-progress-strip {
+    padding: 10px 14px !important;
+    margin-bottom: 16px !important;
+    border-radius: 12px !important;
+    gap: 7px !important;
+  }
+  .quiz-counter-badge { font-size: 0.79rem !important; }
+  .quiz-score-pill { font-size: 0.71rem !important; padding: 2px 9px !important; }
+  .quiz-play-progress-track { height: 5px !important; }
+
+  /* Question: readable but not bulky */
+  .stage-question {
+    font-size: 1.08rem !important;
+    line-height: 1.45 !important;
+    margin: 6px 0 14px !important;
+  }
+
+  /* Options: full-width, large tap targets */
+  .mcq-options { gap: 9px !important; }
+  .mcq-option {
+    padding: 13px 14px !important;
+    border-radius: 12px !important;
+    gap: 12px !important;
+    font-size: 0.9rem !important;
+    min-height: 52px !important;
+    grid-template-columns: 26px minmax(0, 1fr) 20px !important;
+    /* On touch: replace slide with press-scale */
+    transition: background 0.15s ease, border-color 0.15s ease !important;
+  }
+  .mcq-option:hover:not(:disabled) { transform: none !important; }
+  .mcq-option:active:not(:disabled) {
+    transform: scale(0.983) !important;
+    transition: transform 0.08s ease !important;
+  }
+  .opt-key {
+    width: 26px !important;
+    height: 26px !important;
+    font-size: 0.74rem !important;
+    border-radius: 7px !important;
+  }
+  .opt-text { font-size: 0.9rem !important; line-height: 1.45 !important; }
+
+  /* Hide keyboard hint on touch */
+  .key-hint { display: none !important; }
+
+  /* Answer feedback */
+  .answer-verdict {
+    padding: 11px 14px !important;
+    font-size: 0.87rem !important;
+    margin-top: 14px !important;
+    border-radius: 10px !important;
+  }
+  .mcq-explanation {
+    padding: 10px 14px !important;
+    font-size: 0.83rem !important;
+    border-radius: 8px !important;
+    margin-top: 8px !important;
+  }
+
+  /* Nav: stack vertically, full-width, proper tap target */
+  .quiz-nav {
+    flex-direction: column !important;
+    gap: 10px !important;
+    margin-top: 16px !important;
+  }
+  .quiz-nav .btn,
+  #nextQuestionBtn {
+    width: 100% !important;
+    min-height: 50px !important;
+    border-radius: 14px !important;
+    font-size: 1rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  /* Leave confirm: stacked buttons */
+  .leave-confirm {
+    padding: 12px 14px !important;
+    margin-bottom: 14px !important;
+    border-radius: 10px !important;
+  }
+  .leave-confirm p { font-size: 0.86rem !important; margin-bottom: 10px !important; }
+  .leave-confirm-actions { flex-direction: column !important; gap: 8px !important; }
+  .leave-confirm-actions .btn {
+    width: 100% !important;
+    min-height: 44px !important;
+    justify-content: center !important;
+  }
+}
+
+/* Extra-narrow phones ≤ 390px */
+@media (max-width: 390px) {
+  .mcqhub-workspace .quiz-card.quiz-card-play { padding: 14px 12px !important; }
+  .stage-question { font-size: 1.0rem !important; }
+  .mcq-option { padding: 12px 12px !important; font-size: 0.85rem !important; min-height: 48px !important; }
+  .quiz-play-progress-strip { padding: 8px 12px !important; }
+}
+
+/* ============================================================
+   Dark Mode — Progress Strip & Leave Confirm
+   ============================================================ */
+[data-theme="dark"] .quiz-play-progress-strip {
+  background: rgba(234, 88, 12, 0.08) !important;
+  border-color: rgba(234, 88, 12, 0.2) !important;
+}
+[data-theme="dark"] .quiz-counter-badge { color: #94a3b8 !important; }
+[data-theme="dark"] .quiz-score-pill {
+  background: rgba(234, 88, 12, 0.15) !important;
+  border-color: rgba(234, 88, 12, 0.3) !important;
+  color: #fdba74 !important;
+}
+[data-theme="dark"] .quiz-play-progress-track {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+[data-theme="dark"] .leave-confirm {
+  background: rgba(124, 45, 18, 0.15) !important;
+  border-color: rgba(234, 88, 12, 0.35) !important;
+}
+[data-theme="dark"] .leave-confirm p { color: #fca5a5 !important; }
+[data-theme="dark"] .key-hint { color: #475569 !important; }
+[data-theme="dark"] .key-hint kbd {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+  color: #94a3b8 !important;
+  box-shadow: 0 1px 0 #0f172a !important;
+}
+[data-theme="dark"] .stage-actions .ghost-btn {
+  background: rgba(239, 68, 68, 0.1) !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+  color: #f87171 !important;
+}
+
 /* ---------- Rail & Overall Progress Box ---------- */
+
 .overall-progress-box {
   background: #ffffff !important;
   border: 1px solid rgba(15, 23, 42, 0.08) !important;

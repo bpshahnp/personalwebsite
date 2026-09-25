@@ -23,7 +23,7 @@
   <meta name="twitter:description" content="Practice thousands of MCQs on GK, Loksewa, Science, Maths and more. Free multiple-choice quiz practice by B. Prasad Shah." />
   <meta name="twitter:image" content="https://bholaprasadshah.com.np/assets/og-image.jpg" />
   <link rel="stylesheet" href="css/style.css?v=20260922_11" />
-  <link rel="stylesheet" href="css/mcq.css?v=20260925_01" />
+  <link rel="stylesheet" href="css/mcq.css?v=20260925_02" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -241,6 +241,17 @@
           <div class="stage-actions">
             <button type="button" class="sound-btn js-sound-toggle"></button>
             <button type="button" class="ghost-btn" id="leaveQuizBtn">Leave quiz</button>
+          </div>
+        </div>
+
+        <!-- In-Player Progress Strip -->
+        <div class="quiz-play-progress-strip" id="quizPlayProgressStrip">
+          <div class="quiz-play-progress-info">
+            <span class="quiz-counter-badge" id="quizCounterText">Question 1</span>
+            <span class="quiz-score-pill" id="quizScoreBadge">0 pts</span>
+          </div>
+          <div class="quiz-play-progress-track">
+            <div class="quiz-play-progress-fill" id="quizPlayProgressFill" style="width: 0%;"></div>
           </div>
         </div>
 
