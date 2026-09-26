@@ -917,19 +917,30 @@ function renderTopicProgress() {
   // Calculate overall completion metrics
   const totalTopics = rows.length;
   const completedTopics = rows.filter(r => r.entry && r.entry.bestPercentage >= 100).length;
-  const pct = totalTopics > 0 ? Math.round((completedTopics / totalTopics) * 100) : 0;
+  const attemptedTopics = rows.filter(r => r.entry && r.entry.bestPercentage > 0 && r.entry.bestPercentage < 100).length;
+
+  // Progress bar = average of best scores across all topics (so partial attempts contribute)
+  const avgPct = totalTopics > 0
+    ? Math.round(rows.reduce((sum, r) => sum + (r.entry ? Math.min(r.entry.bestPercentage, 100) : 0), 0) / totalTopics)
+    : 0;
 
   // Total points earned
   const totalPoints = (myScoreDoc && myScoreDoc.points && myScoreDoc.points["All"] && myScoreDoc.points["All"]["all_time"]) || 0;
 
   if (overallProgressPct) {
-    overallProgressPct.textContent = `${pct}%`;
+    overallProgressPct.textContent = `${avgPct}%`;
   }
   if (overallProgressFill) {
-    overallProgressFill.style.width = `${pct}%`;
+    overallProgressFill.style.width = `${avgPct}%`;
   }
   if (overallMasteredCount) {
-    overallMasteredCount.textContent = `${completedTopics} / ${totalTopics} Mastered`;
+    if (completedTopics > 0 || attemptedTopics > 0) {
+      overallMasteredCount.textContent = completedTopics === totalTopics
+        ? `${completedTopics} / ${totalTopics} Mastered 🎉`
+        : `${completedTopics} / ${totalTopics} Mastered${attemptedTopics > 0 ? ` · ${attemptedTopics} In Progress` : ""}`;
+    } else {
+      overallMasteredCount.textContent = `0 / ${totalTopics} Mastered`;
+    }
   }
   if (overallTotalScore) {
     overallTotalScore.textContent = isLoggedIn ? `${totalPoints} Pts` : "Guest";
