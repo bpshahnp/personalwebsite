@@ -58,6 +58,11 @@
     background:var(--card);border:1px solid var(--border);border-radius:14px;
     padding:14px 16px;margin-bottom:12px;overflow-x:auto;
   }
+  .model.available{border-color:var(--accent2);box-shadow:0 0 0 1px var(--accent2) inset;}
+  .status-badge{
+    display:inline-block;font-size:0.68rem;font-weight:700;padding:2px 8px;border-radius:20px;
+    background:var(--accent2);color:#04322c;margin-left:8px;vertical-align:middle;
+  }
   .model-top{display:flex;justify-content:space-between;align-items:center;gap:8px;}
   .model-name{font-weight:700;font-size:1.05rem;}
   .dates{color:var(--muted);font-size:0.78rem;margin-top:4px;line-height:1.5;}
@@ -228,12 +233,20 @@
       listEl.innerHTML = '<div class="empty">No models tracked yet. Add one above.</div>';
       return;
     }
-    listEl.innerHTML = entries.map(e => {
+    const now = Date.now();
+    const sorted = [...entries].sort((a,b)=>{
+      const ra = (a.revivalMs != null) ? a.revivalMs : (a.expiryMs + WEEK_MS);
+      const rb = (b.revivalMs != null) ? b.revivalMs : (b.expiryMs + WEEK_MS);
+      const aAvail = ra <= now, bAvail = rb <= now;
+      if(aAvail !== bAvail) return aAvail ? -1 : 1;
+      return ra - rb;
+    });
+    listEl.innerHTML = sorted.map(e => {
       const revivalMs = (e.revivalMs != null) ? e.revivalMs : (e.expiryMs + WEEK_MS);
       const expiryLine = (e.expiryMs != null) ? `Expiry: ${formatDate(e.expiryMs)}<br>` : '';
       return `<div class="model" data-id="${e.id}" data-revival="${revivalMs}">
         <div class="model-top">
-          <div class="model-name">${escapeHtml(e.name)}</div>
+          <div class="model-name">${escapeHtml(e.name)}<span class="status-badge" data-badge style="display:none;">AVAILABLE</span></div>
           <button class="btn-del" data-del="${e.id}">Remove</button>
         </div>
         <div class="dates">
@@ -257,14 +270,19 @@
     listEl.querySelectorAll('.model').forEach(card=>{
       const revivalMs = Number(card.dataset.revival);
       const cd = card.querySelector('[data-countdown]');
+      const badge = card.querySelector('[data-badge]');
       const diff = revivalMs - Date.now();
       const formatted = formatCountdown(diff);
       if(formatted){
         cd.textContent = "⏳ " + formatted + " until revival";
         cd.classList.remove('revived');
+        card.classList.remove('available');
+        badge.style.display = 'none';
       } else {
-        cd.textContent = "✅ Revived!";
+        cd.textContent = "✅ Available now";
         cd.classList.add('revived');
+        card.classList.add('available');
+        badge.style.display = 'inline-block';
       }
     });
   }
