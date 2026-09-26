@@ -188,9 +188,15 @@
   margin-top: 3px;
   white-space: nowrap;
 }
-.day-status-pill.past {
+.day-status-pill.past,
+.day-status-pill.completed {
   background: rgba(74, 222, 128, 0.18);
   color: #86efac;
+}
+.day-status-pill.missed {
+  background: rgba(239, 68, 68, 0.22);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.35);
 }
 .day-status-pill.active {
   background: var(--orange, #e8834e);
@@ -207,6 +213,24 @@
   border-color: var(--orange, #e8834e);
   box-shadow: 0 4px 16px rgba(232, 131, 78, 0.25);
   transform: translateY(-2px);
+}
+.day-chip.is-completed {
+  border-color: rgba(74, 222, 128, 0.35);
+  background: rgba(34, 197, 94, 0.06);
+}
+.day-chip.is-completed .day-icon {
+  color: #4ade80;
+  display: flex;
+  align-items: center;
+}
+.day-chip.is-missed {
+  border-color: rgba(239, 68, 68, 0.35);
+  background: rgba(239, 68, 68, 0.06);
+}
+.day-chip.is-missed .day-icon {
+  color: #f87171;
+  display: flex;
+  align-items: center;
 }
 
 /* Quiz Container & Cards */

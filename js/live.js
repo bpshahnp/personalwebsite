@@ -29,6 +29,7 @@
   let leaderboardDocs = [];
   let activeLeaderboardFilter = "today"; // "today" or "week"
   let isPracticeMode = false;
+  let userWeeklyDays = {}; // Map of "day1", "day2", etc. taken by the current user
 
   // DOM Elements
   const liveIntroCard = document.getElementById("liveIntroCard");
@@ -217,6 +218,10 @@
       let statusLabel = "Locked";
       let icon = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
 
+      const dayKey = `day${i}`;
+      const dayRecord = userWeeklyDays ? userWeeklyDays[dayKey] : null;
+      const hasPlayed = Boolean(dayRecord);
+
       if (isComingSoon) {
         if (i === 1) {
           status = "active";
@@ -231,15 +236,29 @@
         }
       } else {
         if (i < currentDayIndex) {
-          status = "past";
-          statusLabel = "Completed";
-          icon = "✓";
-          dayCard.classList.add("is-past");
+          if (hasPlayed) {
+            status = "completed";
+            statusLabel = "Completed";
+            icon = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+            dayCard.classList.add("is-past", "is-completed");
+          } else {
+            status = "missed";
+            statusLabel = "Missed";
+            icon = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+            dayCard.classList.add("is-past", "is-missed");
+          }
         } else if (i === currentDayIndex) {
-          status = "active";
-          statusLabel = "Today";
-          icon = "●";
           dayCard.classList.add("is-today");
+          if (hasPlayed) {
+            status = "completed";
+            statusLabel = "Completed";
+            icon = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+            dayCard.classList.add("is-completed");
+          } else {
+            status = "active";
+            statusLabel = "Today";
+            icon = "●";
+          }
         } else {
           status = "locked";
           statusLabel = "Locked";
@@ -408,18 +427,28 @@
     }
   }
 
-  /* ---------- Already-Played Gate ---------- */
+  /* ---------- Already-Played Gate & Week Days Tracker ---------- */
   async function checkAlreadyPlayedToday(user) {
-    if (!user || typeof db === "undefined" || !db) return false;
+    if (!user || typeof db === "undefined" || !db) {
+      userWeeklyDays = {};
+      renderDaysStepper();
+      return null;
+    }
     try {
       const docRef = db.collection("liveQuizScores").doc(`${user.uid}_${currentWeekKey}`);
       const snap = await docRef.get();
       if (snap.exists) {
-        const days = snap.data().days || {};
-        return days[currentDayKey] || null; // returns day record or null
+        userWeeklyDays = snap.data().days || {};
+        renderDaysStepper();
+        return userWeeklyDays[currentDayKey] || null; // returns day record or null
+      } else {
+        userWeeklyDays = {};
+        renderDaysStepper();
       }
     } catch (e) {
       console.warn("checkAlreadyPlayedToday error:", e);
+      userWeeklyDays = {};
+      renderDaysStepper();
     }
     return null;
   }
@@ -472,6 +501,8 @@
     if (liveQuizStatusText) liveQuizStatusText.hidden = false;
     if (alreadyPlayedPanel) alreadyPlayedPanel.hidden = true;
     clearInterval(alreadyPlayedCountdownTimer);
+    userWeeklyDays = {};
+    renderDaysStepper();
   }
 
   async function onQuestionsReady() {
