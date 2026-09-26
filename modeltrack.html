@@ -1,468 +1,993 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Model Revival Tracker</title>
-<style>
-  :root{
-    --bg:#f5f6f8; --card:#ffffff; --text:#1a1a1e; --muted:#6b7280;
-    --accent:#6d5efc; --accent2:#00c2a8; --danger:#ef4444; --border:#e5e7eb;
-    box-sizing:border-box;
-    padding-top:env(safe-area-inset-top,0px);
-    padding-bottom:env(safe-area-inset-bottom,0px);
-  }
-  @media (prefers-color-scheme: dark){
-    :root:not([data-theme="light"]){
-      --bg:#111114; --card:#1c1c22; --text:#f2f2f5; --muted:#9ca3af; --border:#2c2c34;
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Model Tracker | B. Prasad Shah</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="stylesheet" href="css/style.css?v=20260926_02" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ===== Model Tracker Styles ===== */
+    .mt-hero {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #0f2744 100%);
+      color: #fff;
+      padding: 52px 0 38px;
+      position: relative;
+      overflow: hidden;
     }
-  }
-  :root[data-theme="dark"]{
-    --bg:#111114; --card:#1c1c22; --text:#f2f2f5; --muted:#9ca3af; --border:#2c2c34;
-  }
-  html{scroll-padding-top:env(safe-area-inset-top,0px);}
-  *{box-sizing:border-box;}
-  body{
-    margin:0; background:var(--bg); color:var(--text);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-    min-height:100%;
-  }
-  .wrap{max-width:640px;margin:0 auto;padding:24px 16px 60px;}
-  h1{font-size:1.4rem;margin:0 0 4px;}
-  p.sub{color:var(--muted);margin:0 0 20px;font-size:0.9rem;}
-  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:16px;}
-  label{display:block;font-size:0.8rem;color:var(--muted);margin-bottom:4px;}
-  input[type=text], input[type=datetime-local]{
-    width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);
-    background:var(--bg);color:var(--text);font-size:0.95rem;margin-bottom:12px;
-  }
-  .row{display:flex;gap:8px;}
-  .row > *{flex:1;}
-  button{
-    cursor:pointer;border:none;border-radius:10px;padding:10px 14px;font-size:0.9rem;font-weight:600;
-  }
-  .btn-now{background:var(--border);color:var(--text);flex:0 0 auto;}
-  .mode-toggle{display:flex;gap:8px;margin-bottom:14px;}
-  .mode-btn{
-    flex:1;background:var(--bg);color:var(--muted);border:1px solid var(--border);
-    padding:9px 8px;font-size:0.82rem;font-weight:600;border-radius:10px;
-  }
-  .mode-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
-  .hint{color:var(--muted);font-size:0.78rem;margin:-4px 0 8px;}
-  .duration-row{margin-bottom:12px;}
-  .duration-row input[type=number]{margin-bottom:4px;text-align:center;}
-  .unit-label{text-align:center;margin:0;font-size:0.72rem;}
-  .btn-add{background:var(--accent);color:#fff;width:100%;padding:12px;margin-top:4px;}
-  .btn-del{background:transparent;color:var(--danger);padding:4px 8px;font-size:0.8rem;}
-  .model{
-    background:var(--card);border:1px solid var(--border);border-radius:14px;
-    padding:14px 16px;margin-bottom:12px;overflow-x:auto;
-  }
-  .model.available{border-color:var(--accent2);box-shadow:0 0 0 1px var(--accent2) inset;}
-  .status-badge{
-    display:inline-block;font-size:0.68rem;font-weight:700;padding:2px 8px;border-radius:20px;
-    background:var(--accent2);color:#04322c;margin-left:8px;vertical-align:middle;
-  }
-  .model-top{display:flex;justify-content:space-between;align-items:center;gap:8px;}
-  .model-name{font-weight:700;font-size:1.05rem;}
-  .dates{color:var(--muted);font-size:0.78rem;margin-top:4px;line-height:1.5;}
-  .countdown{
-    margin-top:10px;font-size:1.3rem;font-weight:700;letter-spacing:0.5px;
-    color:var(--accent2);
-  }
-  .revived{color:var(--accent2);}
-  .empty{color:var(--muted);text-align:center;padding:30px 0;font-size:0.9rem;}
-</style>
+    .mt-hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 70% 40%, rgba(99,102,241,0.18) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .mt-hero-inner { position: relative; z-index: 1; }
+    .mt-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(99,102,241,0.18);
+      border: 1px solid rgba(99,102,241,0.4);
+      color: #a5b4fc;
+      padding: 5px 14px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      margin-bottom: 18px;
+    }
+    .mt-badge-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #818cf8;
+      animation: liveDotPulse 1.8s infinite ease-in-out;
+    }
+    .mt-hero h1 {
+      font-family: var(--font-display, 'Fraunces', serif);
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      font-weight: 700;
+      margin: 0 0 10px;
+      color: #fff;
+    }
+    .mt-hero p {
+      font-size: 0.97rem;
+      color: #94a3b8;
+      margin: 0;
+      max-width: 560px;
+    }
+    .mt-stats-row {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-top: 28px;
+    }
+    .mt-stat-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 999px;
+      padding: 7px 16px;
+      font-size: 0.85rem;
+      color: #e2e8f0;
+    }
+    .mt-stat-pill strong { color: #fff; font-size: 1rem; margin-right: 2px; }
+    .pill-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .pill-dot.green { background: #22c55e; }
+    .pill-dot.amber { background: #f59e0b; }
+    .pill-dot.red   { background: #ef4444; }
+    .pill-dot.grey  { background: #64748b; }
+
+    /* ===== Main Grid ===== */
+    .mt-container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 36px 20px 60px;
+    }
+    .mt-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+    .mt-toolbar h2 {
+      font-family: var(--font-display, 'Fraunces', serif);
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--navy-deep, #0f172a);
+      margin: 0;
+      flex: 1;
+    }
+    .mt-filter-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .filter-chip {
+      padding: 5px 14px;
+      border-radius: 999px;
+      border: 1.5px solid #e2e8f0;
+      background: #f8fafc;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #64748b;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+    .filter-chip:hover, .filter-chip.active {
+      background: #1e293b;
+      border-color: #1e293b;
+      color: #fff;
+    }
+    .btn-seed {
+      padding: 7px 16px;
+      border-radius: 10px;
+      border: none;
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      color: #fff;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: opacity 0.2s;
+    }
+    .btn-seed:hover { opacity: 0.88; }
+
+    /* ===== Cards Grid ===== */
+    .mt-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+    }
+    .mt-card {
+      background: #fff;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 18px 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: box-shadow 0.2s, border-color 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .mt-card:hover {
+      box-shadow: 0 6px 24px rgba(15,23,42,0.09);
+      border-color: #cbd5e1;
+    }
+    .mt-card::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      border-radius: 16px 16px 0 0;
+    }
+    .mt-card.status-active::before   { background: #22c55e; }
+    .mt-card.status-expiring::before { background: #f59e0b; }
+    .mt-card.status-expired::before  { background: #ef4444; }
+    .mt-card.status-revival::before  { background: #6366f1; }
+    .mt-card.status-unknown::before  { background: #94a3b8; }
+
+    .mt-card-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .mt-account-name {
+      font-weight: 700;
+      font-size: 0.97rem;
+      color: #0f172a;
+      line-height: 1.3;
+    }
+    .mt-model-tag {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 999px;
+      letter-spacing: 0.04em;
+      flex-shrink: 0;
+    }
+    .tag-gemini { background: #ede9fe; color: #6d28d9; }
+    .tag-claude { background: #fef3c7; color: #92400e; }
+    .tag-default{ background: #f1f5f9; color: #475569; }
+
+    .mt-status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 999px;
+    }
+    .status-active   .mt-status-badge { background: #dcfce7; color: #15803d; }
+    .status-expiring .mt-status-badge { background: #fef9c3; color: #a16207; }
+    .status-expired  .mt-status-badge { background: #fee2e2; color: #b91c1c; }
+    .status-revival  .mt-status-badge { background: #ede9fe; color: #6d28d9; }
+    .status-unknown  .mt-status-badge { background: #f1f5f9; color: #64748b; }
+
+    .mt-time-row {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 0.82rem;
+    }
+    .mt-time-label { color: #64748b; font-size: 0.75rem; }
+    .mt-time-value {
+      font-weight: 600;
+      color: #1e293b;
+      font-variant-numeric: tabular-nums;
+    }
+    .mt-countdown {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.04em;
+      color: #4f46e5;
+    }
+    .status-expired .mt-countdown { color: #dc2626; }
+    .status-active  .mt-countdown { color: #16a34a; }
+    .status-expiring .mt-countdown { color: #d97706; }
+
+    .mt-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 8px;
+      border-top: 1px solid #f1f5f9;
+      gap: 8px;
+    }
+    .btn-edit-card {
+      font-size: 0.76rem;
+      font-weight: 600;
+      color: #6366f1;
+      background: #ede9fe;
+      border: none;
+      border-radius: 8px;
+      padding: 4px 10px;
+      cursor: pointer;
+      transition: background 0.15s;
+      display: none; /* shown only to admin */
+    }
+    .btn-edit-card:hover { background: #c7d2fe; }
+    .admin-visible .btn-edit-card { display: inline-flex; align-items: center; gap: 4px; }
+
+    .mt-sort-info {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      text-align: right;
+    }
+
+    /* ===== Edit Modal ===== */
+    .mt-modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.55);
+      z-index: 999;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .mt-modal-overlay.open { display: flex; }
+    .mt-modal {
+      background: #fff;
+      border-radius: 20px;
+      width: 100%;
+      max-width: 460px;
+      padding: 28px 28px 24px;
+      box-shadow: 0 20px 60px rgba(15,23,42,0.25);
+      animation: fadeSlideIn 0.25s ease;
+    }
+    @keyframes fadeSlideIn {
+      from { opacity:0; transform: translateY(12px); }
+      to   { opacity:1; transform: translateY(0); }
+    }
+    .mt-modal h3 { margin: 0 0 20px; font-size: 1.1rem; color: #0f172a; }
+    .mt-form-group { margin-bottom: 14px; }
+    .mt-form-group label { display: block; font-size: 0.82rem; font-weight: 600; color: #475569; margin-bottom: 5px; }
+    .mt-form-group input {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      color: #0f172a;
+      background: #f8fafc;
+      box-sizing: border-box;
+      transition: border-color 0.2s;
+    }
+    .mt-form-group input:focus { outline: none; border-color: #6366f1; background: #fff; }
+    .mt-form-hint { font-size: 0.73rem; color: #94a3b8; margin-top: 3px; }
+    .mt-modal-actions { display: flex; gap: 10px; margin-top: 6px; justify-content: flex-end; }
+    .btn-modal-save {
+      padding: 9px 22px;
+      border-radius: 10px;
+      border: none;
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+    .btn-modal-cancel {
+      padding: 9px 18px;
+      border-radius: 10px;
+      border: 1.5px solid #e2e8f0;
+      background: #f8fafc;
+      color: #64748b;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+    .btn-modal-delete {
+      padding: 9px 14px;
+      border-radius: 10px;
+      border: none;
+      background: #fee2e2;
+      color: #b91c1c;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      margin-right: auto;
+    }
+
+    /* ===== Loading / Empty State ===== */
+    .mt-loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      padding: 60px 0;
+      color: #94a3b8;
+      font-size: 0.95rem;
+    }
+    .mt-spinner {
+      width: 36px; height: 36px;
+      border: 3px solid #e2e8f0;
+      border-top-color: #6366f1;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ===== Dark Mode ===== */
+    [data-theme="dark"] .mt-card { background: #1e293b; border-color: #334155; }
+    [data-theme="dark"] .mt-card:hover { border-color: #475569; }
+    [data-theme="dark"] .mt-account-name { color: #f1f5f9; }
+    [data-theme="dark"] .mt-time-value { color: #cbd5e1; }
+    [data-theme="dark"] .mt-card-footer { border-color: #334155; }
+    [data-theme="dark"] .mt-sort-info { color: #64748b; }
+    [data-theme="dark"] .mt-toolbar h2 { color: #f1f5f9; }
+    [data-theme="dark"] .filter-chip { background: #1e293b; border-color: #334155; color: #94a3b8; }
+    [data-theme="dark"] .filter-chip.active { background: #6366f1; border-color: #6366f1; color: #fff; }
+    [data-theme="dark"] .mt-modal { background: #1e293b; }
+    [data-theme="dark"] .mt-modal h3 { color: #f1f5f9; }
+    [data-theme="dark"] .mt-form-group label { color: #94a3b8; }
+    [data-theme="dark"] .mt-form-group input { background: #0f172a; border-color: #334155; color: #f1f5f9; }
+    [data-theme="dark"] .btn-modal-cancel { background: #0f172a; border-color: #334155; color: #94a3b8; }
+
+    /* ===== Add New Card ===== */
+    .btn-add-new {
+      padding: 8px 18px;
+      border-radius: 10px;
+      border: 1.5px dashed #cbd5e1;
+      background: transparent;
+      color: #6366f1;
+      font-size: 0.84rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.18s;
+    }
+    .btn-add-new:hover { background: #ede9fe; border-color: #6366f1; }
+    .admin-visible .btn-add-new { display: inline-flex; }
+
+    /* ===== Access Denied ===== */
+    .mt-access-denied {
+      text-align: center;
+      padding: 80px 20px;
+      color: #64748b;
+    }
+    .mt-access-denied svg { margin-bottom: 16px; }
+    .mt-access-denied h2 { color: #0f172a; font-size: 1.3rem; margin: 0 0 8px; }
+    [data-theme="dark"] .mt-access-denied h2 { color: #f1f5f9; }
+
+    @media (max-width: 600px) {
+      .mt-stats-row { gap: 10px; }
+      .mt-stat-pill { font-size: 0.78rem; padding: 5px 12px; }
+      .mt-grid { grid-template-columns: 1fr; }
+      .mt-toolbar { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
 </head>
 <body>
-<div class="wrap">
-  <h1>🔁 Model Revival Tracker</h1>
-  <p class="sub">Revival date = expiry date + 7 days. Add a model below to start the countdown.</p>
-  <p class="sub" id="syncBadge">Connecting to Firebase…</p>
 
-  <div class="card">
-    <label for="name">Model name</label>
-    <input type="text" id="name" placeholder="e.g. Claude Fable 5" />
-
-    <div class="mode-toggle">
-      <button type="button" class="mode-btn active" data-mode="expiry" id="modeExpiryBtn">From expiry date</button>
-      <button type="button" class="mode-btn" data-mode="direct" id="modeDirectBtn">Enter revival date directly</button>
+  <!-- ===== Site Header ===== -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="index.html" class="logo">B. <span>Prasad Shah</span></a>
+      <nav class="main-nav" id="mainNav">
+        <a href="index.html">Home</a>
+        <a href="live-quiz.html" class="nav-live-link">Live Quiz <span class="nav-live-dot" aria-hidden="true"></span></a>
+        <a href="premium.html">Premium Quiz</a>
+        <a href="mcq.html">MCQ Hub</a>
+        <a href="python.html">Python Hub</a>
+        <a href="leaderboard.html">Leaderboard</a>
+        <div class="dropdown">
+          <button class="dropdown-toggle" type="button" aria-haspopup="true" aria-expanded="false">More ▾</button>
+          <div class="dropdown-menu">
+            <a href="resources.html">Additional Resources</a>
+            <a href="index.html#updates">Latest Updates</a>
+            <a href="contact.html">Contact</a>
+            <a href="admin.html">Admin Panel</a>
+          </div>
+        </div>
+      </nav>
+      <div class="header-actions">
+        <button class="theme-toggle-btn" id="themeToggleBtn" type="button" aria-label="Toggle theme"></button>
+        <div class="auth-widget">
+          <button class="auth-icon-btn" id="authIconBtn" aria-label="Account"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></button>
+          <div class="auth-dropdown" id="authDropdown" hidden></div>
+        </div>
+      </div>
+      <div class="mobile-header-icons">
+        <button class="nav-toggle" id="navToggle" aria-label="Open menu">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+        <div class="auth-widget">
+          <button class="auth-icon-btn" id="authIconBtnMobile" aria-label="Account"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></button>
+          <div class="auth-dropdown" id="authDropdownMobile" hidden></div>
+        </div>
+      </div>
     </div>
+  </header>
 
-    <div id="expiryFields">
-      <label for="expiry">Expiry date & time</label>
-      <div class="row">
-        <input type="datetime-local" id="expiry" />
-        <button class="btn-now" id="nowBtn">Now</button>
+  <!-- ===== Mobile Nav Drawer ===== -->
+  <div class="nav-drawer" id="navDrawer">
+    <button class="drawer-close" id="drawerClose" aria-label="Close menu">&times;</button>
+    <nav class="drawer-nav">
+      <a href="index.html">Home</a>
+      <a href="live-quiz.html">Live Quiz</a>
+      <a href="premium.html">Premium Quiz</a>
+      <a href="mcq.html">MCQ Hub</a>
+      <a href="python.html">Python Hub</a>
+      <a href="leaderboard.html">Leaderboard</a>
+      <div class="dropdown">
+        <button class="dropdown-toggle" type="button">More ▾</button>
+        <div class="dropdown-menu">
+          <a href="resources.html">Additional Resources</a>
+          <a href="index.html#updates">Latest Updates</a>
+          <a href="contact.html">Contact</a>
+          <a href="admin.html">Admin Panel</a>
+        </div>
+      </div>
+    </nav>
+  </div>
+  <div class="drawer-overlay" id="drawerOverlay"></div>
+
+  <!-- ===== Hero ===== -->
+  <section class="mt-hero">
+    <div class="container mt-hero-inner">
+      <div class="mt-badge">
+        <span class="mt-badge-dot"></span>
+        MODEL TRACKER
+      </div>
+      <h1>AI Model Account Tracker</h1>
+      <p>Live countdown dashboard for Gemini & Claude account revivals and expiries.</p>
+      <div class="mt-stats-row" id="statsRow">
+        <div class="mt-stat-pill"><span class="pill-dot green"></span><strong id="statActive">—</strong> Active</div>
+        <div class="mt-stat-pill"><span class="pill-dot amber"></span><strong id="statExpiring">—</strong> Expiring Soon</div>
+        <div class="mt-stat-pill"><span class="pill-dot red"></span><strong id="statExpired">—</strong> Expired</div>
+        <div class="mt-stat-pill"><span class="pill-dot grey"></span><strong id="statReviving">—</strong> Reviving</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Main Content ===== -->
+  <main>
+    <!-- Access Denied (shown to non-admins) -->
+    <div class="mt-container" id="accessDenied" hidden>
+      <div class="mt-access-denied">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+        <h2>Admin Access Required</h2>
+        <p>Please sign in with an admin account to view the model tracker.</p>
       </div>
     </div>
 
-    <div id="directFields" style="display:none;">
-      <label>Time left until revival</label>
-      <p class="hint">For already-expired models — enter how much time is left, and the countdown starts from now.</p>
-      <div class="row duration-row">
-        <div>
-          <input type="number" id="durDays" min="0" placeholder="0" />
-          <label class="unit-label">Days</label>
+    <!-- Main dashboard (shown to admins) -->
+    <div class="mt-container" id="mainDashboard" hidden>
+      <div class="mt-toolbar">
+        <h2>All Accounts</h2>
+        <div class="mt-filter-row">
+          <button class="filter-chip active" data-filter="all">All</button>
+          <button class="filter-chip" data-filter="gemini">Gemini</button>
+          <button class="filter-chip" data-filter="claude">Claude</button>
+          <button class="filter-chip" data-filter="other">Other</button>
+          <button class="filter-chip" data-filter="active">Active</button>
+          <button class="filter-chip" data-filter="expired">Expired</button>
         </div>
-        <div>
-          <input type="number" id="durHours" min="0" max="23" placeholder="0" />
-          <label class="unit-label">Hours</label>
-        </div>
-        <div>
-          <input type="number" id="durMins" min="0" max="59" placeholder="0" />
-          <label class="unit-label">Minutes</label>
+        <div style="display:flex;gap:8px;align-items:center" id="adminControls">
+          <button class="btn-add-new admin-visible" id="btnAddNew">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Account
+          </button>
+          <button class="btn-seed" id="btnSeed" title="Seed initial data to Firestore">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            Seed Data
+          </button>
         </div>
       </div>
+
+      <!-- Loading state -->
+      <div class="mt-loading" id="mtLoading">
+        <div class="mt-spinner"></div>
+        <span>Loading accounts…</span>
+      </div>
+
+      <!-- Cards grid -->
+      <div class="mt-grid" id="mtGrid" style="display:none"></div>
     </div>
+  </main>
 
-    <button class="btn-add" id="addBtn">Add model</button>
+  <!-- ===== Edit / Add Modal ===== -->
+  <div class="mt-modal-overlay" id="editModal">
+    <div class="mt-modal">
+      <h3 id="modalTitle">Edit Account</h3>
+      <div class="mt-form-group">
+        <label>Account Name</label>
+        <input type="text" id="fieldName" placeholder="e.g. bprdshah Gemini" />
+      </div>
+      <div class="mt-form-group">
+        <label>Expiry (datetime-local or leave blank)</label>
+        <input type="datetime-local" id="fieldExpiry" />
+        <div class="mt-form-hint">Leave blank if no expiry / not yet expired.</div>
+      </div>
+      <div class="mt-form-group">
+        <label>Revival (datetime-local)</label>
+        <input type="datetime-local" id="fieldRevival" />
+        <div class="mt-form-hint">When the account becomes usable again.</div>
+      </div>
+      <div class="mt-modal-actions">
+        <button class="btn-modal-delete" id="btnModalDelete" hidden>Delete</button>
+        <button class="btn-modal-cancel" id="btnModalCancel">Cancel</button>
+        <button class="btn-modal-save" id="btnModalSave">Save</button>
+      </div>
+    </div>
   </div>
 
-  <div id="list"></div>
+  <!-- ===== Footer ===== -->
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>&copy; 2026 B. Prasad Shah. All rights reserved.</p>
+      <div class="footer-links">
+        <a href="index.html">Home</a>
+        <a href="live-quiz.html">Live Quiz</a>
+        <a href="mcq.html">MCQ Hub</a>
+        <a href="leaderboard.html">Leaderboard</a>
+        <a href="privacy.html">Privacy Policy</a>
+      </div>
+    </div>
+  </footer>
 
-  <div class="card" id="importCard">
-    <label for="importBox">Import your old data</label>
-    <p class="hint">Paste the JSON you copied from the "Export" box on your old claude.ai tracker, then click Import.</p>
-    <textarea id="importBox" rows="6" placeholder='[{"name":"...","expiryMs":...,"revivalMs":null}, ...]' style="width:100%;font-family:monospace;font-size:0.78rem;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--bg);color:var(--text);"></textarea>
-    <button class="btn-add" id="importBtn" style="margin-top:8px;">Import</button>
-  </div>
-</div>
+  <!-- Firebase & Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/auth-widget.js"></script>
+  <script src="js/nav-drawer.js"></script>
 
-<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
-<script>
-(function(){
-  const STORAGE_KEY = "model_revival_entries";
-  const MIGRATION_FLAG = "model_revival_migrated_v1";
-  const WEEK_MS = 7*24*60*60*1000;
+  <script>
+  /* ============================================================
+     modeltrack.js — AI Model Account Revival/Expiry Tracker
+     All data lives in Firestore collection: "modelAccounts"
+     Only users in ADMIN_EMAILS can view / edit.
+     ============================================================ */
+  (function () {
 
-  let db = null;
-  let usingDb = false;
-  let entries = null; // null = still loading
+    /* ---- Initial Seed Data ---- */
+    const SEED_DATA = [
+      { name: "bprdshah",                    expiryMs: null,          revivalMs: 1790410260000 },
+      { name: "bholashroff345 Gemini",        expiryMs: null,          revivalMs: 1790463420000 },
+      { name: "digitalkoselee Gemini",        expiryMs: null,          revivalMs: 1790470200000 },
+      { name: "bholapdshah.np Gemini",        expiryMs: null,          revivalMs: 1790489880000 },
+      { name: "bholapr.shah Gemini",          expiryMs: null,          revivalMs: 1790490120000 },
+      { name: "digitalkoselee Claude",        expiryMs: null,          revivalMs: 1790490420000 },
+      { name: "bholapdshah.np Claude",        expiryMs: null,          revivalMs: 1790583540000 },
+      { name: "bholapr.shah Claude",          expiryMs: null,          revivalMs: 1790583780000 },
+      { name: "ak.bps2023 Claude",            expiryMs: null,          revivalMs: 1790595060000 },
+      { name: "ak.bps2023 Gemini",            expiryMs: null,          revivalMs: 1790605860000 },
+      { name: "bholashroff345 Claude",        expiryMs: null,          revivalMs: 1790612220000 },
+      { name: "osalsb567 Claude",             expiryMs: null,          revivalMs: 1790652900000 },
+      { name: "osalsb567 Gemini",             expiryMs: null,          revivalMs: 1790660100000 },
+      { name: "Secondaryblockosa Gemini",     expiryMs: null,          revivalMs: 1790660400000 },
+      { name: "Secondaryblockosa Claude",     expiryMs: null,          revivalMs: 1790671200000 },
+      { name: "skumaridevi Gemini",           expiryMs: null,          revivalMs: 1790675220000 },
+      { name: "skumaridevi Claude",           expiryMs: null,          revivalMs: 1790675220000 },
+      { name: "parijatboarding Gemini",       expiryMs: null,          revivalMs: 1790681580000 },
+      { name: "parijatboarding Claude",       expiryMs: null,          revivalMs: 1790681580000 },
+      { name: "bpshah.gg Gemini",             expiryMs: null,          revivalMs: 1790779080000 },
+      { name: "bpshah.gg Claude",             expiryMs: null,          revivalMs: 1790847480000 },
+      { name: "akumaribps Claude",            expiryMs: null,          revivalMs: 1790847900000 },
+      { name: "akumaribps Gemini",            expiryMs: null,          revivalMs: 1790948700000 },
+      { name: "bprdshah Gemini",              expiryMs: null,          revivalMs: 1790954640000 },
+      { name: "shreeudhoshah Gemini",         expiryMs: null,          revivalMs: 1790959320000 },
+      { name: "Shreeudhoshah Claude",         expiryMs: null,          revivalMs: 1790959380000 },
+      { name: "kabita",                        expiryMs: 1790399280000, revivalMs: 1791004080000 }
+    ];
 
-  function loadLocalEntries(){
-    try{
-      const raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : [];
-    }catch(e){ return []; }
-  }
-  function saveLocalEntries(list){
-    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }
-    catch(e){ console.error("Could not save locally:", e); }
-  }
+    /* ---- DOM ---- */
+    const accessDenied   = document.getElementById("accessDenied");
+    const mainDashboard  = document.getElementById("mainDashboard");
+    const mtLoading      = document.getElementById("mtLoading");
+    const mtGrid         = document.getElementById("mtGrid");
+    const editModal      = document.getElementById("editModal");
+    const modalTitle     = document.getElementById("modalTitle");
+    const fieldName      = document.getElementById("fieldName");
+    const fieldExpiry    = document.getElementById("fieldExpiry");
+    const fieldRevival   = document.getElementById("fieldRevival");
+    const btnModalSave   = document.getElementById("btnModalSave");
+    const btnModalCancel = document.getElementById("btnModalCancel");
+    const btnModalDelete = document.getElementById("btnModalDelete");
+    const btnAddNew      = document.getElementById("btnAddNew");
+    const btnSeed        = document.getElementById("btnSeed");
+    const adminControls  = document.getElementById("adminControls");
 
-  // ==== FIREBASE CONFIG ====
-  const firebaseConfig = {
-    apiKey: "AIzaSyDzRDkZ8c0O_rhD4ymtVtjiWRbTTksOjj8",
-    authDomain: "quotesapp-3c598.firebaseapp.com",
-    projectId: "quotesapp-3c598",
-    storageBucket: "quotesapp-3c598.firebasestorage.app",
-    messagingSenderId: "300120462302",
-    appId: "1:300120462302:web:173ddc23160826279d834f",
-    measurementId: "G-DB1PN08M9W"
-  };
+    const statActive   = document.getElementById("statActive");
+    const statExpiring = document.getElementById("statExpiring");
+    const statExpired  = document.getElementById("statExpired");
+    const statReviving = document.getElementById("statReviving");
 
-  function updateSyncBadge(){
-    const el = document.getElementById('syncBadge');
-    if(!el) return;
-    el.textContent = usingDb
-      ? "☁️ Synced via Firebase — available on any device"
-      : "💾 Saved locally on this device only (Firebase not connected)";
-  }
+    /* ---- State ---- */
+    let accounts      = [];   // [{id, name, expiryMs, revivalMs}]
+    let activeFilter  = "all";
+    let isAdmin       = false;
+    let editingDocId  = null; // null = new entry
+    let countdownRaf  = null;
+    let unsubscribe   = null;
 
-  async function migrateLocalIfNeeded(){
-    try{
-      if(localStorage.getItem(MIGRATION_FLAG)) return;
-      const local = loadLocalEntries();
-      for(const item of local){
-        try{
-          await db.collection("entries").add({
-            name: item.name,
-            expiryMs: (item.expiryMs != null) ? item.expiryMs : null,
-            revivalMs: (item.revivalMs != null) ? item.revivalMs : null
-          });
-        }catch(e){ console.error("Migration item failed:", e); }
-      }
-      localStorage.setItem(MIGRATION_FLAG, "1");
-    }catch(e){ /* localStorage unavailable — nothing to migrate */ }
-  }
-
-  function subscribeEntries(){
-    db.collection("entries").onSnapshot(snap=>{
-      entries = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      render();
-    }, err=>{
-      console.error("Firestore sync error, switching to local storage:", err);
-      usingDb = false;
-      entries = loadLocalEntries();
-      updateSyncBadge();
-      render();
-    });
-  }
-
-  function initStorage(){
-    if(!firebaseConfig.apiKey || firebaseConfig.apiKey === "YOUR_API_KEY"){
-      console.warn("Firebase config not set — paste your project's config to enable cloud sync.");
-      usingDb = false;
-      entries = loadLocalEntries();
-      updateSyncBadge();
-      render();
-      return;
-    }
-    try{
-      firebase.initializeApp(firebaseConfig);
-    }catch(e){
-      console.error("Firebase init failed:", e);
-      usingDb = false;
-      entries = loadLocalEntries();
-      updateSyncBadge();
-      render();
-      return;
-    }
-    const auth = firebase.auth();
-    auth.onAuthStateChanged(async user=>{
-      if(user && !usingDb){
-        db = firebase.firestore();
-        usingDb = true;
-        updateSyncBadge();
-        await migrateLocalIfNeeded();
-        subscribeEntries();
-      }
-    });
-    auth.signInAnonymously().catch(err=>{
-      console.error("Anonymous sign-in failed:", err);
-      usingDb = false;
-      entries = loadLocalEntries();
-      updateSyncBadge();
-      render();
-    });
-  }
-
-  const nameEl = document.getElementById('name');
-  const expiryEl = document.getElementById('expiry');
-  const durDaysEl = document.getElementById('durDays');
-  const durHoursEl = document.getElementById('durHours');
-  const durMinsEl = document.getElementById('durMins');
-  const expiryFields = document.getElementById('expiryFields');
-  const directFields = document.getElementById('directFields');
-  const modeExpiryBtn = document.getElementById('modeExpiryBtn');
-  const modeDirectBtn = document.getElementById('modeDirectBtn');
-  const listEl = document.getElementById('list');
-
-  let mode = 'expiry';
-  function setMode(m){
-    mode = m;
-    const isExpiry = m === 'expiry';
-    expiryFields.style.display = isExpiry ? '' : 'none';
-    directFields.style.display = isExpiry ? 'none' : '';
-    modeExpiryBtn.classList.toggle('active', isExpiry);
-    modeDirectBtn.classList.toggle('active', !isExpiry);
-  }
-  modeExpiryBtn.addEventListener('click', ()=> setMode('expiry'));
-  modeDirectBtn.addEventListener('click', ()=> setMode('direct'));
-
-  function toLocalInputValue(date){
-    const pad = n => String(n).padStart(2,'0');
-    return date.getFullYear()+'-'+pad(date.getMonth()+1)+'-'+pad(date.getDate())+'T'+pad(date.getHours())+':'+pad(date.getMinutes());
-  }
-
-  document.getElementById('nowBtn').addEventListener('click', ()=>{
-    expiryEl.value = toLocalInputValue(new Date());
-  });
-
-  document.getElementById('addBtn').addEventListener('click', async ()=>{
-    const name = nameEl.value.trim();
-    if(!name){
-      alert('Please enter a model name.');
-      return;
-    }
-    let newEntry;
-    if(mode === 'expiry'){
-      const expiryVal = expiryEl.value;
-      if(!expiryVal){
-        alert('Please enter an expiry date.');
+    /* ---- Auth Gate ---- */
+    auth.onAuthStateChanged((user) => {
+      if (!user) {
+        accessDenied.hidden  = false;
+        mainDashboard.hidden = true;
+        isAdmin = false;
         return;
       }
-      newEntry = { name, expiryMs: new Date(expiryVal).getTime(), revivalMs: null };
-    } else {
-      const days = parseInt(durDaysEl.value, 10) || 0;
-      const hours = parseInt(durHoursEl.value, 10) || 0;
-      const mins = parseInt(durMinsEl.value, 10) || 0;
-      if(days === 0 && hours === 0 && mins === 0){
-        alert('Please enter how much time is left (days, hours, or minutes).');
+      isAdmin = Array.isArray(ADMIN_EMAILS) && ADMIN_EMAILS.includes(user.email);
+      if (!isAdmin) {
+        accessDenied.hidden  = false;
+        mainDashboard.hidden = true;
         return;
       }
-      const durationMs = ((days*24 + hours)*60 + mins) * 60 * 1000;
-      newEntry = { name, expiryMs: null, revivalMs: Date.now() + durationMs };
+      accessDenied.hidden  = true;
+      mainDashboard.hidden = false;
+      // Mark admin-visible elements
+      document.querySelectorAll(".admin-visible").forEach(el => el.classList.add("admin-visible"));
+      adminControls.querySelectorAll(".btn-add-new, .btn-seed").forEach(b => b.style.display = "inline-flex");
+      subscribeAccounts();
+    });
+
+    /* ---- Firestore Subscribe ---- */
+    function subscribeAccounts() {
+      if (unsubscribe) unsubscribe();
+      unsubscribe = db.collection("modelAccounts")
+        .orderBy("revivalMs", "asc")
+        .onSnapshot((snap) => {
+          accounts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+          renderGrid();
+        }, (err) => {
+          console.error("modelAccounts subscribe:", err);
+          mtLoading.innerHTML = "<span style='color:#ef4444'>Failed to load. Check Firestore rules.</span>";
+        });
     }
 
-    if(usingDb){
-      try{
-        await db.collection("entries").add(newEntry);
-        // onSnapshot updates entries and re-renders
-      }catch(e){
-        console.error(e);
-        alert('Could not save to cloud storage. Please try again.');
+    /* ---- Utility ---- */
+    function msToDatetimeLocal(ms) {
+      if (!ms) return "";
+      const d = new Date(ms);
+      // datetime-local wants "YYYY-MM-DDTHH:MM"
+      const pad = n => String(n).padStart(2, "0");
+      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    function datetimeLocalToMs(str) {
+      if (!str) return null;
+      return new Date(str).getTime() || null;
+    }
+
+    function formatDate(ms) {
+      if (!ms) return "—";
+      return new Date(ms).toLocaleString("en-US", {
+        month: "short", day: "numeric", year: "numeric",
+        hour: "2-digit", minute: "2-digit"
+      });
+    }
+
+    function getModel(name) {
+      const upper = (name || "").toUpperCase();
+      if (upper.includes("GEMINI")) return "gemini";
+      if (upper.includes("CLAUDE")) return "claude";
+      return "default";
+    }
+
+    function getAccountBase(name) {
+      // Strip " Gemini" / " Claude" suffix
+      return (name || "")
+        .replace(/ gemini$/i, "")
+        .replace(/ claude$/i, "")
+        .trim();
+    }
+
+    /* ---- Status Calculation ---- */
+    function getStatus(acct) {
+      const now = Date.now();
+      const { expiryMs, revivalMs } = acct;
+
+      if (expiryMs && expiryMs <= now) {
+        // Expired — check revival
+        if (revivalMs && revivalMs > now) return "revival"; // waiting for revival
+        if (revivalMs && revivalMs <= now) return "active";  // revived, back to active
+        return "expired";
       }
-    } else {
-      entries = entries || [];
-      entries.push({ id: String(Date.now()), ...newEntry });
-      saveLocalEntries(entries);
-      render();
+      if (expiryMs && expiryMs > now) {
+        const hoursTillExpiry = (expiryMs - now) / 3600000;
+        if (hoursTillExpiry < 6) return "expiring"; // expiring within 6h
+        return "active";
+      }
+      // No expiry — check revival (account is waiting to become usable)
+      if (revivalMs && revivalMs > now) return "revival";
+      if (revivalMs && revivalMs <= now) return "active";
+      return "unknown";
     }
 
-    nameEl.value = '';
-    expiryEl.value = '';
-    durDaysEl.value = '';
-    durHoursEl.value = '';
-    durMinsEl.value = '';
-  });
+    function statusLabel(s) {
+      return { active: "✓ Active", expiring: "⚡ Expiring Soon", expired: "✗ Expired", revival: "⏳ Reviving", unknown: "— Unknown" }[s] || s;
+    }
 
-  async function removeEntry(id){
-    if(usingDb){
-      try{ await db.collection("entries").doc(id).delete(); }
-      catch(e){ console.error(e); }
-    } else {
-      entries = (entries || []).filter(e => String(e.id) !== String(id));
-      saveLocalEntries(entries);
-      render();
+    /* ---- Countdown Format ---- */
+    function formatCountdown(ms) {
+      if (!ms) return "—";
+      const diff = ms - Date.now();
+      if (diff <= 0) return "Now";
+      const d = Math.floor(diff / 86400000);
+      const h = Math.floor((diff % 86400000) / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      if (d > 0) return `${d}d ${String(h).padStart(2,"0")}h ${String(m).padStart(2,"0")}m`;
+      return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
     }
-  }
 
-  document.getElementById('importBtn').addEventListener('click', async ()=>{
-    const raw = document.getElementById('importBox').value.trim();
-    if(!raw){
-      alert('Paste the exported JSON first.');
-      return;
+    /* ---- Filter & Render ---- */
+    function applyFilter(accts) {
+      return accts.filter(a => {
+        const model  = getModel(a.name);
+        const status = getStatus(a);
+        if (activeFilter === "all")     return true;
+        if (activeFilter === "gemini")  return model === "gemini";
+        if (activeFilter === "claude")  return model === "claude";
+        if (activeFilter === "other")   return model === "default";
+        if (activeFilter === "active")  return status === "active" || status === "expiring";
+        if (activeFilter === "expired") return status === "expired" || status === "revival";
+        return true;
+      });
     }
-    let parsed;
-    try{
-      parsed = JSON.parse(raw);
-      if(!Array.isArray(parsed)) throw new Error('not an array');
-    }catch(e){
-      alert('That does not look like valid exported JSON.');
-      return;
+
+    function renderGrid() {
+      if (countdownRaf) cancelAnimationFrame(countdownRaf);
+      mtLoading.style.display = "none";
+      mtGrid.style.display    = "grid";
+
+      const filtered = applyFilter(accounts);
+
+      // Update hero stats
+      const allStatuses = accounts.map(a => getStatus(a));
+      statActive.textContent   = allStatuses.filter(s => s === "active").length;
+      statExpiring.textContent = allStatuses.filter(s => s === "expiring").length;
+      statExpired.textContent  = allStatuses.filter(s => s === "expired").length;
+      statReviving.textContent = allStatuses.filter(s => s === "revival").length;
+
+      // Render cards
+      mtGrid.innerHTML = filtered.map(acct => cardHTML(acct)).join("");
+
+      // Attach edit listeners
+      mtGrid.querySelectorAll(".btn-edit-card").forEach(btn => {
+        btn.addEventListener("click", () => openEditModal(btn.dataset.id));
+      });
+
+      // Start live countdown animation
+      startCountdowns();
     }
-    const cleanItems = parsed
-      .filter(item => item && typeof item.name === 'string')
-      .map(item => ({
-        name: item.name,
-        expiryMs: (typeof item.expiryMs === 'number') ? item.expiryMs : null,
-        revivalMs: (typeof item.revivalMs === 'number') ? item.revivalMs : null
-      }));
-    if(cleanItems.length === 0){
-      alert('No valid entries found in that JSON.');
-      return;
+
+    function cardHTML(acct) {
+      const model  = getModel(acct.name);
+      const status = getStatus(acct);
+      const base   = getAccountBase(acct.name);
+
+      const modelTagClass = model === "gemini" ? "tag-gemini" : model === "claude" ? "tag-claude" : "tag-default";
+      const modelLabel    = model === "gemini" ? "Gemini" : model === "claude" ? "Claude" : "—";
+
+      const countdownTarget = status === "revival" ? acct.revivalMs
+                            : status === "expiring" || status === "active" ? acct.expiryMs || acct.revivalMs
+                            : acct.revivalMs;
+
+      const countdownLabel  = status === "revival"  ? "Revives in"
+                            : status === "expiring" ? "Expires in"
+                            : status === "active"   ? (acct.expiryMs ? "Expires in" : "Revived")
+                            : status === "expired"  ? "Expired"
+                            : "Revival in";
+
+      return `
+        <div class="mt-card status-${status}" data-id="${acct.id}" data-revival="${acct.revivalMs || 0}" data-expiry="${acct.expiryMs || 0}" data-status="${status}">
+          <div class="mt-card-head">
+            <div>
+              <div class="mt-account-name">${escHtml(base)}</div>
+            </div>
+            <span class="mt-model-tag ${modelTagClass}">${modelLabel}</span>
+          </div>
+          <div>
+            <span class="mt-status-badge">${statusLabel(status)}</span>
+          </div>
+          <div class="mt-time-row">
+            <span class="mt-time-label">${countdownLabel}</span>
+            <span class="mt-countdown" data-target="${countdownTarget || 0}">${countdownTarget ? formatCountdown(countdownTarget) : "—"}</span>
+          </div>
+          <div class="mt-time-row">
+            ${acct.expiryMs ? `<span class="mt-time-label">Expires</span><span class="mt-time-value">${formatDate(acct.expiryMs)}</span>` : ""}
+          </div>
+          <div class="mt-time-row">
+            <span class="mt-time-label">Revival</span>
+            <span class="mt-time-value">${formatDate(acct.revivalMs)}</span>
+          </div>
+          <div class="mt-card-footer">
+            <button class="btn-edit-card admin-visible" data-id="${acct.id}">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Edit
+            </button>
+            <span class="mt-sort-info" style="font-size:0.7rem;color:#94a3b8">
+              ID: ${acct.id.slice(0,6)}…
+            </span>
+          </div>
+        </div>`;
     }
-    const btn = document.getElementById('importBtn');
-    btn.textContent = 'Importing…';
-    btn.disabled = true;
-    try{
-      if(usingDb){
-        for(const item of cleanItems){
-          await db.collection("entries").add(item);
+
+    function escHtml(s) {
+      return (s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    }
+
+    /* ---- Live Countdown RAF ---- */
+    function startCountdowns() {
+      if (countdownRaf) cancelAnimationFrame(countdownRaf);
+      function tick() {
+        document.querySelectorAll(".mt-countdown[data-target]").forEach(el => {
+          const target = Number(el.dataset.target);
+          el.textContent = target ? formatCountdown(target) : "—";
+        });
+        countdownRaf = requestAnimationFrame(tick);
+      }
+      countdownRaf = requestAnimationFrame(tick);
+    }
+
+    /* ---- Filter Chips ---- */
+    document.querySelectorAll(".filter-chip").forEach(chip => {
+      chip.addEventListener("click", () => {
+        document.querySelectorAll(".filter-chip").forEach(c => c.classList.remove("active"));
+        chip.classList.add("active");
+        activeFilter = chip.dataset.filter;
+        renderGrid();
+      });
+    });
+
+    /* ---- Seed Data ---- */
+    btnSeed && btnSeed.addEventListener("click", async () => {
+      if (!confirm(`Seed ${SEED_DATA.length} accounts into Firestore?\n\nThis will add any missing accounts (it won't overwrite existing ones).`)) return;
+      btnSeed.disabled = true;
+      btnSeed.textContent = "Seeding…";
+      try {
+        const col = db.collection("modelAccounts");
+        // Check existing by name to avoid duplicates
+        const existing = await col.get();
+        const existingNames = new Set(existing.docs.map(d => d.data().name));
+        const batch = db.batch();
+        let added = 0;
+        for (const item of SEED_DATA) {
+          if (!existingNames.has(item.name)) {
+            const ref = col.doc();
+            batch.set(ref, { name: item.name, expiryMs: item.expiryMs, revivalMs: item.revivalMs });
+            added++;
+          }
         }
-      } else {
-        entries = entries || [];
-        cleanItems.forEach(item => entries.push({ id: String(Date.now()) + Math.random(), ...item }));
-        saveLocalEntries(entries);
-        render();
+        if (added > 0) {
+          await batch.commit();
+          alert(`✓ Seeded ${added} new accounts.`);
+        } else {
+          alert("All accounts already exist in Firestore — nothing to seed.");
+        }
+      } catch (e) {
+        alert("Error seeding: " + e.message);
       }
-      document.getElementById('importBox').value = '';
-      btn.textContent = `Imported ${cleanItems.length}!`;
-    }catch(e){
-      console.error(e);
-      btn.textContent = 'Import';
-      alert('Something went wrong during import. Check the console for details.');
-    }
-    setTimeout(()=>{ btn.textContent = 'Import'; btn.disabled = false; }, 2000);
-  });
-
-  function formatDate(ms){
-    return new Date(ms).toLocaleString(undefined, {
-      year:'numeric', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'
+      btnSeed.disabled = false;
+      btnSeed.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Seed Data`;
     });
-  }
 
-  function formatCountdown(diffMs){
-    if(diffMs <= 0) return null;
-    const s = Math.floor(diffMs/1000);
-    const days = Math.floor(s/86400);
-    const hours = Math.floor((s%86400)/3600);
-    const mins = Math.floor((s%3600)/60);
-    const secs = s%60;
-    return days+"d "+String(hours).padStart(2,'0')+"h "+String(mins).padStart(2,'0')+"m "+String(secs).padStart(2,'0')+"s";
-  }
+    /* ---- Add New ---- */
+    btnAddNew && btnAddNew.addEventListener("click", () => openEditModal(null));
 
-  function render(){
-    if(entries === null){
-      listEl.innerHTML = '<div class="empty">Loading your models…</div>';
-      return;
-    }
-    if(entries.length === 0){
-      listEl.innerHTML = '<div class="empty">No models tracked yet. Add one above.</div>';
-      return;
-    }
-    const now = Date.now();
-    const sorted = [...entries].sort((a,b)=>{
-      const ra = (a.revivalMs != null) ? a.revivalMs : (a.expiryMs + WEEK_MS);
-      const rb = (b.revivalMs != null) ? b.revivalMs : (b.expiryMs + WEEK_MS);
-      const aAvail = ra <= now, bAvail = rb <= now;
-      if(aAvail !== bAvail) return aAvail ? -1 : 1;
-      return ra - rb;
-    });
-    listEl.innerHTML = sorted.map(e => {
-      const revivalMs = (e.revivalMs != null) ? e.revivalMs : (e.expiryMs + WEEK_MS);
-      const expiryLine = (e.expiryMs != null) ? `Expiry: ${formatDate(e.expiryMs)}<br>` : '';
-      return `<div class="model" data-id="${e.id}" data-revival="${revivalMs}">
-        <div class="model-top">
-          <div class="model-name">${escapeHtml(e.name)}<span class="status-badge" data-badge style="display:none;">AVAILABLE</span></div>
-          <button class="btn-del" data-del="${e.id}">Remove</button>
-        </div>
-        <div class="dates">
-          ${expiryLine}Revival: ${formatDate(revivalMs)}
-        </div>
-        <div class="countdown" data-countdown></div>
-      </div>`;
-    }).join('');
-
-    listEl.querySelectorAll('[data-del]').forEach(btn=>{
-      btn.addEventListener('click', ()=> removeEntry(btn.dataset.del));
-    });
-    tick();
-  }
-
-  function escapeHtml(str){
-    return str.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  }
-
-  function tick(){
-    listEl.querySelectorAll('.model').forEach(card=>{
-      const revivalMs = Number(card.dataset.revival);
-      const cd = card.querySelector('[data-countdown]');
-      const badge = card.querySelector('[data-badge]');
-      const diff = revivalMs - Date.now();
-      const formatted = formatCountdown(diff);
-      if(formatted){
-        cd.textContent = "⏳ " + formatted + " until revival";
-        cd.classList.remove('revived');
-        card.classList.remove('available');
-        badge.style.display = 'none';
+    /* ---- Edit Modal ---- */
+    function openEditModal(docId) {
+      editingDocId = docId;
+      if (docId) {
+        const acct = accounts.find(a => a.id === docId);
+        if (!acct) return;
+        modalTitle.textContent = "Edit Account";
+        fieldName.value   = acct.name || "";
+        fieldExpiry.value = acct.expiryMs ? msToDatetimeLocal(acct.expiryMs) : "";
+        fieldRevival.value = acct.revivalMs ? msToDatetimeLocal(acct.revivalMs) : "";
+        btnModalDelete.hidden = false;
       } else {
-        cd.textContent = "✅ Available now";
-        cd.classList.add('revived');
-        card.classList.add('available');
-        badge.style.display = 'inline-block';
+        modalTitle.textContent = "Add Account";
+        fieldName.value = fieldExpiry.value = fieldRevival.value = "";
+        btnModalDelete.hidden = true;
+      }
+      editModal.classList.add("open");
+    }
+
+    function closeModal() { editModal.classList.remove("open"); }
+
+    btnModalCancel.addEventListener("click", closeModal);
+    editModal.addEventListener("click", (e) => { if (e.target === editModal) closeModal(); });
+
+    btnModalSave.addEventListener("click", async () => {
+      const name      = fieldName.value.trim();
+      const expiryMs  = datetimeLocalToMs(fieldExpiry.value);
+      const revivalMs = datetimeLocalToMs(fieldRevival.value);
+      if (!name) { alert("Account name is required."); return; }
+
+      btnModalSave.disabled = true;
+      btnModalSave.textContent = "Saving…";
+      try {
+        const col = db.collection("modelAccounts");
+        if (editingDocId) {
+          await col.doc(editingDocId).update({ name, expiryMs: expiryMs || null, revivalMs: revivalMs || null });
+        } else {
+          await col.add({ name, expiryMs: expiryMs || null, revivalMs: revivalMs || null });
+        }
+        closeModal();
+      } catch(e) {
+        alert("Save failed: " + e.message);
+      }
+      btnModalSave.disabled = false;
+      btnModalSave.textContent = "Save";
+    });
+
+    btnModalDelete.addEventListener("click", async () => {
+      if (!editingDocId) return;
+      const acct = accounts.find(a => a.id === editingDocId);
+      if (!confirm(`Delete "${acct?.name}"? This cannot be undone.`)) return;
+      btnModalDelete.disabled = true;
+      try {
+        await db.collection("modelAccounts").doc(editingDocId).delete();
+        closeModal();
+      } catch(e) {
+        alert("Delete failed: " + e.message);
+        btnModalDelete.disabled = false;
       }
     });
-  }
 
-  render();
-  initStorage();
-  setInterval(tick, 1000);
-})();
-</script>
+  })();
+  </script>
 </body>
 </html>

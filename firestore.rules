@@ -168,7 +168,16 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
 
+
+    // ---- Model Account Tracker -------------------------------------------
+    // Private dashboard (modeltrack.html). Admin-only read and write.
+    // This collection is NOT public — tracks internal AI model accounts.
+    match /modelAccounts/{docId} {
+      allow read, write: if isAdmin();
+    }
+
     // ---- Everything else: locked by default ------------------------------
+
     // Deny-by-default so a future collection isn't accidentally left open.
     match /{document=**} {
       allow read, write: if false;
