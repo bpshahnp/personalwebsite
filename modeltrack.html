@@ -78,6 +78,7 @@
 <div class="wrap">
   <h1>🔁 Model Revival Tracker</h1>
   <p class="sub">Revival date = expiry date + 7 days. Add a model below to start the countdown.</p>
+  <p class="sub" id="syncBadge">Connecting to Firebase…</p>
 
   <div class="card">
     <label for="name">Model name</label>
@@ -119,25 +120,125 @@
   </div>
 
   <div id="list"></div>
+
+  <div class="card" id="importCard">
+    <label for="importBox">Import your old data</label>
+    <p class="hint">Paste the JSON you copied from the "Export" box on your old claude.ai tracker, then click Import.</p>
+    <textarea id="importBox" rows="6" placeholder='[{"name":"...","expiryMs":...,"revivalMs":null}, ...]' style="width:100%;font-family:monospace;font-size:0.78rem;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--bg);color:var(--text);"></textarea>
+    <button class="btn-add" id="importBtn" style="margin-top:8px;">Import</button>
+  </div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
 <script>
 (function(){
   const STORAGE_KEY = "model_revival_entries";
+  const MIGRATION_FLAG = "model_revival_migrated_v1";
   const WEEK_MS = 7*24*60*60*1000;
 
-  function loadEntries(){
+  let db = null;
+  let usingDb = false;
+  let entries = null; // null = still loading
+
+  function loadLocalEntries(){
     try{
       const raw = localStorage.getItem(STORAGE_KEY);
       return raw ? JSON.parse(raw) : [];
     }catch(e){ return []; }
   }
-  function saveEntries(entries){
-    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(entries)); }
-    catch(e){ console.error("Could not save:", e); }
+  function saveLocalEntries(list){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }
+    catch(e){ console.error("Could not save locally:", e); }
   }
 
-  let entries = loadEntries();
+  // ==== FIREBASE CONFIG ====
+  const firebaseConfig = {
+    apiKey: "AIzaSyDzRDkZ8c0O_rhD4ymtVtjiWRbTTksOjj8",
+    authDomain: "quotesapp-3c598.firebaseapp.com",
+    projectId: "quotesapp-3c598",
+    storageBucket: "quotesapp-3c598.firebasestorage.app",
+    messagingSenderId: "300120462302",
+    appId: "1:300120462302:web:173ddc23160826279d834f",
+    measurementId: "G-DB1PN08M9W"
+  };
+
+  function updateSyncBadge(){
+    const el = document.getElementById('syncBadge');
+    if(!el) return;
+    el.textContent = usingDb
+      ? "☁️ Synced via Firebase — available on any device"
+      : "💾 Saved locally on this device only (Firebase not connected)";
+  }
+
+  async function migrateLocalIfNeeded(){
+    try{
+      if(localStorage.getItem(MIGRATION_FLAG)) return;
+      const local = loadLocalEntries();
+      for(const item of local){
+        try{
+          await db.collection("entries").add({
+            name: item.name,
+            expiryMs: (item.expiryMs != null) ? item.expiryMs : null,
+            revivalMs: (item.revivalMs != null) ? item.revivalMs : null
+          });
+        }catch(e){ console.error("Migration item failed:", e); }
+      }
+      localStorage.setItem(MIGRATION_FLAG, "1");
+    }catch(e){ /* localStorage unavailable — nothing to migrate */ }
+  }
+
+  function subscribeEntries(){
+    db.collection("entries").onSnapshot(snap=>{
+      entries = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      render();
+    }, err=>{
+      console.error("Firestore sync error, switching to local storage:", err);
+      usingDb = false;
+      entries = loadLocalEntries();
+      updateSyncBadge();
+      render();
+    });
+  }
+
+  function initStorage(){
+    if(!firebaseConfig.apiKey || firebaseConfig.apiKey === "YOUR_API_KEY"){
+      console.warn("Firebase config not set — paste your project's config to enable cloud sync.");
+      usingDb = false;
+      entries = loadLocalEntries();
+      updateSyncBadge();
+      render();
+      return;
+    }
+    try{
+      firebase.initializeApp(firebaseConfig);
+    }catch(e){
+      console.error("Firebase init failed:", e);
+      usingDb = false;
+      entries = loadLocalEntries();
+      updateSyncBadge();
+      render();
+      return;
+    }
+    const auth = firebase.auth();
+    auth.onAuthStateChanged(async user=>{
+      if(user && !usingDb){
+        db = firebase.firestore();
+        usingDb = true;
+        updateSyncBadge();
+        await migrateLocalIfNeeded();
+        subscribeEntries();
+      }
+    });
+    auth.signInAnonymously().catch(err=>{
+      console.error("Anonymous sign-in failed:", err);
+      usingDb = false;
+      entries = loadLocalEntries();
+      updateSyncBadge();
+      render();
+    });
+  }
 
   const nameEl = document.getElementById('name');
   const expiryEl = document.getElementById('expiry');
@@ -171,21 +272,20 @@
     expiryEl.value = toLocalInputValue(new Date());
   });
 
-  document.getElementById('addBtn').addEventListener('click', ()=>{
+  document.getElementById('addBtn').addEventListener('click', async ()=>{
     const name = nameEl.value.trim();
     if(!name){
       alert('Please enter a model name.');
       return;
     }
+    let newEntry;
     if(mode === 'expiry'){
       const expiryVal = expiryEl.value;
       if(!expiryVal){
         alert('Please enter an expiry date.');
         return;
       }
-      const expiryMs = new Date(expiryVal).getTime();
-      entries.push({ id: Date.now(), name, expiryMs, revivalMs: null });
-      expiryEl.value = '';
+      newEntry = { name, expiryMs: new Date(expiryVal).getTime(), revivalMs: null };
     } else {
       const days = parseInt(durDaysEl.value, 10) || 0;
       const hours = parseInt(durHoursEl.value, 10) || 0;
@@ -195,22 +295,90 @@
         return;
       }
       const durationMs = ((days*24 + hours)*60 + mins) * 60 * 1000;
-      const revivalMs = Date.now() + durationMs;
-      entries.push({ id: Date.now(), name, expiryMs: null, revivalMs });
-      durDaysEl.value = '';
-      durHoursEl.value = '';
-      durMinsEl.value = '';
+      newEntry = { name, expiryMs: null, revivalMs: Date.now() + durationMs };
     }
-    saveEntries(entries);
+
+    if(usingDb){
+      try{
+        await db.collection("entries").add(newEntry);
+        // onSnapshot updates entries and re-renders
+      }catch(e){
+        console.error(e);
+        alert('Could not save to cloud storage. Please try again.');
+      }
+    } else {
+      entries = entries || [];
+      entries.push({ id: String(Date.now()), ...newEntry });
+      saveLocalEntries(entries);
+      render();
+    }
+
     nameEl.value = '';
-    render();
+    expiryEl.value = '';
+    durDaysEl.value = '';
+    durHoursEl.value = '';
+    durMinsEl.value = '';
   });
 
-  function removeEntry(id){
-    entries = entries.filter(e => e.id !== id);
-    saveEntries(entries);
-    render();
+  async function removeEntry(id){
+    if(usingDb){
+      try{ await db.collection("entries").doc(id).delete(); }
+      catch(e){ console.error(e); }
+    } else {
+      entries = (entries || []).filter(e => String(e.id) !== String(id));
+      saveLocalEntries(entries);
+      render();
+    }
   }
+
+  document.getElementById('importBtn').addEventListener('click', async ()=>{
+    const raw = document.getElementById('importBox').value.trim();
+    if(!raw){
+      alert('Paste the exported JSON first.');
+      return;
+    }
+    let parsed;
+    try{
+      parsed = JSON.parse(raw);
+      if(!Array.isArray(parsed)) throw new Error('not an array');
+    }catch(e){
+      alert('That does not look like valid exported JSON.');
+      return;
+    }
+    const cleanItems = parsed
+      .filter(item => item && typeof item.name === 'string')
+      .map(item => ({
+        name: item.name,
+        expiryMs: (typeof item.expiryMs === 'number') ? item.expiryMs : null,
+        revivalMs: (typeof item.revivalMs === 'number') ? item.revivalMs : null
+      }));
+    if(cleanItems.length === 0){
+      alert('No valid entries found in that JSON.');
+      return;
+    }
+    const btn = document.getElementById('importBtn');
+    btn.textContent = 'Importing…';
+    btn.disabled = true;
+    try{
+      if(usingDb){
+        for(const item of cleanItems){
+          await db.collection("entries").add(item);
+        }
+      } else {
+        entries = entries || [];
+        cleanItems.forEach(item => entries.push({ id: String(Date.now()) + Math.random(), ...item }));
+        saveLocalEntries(entries);
+        render();
+      }
+      document.getElementById('importBox').value = '';
+      btn.textContent = `Imported ${cleanItems.length}!`;
+    }catch(e){
+      console.error(e);
+      btn.textContent = 'Import';
+      alert('Something went wrong during import. Check the console for details.');
+    }
+    setTimeout(()=>{ btn.textContent = 'Import'; btn.disabled = false; }, 2000);
+  });
 
   function formatDate(ms){
     return new Date(ms).toLocaleString(undefined, {
@@ -229,6 +397,10 @@
   }
 
   function render(){
+    if(entries === null){
+      listEl.innerHTML = '<div class="empty">Loading your models…</div>';
+      return;
+    }
     if(entries.length === 0){
       listEl.innerHTML = '<div class="empty">No models tracked yet. Add one above.</div>';
       return;
@@ -257,7 +429,7 @@
     }).join('');
 
     listEl.querySelectorAll('[data-del]').forEach(btn=>{
-      btn.addEventListener('click', ()=> removeEntry(Number(btn.dataset.del)));
+      btn.addEventListener('click', ()=> removeEntry(btn.dataset.del));
     });
     tick();
   }
@@ -288,6 +460,7 @@
   }
 
   render();
+  initStorage();
   setInterval(tick, 1000);
 })();
 </script>
