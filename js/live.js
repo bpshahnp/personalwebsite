@@ -257,11 +257,12 @@
       daysStepper.appendChild(dayCard);
     }
 
-    // On mobile, automatically scroll the active "Today" day into center view
+    // On mobile, scroll the active "Today" day into center view inside the stepper container only
     setTimeout(() => {
       const todayEl = daysStepper.querySelector(".is-today");
-      if (todayEl && window.innerWidth <= 600) {
-        todayEl.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+      if (todayEl && daysStepper && daysStepper.scrollWidth > daysStepper.clientWidth) {
+        const targetScroll = todayEl.offsetLeft - (daysStepper.clientWidth - todayEl.clientWidth) / 2;
+        daysStepper.scrollTo({ left: Math.max(0, targetScroll), behavior: "smooth" });
       }
     }, 100);
   }

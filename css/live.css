@@ -125,6 +125,7 @@
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
     padding: 2px 4px 10px;
     gap: 10px;
     scrollbar-width: thin;
