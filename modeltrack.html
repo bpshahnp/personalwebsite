@@ -42,6 +42,16 @@
     cursor:pointer;border:none;border-radius:10px;padding:10px 14px;font-size:0.9rem;font-weight:600;
   }
   .btn-now{background:var(--border);color:var(--text);flex:0 0 auto;}
+  .mode-toggle{display:flex;gap:8px;margin-bottom:14px;}
+  .mode-btn{
+    flex:1;background:var(--bg);color:var(--muted);border:1px solid var(--border);
+    padding:9px 8px;font-size:0.82rem;font-weight:600;border-radius:10px;
+  }
+  .mode-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .hint{color:var(--muted);font-size:0.78rem;margin:-4px 0 8px;}
+  .duration-row{margin-bottom:12px;}
+  .duration-row input[type=number]{margin-bottom:4px;text-align:center;}
+  .unit-label{text-align:center;margin:0;font-size:0.72rem;}
   .btn-add{background:var(--accent);color:#fff;width:100%;padding:12px;margin-top:4px;}
   .btn-del{background:transparent;color:var(--danger);padding:4px 8px;font-size:0.8rem;}
   .model{
@@ -68,10 +78,36 @@
     <label for="name">Model name</label>
     <input type="text" id="name" placeholder="e.g. Claude Fable 5" />
 
-    <label for="expiry">Expiry date & time</label>
-    <div class="row">
-      <input type="datetime-local" id="expiry" />
-      <button class="btn-now" id="nowBtn">Now</button>
+    <div class="mode-toggle">
+      <button type="button" class="mode-btn active" data-mode="expiry" id="modeExpiryBtn">From expiry date</button>
+      <button type="button" class="mode-btn" data-mode="direct" id="modeDirectBtn">Enter revival date directly</button>
+    </div>
+
+    <div id="expiryFields">
+      <label for="expiry">Expiry date & time</label>
+      <div class="row">
+        <input type="datetime-local" id="expiry" />
+        <button class="btn-now" id="nowBtn">Now</button>
+      </div>
+    </div>
+
+    <div id="directFields" style="display:none;">
+      <label>Time left until revival</label>
+      <p class="hint">For already-expired models — enter how much time is left, and the countdown starts from now.</p>
+      <div class="row duration-row">
+        <div>
+          <input type="number" id="durDays" min="0" placeholder="0" />
+          <label class="unit-label">Days</label>
+        </div>
+        <div>
+          <input type="number" id="durHours" min="0" max="23" placeholder="0" />
+          <label class="unit-label">Hours</label>
+        </div>
+        <div>
+          <input type="number" id="durMins" min="0" max="59" placeholder="0" />
+          <label class="unit-label">Minutes</label>
+        </div>
+      </div>
     </div>
 
     <button class="btn-add" id="addBtn">Add model</button>
@@ -100,7 +136,26 @@
 
   const nameEl = document.getElementById('name');
   const expiryEl = document.getElementById('expiry');
+  const durDaysEl = document.getElementById('durDays');
+  const durHoursEl = document.getElementById('durHours');
+  const durMinsEl = document.getElementById('durMins');
+  const expiryFields = document.getElementById('expiryFields');
+  const directFields = document.getElementById('directFields');
+  const modeExpiryBtn = document.getElementById('modeExpiryBtn');
+  const modeDirectBtn = document.getElementById('modeDirectBtn');
   const listEl = document.getElementById('list');
+
+  let mode = 'expiry';
+  function setMode(m){
+    mode = m;
+    const isExpiry = m === 'expiry';
+    expiryFields.style.display = isExpiry ? '' : 'none';
+    directFields.style.display = isExpiry ? 'none' : '';
+    modeExpiryBtn.classList.toggle('active', isExpiry);
+    modeDirectBtn.classList.toggle('active', !isExpiry);
+  }
+  modeExpiryBtn.addEventListener('click', ()=> setMode('expiry'));
+  modeDirectBtn.addEventListener('click', ()=> setMode('direct'));
 
   function toLocalInputValue(date){
     const pad = n => String(n).padStart(2,'0');
@@ -113,16 +168,36 @@
 
   document.getElementById('addBtn').addEventListener('click', ()=>{
     const name = nameEl.value.trim();
-    const expiryVal = expiryEl.value;
-    if(!name || !expiryVal){
-      alert('Please enter a model name and expiry date.');
+    if(!name){
+      alert('Please enter a model name.');
       return;
     }
-    const expiryMs = new Date(expiryVal).getTime();
-    entries.push({ id: Date.now(), name, expiryMs });
+    if(mode === 'expiry'){
+      const expiryVal = expiryEl.value;
+      if(!expiryVal){
+        alert('Please enter an expiry date.');
+        return;
+      }
+      const expiryMs = new Date(expiryVal).getTime();
+      entries.push({ id: Date.now(), name, expiryMs, revivalMs: null });
+      expiryEl.value = '';
+    } else {
+      const days = parseInt(durDaysEl.value, 10) || 0;
+      const hours = parseInt(durHoursEl.value, 10) || 0;
+      const mins = parseInt(durMinsEl.value, 10) || 0;
+      if(days === 0 && hours === 0 && mins === 0){
+        alert('Please enter how much time is left (days, hours, or minutes).');
+        return;
+      }
+      const durationMs = ((days*24 + hours)*60 + mins) * 60 * 1000;
+      const revivalMs = Date.now() + durationMs;
+      entries.push({ id: Date.now(), name, expiryMs: null, revivalMs });
+      durDaysEl.value = '';
+      durHoursEl.value = '';
+      durMinsEl.value = '';
+    }
     saveEntries(entries);
     nameEl.value = '';
-    expiryEl.value = '';
     render();
   });
 
@@ -154,15 +229,15 @@
       return;
     }
     listEl.innerHTML = entries.map(e => {
-      const revivalMs = e.expiryMs + WEEK_MS;
+      const revivalMs = (e.revivalMs != null) ? e.revivalMs : (e.expiryMs + WEEK_MS);
+      const expiryLine = (e.expiryMs != null) ? `Expiry: ${formatDate(e.expiryMs)}<br>` : '';
       return `<div class="model" data-id="${e.id}" data-revival="${revivalMs}">
         <div class="model-top">
           <div class="model-name">${escapeHtml(e.name)}</div>
           <button class="btn-del" data-del="${e.id}">Remove</button>
         </div>
         <div class="dates">
-          Expiry: ${formatDate(e.expiryMs)}<br>
-          Revival: ${formatDate(revivalMs)}
+          ${expiryLine}Revival: ${formatDate(revivalMs)}
         </div>
         <div class="countdown" data-countdown></div>
       </div>`;
