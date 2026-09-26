@@ -443,7 +443,36 @@
       background: #fde68a;
       color: #92400e;
     }
+    .btn-card-expire-now.is-active-model {
+      color: #c2410c;
+      background: #ffedd5;
+      border: 1px solid #fdba74;
+      font-weight: 700;
+    }
+    .btn-card-expire-now.is-active-model:hover {
+      background: #fed7aa;
+      color: #9a3412;
+      box-shadow: 0 2px 8px rgba(234, 88, 12, 0.2);
+    }
     .admin-visible .btn-card-expire-now { display: inline-flex; }
+
+    .mt-modal-status-banner {
+      padding: 9px 13px;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      line-height: 1.4;
+      margin-bottom: 14px;
+    }
+    .mt-modal-status-banner.is-active {
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      color: #065f46;
+    }
+    .mt-modal-status-banner.is-reviving {
+      background: #f5f3ff;
+      border: 1px solid #ddd6fe;
+      color: #5b21b6;
+    }
 
     .mt-form-group { margin-bottom: 14px; }
     .mt-form-group label { display: block; font-size: 0.82rem; font-weight: 600; color: #475569; margin-bottom: 5px; }
@@ -538,6 +567,10 @@
     [data-theme="dark"] .mt-timeleft-preview { color: #818cf8; }
     [data-theme="dark"] .btn-card-expire-now { background: #451a03; border-color: #78350f; color: #fde68a; }
     [data-theme="dark"] .btn-card-expire-now:hover { background: #78350f; }
+    [data-theme="dark"] .btn-card-expire-now.is-active-model { background: #431407; border-color: #9a3412; color: #fdba74; }
+    [data-theme="dark"] .btn-card-expire-now.is-active-model:hover { background: #7c2d12; }
+    [data-theme="dark"] .mt-modal-status-banner.is-active { background: #064e3b; border-color: #047857; color: #a7f3d0; }
+    [data-theme="dark"] .mt-modal-status-banner.is-reviving { background: #2e1065; border-color: #5b21b6; color: #ddd6fe; }
 
     /* ===== Add New Card ===== */
     .btn-add-new {
@@ -714,6 +747,9 @@
         <button type="button" class="btn-modal-close" id="btnCloseModal" aria-label="Close modal">&times;</button>
       </div>
 
+      <!-- Live Status Banner (shows active / cooldown context) -->
+      <div class="mt-modal-status-banner" id="modalStatusBanner" style="display:none"></div>
+
       <!-- Quick Action: Expired Today / Now (Auto +7 Days) -->
       <button type="button" class="btn-quick-expired-now" id="btnQuickExpiredNow" title="Sets Expiry to current time and Revival to 7 days from now">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
@@ -856,6 +892,7 @@
     const btnAddNew      = document.getElementById("btnAddNew");
     const btnSeed        = document.getElementById("btnSeed");
     const adminControls  = document.getElementById("adminControls");
+    const modalStatusBanner  = document.getElementById("modalStatusBanner");
 
     const btnQuickExpiredNow = document.getElementById("btnQuickExpiredNow");
     const btnSetExpiryNow    = document.getElementById("btnSetExpiryNow");
@@ -977,7 +1014,14 @@
       return "unknown";
     }
 
-    function statusLabel(s) {
+    function statusLabel(s, acct) {
+      if (s === "active") {
+        const now = Date.now();
+        if (acct && acct.expiryMs && acct.expiryMs > now) {
+          return "✓ Active";
+        }
+        return "✓ Active (Ready)";
+      }
       return { active: "✓ Active", expiring: "⚡ Expiring Soon", expired: "✗ Expired", revival: "⏳ Reviving", unknown: "— Unknown" }[s] || s;
     }
 
@@ -1044,19 +1088,74 @@
       const model  = getModel(acct.name);
       const status = getStatus(acct);
       const base   = getAccountBase(acct.name);
+      const now    = Date.now();
 
       const modelTagClass = model === "gemini" ? "tag-gemini" : model === "claude" ? "tag-claude" : "tag-default";
       const modelLabel    = model === "gemini" ? "Gemini" : model === "claude" ? "Claude" : "—";
 
-      const countdownTarget = status === "revival" ? acct.revivalMs
-                            : status === "expiring" || status === "active" ? acct.expiryMs || acct.revivalMs
-                            : acct.revivalMs;
+      const isActiveModel = (status === "active");
+      const hasFutureExpiry = Boolean(acct.expiryMs && acct.expiryMs > now);
 
-      const countdownLabel  = status === "revival"  ? "Revives in"
-                            : status === "expiring" ? "Expires in"
-                            : status === "active"   ? (acct.expiryMs ? "Expires in" : "Revived")
-                            : status === "expired"  ? "Expired"
-                            : "Revival in";
+      let countdownTarget = 0;
+      let countdownLabel  = "";
+      let countdownInitialText = "";
+
+      if (status === "revival") {
+        countdownTarget = acct.revivalMs || 0;
+        countdownLabel  = "Revives in";
+        countdownInitialText = countdownTarget ? formatCountdown(countdownTarget) : "—";
+      } else if (status === "expiring") {
+        countdownTarget = acct.expiryMs || 0;
+        countdownLabel  = "Expires in";
+        countdownInitialText = countdownTarget ? formatCountdown(countdownTarget) : "—";
+      } else if (status === "active") {
+        if (hasFutureExpiry) {
+          countdownTarget = acct.expiryMs;
+          countdownLabel  = "Expires in";
+          countdownInitialText = formatCountdown(countdownTarget);
+        } else {
+          countdownTarget = 0;
+          countdownLabel  = "Status";
+          countdownInitialText = "Ready to Use";
+        }
+      } else if (status === "expired") {
+        countdownTarget = (acct.revivalMs && acct.revivalMs > now) ? acct.revivalMs : 0;
+        countdownLabel  = countdownTarget ? "Revives in" : "Status";
+        countdownInitialText = countdownTarget ? formatCountdown(countdownTarget) : "Expired";
+      } else {
+        countdownTarget = acct.revivalMs || 0;
+        countdownLabel  = "Revival in";
+        countdownInitialText = countdownTarget ? formatCountdown(countdownTarget) : "—";
+      }
+
+      // Time rows layout
+      let timeRowsHtml = "";
+      if (isActiveModel && !hasFutureExpiry) {
+        timeRowsHtml = `
+          <div class="mt-time-row">
+            <span class="mt-time-label">Availability</span>
+            <span class="mt-time-value" style="color:#16a34a; font-weight:700;">● Active / Ready to Use</span>
+          </div>
+          ${acct.revivalMs ? `<div class="mt-time-row"><span class="mt-time-label">Last Revived</span><span class="mt-time-value">${formatDate(acct.revivalMs)}</span></div>` : ""}
+          ${acct.expiryMs ? `<div class="mt-time-row"><span class="mt-time-label">Previous Expiry</span><span class="mt-time-value">${formatDate(acct.expiryMs)}</span></div>` : ""}
+        `;
+      } else {
+        timeRowsHtml = `
+          ${acct.expiryMs ? `<div class="mt-time-row"><span class="mt-time-label">Expires</span><span class="mt-time-value">${formatDate(acct.expiryMs)}</span></div>` : ""}
+          <div class="mt-time-row">
+            <span class="mt-time-label">Revival</span>
+            <span class="mt-time-value">${formatDate(acct.revivalMs)}</span>
+          </div>
+        `;
+      }
+
+      const expireBtnLabel = isActiveModel ? "⚡ Expired Again (7d)" : "⚡ Expire Today (7d)";
+      const expireBtnTitle = isActiveModel
+        ? "Active model hit quota limit? Click to mark expired again (starts fresh 7-day cooldown)"
+        : "Expired today? Click to set revival in 7 days from now";
+      const expireBtnClass = isActiveModel
+        ? "btn-card-expire-now admin-visible is-active-model"
+        : "btn-card-expire-now admin-visible";
 
       return `
         <div class="mt-card status-${status}" data-id="${acct.id}" data-revival="${acct.revivalMs || 0}" data-expiry="${acct.expiryMs || 0}" data-status="${status}">
@@ -1067,23 +1166,17 @@
             <span class="mt-model-tag ${modelTagClass}">${modelLabel}</span>
           </div>
           <div>
-            <span class="mt-status-badge">${statusLabel(status)}</span>
+            <span class="mt-status-badge">${statusLabel(status, acct)}</span>
           </div>
           <div class="mt-time-row">
             <span class="mt-time-label">${countdownLabel}</span>
-            <span class="mt-countdown" data-target="${countdownTarget || 0}">${countdownTarget ? formatCountdown(countdownTarget) : "—"}</span>
+            <span class="mt-countdown" data-target="${countdownTarget || 0}">${countdownInitialText}</span>
           </div>
-          <div class="mt-time-row">
-            ${acct.expiryMs ? `<span class="mt-time-label">Expires</span><span class="mt-time-value">${formatDate(acct.expiryMs)}</span>` : ""}
-          </div>
-          <div class="mt-time-row">
-            <span class="mt-time-label">Revival</span>
-            <span class="mt-time-value">${formatDate(acct.revivalMs)}</span>
-          </div>
+          ${timeRowsHtml}
           <div class="mt-card-footer">
             <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-              <button class="btn-card-expire-now admin-visible" data-id="${acct.id}" data-name="${escHtml(base)}" title="Expired today? Click to set revival in 7 days from now">
-                ⚡ Expire Now (7d)
+              <button class="${expireBtnClass}" data-id="${acct.id}" data-name="${escHtml(base)}" title="${expireBtnTitle}">
+                ${expireBtnLabel}
               </button>
               <button class="btn-edit-card admin-visible" data-id="${acct.id}">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -1107,7 +1200,9 @@
       function tick() {
         document.querySelectorAll(".mt-countdown[data-target]").forEach(el => {
           const target = Number(el.dataset.target);
-          el.textContent = target ? formatCountdown(target) : "—";
+          if (target > 0) {
+            el.textContent = formatCountdown(target);
+          }
         });
         countdownRaf = requestAnimationFrame(tick);
       }
@@ -1158,8 +1253,15 @@
 
     /* ---- Quick Expire Now (Direct on Card) ---- */
     async function handleQuickExpireNow(docId, name) {
+      const acct = accounts.find(a => a.id === docId);
+      const isActive = acct && getStatus(acct) === "active";
       const revivalDate = formatDate(Date.now() + SEVEN_DAYS_MS);
-      const ok = confirm(`Mark "${name}" as expired right now?\n\n• Expiry: Set to Now\n• Revival: Set to 7 days from now (${revivalDate})`);
+
+      const confirmMsg = isActive
+        ? `Mark "${name}" as EXPIRED AGAIN today?\n\n• New Expiry: Set to Now\n• New Revival: Exactly 7 days from now (${revivalDate})\n\nThis will restart the 7-day cooldown period.`
+        : `Mark "${name}" as expired today?\n\n• Expiry: Set to Now\n• Revival: Exactly 7 days from now (${revivalDate})`;
+
+      const ok = confirm(confirmMsg);
       if (!ok) return;
 
       const nowMs = Date.now();
@@ -1231,6 +1333,11 @@
       if (updatePreview) {
         relPreview.textContent = `✓ Applied: Revives in ${d}d ${h}h ${m}m (${formatDate(targetRevivalMs)})`;
       }
+      if (modalStatusBanner) {
+        modalStatusBanner.style.display = "block";
+        modalStatusBanner.className = "mt-modal-status-banner is-reviving";
+        modalStatusBanner.innerHTML = `⏳ <strong>New Cooldown Set:</strong> Revives on ${formatDate(targetRevivalMs)} (${d}d ${h}h ${m}m left). Click <strong>Save</strong> to confirm.`;
+      }
     }
 
     function setExpiredNow() {
@@ -1241,6 +1348,11 @@
       syncRemainingInputsFromRevival(revivalMs);
       updateRevivalHint(revivalMs);
       relPreview.textContent = `✓ Set as expired today (Now) — Revives in 7 days (${formatDate(revivalMs)})`;
+      if (modalStatusBanner) {
+        modalStatusBanner.style.display = "block";
+        modalStatusBanner.className = "mt-modal-status-banner is-reviving";
+        modalStatusBanner.innerHTML = `⏳ <strong>7-Day Cooldown Set:</strong> Expiry set to Now, Revival scheduled for ${formatDate(revivalMs)}. Click <strong>Save</strong> to confirm.`;
+      }
     }
 
     /* ---- Modal Event Listeners ---- */
@@ -1304,25 +1416,77 @@
       if (docId) {
         const acct = accounts.find(a => a.id === docId);
         if (!acct) return;
+        const status = getStatus(acct);
+        const isActive = (status === "active");
+
         modalTitle.textContent = `Edit: ${acct.name}`;
         fieldName.value   = acct.name || "";
         fieldExpiry.value = acct.expiryMs ? msToDatetimeLocal(acct.expiryMs) : "";
         fieldRevival.value = acct.revivalMs ? msToDatetimeLocal(acct.revivalMs) : "";
         btnModalDelete.hidden = false;
 
-        if (acct.revivalMs) {
-          syncRemainingInputsFromRevival(acct.revivalMs);
-          updateRevivalHint(acct.revivalMs);
+        if (isActive) {
+          if (modalStatusBanner) {
+            modalStatusBanner.style.display = "block";
+            modalStatusBanner.className = "mt-modal-status-banner is-active";
+            modalStatusBanner.innerHTML = `🟢 <strong>Model is Currently Active/Usable.</strong> If it has expired again today, click <em>"Expired Again Just Now"</em> below or enter remaining days/hours left.`;
+          }
+          if (btnQuickExpiredNow) {
+            btnQuickExpiredNow.innerHTML = `
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              Expired Again Just Now (Restart 7-Day Revival)
+            `;
+            btnQuickExpiredNow.title = "Sets new Expiry to current time and Revival to 7 days from now";
+          }
+          if (btnSetExpiryNow) btnSetExpiryNow.textContent = "Set Expired Now";
+
+          if (acct.revivalMs && acct.revivalMs > Date.now()) {
+            syncRemainingInputsFromRevival(acct.revivalMs);
+            updateRevivalHint(acct.revivalMs);
+          } else {
+            // Already active / revived previously: clear relative inputs so user can easily enter new remaining time
+            relDays.value = relHours.value = relMins.value = "";
+            relPreview.textContent = "Enter remaining cooldown if this model expired again earlier today.";
+            if (revivalPreviewHint) revivalPreviewHint.innerHTML = "Currently Active. Enter new time left or click Expired Again to restart 7-day cooldown.";
+          }
         } else {
-          relDays.value = relHours.value = relMins.value = "";
-          relPreview.textContent = "";
-          updateRevivalHint(null);
+          if (modalStatusBanner) {
+            modalStatusBanner.style.display = "block";
+            modalStatusBanner.className = "mt-modal-status-banner is-reviving";
+            modalStatusBanner.innerHTML = `⏳ <strong>Model is in 7-Day Cooldown.</strong> Scheduled to revive on ${formatDate(acct.revivalMs)} (${formatCountdown(acct.revivalMs)} remaining).`;
+          }
+          if (btnQuickExpiredNow) {
+            btnQuickExpiredNow.innerHTML = `
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              Expired Just Now (Revives in 7 Days)
+            `;
+            btnQuickExpiredNow.title = "Sets Expiry to current time and Revival to 7 days from now";
+          }
+          if (btnSetExpiryNow) btnSetExpiryNow.textContent = 'Set to "Now"';
+
+          if (acct.revivalMs) {
+            syncRemainingInputsFromRevival(acct.revivalMs);
+            updateRevivalHint(acct.revivalMs);
+          } else {
+            relDays.value = relHours.value = relMins.value = "";
+            relPreview.textContent = "";
+            updateRevivalHint(null);
+          }
         }
       } else {
         modalTitle.textContent = "Add Model Account";
         fieldName.value = fieldExpiry.value = fieldRevival.value = "";
         relDays.value = relHours.value = relMins.value = "";
         relPreview.textContent = "";
+        if (modalStatusBanner) modalStatusBanner.style.display = "none";
+        if (btnQuickExpiredNow) {
+          btnQuickExpiredNow.innerHTML = `
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            Expired Just Now (Revives in 7 Days)
+          `;
+          btnQuickExpiredNow.title = "Sets Expiry to current time and Revival to 7 days from now";
+        }
+        if (btnSetExpiryNow) btnSetExpiryNow.textContent = 'Set to "Now"';
         updateRevivalHint(null);
         btnModalDelete.hidden = true;
       }
