@@ -293,7 +293,158 @@
       from { opacity:0; transform: translateY(12px); }
       to   { opacity:1; transform: translateY(0); }
     }
-    .mt-modal h3 { margin: 0 0 20px; font-size: 1.1rem; color: #0f172a; }
+    .mt-modal h3 { margin: 0; font-size: 1.12rem; color: #0f172a; }
+    .mt-modal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .btn-modal-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      line-height: 1;
+      color: #94a3b8;
+      cursor: pointer;
+      padding: 0 4px;
+      transition: color 0.15s;
+    }
+    .btn-modal-close:hover { color: #0f172a; }
+
+    /* Quick Expired Now button */
+    .btn-quick-expired-now {
+      width: 100%;
+      background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      box-shadow: 0 4px 14px rgba(245, 158, 11, 0.22);
+      transition: all 0.18s;
+      margin-bottom: 16px;
+    }
+    .btn-quick-expired-now:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(245, 158, 11, 0.32);
+    }
+    .btn-quick-expired-now:active { transform: translateY(0); }
+
+    .btn-field-pill {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #4f46e5;
+      background: #e0e7ff;
+      border: 1px solid #c7d2fe;
+      border-radius: 6px;
+      padding: 2px 8px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-field-pill:hover { background: #c7d2fe; }
+
+    /* Time Left to Revive Box */
+    .mt-timeleft-card {
+      background: #f8fafc;
+      border: 1.5px dashed #cbd5e1;
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin: 16px 0;
+    }
+    .mt-timeleft-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #1e293b;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 2px;
+    }
+    .mt-timeleft-sub {
+      font-size: 0.73rem;
+      color: #64748b;
+      margin-bottom: 10px;
+      display: block;
+    }
+    .mt-timeleft-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr auto;
+      gap: 8px;
+      align-items: end;
+    }
+    .mt-timeleft-unit {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .mt-timeleft-unit label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      text-align: center;
+    }
+    .mt-timeleft-unit input {
+      text-align: center;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #0f172a;
+      padding: 7px 4px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 8px;
+      background: #fff;
+    }
+    .btn-apply-timeleft {
+      background: #4f46e5;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      height: 38px;
+      transition: background 0.15s;
+    }
+    .btn-apply-timeleft:hover { background: #4338ca; }
+    .mt-timeleft-preview {
+      margin-top: 8px;
+      font-size: 0.75rem;
+      color: #4f46e5;
+      font-weight: 600;
+      min-height: 16px;
+    }
+
+    /* Card Quick Expire button */
+    .btn-card-expire-now {
+      font-size: 0.74rem;
+      font-weight: 700;
+      color: #b45309;
+      background: #fef3c7;
+      border: 1px solid #fde68a;
+      border-radius: 8px;
+      padding: 4px 9px;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: none;
+      align-items: center;
+      gap: 4px;
+    }
+    .btn-card-expire-now:hover {
+      background: #fde68a;
+      color: #92400e;
+    }
+    .admin-visible .btn-card-expire-now { display: inline-flex; }
+
     .mt-form-group { margin-bottom: 14px; }
     .mt-form-group label { display: block; font-size: 0.82rem; font-weight: 600; color: #475569; margin-bottom: 5px; }
     .mt-form-group input {
@@ -376,6 +527,17 @@
     [data-theme="dark"] .mt-form-group label { color: #94a3b8; }
     [data-theme="dark"] .mt-form-group input { background: #0f172a; border-color: #334155; color: #f1f5f9; }
     [data-theme="dark"] .btn-modal-cancel { background: #0f172a; border-color: #334155; color: #94a3b8; }
+    [data-theme="dark"] .btn-modal-close:hover { color: #f1f5f9; }
+    [data-theme="dark"] .btn-field-pill { background: #312e81; border-color: #4338ca; color: #c7d2fe; }
+    [data-theme="dark"] .btn-field-pill:hover { background: #3730a3; }
+    [data-theme="dark"] .mt-timeleft-card { background: #0f172a; border-color: #334155; }
+    [data-theme="dark"] .mt-timeleft-title { color: #cbd5e1; }
+    [data-theme="dark"] .mt-timeleft-sub { color: #94a3b8; }
+    [data-theme="dark"] .mt-timeleft-unit label { color: #94a3b8; }
+    [data-theme="dark"] .mt-timeleft-unit input { background: #1e293b; border-color: #334155; color: #f1f5f9; }
+    [data-theme="dark"] .mt-timeleft-preview { color: #818cf8; }
+    [data-theme="dark"] .btn-card-expire-now { background: #451a03; border-color: #78350f; color: #fde68a; }
+    [data-theme="dark"] .btn-card-expire-now:hover { background: #78350f; }
 
     /* ===== Add New Card ===== */
     .btn-add-new {
@@ -433,6 +595,7 @@
             <a href="index.html#updates">Latest Updates</a>
             <a href="contact.html">Contact</a>
             <a href="admin.html">Admin Panel</a>
+            <a href="modeltrack.html" class="active">Model Tracker</a>
           </div>
         </div>
       </nav>
@@ -472,6 +635,7 @@
           <a href="index.html#updates">Latest Updates</a>
           <a href="contact.html">Contact</a>
           <a href="admin.html">Admin Panel</a>
+          <a href="modeltrack.html" class="active">Model Tracker</a>
         </div>
       </div>
     </nav>
@@ -545,21 +709,67 @@
   <!-- ===== Edit / Add Modal ===== -->
   <div class="mt-modal-overlay" id="editModal">
     <div class="mt-modal">
-      <h3 id="modalTitle">Edit Account</h3>
+      <div class="mt-modal-head">
+        <h3 id="modalTitle">Edit Account</h3>
+        <button type="button" class="btn-modal-close" id="btnCloseModal" aria-label="Close modal">&times;</button>
+      </div>
+
+      <!-- Quick Action: Expired Today / Now (Auto +7 Days) -->
+      <button type="button" class="btn-quick-expired-now" id="btnQuickExpiredNow" title="Sets Expiry to current time and Revival to 7 days from now">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        Expired Just Now (Revives in 7 Days)
+      </button>
+
       <div class="mt-form-group">
-        <label>Account Name</label>
+        <label for="fieldName">Account Name</label>
         <input type="text" id="fieldName" placeholder="e.g. bprdshah Gemini" />
       </div>
+
+      <!-- Expiry with 'Now' Option -->
       <div class="mt-form-group">
-        <label>Expiry (datetime-local or leave blank)</label>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+          <label for="fieldExpiry" style="margin:0;">Expiry Date & Time</label>
+          <button type="button" class="btn-field-pill" id="btnSetExpiryNow" title="Set expiry to current time and calculate +7d revival">Set to "Now"</button>
+        </div>
         <input type="datetime-local" id="fieldExpiry" />
-        <div class="mt-form-hint">Leave blank if no expiry / not yet expired.</div>
+        <div class="mt-form-hint">When the model hit limit / expired (7-day cycle).</div>
       </div>
+
+      <!-- Time Left Section (for already expired models) -->
+      <div class="mt-timeleft-card">
+        <div class="mt-timeleft-title">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Already Expired? Enter Time Left to Revive:
+        </div>
+        <span class="mt-timeleft-sub">Enter days, hours & mins remaining until this account can be used again:</span>
+        <div class="mt-timeleft-grid">
+          <div class="mt-timeleft-unit">
+            <label for="relDays">Days</label>
+            <input type="number" id="relDays" min="0" max="30" placeholder="0" />
+          </div>
+          <div class="mt-timeleft-unit">
+            <label for="relHours">Hours</label>
+            <input type="number" id="relHours" min="0" max="23" placeholder="0" />
+          </div>
+          <div class="mt-timeleft-unit">
+            <label for="relMins">Mins</label>
+            <input type="number" id="relMins" min="0" max="59" placeholder="0" />
+          </div>
+          <button type="button" class="btn-apply-timeleft" id="btnApplyTimeLeft">Apply</button>
+        </div>
+        <div class="mt-timeleft-preview" id="relPreview"></div>
+      </div>
+
+      <!-- Revival Date & Time with +7 Days Option -->
       <div class="mt-form-group">
-        <label>Revival (datetime-local)</label>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+          <label for="fieldRevival" style="margin:0;">Revival Date & Time</label>
+          <button type="button" class="btn-field-pill" id="btnSetRevival7d" title="Set revival to exactly 7 days after expiry date">+7 Days from Expiry</button>
+        </div>
         <input type="datetime-local" id="fieldRevival" />
-        <div class="mt-form-hint">When the account becomes usable again.</div>
+        <div class="mt-form-hint" id="revivalPreviewHint">When the account becomes usable again.</div>
       </div>
+
       <div class="mt-modal-actions">
         <button class="btn-modal-delete" id="btnModalDelete" hidden>Delete</button>
         <button class="btn-modal-cancel" id="btnModalCancel">Cancel</button>
@@ -642,9 +852,22 @@
     const btnModalSave   = document.getElementById("btnModalSave");
     const btnModalCancel = document.getElementById("btnModalCancel");
     const btnModalDelete = document.getElementById("btnModalDelete");
+    const btnCloseModal  = document.getElementById("btnCloseModal");
     const btnAddNew      = document.getElementById("btnAddNew");
     const btnSeed        = document.getElementById("btnSeed");
     const adminControls  = document.getElementById("adminControls");
+
+    const btnQuickExpiredNow = document.getElementById("btnQuickExpiredNow");
+    const btnSetExpiryNow    = document.getElementById("btnSetExpiryNow");
+    const btnSetRevival7d    = document.getElementById("btnSetRevival7d");
+    const relDays            = document.getElementById("relDays");
+    const relHours           = document.getElementById("relHours");
+    const relMins            = document.getElementById("relMins");
+    const btnApplyTimeLeft   = document.getElementById("btnApplyTimeLeft");
+    const relPreview         = document.getElementById("relPreview");
+    const revivalPreviewHint = document.getElementById("revivalPreviewHint");
+
+    const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
     const statActive   = document.getElementById("statActive");
     const statExpiring = document.getElementById("statExpiring");
@@ -808,6 +1031,11 @@
         btn.addEventListener("click", () => openEditModal(btn.dataset.id));
       });
 
+      // Attach quick Expire Now (7d) listeners
+      mtGrid.querySelectorAll(".btn-card-expire-now").forEach(btn => {
+        btn.addEventListener("click", () => handleQuickExpireNow(btn.dataset.id, btn.dataset.name));
+      });
+
       // Start live countdown animation
       startCountdowns();
     }
@@ -853,10 +1081,15 @@
             <span class="mt-time-value">${formatDate(acct.revivalMs)}</span>
           </div>
           <div class="mt-card-footer">
-            <button class="btn-edit-card admin-visible" data-id="${acct.id}">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-              Edit
-            </button>
+            <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+              <button class="btn-card-expire-now admin-visible" data-id="${acct.id}" data-name="${escHtml(base)}" title="Expired today? Click to set revival in 7 days from now">
+                ⚡ Expire Now (7d)
+              </button>
+              <button class="btn-edit-card admin-visible" data-id="${acct.id}">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                Edit
+              </button>
+            </div>
             <span class="mt-sort-info" style="font-size:0.7rem;color:#94a3b8">
               ID: ${acct.id.slice(0,6)}…
             </span>
@@ -923,6 +1156,145 @@
       btnSeed.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Seed Data`;
     });
 
+    /* ---- Quick Expire Now (Direct on Card) ---- */
+    async function handleQuickExpireNow(docId, name) {
+      const revivalDate = formatDate(Date.now() + SEVEN_DAYS_MS);
+      const ok = confirm(`Mark "${name}" as expired right now?\n\n• Expiry: Set to Now\n• Revival: Set to 7 days from now (${revivalDate})`);
+      if (!ok) return;
+
+      const nowMs = Date.now();
+      const revivalMs = nowMs + SEVEN_DAYS_MS;
+      try {
+        await db.collection("modelAccounts").doc(docId).update({
+          expiryMs: nowMs,
+          revivalMs: revivalMs
+        });
+      } catch (err) {
+        alert("Update failed: " + err.message);
+      }
+    }
+
+    /* ---- Relative Time Calculation Helpers ---- */
+    function syncRemainingInputsFromRevival(targetMs) {
+      if (!targetMs) {
+        relDays.value = relHours.value = relMins.value = "";
+        relPreview.textContent = "";
+        return;
+      }
+      const diff = targetMs - Date.now();
+      if (diff > 0) {
+        const d = Math.floor(diff / 86400000);
+        const h = Math.floor((diff % 86400000) / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        relDays.value = d;
+        relHours.value = h;
+        relMins.value = m;
+        relPreview.textContent = `✓ Current remaining: ${d}d ${h}h ${m}m (${formatDate(targetMs)})`;
+      } else {
+        relDays.value = 0;
+        relHours.value = 0;
+        relMins.value = 0;
+        relPreview.textContent = `✓ Account revival time reached (${formatDate(targetMs)}).`;
+      }
+    }
+
+    function updateRevivalHint(targetMs) {
+      if (!revivalPreviewHint) return;
+      if (!targetMs) {
+        revivalPreviewHint.textContent = "When the account becomes usable again (7 days after expiry).";
+        return;
+      }
+      const dStr = formatDate(targetMs);
+      const diff = targetMs - Date.now();
+      if (diff > 0) {
+        revivalPreviewHint.innerHTML = `Revival set to: <strong>${dStr}</strong> (${formatCountdown(targetMs)} left)`;
+      } else {
+        revivalPreviewHint.innerHTML = `Revival date: <strong>${dStr}</strong> (Already revived)`;
+      }
+    }
+
+    function applyRelativeTimeLeft(updatePreview = true) {
+      const d = parseInt(relDays.value, 10) || 0;
+      const h = parseInt(relHours.value, 10) || 0;
+      const m = parseInt(relMins.value, 10) || 0;
+      const totalMs = (d * 86400000) + (h * 3600000) + (m * 60000);
+      if (totalMs <= 0 && d === 0 && h === 0 && m === 0) return;
+
+      const targetRevivalMs = Date.now() + totalMs;
+      fieldRevival.value = msToDatetimeLocal(targetRevivalMs);
+
+      // 7-day cycle: expiry occurred (7 days - remaining time) ago
+      const impliedExpiryMs = targetRevivalMs - SEVEN_DAYS_MS;
+      fieldExpiry.value = msToDatetimeLocal(impliedExpiryMs);
+
+      updateRevivalHint(targetRevivalMs);
+      if (updatePreview) {
+        relPreview.textContent = `✓ Applied: Revives in ${d}d ${h}h ${m}m (${formatDate(targetRevivalMs)})`;
+      }
+    }
+
+    function setExpiredNow() {
+      const nowMs = Date.now();
+      const revivalMs = nowMs + SEVEN_DAYS_MS;
+      fieldExpiry.value = msToDatetimeLocal(nowMs);
+      fieldRevival.value = msToDatetimeLocal(revivalMs);
+      syncRemainingInputsFromRevival(revivalMs);
+      updateRevivalHint(revivalMs);
+      relPreview.textContent = `✓ Set as expired today (Now) — Revives in 7 days (${formatDate(revivalMs)})`;
+    }
+
+    /* ---- Modal Event Listeners ---- */
+    btnQuickExpiredNow && btnQuickExpiredNow.addEventListener("click", setExpiredNow);
+    btnSetExpiryNow    && btnSetExpiryNow.addEventListener("click", setExpiredNow);
+
+    btnSetRevival7d && btnSetRevival7d.addEventListener("click", () => {
+      const baseMs = datetimeLocalToMs(fieldExpiry.value) || Date.now();
+      const revivalMs = baseMs + SEVEN_DAYS_MS;
+      fieldRevival.value = msToDatetimeLocal(revivalMs);
+      syncRemainingInputsFromRevival(revivalMs);
+      updateRevivalHint(revivalMs);
+    });
+
+    btnApplyTimeLeft && btnApplyTimeLeft.addEventListener("click", () => {
+      applyRelativeTimeLeft(true);
+    });
+
+    [relDays, relHours, relMins].forEach(input => {
+      if (!input) return;
+      input.addEventListener("input", () => {
+        const d = parseInt(relDays.value, 10) || 0;
+        const h = parseInt(relHours.value, 10) || 0;
+        const m = parseInt(relMins.value, 10) || 0;
+        const totalMs = (d * 86400000) + (h * 3600000) + (m * 60000);
+        if (totalMs > 0) {
+          const targetRevivalMs = Date.now() + totalMs;
+          relPreview.textContent = `Will revive on ${formatDate(targetRevivalMs)} (${d}d ${h}h ${m}m from now)`;
+        } else {
+          relPreview.textContent = "";
+        }
+      });
+    });
+
+    fieldRevival && fieldRevival.addEventListener("change", () => {
+      const revMs = datetimeLocalToMs(fieldRevival.value);
+      if (revMs) {
+        syncRemainingInputsFromRevival(revMs);
+        updateRevivalHint(revMs);
+      }
+    });
+
+    fieldExpiry && fieldExpiry.addEventListener("change", () => {
+      const expMs = datetimeLocalToMs(fieldExpiry.value);
+      if (expMs && !fieldRevival.value) {
+        const revMs = expMs + SEVEN_DAYS_MS;
+        fieldRevival.value = msToDatetimeLocal(revMs);
+        syncRemainingInputsFromRevival(revMs);
+        updateRevivalHint(revMs);
+      }
+    });
+
+    btnCloseModal && btnCloseModal.addEventListener("click", closeModal);
+
     /* ---- Add New ---- */
     btnAddNew && btnAddNew.addEventListener("click", () => openEditModal(null));
 
@@ -932,14 +1304,26 @@
       if (docId) {
         const acct = accounts.find(a => a.id === docId);
         if (!acct) return;
-        modalTitle.textContent = "Edit Account";
+        modalTitle.textContent = `Edit: ${acct.name}`;
         fieldName.value   = acct.name || "";
         fieldExpiry.value = acct.expiryMs ? msToDatetimeLocal(acct.expiryMs) : "";
         fieldRevival.value = acct.revivalMs ? msToDatetimeLocal(acct.revivalMs) : "";
         btnModalDelete.hidden = false;
+
+        if (acct.revivalMs) {
+          syncRemainingInputsFromRevival(acct.revivalMs);
+          updateRevivalHint(acct.revivalMs);
+        } else {
+          relDays.value = relHours.value = relMins.value = "";
+          relPreview.textContent = "";
+          updateRevivalHint(null);
+        }
       } else {
-        modalTitle.textContent = "Add Account";
+        modalTitle.textContent = "Add Model Account";
         fieldName.value = fieldExpiry.value = fieldRevival.value = "";
+        relDays.value = relHours.value = relMins.value = "";
+        relPreview.textContent = "";
+        updateRevivalHint(null);
         btnModalDelete.hidden = true;
       }
       editModal.classList.add("open");
@@ -951,6 +1335,14 @@
     editModal.addEventListener("click", (e) => { if (e.target === editModal) closeModal(); });
 
     btnModalSave.addEventListener("click", async () => {
+      // If user typed into relative inputs, apply them first
+      const d = parseInt(relDays.value, 10);
+      const h = parseInt(relHours.value, 10);
+      const m = parseInt(relMins.value, 10);
+      if ((d > 0 || h > 0 || m > 0) && (!fieldRevival.value || relPreview.textContent.startsWith("Will revive"))) {
+        applyRelativeTimeLeft(false);
+      }
+
       const name      = fieldName.value.trim();
       const expiryMs  = datetimeLocalToMs(fieldExpiry.value);
       const revivalMs = datetimeLocalToMs(fieldRevival.value);
