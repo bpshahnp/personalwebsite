@@ -42,6 +42,9 @@
   const renewalCountdown = document.getElementById("renewalCountdown");
   const todayDayTag = document.getElementById("todayDayTag");
   const liveSoundBtn = document.getElementById("liveSoundBtn");
+  const alreadyPlayedPanel = document.getElementById("alreadyPlayedPanel");
+  const alreadyPlayedScoreEl = document.getElementById("alreadyPlayedScore");
+  const alreadyPlayedCountdownEl = document.getElementById("alreadyPlayedCountdown");
 
   // Active Quiz DOM
   const liveQIndex = document.getElementById("liveQIndex");
@@ -385,8 +388,16 @@
         if (filtered.length < QUIZ_SIZE) filtered = allQuestions;
       }
 
-      // Deterministically shuffle with seed = currentWeekKey + currentDayKey + class
-      const daySeed = `${currentWeekKey}_${currentDayKey}_class_${selectedClass}`;
+      // Deterministically shuffle — seed includes user UID so each player gets unique order
+      const currentUser = (typeof auth !== "undefined" && auth) ? auth.currentUser : null;
+      const userKey = currentUser
+        ? currentUser.uid
+        : (sessionStorage.getItem("guestSessionId") || (() => {
+            const id = Math.random().toString(36).slice(2);
+            sessionStorage.setItem("guestSessionId", id);
+            return id;
+          })());
+      const daySeed = `${userKey}_${currentWeekKey}_${currentDayKey}_class_${selectedClass}`;
       const shuffled = seededShuffle(filtered, daySeed);
       currentQuestions = shuffled.slice(0, Math.min(QUIZ_SIZE, shuffled.length));
 
@@ -397,11 +408,78 @@
     }
   }
 
-  function onQuestionsReady() {
+  /* ---------- Already-Played Gate ---------- */
+  async function checkAlreadyPlayedToday(user) {
+    if (!user || typeof db === "undefined" || !db) return false;
+    try {
+      const docRef = db.collection("liveQuizScores").doc(`${user.uid}_${currentWeekKey}`);
+      const snap = await docRef.get();
+      if (snap.exists) {
+        const days = snap.data().days || {};
+        return days[currentDayKey] || null; // returns day record or null
+      }
+    } catch (e) {
+      console.warn("checkAlreadyPlayedToday error:", e);
+    }
+    return null;
+  }
+
+  let alreadyPlayedCountdownTimer = null;
+
+  function showAlreadyPlayedUI(dayRecord) {
+    // Hide start button & status, show already-played panel
+    if (startLiveQuizBtn) {
+      startLiveQuizBtn.disabled = true;
+      startLiveQuizBtn.hidden = true;
+    }
+    if (liveQuizStatusText) liveQuizStatusText.hidden = true;
+    if (alreadyPlayedPanel) alreadyPlayedPanel.hidden = false;
+
+    // Show today's score
+    if (alreadyPlayedScoreEl && dayRecord) {
+      const pts = dayRecord.points ?? dayRecord.score ?? 0;
+      const correct = dayRecord.correct ?? dayRecord.score ?? "—";
+      alreadyPlayedScoreEl.textContent = `You scored ${pts} pts (${correct}/${QUIZ_SIZE} correct) today!`;
+    }
+
+    // Countdown to midnight (next day reset)
+    function updateCountdown() {
+      const now = new Date();
+      const tomorrow = new Date(now);
+      tomorrow.setHours(24, 0, 0, 0); // next midnight
+      const diff = tomorrow - now;
+      if (diff <= 0) {
+        if (alreadyPlayedCountdownEl) alreadyPlayedCountdownEl.textContent = "Refreshing…";
+        clearInterval(alreadyPlayedCountdownTimer);
+        location.reload();
+        return;
+      }
+      const h = String(Math.floor(diff / 3600000)).padStart(2, "0");
+      const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, "0");
+      const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, "0");
+      if (alreadyPlayedCountdownEl) alreadyPlayedCountdownEl.textContent = `${h}:${m}:${s}`;
+    }
+    updateCountdown();
+    clearInterval(alreadyPlayedCountdownTimer);
+    alreadyPlayedCountdownTimer = setInterval(updateCountdown, 1000);
+  }
+
+  function resetStartUI() {
+    // Restore normal start button state (called when user logs out or switches account)
+    if (startLiveQuizBtn) {
+      startLiveQuizBtn.hidden = false;
+    }
+    if (liveQuizStatusText) liveQuizStatusText.hidden = false;
+    if (alreadyPlayedPanel) alreadyPlayedPanel.hidden = true;
+    clearInterval(alreadyPlayedCountdownTimer);
+  }
+
+  async function onQuestionsReady() {
     const isComingSoon = isBeforeTournamentLaunch();
     if (isComingSoon) {
       if (startLiveQuizBtn) {
         startLiveQuizBtn.disabled = true;
+        startLiveQuizBtn.hidden = false;
         startLiveQuizBtn.textContent = "Tournament Starts This Monday (Day 1)";
         startLiveQuizBtn.style.opacity = "0.75";
         startLiveQuizBtn.style.cursor = "not-allowed";
@@ -410,21 +488,36 @@
         startWarmupBtn.hidden = false;
       }
       if (liveQuizStatusText) {
+        liveQuizStatusText.hidden = false;
         liveQuizStatusText.innerHTML = `<strong>The 7-Day Challenge officially starts on Monday, Sep 14.</strong> Try an unranked warm-up quiz above to test your speed!`;
       }
-    } else {
-      if (startLiveQuizBtn) {
-        startLiveQuizBtn.disabled = false;
-        startLiveQuizBtn.textContent = `Start Day ${currentDayIndex} Live Quiz →`;
-        startLiveQuizBtn.style.opacity = "";
-        startLiveQuizBtn.style.cursor = "pointer";
+      if (alreadyPlayedPanel) alreadyPlayedPanel.hidden = true;
+      return;
+    }
+
+    // Check if logged-in user already played today
+    const user = (typeof auth !== "undefined" && auth) ? auth.currentUser : null;
+    if (user) {
+      const dayRecord = await checkAlreadyPlayedToday(user);
+      if (dayRecord) {
+        showAlreadyPlayedUI(dayRecord);
+        return;
       }
-      if (startWarmupBtn) {
-        startWarmupBtn.hidden = true;
-      }
-      if (liveQuizStatusText) {
-        liveQuizStatusText.textContent = `${currentQuestions.length} live challenge questions ready for Day ${currentDayIndex} (${DAY_NAMES[currentDayIndex - 1]})!`;
-      }
+    }
+
+    // Normal ready state — show Start button
+    resetStartUI();
+    if (startLiveQuizBtn) {
+      startLiveQuizBtn.disabled = false;
+      startLiveQuizBtn.textContent = `Start Day ${currentDayIndex} Live Quiz →`;
+      startLiveQuizBtn.style.opacity = "";
+      startLiveQuizBtn.style.cursor = "pointer";
+    }
+    if (startWarmupBtn) {
+      startWarmupBtn.hidden = true;
+    }
+    if (liveQuizStatusText) {
+      liveQuizStatusText.textContent = `${currentQuestions.length} live challenge questions ready for Day ${currentDayIndex} (${DAY_NAMES[currentDayIndex - 1]})!`;
     }
   }
 
@@ -1004,13 +1097,18 @@
     }
   }
 
-  // Auth state listener: check weekly tournament winner access
+  // Auth state listener: check already-played gate + premium access on login/logout
   if (typeof auth !== "undefined" && auth) {
     auth.onAuthStateChanged(async (user) => {
       if (user) {
         await checkPremiumAccess(user);
+        // Re-run the already-played check now that we know who the user is
+        await onQuestionsReady();
       } else {
         if (premiumBanner) premiumBanner.hidden = true;
+        // Logged out — reset to normal start UI (guest can still attempt)
+        resetStartUI();
+        await onQuestionsReady();
       }
     });
   }

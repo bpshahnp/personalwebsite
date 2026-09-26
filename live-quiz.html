@@ -22,8 +22,8 @@
   <meta name="twitter:title" content="Live Weekly Quiz | B. Prasad Shah" />
   <meta name="twitter:description" content="Join the Live Weekly Quiz — compete in real-time, test your knowledge, and win the weekly leaderboard!" />
   <meta name="twitter:image" content="https://bholaprasadshah.com.np/assets/og-image.jpg?v=20260926_01" />
-  <link rel="stylesheet" href="css/style.css?v=20260926_01" />
-  <link rel="stylesheet" href="css/live.css?v=20260926_01" />
+  <link rel="stylesheet" href="css/style.css?v=20260926_02" />
+  <link rel="stylesheet" href="css/live.css?v=20260926_02" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -188,6 +188,22 @@
         <p class="quiz-muted" id="liveQuizStatusText">Loading today's challenge…</p>
       </div>
 
+      <!-- Already-played-today panel (hidden until gate fires) -->
+      <div class="already-played-panel" id="alreadyPlayedPanel" hidden>
+        <div class="already-played-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+        <div class="already-played-body">
+          <h3>You've Already Played Today!</h3>
+          <p id="alreadyPlayedScore" class="already-played-score">Your score: — pts</p>
+          <p class="already-played-sub">Come back tomorrow for a fresh set of questions.</p>
+          <div class="already-played-countdown">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Next quiz resets in <strong id="alreadyPlayedCountdown">--:--:--</strong>
+          </div>
+        </div>
+      </div>
+
       <!-- Direct Entry to Premium Portal -->
       <div class="premium-promo-card">
         <div class="premium-promo-content">
@@ -344,6 +360,6 @@
   <script src="js/firebase-config.js"></script>
   <script src="js/auth-widget.js"></script>
   <script src="js/nav-drawer.js"></script>
-  <script src="js/live.js?v=20260926_01"></script>
+  <script src="js/live.js?v=20260926_02"></script>
 </body>
 </html>
