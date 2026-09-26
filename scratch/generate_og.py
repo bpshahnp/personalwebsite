@@ -222,6 +222,6 @@ img = Image.alpha_composite(img, url_layer)
 
 # Convert to RGB and save as high-quality JPEG
 final_img = img.convert("RGB")
-out_path = "assets/og-image.jpg"
+out_path = "assets/og-image.png"
 final_img.save(out_path, "JPEG", quality=95, optimize=True)
 print(f"Successfully generated {out_path} with size {final_img.size}")
