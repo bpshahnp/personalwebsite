@@ -252,15 +252,17 @@
       font-weight: 600;
       color: #6366f1;
       background: #ede9fe;
-      border: none;
+      border: 1px solid #c7d2fe;
       border-radius: 8px;
-      padding: 4px 10px;
+      padding: 5px 12px;
       cursor: pointer;
-      transition: background 0.15s;
-      display: none; /* shown only to admin */
+      transition: background 0.15s, color 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
     }
-    .btn-edit-card:hover { background: #c7d2fe; }
-    .admin-visible .btn-edit-card { display: inline-flex; align-items: center; gap: 4px; }
+    .btn-edit-card:hover { background: #c7d2fe; color: #4338ca; }
+    .btn-edit-card svg { flex-shrink: 0; }
 
     .mt-sort-info {
       font-size: 0.75rem;
@@ -432,12 +434,12 @@
       background: #fef3c7;
       border: 1px solid #fde68a;
       border-radius: 8px;
-      padding: 4px 9px;
+      padding: 5px 11px;
       cursor: pointer;
       transition: all 0.15s;
-      display: none;
+      display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: 5px;
     }
     .btn-card-expire-now:hover {
       background: #fde68a;
@@ -454,7 +456,6 @@
       color: #9a3412;
       box-shadow: 0 2px 8px rgba(234, 88, 12, 0.2);
     }
-    .admin-visible .btn-card-expire-now { display: inline-flex; }
 
     .mt-modal-status-banner {
       padding: 9px 13px;
@@ -569,6 +570,8 @@
     [data-theme="dark"] .btn-card-expire-now:hover { background: #78350f; }
     [data-theme="dark"] .btn-card-expire-now.is-active-model { background: #431407; border-color: #9a3412; color: #fdba74; }
     [data-theme="dark"] .btn-card-expire-now.is-active-model:hover { background: #7c2d12; }
+    [data-theme="dark"] .btn-edit-card { background: #312e81; border-color: #4338ca; color: #c7d2fe; }
+    [data-theme="dark"] .btn-edit-card:hover { background: #3730a3; }
     [data-theme="dark"] .mt-modal-status-banner.is-active { background: #064e3b; border-color: #047857; color: #a7f3d0; }
     [data-theme="dark"] .mt-modal-status-banner.is-reviving { background: #2e1065; border-color: #5b21b6; color: #ddd6fe; }
 
@@ -582,13 +585,14 @@
       font-size: 0.84rem;
       font-weight: 700;
       cursor: pointer;
-      display: none;
+      display: inline-flex;
       align-items: center;
       gap: 6px;
       transition: all 0.18s;
     }
     .btn-add-new:hover { background: #ede9fe; border-color: #6366f1; }
-    .admin-visible .btn-add-new { display: inline-flex; }
+    [data-theme="dark"] .btn-add-new { border-color: #4338ca; color: #a5b4fc; }
+    [data-theme="dark"] .btn-add-new:hover { background: #312e81; }
 
     /* ===== Access Denied ===== */
     .mt-access-denied {
@@ -717,7 +721,7 @@
           <button class="filter-chip" data-filter="expired">Expired</button>
         </div>
         <div style="display:flex;gap:8px;align-items:center" id="adminControls">
-          <button class="btn-add-new admin-visible" id="btnAddNew">
+          <button class="btn-add-new" id="btnAddNew">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Add Account
           </button>
@@ -925,19 +929,19 @@
         accessDenied.hidden  = false;
         mainDashboard.hidden = true;
         isAdmin = false;
+        document.body.classList.remove("is-admin");
         return;
       }
       isAdmin = Array.isArray(ADMIN_EMAILS) && ADMIN_EMAILS.includes(user.email);
       if (!isAdmin) {
         accessDenied.hidden  = false;
         mainDashboard.hidden = true;
+        document.body.classList.remove("is-admin");
         return;
       }
       accessDenied.hidden  = true;
       mainDashboard.hidden = false;
-      // Mark admin-visible elements
-      document.querySelectorAll(".admin-visible").forEach(el => el.classList.add("admin-visible"));
-      adminControls.querySelectorAll(".btn-add-new, .btn-seed").forEach(b => b.style.display = "inline-flex");
+      document.body.classList.add("is-admin");
       subscribeAccounts();
     });
 
@@ -1154,8 +1158,8 @@
         ? "Active model hit quota limit? Click to mark expired again (starts fresh 7-day cooldown)"
         : "Expired today? Click to set revival in 7 days from now";
       const expireBtnClass = isActiveModel
-        ? "btn-card-expire-now admin-visible is-active-model"
-        : "btn-card-expire-now admin-visible";
+        ? "btn-card-expire-now is-active-model"
+        : "btn-card-expire-now";
 
       return `
         <div class="mt-card status-${status}" data-id="${acct.id}" data-revival="${acct.revivalMs || 0}" data-expiry="${acct.expiryMs || 0}" data-status="${status}">
@@ -1178,7 +1182,7 @@
               <button class="${expireBtnClass}" data-id="${acct.id}" data-name="${escHtml(base)}" title="${expireBtnTitle}">
                 ${expireBtnLabel}
               </button>
-              <button class="btn-edit-card admin-visible" data-id="${acct.id}">
+              <button class="btn-edit-card" data-id="${acct.id}">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 Edit
               </button>
