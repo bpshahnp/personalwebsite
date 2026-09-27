@@ -883,6 +883,14 @@
       if (saved && resultSubline) {
         resultSubline.innerHTML = `Great effort! Your score of <strong>${totalPointsEarned} pts</strong> has been added to the leaderboard.`;
         document.dispatchEvent(new CustomEvent("premiumCheckReady"));
+        // ✅ Update the stepper immediately so today's chip turns green
+        userWeeklyDays[currentDayKey] = {
+          score: correctCount,
+          points: totalPointsEarned,
+          speedBonus: speedBonusTotal,
+          completedAt: new Date().toISOString()
+        };
+        renderDaysStepper();
       } else if (!saved && resultSubline) {
         resultSubline.innerHTML = `Score calculated, but could not sync with leaderboard. Check your network or permissions.`;
       }
