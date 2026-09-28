@@ -280,6 +280,9 @@
   margin: 0 0 24px 0;
   line-height: 1.4;
   box-shadow: 0 1px 3px rgba(234, 88, 12, 0.04);
+  max-width: 100%;
+  box-sizing: border-box;
+  word-break: break-word;
 }
 #questionBankStatus::before {
   content: "";
@@ -295,13 +298,16 @@
 /* Fields Grid */
 .quiz-fields-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 18px;
   margin-bottom: 18px;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .quiz-fields-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 14px;
     margin-bottom: 14px;
   }
@@ -318,6 +324,10 @@
   text-transform: uppercase;
   letter-spacing: 0.04em;
   margin-bottom: 18px;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 .quiz-field select {
   appearance: none !important;
@@ -340,6 +350,13 @@
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
   cursor: pointer;
   outline: none;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
 }
 .quiz-field select:hover {
   border-color: #cbd5e1 !important;
@@ -356,6 +373,8 @@
   border: 0;
   margin: 6px 0 26px !important;
   padding: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 .pick legend {
   font-size: 0.8rem !important;
@@ -368,12 +387,14 @@
 }
 .pick-row {
   display: grid !important;
-  grid-template-columns: repeat(4, 1fr) !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
   gap: 10px !important;
+  width: 100%;
+  box-sizing: border-box;
 }
 @media (max-width: 520px) {
   .pick-row {
-    grid-template-columns: repeat(2, 1fr) !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     gap: 8px !important;
   }
 }

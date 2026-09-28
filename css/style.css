@@ -2625,13 +2625,16 @@ img { max-width: 100%; display: block; }
 .quiz-muted { color: var(--mist); font-size: 0.9rem; }
 .quiz-fields-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 16px;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .quiz-fields-grid {
-    grid-template-columns: 1fr;
-    gap: 0;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
   }
 }
 
@@ -2643,6 +2646,10 @@ img { max-width: 100%; display: block; }
   color: var(--mist);
   font-weight: 600;
   margin-bottom: 16px;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 .quiz-field select {
   font: inherit;
@@ -2655,6 +2662,13 @@ img { max-width: 100%; display: block; }
   cursor: pointer;
   outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
 .quiz-field select:focus {
   border-color: var(--orange);
