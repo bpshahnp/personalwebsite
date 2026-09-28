@@ -99,6 +99,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const payInstructionPkgName     = document.getElementById("payInstructionPkgName");
   const payInstructionAmount      = document.getElementById("payInstructionAmount");
 
+  // Quiz Share Modal Elements
+  const quizShareModal            = document.getElementById("quizShareModal");
+  const shareModalCloseBtn        = document.getElementById("shareModalCloseBtn");
+  const shareModalCopyBtn         = document.getElementById("shareModalCopyBtn");
+
   // Defined Credit Packages
   const CREDIT_PACKAGES = [
     {
@@ -358,6 +363,138 @@ document.addEventListener("DOMContentLoaded", () => {
   if (buyCreditsModal) {
     buyCreditsModal.addEventListener("click", (e) => {
       if (e.target === buyCreditsModal) closeBuyCreditsModal();
+    });
+  }
+
+  /* ---------- Quiz Share Modal & Social Deep-Linking ---------- */
+  function getQuizShareUrl(cat) {
+    if (!cat) return window.location.href;
+    try {
+      const origin = window.location.origin && window.location.origin !== "null"
+        ? window.location.origin
+        : "https://bholaprasadshah.com.np";
+      let pathname = window.location.pathname || "/premium.html";
+      if (!pathname.endsWith(".html") && !pathname.endsWith("/")) {
+        pathname += "/premium.html";
+      } else if (pathname.endsWith("/")) {
+        pathname += "premium.html";
+      }
+      const url = new URL(pathname, origin);
+      url.searchParams.set("quiz", cat.id);
+      url.hash = "";
+      return url.toString();
+    } catch (_) {
+      return `https://bholaprasadshah.com.np/premium.html?quiz=${encodeURIComponent(cat.id)}`;
+    }
+  }
+
+  function openQuizShareModal(cat) {
+    if (!cat || !quizShareModal) return;
+
+    const shareUrl = getQuizShareUrl(cat);
+    const qCount = Array.isArray(cat.questions) ? cat.questions.length : (cat.questionCount || 0);
+    const cost = Math.max(1, Number(cat.credits || 3));
+    const catLevel = getQuizCategoryLevel(cat);
+
+    const previewName     = document.getElementById("shareModalQuizName");
+    const previewLevel    = document.getElementById("shareModalQuizLevel");
+    const previewMeta     = document.getElementById("shareModalQuizMeta");
+    const directLinkInput = document.getElementById("shareModalDirectLink");
+    const copyText        = document.getElementById("shareCopyText");
+    const copyIcon        = document.getElementById("shareCopyIcon");
+
+    if (previewName) previewName.textContent = cat.name || "Premium Quiz";
+    if (previewLevel) previewLevel.textContent = catLevel;
+    if (previewMeta) previewMeta.textContent = `${qCount > 0 ? qCount + " Questions · " : ""}${cost} Credit${cost === 1 ? "" : "s"}`;
+    if (directLinkInput) directLinkInput.value = shareUrl;
+    if (copyText) copyText.textContent = "Copy";
+    if (copyIcon) copyIcon.innerHTML = '<rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>';
+
+    const shareTitle = `Challenge: "${cat.name || 'Premium Quiz'}"`;
+    const shareText = `Can you beat this quiz: "${cat.name || 'Premium Quiz'}"? Test your knowledge now on B. Prasad Shah's Portal!`;
+
+    // 1. WhatsApp
+    const btnWhatsapp = document.getElementById("shareBtnWhatsapp");
+    if (btnWhatsapp) {
+      btnWhatsapp.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText + "\n" + shareUrl)}`;
+    }
+    // 2. Facebook
+    const btnFacebook = document.getElementById("shareBtnFacebook");
+    if (btnFacebook) {
+      btnFacebook.href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+    }
+    // 3. Twitter / X
+    const btnTwitter = document.getElementById("shareBtnTwitter");
+    if (btnTwitter) {
+      btnTwitter.href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+    }
+    // 4. LinkedIn
+    const btnLinkedin = document.getElementById("shareBtnLinkedin");
+    if (btnLinkedin) {
+      btnLinkedin.href = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
+    }
+    // 5. Telegram
+    const btnTelegram = document.getElementById("shareBtnTelegram");
+    if (btnTelegram) {
+      btnTelegram.href = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
+    }
+
+    // Native mobile share button (if supported)
+    const nativeShareWrap = document.getElementById("shareModalNativeWrap");
+    const nativeShareBtn  = document.getElementById("shareModalNativeBtn");
+    if (navigator.share && nativeShareWrap && nativeShareBtn) {
+      nativeShareWrap.style.display = "block";
+      nativeShareBtn.onclick = async () => {
+        try {
+          await navigator.share({
+            title: shareTitle,
+            text: shareText,
+            url: shareUrl
+          });
+        } catch (_) {}
+      };
+    } else if (nativeShareWrap) {
+      nativeShareWrap.style.display = "none";
+    }
+
+    quizShareModal.style.display = "flex";
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeQuizShareModal() {
+    if (quizShareModal) quizShareModal.style.display = "none";
+    document.body.style.overflow = "";
+  }
+
+  if (shareModalCloseBtn) shareModalCloseBtn.addEventListener("click", closeQuizShareModal);
+  if (quizShareModal) {
+    quizShareModal.addEventListener("click", (e) => {
+      if (e.target === quizShareModal) closeQuizShareModal();
+    });
+  }
+  if (shareModalCopyBtn) {
+    shareModalCopyBtn.addEventListener("click", async () => {
+      const directLinkInput = document.getElementById("shareModalDirectLink");
+      const copyText        = document.getElementById("shareCopyText");
+      const copyIcon        = document.getElementById("shareCopyIcon");
+      if (!directLinkInput) return;
+
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(directLinkInput.value);
+        } else {
+          directLinkInput.select();
+          document.execCommand("copy");
+        }
+        if (copyText) copyText.textContent = "Copied!";
+        if (copyIcon) copyIcon.innerHTML = '<polyline points="20 6 9 17 4 12" stroke-width="2.5"></polyline>';
+        setTimeout(() => {
+          if (copyText) copyText.textContent = "Copy";
+          if (copyIcon) copyIcon.innerHTML = '<rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>';
+        }, 2200);
+      } catch (err) {
+        console.warn("Copy link failed:", err);
+      }
     });
   }
 
@@ -667,6 +804,9 @@ document.addEventListener("DOMContentLoaded", () => {
         userProfileUnsubscribe = db.collection("users").doc(user.uid).onSnapshot(doc => {
           currentUserProfile = doc.exists ? doc.data() : {};
           syncUserStatusBanners();
+          if (allLoadedCategories && allLoadedCategories.length > 0) {
+            checkAndHandleDeepLinkQuiz();
+          }
         }, err => {
           console.warn("Could not fetch user profile:", err);
           syncUserStatusBanners();
@@ -853,6 +993,8 @@ document.addEventListener("DOMContentLoaded", () => {
     filtered.forEach(cat => {
       const card = document.createElement("div");
       card.className = "category-card";
+      card.id = `quiz-card-${cat.id}`;
+      card.setAttribute("data-quiz-id", cat.id);
 
       const bgImg = cat.imageUrl
         ? `background-image:url('${escapeHtml(cat.imageUrl)}');`
@@ -865,6 +1007,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
       card.innerHTML = `
         <div class="category-card-img" style="${bgImg}">
+          <span class="category-card-share-badge" title="Share this quiz to social media" aria-label="Share ${escapeHtml(cat.name || 'quiz')}">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="18" cy="5" r="3"></circle>
+              <circle cx="6" cy="12" r="3"></circle>
+              <circle cx="18" cy="19" r="3"></circle>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+            </svg>
+            <span>Share</span>
+          </span>
           <span class="category-card-badge">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:4px;"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M15 9.5a3.5 3.5 0 0 0-7 0c0 2 1.5 3 3.5 3.5s3.5 1.5 3.5 3.5a3.5 3.5 0 0 1-7 0"/></svg>${escapeHtml(countBadge)}
           </span>
@@ -875,12 +1027,40 @@ document.addEventListener("DOMContentLoaded", () => {
           <p>
             ${escapeHtml(cat.description || "Comprehensive timed competitive examination practice questions.")}
           </p>
-          <button type="button" class="btn btn-primary btn-sm start-cat-btn" style="width:100%; font-weight:700; padding:12px 16px; display:flex; align-items:center; justify-content:center; gap:8px;">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-            <span>Play Quiz (${cost} Credit${cost === 1 ? "" : "s"})</span>
-          </button>
+          <div class="category-card-actions">
+            <button type="button" class="btn btn-primary btn-sm start-cat-btn" style="flex:1; font-weight:700; padding:12px 14px; display:flex; align-items:center; justify-content:center; gap:8px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              <span>Play Quiz (${cost} Credit${cost === 1 ? "" : "s"})</span>
+            </button>
+            <button type="button" class="category-card-share-action-btn" title="Share to WhatsApp, Facebook, X, etc." aria-label="Share ${escapeHtml(cat.name || 'quiz')}">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="18" cy="5" r="3"></circle>
+                <circle cx="6" cy="12" r="3"></circle>
+                <circle cx="18" cy="19" r="3"></circle>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+              </svg>
+              <span>Share</span>
+            </button>
+          </div>
         </div>
       `;
+
+      const shareBadge = card.querySelector(".category-card-share-badge");
+      if (shareBadge) {
+        shareBadge.addEventListener("click", (e) => {
+          e.stopPropagation();
+          openQuizShareModal(cat);
+        });
+      }
+
+      const shareBtn = card.querySelector(".category-card-share-action-btn");
+      if (shareBtn) {
+        shareBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          openQuizShareModal(cat);
+        });
+      }
 
       card.querySelector(".start-cat-btn").addEventListener("click", (e) => {
         e.stopPropagation();
@@ -913,6 +1093,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
       renderCategoryChips();
       renderCategoryCards();
+
+      // Check if URL contains deep link for a specific shared quiz
+      checkAndHandleDeepLinkQuiz();
     } catch (err) {
       console.error("Error loading categories:", err);
       categoriesGrid.innerHTML = `
@@ -923,13 +1106,92 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  /* ============================================================
+     Deep Link Auto-Detection & Direct Play Launcher
+     ============================================================ */
+  let deepLinkHandled = false;
+
+  async function checkAndHandleDeepLinkQuiz() {
+    if (deepLinkHandled) return;
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const targetQuizId = urlParams.get("quiz") || urlParams.get("id") || sessionStorage.getItem("pendingAutoStartQuizId");
+    if (!targetQuizId) return;
+
+    if (!allLoadedCategories || allLoadedCategories.length === 0) return;
+
+    const targetCat = allLoadedCategories.find(c =>
+      c.id === targetQuizId ||
+      (c.slug && c.slug.toLowerCase() === targetQuizId.toLowerCase()) ||
+      (c.name && c.name.toLowerCase().replace(/[^a-z0-9]+/g, "-") === targetQuizId.toLowerCase())
+    );
+
+    if (!targetCat) return;
+
+    // If user is currently signed in
+    if (currentUser) {
+      deepLinkHandled = true;
+      sessionStorage.removeItem("pendingAutoStartQuizId");
+
+      // Check unlimited access
+      const hasUnlimited = await checkUserHasAccess(currentUser);
+      if (hasUnlimited) {
+        startCategoryQuiz(targetCat, "Unlimited");
+        return;
+      }
+
+      // Check credits
+      const cost = Math.max(1, Number(targetCat.credits || 3));
+      const userCredits = Number(currentUserProfile?.credits ?? 0);
+
+      // Launch quiz confirmation or buy packages
+      handleQuizCardClick(targetCat, true);
+      return;
+    }
+
+    // User is NOT logged in yet (opened from social media link)
+    deepLinkHandled = true;
+
+    // Scroll smoothly to target quiz card so user sees what they clicked
+    setTimeout(() => {
+      const cardEl = document.getElementById("quiz-card-" + targetCat.id);
+      if (cardEl) {
+        cardEl.scrollIntoView({ behavior: "smooth", block: "center" });
+        cardEl.style.transition = "box-shadow 0.3s ease";
+        cardEl.style.boxShadow = "0 0 0 4px rgba(232, 131, 78, 0.6)";
+        setTimeout(() => { cardEl.style.boxShadow = ""; }, 3200);
+      }
+    }, 300);
+
+    // Prompt user to sign in or create account to play immediately
+    openPromptModal({
+      iconSvg: '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>',
+      iconBg: '#eff6ff',
+      iconColor: '#2563eb',
+      title: `Play "${escapeHtml(targetCat.name || 'Premium Quiz')}"`,
+      desc: `You've opened <strong>${escapeHtml(targetCat.name || 'this quiz')}</strong>! Sign in or create a free account to play now.<br><br><span style="display:inline-block; margin-top:4px; color:#059669; font-weight:700;">✨ New accounts receive 2 FREE credits automatically!</span>`,
+      actionText: "Sign In / Sign Up to Play",
+      onAction: () => {
+        sessionStorage.setItem("pendingAutoStartQuizId", targetCat.id);
+        deepLinkHandled = false; // Reset so onAuthStateChanged can trigger after login
+        if (typeof window.openAuthModal === "function") {
+          window.openAuthModal({
+            mode: "signup",
+            title: "Create Free Account",
+            subtitle: `Sign up to unlock "${targetCat.name}" with 2 free credits!`
+          });
+        }
+      }
+    });
+  }
+
   // Subscribe to category level configuration changes in real time
   subscribeConfiguredCategories();
 
   /* ============================================================
      Quiz Card Click Handler (Gate: Sign Up -> Credit Check/Deduction -> Pay/Play)
      ============================================================ */
-  async function handleQuizCardClick(category) {
+  async function handleQuizCardClick(category, isAutoStart = false) {
     if (!category) return;
 
     // 1. If user is NOT signed in: ask them to first signup/signin
@@ -938,12 +1200,20 @@ document.addEventListener("DOMContentLoaded", () => {
         iconSvg: '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>',
         iconBg: '#eff6ff',
         iconColor: '#2563eb',
-        title: "Account Required",
-        desc: `To play or try "${category.name || 'this quiz'}", please create a free account or sign in first.`,
+        title: isAutoStart ? `Play "${escapeHtml(category.name || 'Premium Quiz')}"` : "Account Required",
+        desc: isAutoStart
+          ? `You opened <strong>${escapeHtml(category.name || 'this quiz')}</strong>! Sign in or create a free account to start playing.<br><br><span style="display:inline-block; margin-top:4px; color:#059669; font-weight:700;">✨ New accounts receive 2 FREE credits automatically!</span>`
+          : `To play or try "${escapeHtml(category.name || 'this quiz')}", please create a free account or sign in first.<br><br><span style="display:inline-block; margin-top:4px; color:#059669; font-weight:700;">✨ New accounts receive 2 FREE credits!</span>`,
         actionText: "Sign Up / Sign In",
         onAction: () => {
+          sessionStorage.setItem("pendingAutoStartQuizId", category.id);
+          deepLinkHandled = false;
           if (typeof window.openAuthModal === "function") {
-            window.openAuthModal({ mode: "signup" });
+            window.openAuthModal({
+              mode: "signup",
+              title: "Create Free Account",
+              subtitle: `Sign up to unlock "${category.name}" with 2 free credits!`
+            });
           }
         }
       });
@@ -1305,7 +1575,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Escape key to close
     document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && lightbox.style.display === "flex") closeQrLightbox();
+      if (e.key === "Escape") {
+        if (lightbox.style.display === "flex") closeQrLightbox();
+        if (quizShareModal && quizShareModal.style.display === "flex") closeQuizShareModal();
+      }
     });
   })();
 });
