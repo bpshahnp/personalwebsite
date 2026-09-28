@@ -562,6 +562,116 @@
       border-color: #d97706;
       box-shadow: 0 4px 16px rgba(232, 131, 78, 0.38);
     }
+    .category-card-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: auto;
+      align-items: center;
+    }
+    .category-card-actions .start-cat-btn {
+      flex: 1;
+    }
+    .category-card-share-action-btn {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      color: #334155;
+      border-radius: 12px;
+      padding: 12px 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      flex-shrink: 0;
+      gap: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .category-card-share-action-btn:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+      border-color: #94a3b8;
+      transform: translateY(-2px);
+    }
+    [data-theme="dark"] .category-card-share-action-btn {
+      background: #1e293b;
+      border-color: #334155;
+      color: #cbd5e1;
+    }
+    [data-theme="dark"] .category-card-share-action-btn:hover {
+      background: #334155;
+      color: #ffffff;
+      border-color: #475569;
+    }
+    .category-card-share-badge {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: rgba(15, 23, 42, 0.78);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      color: #f1f5f9;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 9999px;
+      padding: 5px 11px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      z-index: 2;
+      transition: all 0.2s ease;
+    }
+    .category-card-share-badge:hover {
+      background: #2563eb;
+      border-color: #3b82f6;
+      color: #ffffff;
+      transform: scale(1.05);
+    }
+    .share-social-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(78px, 1fr));
+      gap: 10px;
+    }
+    .social-share-pill {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 8px;
+      border-radius: 12px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease;
+      color: #ffffff !important;
+      text-align: center;
+    }
+    .social-share-pill:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+    }
+    .whatsapp-pill { background: #25D366; }
+    .facebook-pill { background: #1877F2; }
+    .twitter-pill { background: #0f172a; }
+    .linkedin-pill { background: #0A66C2; }
+    .telegram-pill { background: #229ED9; }
+    [data-theme="dark"] .twitter-pill { background: #1e293b; border: 1px solid #334155; }
+    [data-theme="dark"] #shareModalQuizPreview {
+      background: #1e293b !important;
+      border-color: #334155 !important;
+    }
+    [data-theme="dark"] #shareModalQuizName {
+      color: #f8fafc !important;
+    }
+    [data-theme="dark"] #shareModalDirectLink {
+      background: #0f172a !important;
+      border-color: #334155 !important;
+      color: #e2e8f0 !important;
+    }
 
     /* ---------- Empty State Card ---------- */
     .premium-empty-card {
@@ -1706,6 +1816,89 @@
         <div style="display:flex; flex-direction:column; gap:10px;">
           <button type="button" class="btn btn-primary" id="promptModalActionBtn" style="padding:12px; font-weight:700;">Proceed</button>
           <button type="button" class="btn btn-outline" id="promptModalCancelBtn" style="padding:10px;">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Interactive Quiz Share Modal -->
+    <div id="quizShareModal" class="prompt-modal-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="shareModalTitle">
+      <div class="prompt-modal-card" style="max-width:480px; text-align:left; padding:24px 22px;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="display:inline-flex; width:38px; height:38px; border-radius:12px; background:#eff6ff; color:#2563eb; align-items:center; justify-content:center; flex-shrink:0;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="18" cy="5" r="3"></circle>
+                <circle cx="6" cy="12" r="3"></circle>
+                <circle cx="18" cy="19" r="3"></circle>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+              </svg>
+            </span>
+            <div>
+              <h3 id="shareModalTitle" style="margin:0; font-size:1.25rem;">Share Quiz</h3>
+              <p style="margin:2px 0 0; font-size:0.82rem; color:#64748b;">Invite friends &amp; followers to play this quiz</p>
+            </div>
+          </div>
+          <button type="button" id="shareModalCloseBtn" aria-label="Close" style="background:none; border:none; font-size:1.8rem; line-height:1; cursor:pointer; color:#94a3b8; padding:0 4px;">&times;</button>
+        </div>
+
+        <!-- Quiz Mini Preview Box -->
+        <div id="shareModalQuizPreview" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:12px 14px; margin-bottom:18px;">
+          <div id="shareModalQuizLevel" class="premium-card-level-badge" style="margin-bottom:4px;">Level</div>
+          <div id="shareModalQuizName" style="font-size:1rem; font-weight:700; color:#0f172a; margin-bottom:2px;">Quiz Name</div>
+          <div id="shareModalQuizMeta" style="font-size:0.78rem; color:#64748b;">10 Questions · 3 Credits</div>
+        </div>
+
+        <!-- Native Share Button (Mobile/Supported devices) -->
+        <div id="shareModalNativeWrap" style="display:none; margin-bottom:14px;">
+          <button type="button" class="btn btn-primary btn-sm" id="shareModalNativeBtn" style="width:100%; padding:10px; font-weight:700; border-radius:10px; display:flex; align-items:center; justify-content:center; gap:8px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            <span>Share via Apps on Device</span>
+          </button>
+        </div>
+
+        <!-- Quick Social Share Buttons Grid -->
+        <div style="margin-bottom:18px;">
+          <span style="font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:#64748b; display:block; margin-bottom:10px;">Share to Social Media</span>
+          <div class="share-social-grid">
+            <!-- WhatsApp -->
+            <a id="shareBtnWhatsapp" href="#" target="_blank" rel="noopener noreferrer" class="social-share-pill whatsapp-pill">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.669-.699c.969.529 1.777.814 2.791.814 3.18 0 5.767-2.587 5.768-5.766.001-3.181-2.586-5.768-5.768-5.768zm7.399 5.766c-.001 4.08-3.32 7.397-7.399 7.397-1.265 0-2.457-.323-3.504-.892l-4.527 1.187 1.211-4.425c-.636-1.101-.98-2.368-.98-3.667.001-4.08 3.321-7.397 7.4-7.397 4.079 0 7.399 3.317 7.399 7.397z"/></svg>
+              <span>WhatsApp</span>
+            </a>
+            <!-- Facebook -->
+            <a id="shareBtnFacebook" href="#" target="_blank" rel="noopener noreferrer" class="social-share-pill facebook-pill">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+              <span>Facebook</span>
+            </a>
+            <!-- X / Twitter -->
+            <a id="shareBtnTwitter" href="#" target="_blank" rel="noopener noreferrer" class="social-share-pill twitter-pill">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+              <span>X / Post</span>
+            </a>
+            <!-- LinkedIn -->
+            <a id="shareBtnLinkedin" href="#" target="_blank" rel="noopener noreferrer" class="social-share-pill linkedin-pill">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/></svg>
+              <span>LinkedIn</span>
+            </a>
+            <!-- Telegram -->
+            <a id="shareBtnTelegram" href="#" target="_blank" rel="noopener noreferrer" class="social-share-pill telegram-pill">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+              <span>Telegram</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Direct Link Input + Copy Button -->
+        <div>
+          <span style="font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:#64748b; display:block; margin-bottom:8px;">Direct Quiz Link</span>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="shareModalDirectLink" readonly style="flex:1; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:10px; padding:10px 12px; font-size:0.84rem; color:#1e293b; font-family:monospace;" />
+            <button type="button" class="btn btn-primary btn-sm" id="shareModalCopyBtn" style="padding:10px 16px; font-weight:700; display:flex; align-items:center; gap:6px; white-space:nowrap; border-radius:10px;">
+              <svg id="shareCopyIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              <span id="shareCopyText">Copy</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
