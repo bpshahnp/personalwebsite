@@ -4478,8 +4478,9 @@ img { max-width: 100%; display: block; }
   border-bottom-color: var(--line);
 }
 [data-theme="dark"] .mcqhub-rail {
-  background: #1e293b;
-  border-right-color: var(--line);
+  background: #131d33;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 20px;
 }
 [data-theme="dark"] .rail-item { color: var(--ink); border-color: var(--line); }
 [data-theme="dark"] .rail-item:hover { background: #334155; }
