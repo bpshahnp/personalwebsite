@@ -5,7 +5,7 @@
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin | B. Prasad Shah</title>
-  <link rel="stylesheet" href="css/style.css?v=20260923_13" />
+  <link rel="stylesheet" href="css/style.css?v=20260928_01" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -267,7 +267,34 @@
               <option value="General Knowledge">General Knowledge</option>
             </select>
           </label>
+          <label>Topic
+            <select id="questionTopicFilter">
+              <option value="All">All topics</option>
+            </select>
+          </label>
           <span class="quiz-muted" id="questionCountLabel"></span>
+        </div>
+
+        <!-- Bulk Selection Action Bar -->
+        <div id="questionsBulkBar" class="admin-bulk-bar">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <label style="display:inline-flex; align-items:center; gap:6px; font-weight:600; font-size:0.88rem; cursor:pointer; margin:0; user-select:none;">
+              <input type="checkbox" id="selectAllQuestions" style="width:16px; height:16px; cursor:pointer;" />
+              <span>Select all</span>
+            </label>
+            <span id="selectedQuestionsCount" style="font-size:0.84rem; color:var(--mist); font-weight:600;">0 selected</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button type="button" class="btn btn-outline btn-sm" id="btnBulkEditQuestions" disabled style="display:inline-flex; align-items:center; gap:5px; font-weight:600;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Bulk Edit
+            </button>
+            <button type="button" class="btn btn-outline btn-sm btn-danger" id="btnBulkDeleteQuestions" disabled style="display:inline-flex; align-items:center; gap:5px; font-weight:600;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              Delete Selected
+            </button>
+            <button type="button" class="btn btn-outline btn-sm" id="btnDeselectAllQuestions" style="display:none; font-size:0.8rem;">Clear</button>
+          </div>
         </div>
 
         <div id="questionsAdminList" class="admin-list">
@@ -889,6 +916,62 @@
     </div>
   </section>
 
+  <!-- Bulk Edit Questions Modal -->
+  <div id="bulkEditQuestionsModal" class="modal" hidden style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.7); align-items:center; justify-content:center; padding:16px;">
+    <div class="admin-bulk-modal-box" style="background:#fff; border-radius:12px; max-width:540px; width:100%; max-height:90vh; overflow-y:auto; padding:24px; position:relative; box-shadow:0 10px 25px rgba(0,0,0,0.2);">
+      <button type="button" id="closeBulkEditModalBtn" aria-label="Close" style="position:absolute; top:12px; right:14px; background:none; border:none; font-size:1.8rem; cursor:pointer; color:#64748b;">&times;</button>
+      <h3 style="margin:0 0 6px; font-size:1.2rem; color:var(--ink);">Bulk Edit Questions</h3>
+      <p id="bulkEditModalSub" style="margin:0 0 18px; font-size:0.86rem; color:var(--mist);">Editing 0 selected questions. Change only the fields you wish to update.</p>
+
+      <form id="bulkEditQuestionsForm" class="admin-form" style="display:flex; flex-direction:column; gap:16px;">
+        <label style="display:flex; flex-direction:column; gap:6px; font-weight:600; font-size:0.9rem;">
+          Class
+          <select id="bulkClass" style="padding:9px 12px; border:1px solid var(--line); border-radius:8px; font:inherit;">
+            <option value="__KEEP__">— Keep unchanged —</option>
+            <option value="8">Class 8</option>
+            <option value="9">Class 9</option>
+            <option value="10">Class 10</option>
+          </select>
+        </label>
+
+        <label style="display:flex; flex-direction:column; gap:6px; font-weight:600; font-size:0.9rem;">
+          Subject
+          <select id="bulkSubject" style="padding:9px 12px; border:1px solid var(--line); border-radius:8px; font:inherit;">
+            <option value="__KEEP__">— Keep unchanged —</option>
+            <option value="Computer Science">Computer Science</option>
+            <option value="Science">Science</option>
+            <option value="Mathematics">Mathematics</option>
+            <option value="English">English</option>
+            <option value="General Knowledge">General Knowledge</option>
+            <option value="Other">Other (Custom)</option>
+          </select>
+        </label>
+
+        <label id="bulkCustomSubjectWrap" style="display:none; flex-direction:column; gap:6px; font-weight:600; font-size:0.9rem;">
+          Custom Subject Name
+          <input type="text" id="bulkCustomSubject" placeholder="e.g. Social Studies" style="padding:9px 12px; border:1px solid var(--line); border-radius:8px; font:inherit;" />
+        </label>
+
+        <label style="display:flex; flex-direction:column; gap:6px; font-weight:600; font-size:0.9rem;">
+          Topic / Category
+          <select id="bulkTopicSelect" style="padding:9px 12px; border:1px solid var(--line); border-radius:8px; font:inherit;">
+            <option value="__KEEP__">— Keep unchanged —</option>
+            <option value="__CUSTOM__">+ Enter new custom topic…</option>
+          </select>
+          <input type="text" id="bulkCustomTopic" placeholder="Type new topic name (e.g. Python Functions)" style="display:none; margin-top:6px; padding:9px 12px; border:1px solid var(--line); border-radius:8px; font:inherit;" />
+          <span style="font-size:0.75rem; color:var(--mist); font-weight:normal;">Leave as "Keep unchanged" if you don't want to change topics.</span>
+        </label>
+
+        <div id="bulkEditStatus" style="font-size:0.86rem; font-weight:600; min-height:1.2rem;"></div>
+
+        <div class="admin-form-actions" style="display:flex; gap:10px; justify-content:flex-end; margin-top:8px;">
+          <button type="button" class="btn btn-outline" id="cancelBulkEditBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="applyBulkEditBtn">Apply Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Payment Receipt Preview Modal -->
   <div id="receiptPreviewModal" class="modal" hidden style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.8); align-items:center; justify-content:center; padding:16px;">
     <div style="background:#fff; border-radius:12px; max-width:640px; width:100%; max-height:90vh; overflow-y:auto; padding:20px; position:relative; text-align:center;">
@@ -904,6 +987,6 @@
   <script src="js/firebase-config.js"></script>
   <script src="js/auth-widget.js"></script>
   <script src="js/nav-drawer.js"></script>
-  <script src="js/admin.js?v=20260923_13"></script>
+  <script src="js/admin.js?v=20260928_01"></script>
 </body>
 </html>

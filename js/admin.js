@@ -97,8 +97,9 @@ function applyOwnerAccess() {
   const classFilter = document.getElementById("questionClassFilter");
   const subjectSelect = document.getElementById("qSubject");
   const subjectFilter = document.getElementById("questionSubjectFilter");
+  const topicFilter = document.getElementById("questionTopicFilter");
 
-  [classSelect, classFilter, subjectSelect, subjectFilter].forEach((sel) => {
+  [classSelect, classFilter, subjectSelect, subjectFilter, topicFilter].forEach((sel) => {
     if (!sel) return;
     Array.from(sel.options).forEach((opt) => {
       opt.disabled = false;
@@ -514,10 +515,36 @@ function initQuestionsAdmin(currentUser) {
   const idField = document.getElementById("questionId");
   const classFilter = document.getElementById("questionClassFilter");
   const subjectFilter = document.getElementById("questionSubjectFilter");
+  const topicFilter = document.getElementById("questionTopicFilter");
   const countLabel = document.getElementById("questionCountLabel");
   const qSubjectSelect = document.getElementById("qSubject");
   const qCustomSubjectWrap = document.getElementById("qCustomSubjectWrap");
   const qCustomSubjectInput = document.getElementById("qCustomSubject");
+
+  // Bulk action elements
+  const selectAllCb = document.getElementById("selectAllQuestions");
+  const bulkBar = document.getElementById("questionsBulkBar");
+  const selectedCountEl = document.getElementById("selectedQuestionsCount");
+  const btnBulkEdit = document.getElementById("btnBulkEditQuestions");
+  const btnBulkDelete = document.getElementById("btnBulkDeleteQuestions");
+  const btnDeselectAll = document.getElementById("btnDeselectAllQuestions");
+
+  // Bulk Edit Modal elements
+  const bulkModal = document.getElementById("bulkEditQuestionsModal");
+  const closeBulkModalBtn = document.getElementById("closeBulkEditModalBtn");
+  const cancelBulkModalBtn = document.getElementById("cancelBulkEditBtn");
+  const bulkForm = document.getElementById("bulkEditQuestionsForm");
+  const bulkClassSelect = document.getElementById("bulkClass");
+  const bulkSubjectSelect = document.getElementById("bulkSubject");
+  const bulkCustomSubjectWrap = document.getElementById("bulkCustomSubjectWrap");
+  const bulkCustomSubjectInput = document.getElementById("bulkCustomSubject");
+  const bulkTopicSelect = document.getElementById("bulkTopicSelect");
+  const bulkCustomTopicInput = document.getElementById("bulkCustomTopic");
+  const bulkEditStatus = document.getElementById("bulkEditStatus");
+  const applyBulkEditBtn = document.getElementById("applyBulkEditBtn");
+  const bulkModalSub = document.getElementById("bulkEditModalSub");
+
+  const selectedQuestionIds = new Set();
 
   /* Owner (no activeModeratorPerms) sees all questions.
      Moderators only see the questions they personally created. */
@@ -526,8 +553,21 @@ function initQuestionsAdmin(currentUser) {
 
   let allQuestions = []; // latest snapshot, newest first, class already normalised
 
-  classFilter.addEventListener("change", renderQuestionList);
-  if (subjectFilter) subjectFilter.addEventListener("change", renderQuestionList);
+  if (classFilter) {
+    classFilter.addEventListener("change", () => {
+      syncTopicDropdown();
+      renderQuestionList();
+    });
+  }
+  if (subjectFilter) {
+    subjectFilter.addEventListener("change", () => {
+      syncTopicDropdown();
+      renderQuestionList();
+    });
+  }
+  if (topicFilter) {
+    topicFilter.addEventListener("change", renderQuestionList);
+  }
   if (qSubjectSelect) {
     qSubjectSelect.addEventListener("change", () => {
       if (qCustomSubjectWrap) {
@@ -572,6 +612,30 @@ function initQuestionsAdmin(currentUser) {
     }
   }
 
+  /* Rebuild topic/category dropdown based on current class and subject filter */
+  function syncTopicDropdown() {
+    if (!topicFilter) return;
+    const filterClass = classFilter ? classFilter.value : "All";
+    const filterSubject = subjectFilter ? subjectFilter.value : "All";
+    const pool = allQuestions.filter((q) => {
+      const matchClass = filterClass === "All" || q.classLevel === filterClass;
+      const matchSubject = filterSubject === "All" || (q.subject || normalizeSubject(q)) === filterSubject;
+      return matchClass && matchSubject;
+    });
+    const topics = Array.from(new Set(pool.map((q) => q.category).filter(Boolean))).sort((a, b) => a.localeCompare(b));
+    const prevTopic = topicFilter.value;
+
+    topicFilter.innerHTML =
+      `<option value="All">All topics (${topics.length})</option>` +
+      topics.map((t) => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join("");
+
+    if (topics.includes(prevTopic)) {
+      topicFilter.value = prevTopic;
+    } else {
+      topicFilter.value = "All";
+    }
+  }
+
   /* Build the Firestore query — owner sees all, moderator only sees their own */
   let baseQuery = db.collection("questions").orderBy("order", "desc");
   if (!isOwner && myUid) {
@@ -585,6 +649,7 @@ function initQuestionsAdmin(currentUser) {
         return { id: doc.id, ...data, subject: normalizeSubject(data), classLevel: normalizeClass(data.classLevel ?? data.class) };
       });
       syncSubjectDropdowns();
+      syncTopicDropdown();
       renderQuestionList();
     },
     (err) => {
@@ -592,32 +657,332 @@ function initQuestionsAdmin(currentUser) {
     }
   );
 
+  function updateBulkBar(visibleManageable) {
+    const selectedCount = selectedQuestionIds.size;
+    if (selectedCountEl) {
+      selectedCountEl.textContent = `${selectedCount} selected`;
+    }
+    if (btnBulkEdit) btnBulkEdit.disabled = selectedCount === 0;
+    if (btnBulkDelete) btnBulkDelete.disabled = selectedCount === 0;
+    if (btnDeselectAll) btnDeselectAll.style.display = selectedCount > 0 ? "inline-block" : "none";
+    if (bulkBar) bulkBar.classList.toggle("has-selected", selectedCount > 0);
+
+    if (selectAllCb) {
+      if (!visibleManageable || visibleManageable.length === 0) {
+        selectAllCb.checked = false;
+        selectAllCb.indeterminate = false;
+        selectAllCb.disabled = true;
+      } else {
+        selectAllCb.disabled = false;
+        const selectedVisibleCount = visibleManageable.filter((q) => selectedQuestionIds.has(q.id)).length;
+        if (selectedVisibleCount === visibleManageable.length) {
+          selectAllCb.checked = true;
+          selectAllCb.indeterminate = false;
+        } else if (selectedVisibleCount > 0) {
+          selectAllCb.checked = false;
+          selectAllCb.indeterminate = true;
+        } else {
+          selectAllCb.checked = false;
+          selectAllCb.indeterminate = false;
+        }
+      }
+    }
+  }
+
+  if (selectAllCb) {
+    selectAllCb.addEventListener("change", () => {
+      const isChecked = selectAllCb.checked;
+      const filterClass = classFilter ? classFilter.value : "All";
+      const filterSubject = subjectFilter ? subjectFilter.value : "All";
+      const filterTopic = topicFilter ? topicFilter.value : "All";
+      const visible = allQuestions.filter((q) => {
+        const matchClass = filterClass === "All" || q.classLevel === filterClass;
+        const matchSubject = filterSubject === "All" || (q.subject || normalizeSubject(q)) === filterSubject;
+        const matchTopic = filterTopic === "All" || (q.category || "General") === filterTopic;
+        return matchClass && matchSubject && matchTopic;
+      });
+      const visibleManageable = visible.filter((q) => canModeratorManageQuestion(q));
+
+      visibleManageable.forEach((q) => {
+        if (isChecked) {
+          selectedQuestionIds.add(q.id);
+        } else {
+          selectedQuestionIds.delete(q.id);
+        }
+      });
+
+      listEl.querySelectorAll(".admin-row").forEach((r) => {
+        const rowCb = r.querySelector(".q-select-cb");
+        if (rowCb) {
+          rowCb.checked = isChecked;
+          r.classList.toggle("is-selected", isChecked);
+        }
+      });
+      updateBulkBar(visibleManageable);
+    });
+  }
+
+  if (btnDeselectAll) {
+    btnDeselectAll.addEventListener("click", () => {
+      selectedQuestionIds.clear();
+      listEl.querySelectorAll(".admin-row").forEach((r) => {
+        const rowCb = r.querySelector(".q-select-cb");
+        if (rowCb) rowCb.checked = false;
+        r.classList.remove("is-selected");
+      });
+      const filterClass = classFilter ? classFilter.value : "All";
+      const filterSubject = subjectFilter ? subjectFilter.value : "All";
+      const filterTopic = topicFilter ? topicFilter.value : "All";
+      const visible = allQuestions.filter((q) => {
+        const matchClass = filterClass === "All" || q.classLevel === filterClass;
+        const matchSubject = filterSubject === "All" || (q.subject || normalizeSubject(q)) === filterSubject;
+        const matchTopic = filterTopic === "All" || (q.category || "General") === filterTopic;
+        return matchClass && matchSubject && matchTopic;
+      });
+      const visibleManageable = visible.filter((q) => canModeratorManageQuestion(q));
+      updateBulkBar(visibleManageable);
+    });
+  }
+
+  if (btnBulkDelete) {
+    btnBulkDelete.addEventListener("click", async () => {
+      const count = selectedQuestionIds.size;
+      if (!count) return;
+      if (!confirm(`Are you sure you want to permanently delete these ${count} questions?\n\nThis action cannot be undone.`)) {
+        return;
+      }
+      btnBulkDelete.disabled = true;
+      btnBulkDelete.textContent = "Deleting…";
+
+      try {
+        const ids = Array.from(selectedQuestionIds);
+        for (let i = 0; i < ids.length; i += 400) {
+          const chunk = ids.slice(i, i + 400);
+          const batch = db.batch();
+          chunk.forEach((id) => batch.delete(db.collection("questions").doc(id)));
+          await batch.commit();
+        }
+        selectedQuestionIds.clear();
+        alert(`✓ Successfully deleted ${count} questions.`);
+      } catch (err) {
+        alert(`Could not delete questions: ${err.message}`);
+      } finally {
+        btnBulkDelete.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Delete Selected`;
+        renderQuestionList();
+      }
+    });
+  }
+
+  function openBulkEditModal() {
+    if (!selectedQuestionIds.size || !bulkModal) return;
+    if (bulkModalSub) {
+      bulkModalSub.textContent = `Editing ${selectedQuestionIds.size} selected questions. Change only the fields you wish to update.`;
+    }
+    if (bulkEditStatus) bulkEditStatus.textContent = "";
+
+    // Sync topics in bulkTopicSelect
+    if (bulkTopicSelect) {
+      const allTopics = Array.from(new Set(allQuestions.map((q) => q.category).filter(Boolean))).sort((a, b) => a.localeCompare(b));
+      bulkTopicSelect.innerHTML =
+        `<option value="__KEEP__">— Keep unchanged —</option>` +
+        `<optgroup label="Existing Topics">` +
+        allTopics.map((t) => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join("") +
+        `</optgroup>` +
+        `<option value="__CUSTOM__">+ Enter new custom topic…</option>`;
+      bulkTopicSelect.value = "__KEEP__";
+    }
+    if (bulkCustomTopicInput) {
+      bulkCustomTopicInput.value = "";
+      bulkCustomTopicInput.style.display = "none";
+    }
+
+    // Sync subjects in bulkSubjectSelect
+    if (bulkSubjectSelect) {
+      const customSubjects = Array.from(
+        new Set(allQuestions.map((q) => q.subject).filter(Boolean))
+      ).filter((s) => !STD_SUBJECTS.includes(s)).sort((a, b) => a.localeCompare(b));
+
+      bulkSubjectSelect.innerHTML =
+        `<option value="__KEEP__">— Keep unchanged —</option>` +
+        STD_SUBJECTS.map((s) => `<option value="${s}">${s}</option>`).join("") +
+        customSubjects.map((s) => `<option value="${s}">${s}</option>`).join("") +
+        `<option value="Other">Other (Custom)</option>`;
+      bulkSubjectSelect.value = "__KEEP__";
+    }
+    if (bulkCustomSubjectWrap) bulkCustomSubjectWrap.style.display = "none";
+    if (bulkCustomSubjectInput) bulkCustomSubjectInput.value = "";
+    if (bulkClassSelect) bulkClassSelect.value = "__KEEP__";
+
+    bulkModal.hidden = false;
+    bulkModal.style.display = "flex";
+  }
+
+  function closeBulkEditModal() {
+    if (bulkModal) {
+      bulkModal.hidden = true;
+      bulkModal.style.display = "none";
+    }
+  }
+
+  if (btnBulkEdit) btnBulkEdit.addEventListener("click", openBulkEditModal);
+  if (closeBulkModalBtn) closeBulkModalBtn.addEventListener("click", closeBulkEditModal);
+  if (cancelBulkModalBtn) cancelBulkModalBtn.addEventListener("click", closeBulkEditModal);
+  if (bulkModal) {
+    bulkModal.addEventListener("click", (e) => {
+      if (e.target === bulkModal) closeBulkEditModal();
+    });
+  }
+
+  if (bulkSubjectSelect) {
+    bulkSubjectSelect.addEventListener("change", () => {
+      if (bulkCustomSubjectWrap) {
+        bulkCustomSubjectWrap.style.display = bulkSubjectSelect.value === "Other" ? "flex" : "none";
+      }
+    });
+  }
+
+  if (bulkTopicSelect) {
+    bulkTopicSelect.addEventListener("change", () => {
+      if (bulkCustomTopicInput) {
+        bulkCustomTopicInput.style.display = bulkTopicSelect.value === "__CUSTOM__" ? "block" : "none";
+        if (bulkTopicSelect.value === "__CUSTOM__") bulkCustomTopicInput.focus();
+      }
+    });
+  }
+
+  if (bulkForm) {
+    bulkForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!selectedQuestionIds.size) return;
+
+      let newClass = undefined;
+      if (bulkClassSelect && bulkClassSelect.value !== "__KEEP__") {
+        newClass = normalizeClass(bulkClassSelect.value);
+      }
+
+      let newSubject = undefined;
+      if (bulkSubjectSelect && bulkSubjectSelect.value !== "__KEEP__") {
+        if (bulkSubjectSelect.value === "Other") {
+          const customSubj = bulkCustomSubjectInput ? bulkCustomSubjectInput.value.trim() : "";
+          if (!customSubj) {
+            alert('Please enter a custom subject name in the "Custom Subject Name" field.');
+            if (bulkCustomSubjectInput) bulkCustomSubjectInput.focus();
+            return;
+          }
+          newSubject = customSubj;
+        } else {
+          newSubject = bulkSubjectSelect.value;
+        }
+      }
+
+      let newCategory = undefined;
+      if (bulkTopicSelect && bulkTopicSelect.value !== "__KEEP__") {
+        if (bulkTopicSelect.value === "__CUSTOM__") {
+          const customTopic = bulkCustomTopicInput ? bulkCustomTopicInput.value.trim() : "";
+          if (!customTopic) {
+            alert("Please enter a custom topic name.");
+            if (bulkCustomTopicInput) bulkCustomTopicInput.focus();
+            return;
+          }
+          newCategory = customTopic;
+        } else {
+          newCategory = bulkTopicSelect.value;
+        }
+      }
+
+      if (newClass === undefined && newSubject === undefined && newCategory === undefined) {
+        alert("Please select at least one field (Class, Subject, or Topic) to change.");
+        return;
+      }
+
+      const changesDesc = [];
+      if (newClass !== undefined) changesDesc.push(`Class: ${newClass}`);
+      if (newSubject !== undefined) changesDesc.push(`Subject: ${newSubject}`);
+      if (newCategory !== undefined) changesDesc.push(`Topic: ${newCategory}`);
+
+      if (!confirm(`Apply the following changes to ${selectedQuestionIds.size} selected questions?\n\n• ${changesDesc.join("\n• ")}`)) {
+        return;
+      }
+
+      if (applyBulkEditBtn) {
+        applyBulkEditBtn.disabled = true;
+        applyBulkEditBtn.textContent = "Updating…";
+      }
+      if (bulkEditStatus) {
+        bulkEditStatus.style.color = "var(--ink)";
+        bulkEditStatus.textContent = "Updating questions in Firestore…";
+      }
+
+      const updateData = {};
+      if (newClass !== undefined) updateData.classLevel = newClass;
+      if (newSubject !== undefined) updateData.subject = newSubject;
+      if (newCategory !== undefined) updateData.category = newCategory;
+      updateData.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
+
+      try {
+        const ids = Array.from(selectedQuestionIds);
+        for (let i = 0; i < ids.length; i += 400) {
+          const chunk = ids.slice(i, i + 400);
+          const batch = db.batch();
+          chunk.forEach((id) => batch.update(db.collection("questions").doc(id), updateData));
+          await batch.commit();
+        }
+
+        alert(`✓ Successfully updated ${ids.length} questions!`);
+        selectedQuestionIds.clear();
+        closeBulkEditModal();
+        renderQuestionList();
+      } catch (err) {
+        alert(`Error updating questions: ${err.message}`);
+        if (bulkEditStatus) {
+          bulkEditStatus.style.color = "#dc2626";
+          bulkEditStatus.textContent = `Update failed: ${err.message}`;
+        }
+      } finally {
+        if (applyBulkEditBtn) {
+          applyBulkEditBtn.disabled = false;
+          applyBulkEditBtn.textContent = "Apply Changes";
+        }
+      }
+    });
+  }
+
   function renderQuestionList() {
-    const filterClass = classFilter.value;
+    const filterClass = classFilter ? classFilter.value : "All";
     const filterSubject = subjectFilter ? subjectFilter.value : "All";
+    const filterTopic = topicFilter ? topicFilter.value : "All";
+
     const visible = allQuestions.filter((q) => {
       const matchClass = filterClass === "All" || q.classLevel === filterClass;
       const matchSubject = filterSubject === "All" || (q.subject || normalizeSubject(q)) === filterSubject;
-      return matchClass && matchSubject;
+      const matchTopic = filterTopic === "All" || (q.category || "General") === filterTopic;
+      return matchClass && matchSubject && matchTopic;
     });
+
+    const visibleManageable = visible.filter((q) => canModeratorManageQuestion(q));
 
     if (isOwner) {
       const perClass = CLASS_LEVELS.map(
         (lvl) => `Class ${lvl}: ${allQuestions.filter((q) => q.classLevel === lvl).length}`
       ).join(" · ");
+      const filterActive = filterClass !== "All" || filterSubject !== "All" || filterTopic !== "All";
       countLabel.textContent = allQuestions.length
-        ? `${allQuestions.length} total — ${perClass}`
+        ? (filterActive
+            ? `Showing ${visible.length} of ${allQuestions.length} — ${perClass}`
+            : `${allQuestions.length} total — ${perClass}`)
         : "";
     } else {
       countLabel.textContent = allQuestions.length
-        ? `${allQuestions.length} question${allQuestions.length === 1 ? "" : "s"} added by you`
+        ? `Showing ${visible.length} of ${allQuestions.length} question${allQuestions.length === 1 ? "" : "s"} added by you`
         : "";
     }
+
+    updateBulkBar(visibleManageable);
 
     if (!visible.length) {
       listEl.innerHTML = `<p class="updates-loading">${
         allQuestions.length
-          ? "No questions match the selected filters — add one above."
+          ? "No questions match the selected filters — try changing filters or add one above."
           : "No questions yet — add one above."
       }</p>`;
       return;
@@ -627,14 +992,22 @@ function initQuestionsAdmin(currentUser) {
     visible.forEach((q) => {
       const subj = q.subject || normalizeSubject(q);
       const canManage = canModeratorManageQuestion(q);
+      const isSelected = selectedQuestionIds.has(q.id);
       const row = document.createElement("div");
-      row.className = "admin-row";
+      row.className = `admin-row${isSelected ? " is-selected" : ""}`;
       row.innerHTML = `
-        <div>
-          <strong>${escapeHtml(q.question || "")}</strong>
-          <span class="admin-tag">Class ${escapeHtml(q.classLevel)}</span>
-          <span class="admin-tag" style="background:#e0f2fe; color:#0369a1; font-weight:600;">${escapeHtml(subj)}</span>
-          ${q.category ? `<span class="admin-tag">${escapeHtml(q.category)}</span>` : ""}
+        <div style="display:flex; align-items:flex-start; gap:12px; flex:1; min-width:0;">
+          ${canManage ? `
+            <input type="checkbox" class="q-select-cb" data-id="${q.id}" ${isSelected ? "checked" : ""} style="width:17px; height:17px; cursor:pointer; margin-top:3px; flex-shrink:0;" title="Select question" />
+          ` : `
+            <span style="width:17px; height:17px; flex-shrink:0;"></span>
+          `}
+          <div style="flex:1; min-width:0;">
+            <strong style="display:block; word-break:break-word; margin-bottom:4px;">${escapeHtml(q.question || "")}</strong>
+            <span class="admin-tag">Class ${escapeHtml(q.classLevel)}</span>
+            <span class="admin-tag" style="background:#e0f2fe; color:#0369a1; font-weight:600;">${escapeHtml(subj)}</span>
+            ${q.category ? `<span class="admin-tag clickable-topic" data-topic="${escapeHtml(q.category)}" title="Click to filter by ${escapeHtml(q.category)}">${escapeHtml(q.category)}</span>` : ""}
+          </div>
         </div>
         <div class="admin-row-actions">
           ${canManage ? `
@@ -643,10 +1016,37 @@ function initQuestionsAdmin(currentUser) {
           ` : `<span style="font-size:0.75rem; color:var(--mist); font-style:italic;">Read-only</span>`}
         </div>
       `;
+
+      const cb = row.querySelector(".q-select-cb");
+      if (cb) {
+        cb.addEventListener("change", () => {
+          if (cb.checked) {
+            selectedQuestionIds.add(q.id);
+            row.classList.add("is-selected");
+          } else {
+            selectedQuestionIds.delete(q.id);
+            row.classList.remove("is-selected");
+          }
+          updateBulkBar(visibleManageable);
+        });
+      }
+
+      const topicTag = row.querySelector(".clickable-topic");
+      if (topicTag && topicFilter) {
+        topicTag.addEventListener("click", () => {
+          topicFilter.value = q.category;
+          renderQuestionList();
+        });
+      }
+
       if (canManage) {
         row.querySelector('[data-action="edit"]').addEventListener("click", () => startEdit(q));
         row.querySelector('[data-action="delete"]').addEventListener("click", () => {
-          if (confirm("Delete this question?")) db.collection("questions").doc(q.id).delete();
+          if (confirm("Delete this question?")) {
+            db.collection("questions").doc(q.id).delete().then(() => {
+              selectedQuestionIds.delete(q.id);
+            });
+          }
         });
       }
       listEl.appendChild(row);
