@@ -240,7 +240,8 @@
             <label id="qCustomSubjectWrap" style="display:none;">Custom Subject
               <input type="text" id="qCustomSubject" placeholder="e.g. Social Studies" />
             </label>
-            <label>Topic / Category <input type="text" id="qCategory" placeholder="e.g. Python Basics, Physics" /></label>
+            <label>Topic / Category <input type="text" id="qCategory" placeholder="e.g. Python, Physics" /></label>
+            <label>Subtopic <input type="text" id="qSubtopic" placeholder="e.g. Python Basic, Python Function" /></label>
           </div>
           <div class="admin-form-actions">
             <button type="submit" class="btn btn-primary" id="questionSubmitBtn">Add question</button>
@@ -270,6 +271,11 @@
           <label>Topic
             <select id="questionTopicFilter">
               <option value="All">All topics</option>
+            </select>
+          </label>
+          <label>Subtopic
+            <select id="questionSubtopicFilter">
+              <option value="All">All subtopics</option>
             </select>
           </label>
           <span class="quiz-muted" id="questionCountLabel"></span>
@@ -962,6 +968,16 @@
           <span style="font-size:0.75rem; color:var(--mist); font-weight:normal;">Leave as "Keep unchanged" if you don't want to change topics.</span>
         </label>
 
+        <label style="display:flex; flex-direction:column; gap:6px; font-weight:600; font-size:0.9rem;">
+          Subtopic
+          <select id="bulkSubtopicSelect" style="padding:9px 12px; border:1px solid var(--line); border-radius:8px; font:inherit;">
+            <option value="__KEEP__">— Keep unchanged —</option>
+            <option value="__CUSTOM__">+ Enter new custom subtopic…</option>
+          </select>
+          <input type="text" id="bulkCustomSubtopic" placeholder="Type new subtopic name (e.g. Python Basic)" style="display:none; margin-top:6px; padding:9px 12px; border:1px solid var(--line); border-radius:8px; font:inherit;" />
+          <span style="font-size:0.75rem; color:var(--mist); font-weight:normal;">Leave as "Keep unchanged" if you don't want to change subtopics.</span>
+        </label>
+
         <div id="bulkEditStatus" style="font-size:0.86rem; font-weight:600; min-height:1.2rem;"></div>
 
         <div class="admin-form-actions" style="display:flex; gap:10px; justify-content:flex-end; margin-top:8px;">
@@ -987,6 +1003,6 @@
   <script src="js/firebase-config.js"></script>
   <script src="js/auth-widget.js"></script>
   <script src="js/nav-drawer.js"></script>
-  <script src="js/admin.js?v=20260928_01"></script>
+  <script src="js/admin.js?v=20260928_02"></script>
 </body>
 </html>
