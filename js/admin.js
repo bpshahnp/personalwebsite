@@ -98,8 +98,9 @@ function applyOwnerAccess() {
   const subjectSelect = document.getElementById("qSubject");
   const subjectFilter = document.getElementById("questionSubjectFilter");
   const topicFilter = document.getElementById("questionTopicFilter");
+  const subtopicFilter = document.getElementById("questionSubtopicFilter");
 
-  [classSelect, classFilter, subjectSelect, subjectFilter, topicFilter].forEach((sel) => {
+  [classSelect, classFilter, subjectSelect, subjectFilter, topicFilter, subtopicFilter].forEach((sel) => {
     if (!sel) return;
     Array.from(sel.options).forEach((opt) => {
       opt.disabled = false;
@@ -443,6 +444,7 @@ function parseQuestionsInput(text) {
         explanation: q.explanation ? String(q.explanation).trim() : "",
         subject: q.subject ? String(q.subject).trim() : normalizeSubject(q),
         category: q.category ? String(q.category).trim() : "General",
+        subtopic: q.subtopic ? String(q.subtopic).trim() : "",
         classLevel: normalizeClass(q.classLevel ?? q.class),
       };
     });
@@ -457,14 +459,16 @@ function parseQuestionsInput(text) {
   for (let i = startIdx; i < rows.length; i++) {
     const r = rows[i];
     if (!r[0] || !r[0].trim()) continue;
-    // `class` is the last column and optional, so CSVs exported before
-    // classes existed still import cleanly (they all become Class 10).
-    let question, a, b, c, d, correct, explanation, subject, category, classLevel;
-    if (r.length >= 10) {
+    let question, a, b, c, d, correct, explanation, subject, category, subtopic, classLevel;
+    if (r.length >= 11) {
+      [question, a, b, c, d, correct, explanation, subject, category, subtopic, classLevel] = r;
+    } else if (r.length === 10) {
       [question, a, b, c, d, correct, explanation, subject, category, classLevel] = r;
+      subtopic = "";
     } else {
       [question, a, b, c, d, correct, explanation, category, classLevel] = r;
       subject = "Computer Science";
+      subtopic = "";
     }
     if (!a || !b || !c || !d) {
       throw new Error(`Row ${i + 1}: needs question + 4 options (columns 2-5).`);
@@ -482,6 +486,7 @@ function parseQuestionsInput(text) {
       explanation: (explanation || "").trim(),
       subject: (subject || "Computer Science").trim(),
       category: (category || "General").trim(),
+      subtopic: (subtopic || "").trim(),
       classLevel: normalizeClass(classLevel),
     });
   }
@@ -516,10 +521,12 @@ function initQuestionsAdmin(currentUser) {
   const classFilter = document.getElementById("questionClassFilter");
   const subjectFilter = document.getElementById("questionSubjectFilter");
   const topicFilter = document.getElementById("questionTopicFilter");
+  const subtopicFilter = document.getElementById("questionSubtopicFilter");
   const countLabel = document.getElementById("questionCountLabel");
   const qSubjectSelect = document.getElementById("qSubject");
   const qCustomSubjectWrap = document.getElementById("qCustomSubjectWrap");
   const qCustomSubjectInput = document.getElementById("qCustomSubject");
+  const qSubtopicInput = document.getElementById("qSubtopic");
 
   // Bulk action elements
   const selectAllCb = document.getElementById("selectAllQuestions");
@@ -540,6 +547,8 @@ function initQuestionsAdmin(currentUser) {
   const bulkCustomSubjectInput = document.getElementById("bulkCustomSubject");
   const bulkTopicSelect = document.getElementById("bulkTopicSelect");
   const bulkCustomTopicInput = document.getElementById("bulkCustomTopic");
+  const bulkSubtopicSelect = document.getElementById("bulkSubtopicSelect");
+  const bulkCustomSubtopicInput = document.getElementById("bulkCustomSubtopic");
   const bulkEditStatus = document.getElementById("bulkEditStatus");
   const applyBulkEditBtn = document.getElementById("applyBulkEditBtn");
   const bulkModalSub = document.getElementById("bulkEditModalSub");
@@ -556,17 +565,25 @@ function initQuestionsAdmin(currentUser) {
   if (classFilter) {
     classFilter.addEventListener("change", () => {
       syncTopicDropdown();
+      syncSubtopicDropdown();
       renderQuestionList();
     });
   }
   if (subjectFilter) {
     subjectFilter.addEventListener("change", () => {
       syncTopicDropdown();
+      syncSubtopicDropdown();
       renderQuestionList();
     });
   }
   if (topicFilter) {
-    topicFilter.addEventListener("change", renderQuestionList);
+    topicFilter.addEventListener("change", () => {
+      syncSubtopicDropdown();
+      renderQuestionList();
+    });
+  }
+  if (subtopicFilter) {
+    subtopicFilter.addEventListener("change", renderQuestionList);
   }
   if (qSubjectSelect) {
     qSubjectSelect.addEventListener("change", () => {
@@ -636,6 +653,32 @@ function initQuestionsAdmin(currentUser) {
     }
   }
 
+  /* Rebuild subtopic dropdown based on current class, subject, and topic filter */
+  function syncSubtopicDropdown() {
+    if (!subtopicFilter) return;
+    const filterClass = classFilter ? classFilter.value : "All";
+    const filterSubject = subjectFilter ? subjectFilter.value : "All";
+    const filterTopic = topicFilter ? topicFilter.value : "All";
+    const pool = allQuestions.filter((q) => {
+      const matchClass = filterClass === "All" || q.classLevel === filterClass;
+      const matchSubject = filterSubject === "All" || (q.subject || normalizeSubject(q)) === filterSubject;
+      const matchTopic = filterTopic === "All" || (q.category || "General") === filterTopic;
+      return matchClass && matchSubject && matchTopic;
+    });
+    const subtopics = Array.from(new Set(pool.map((q) => q.subtopic).filter(Boolean))).sort((a, b) => a.localeCompare(b));
+    const prevSubtopic = subtopicFilter.value;
+
+    subtopicFilter.innerHTML =
+      `<option value="All">All subtopics (${subtopics.length})</option>` +
+      subtopics.map((s) => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join("");
+
+    if (subtopics.includes(prevSubtopic)) {
+      subtopicFilter.value = prevSubtopic;
+    } else {
+      subtopicFilter.value = "All";
+    }
+  }
+
   /* Build the Firestore query — owner sees all, moderator only sees their own */
   let baseQuery = db.collection("questions").orderBy("order", "desc");
   if (!isOwner && myUid) {
@@ -646,10 +689,17 @@ function initQuestionsAdmin(currentUser) {
     (snapshot) => {
       allQuestions = snapshot.docs.map((doc) => {
         const data = doc.data();
-        return { id: doc.id, ...data, subject: normalizeSubject(data), classLevel: normalizeClass(data.classLevel ?? data.class) };
+        return {
+          id: doc.id,
+          ...data,
+          subject: normalizeSubject(data),
+          classLevel: normalizeClass(data.classLevel ?? data.class),
+          subtopic: data.subtopic ? String(data.subtopic).trim() : "",
+        };
       });
       syncSubjectDropdowns();
       syncTopicDropdown();
+      syncSubtopicDropdown();
       renderQuestionList();
     },
     (err) => {
@@ -695,11 +745,13 @@ function initQuestionsAdmin(currentUser) {
       const filterClass = classFilter ? classFilter.value : "All";
       const filterSubject = subjectFilter ? subjectFilter.value : "All";
       const filterTopic = topicFilter ? topicFilter.value : "All";
+      const filterSubtopic = subtopicFilter ? subtopicFilter.value : "All";
       const visible = allQuestions.filter((q) => {
         const matchClass = filterClass === "All" || q.classLevel === filterClass;
         const matchSubject = filterSubject === "All" || (q.subject || normalizeSubject(q)) === filterSubject;
         const matchTopic = filterTopic === "All" || (q.category || "General") === filterTopic;
-        return matchClass && matchSubject && matchTopic;
+        const matchSubtopic = filterSubtopic === "All" || (q.subtopic || "") === filterSubtopic;
+        return matchClass && matchSubject && matchTopic && matchSubtopic;
       });
       const visibleManageable = visible.filter((q) => canModeratorManageQuestion(q));
 
@@ -733,11 +785,13 @@ function initQuestionsAdmin(currentUser) {
       const filterClass = classFilter ? classFilter.value : "All";
       const filterSubject = subjectFilter ? subjectFilter.value : "All";
       const filterTopic = topicFilter ? topicFilter.value : "All";
+      const filterSubtopic = subtopicFilter ? subtopicFilter.value : "All";
       const visible = allQuestions.filter((q) => {
         const matchClass = filterClass === "All" || q.classLevel === filterClass;
         const matchSubject = filterSubject === "All" || (q.subject || normalizeSubject(q)) === filterSubject;
         const matchTopic = filterTopic === "All" || (q.category || "General") === filterTopic;
-        return matchClass && matchSubject && matchTopic;
+        const matchSubtopic = filterSubtopic === "All" || (q.subtopic || "") === filterSubtopic;
+        return matchClass && matchSubject && matchTopic && matchSubtopic;
       });
       const visibleManageable = visible.filter((q) => canModeratorManageQuestion(q));
       updateBulkBar(visibleManageable);
@@ -796,6 +850,22 @@ function initQuestionsAdmin(currentUser) {
       bulkCustomTopicInput.style.display = "none";
     }
 
+    // Sync subtopics in bulkSubtopicSelect
+    if (bulkSubtopicSelect) {
+      const allSubtopics = Array.from(new Set(allQuestions.map((q) => q.subtopic).filter(Boolean))).sort((a, b) => a.localeCompare(b));
+      bulkSubtopicSelect.innerHTML =
+        `<option value="__KEEP__">— Keep unchanged —</option>` +
+        `<optgroup label="Existing Subtopics">` +
+        allSubtopics.map((s) => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join("") +
+        `</optgroup>` +
+        `<option value="__CUSTOM__">+ Enter new custom subtopic…</option>`;
+      bulkSubtopicSelect.value = "__KEEP__";
+    }
+    if (bulkCustomSubtopicInput) {
+      bulkCustomSubtopicInput.value = "";
+      bulkCustomSubtopicInput.style.display = "none";
+    }
+
     // Sync subjects in bulkSubjectSelect
     if (bulkSubjectSelect) {
       const customSubjects = Array.from(
@@ -850,6 +920,15 @@ function initQuestionsAdmin(currentUser) {
     });
   }
 
+  if (bulkSubtopicSelect) {
+    bulkSubtopicSelect.addEventListener("change", () => {
+      if (bulkCustomSubtopicInput) {
+        bulkCustomSubtopicInput.style.display = bulkSubtopicSelect.value === "__CUSTOM__" ? "block" : "none";
+        if (bulkSubtopicSelect.value === "__CUSTOM__") bulkCustomSubtopicInput.focus();
+      }
+    });
+  }
+
   if (bulkForm) {
     bulkForm.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -890,8 +969,23 @@ function initQuestionsAdmin(currentUser) {
         }
       }
 
-      if (newClass === undefined && newSubject === undefined && newCategory === undefined) {
-        alert("Please select at least one field (Class, Subject, or Topic) to change.");
+      let newSubtopic = undefined;
+      if (bulkSubtopicSelect && bulkSubtopicSelect.value !== "__KEEP__") {
+        if (bulkSubtopicSelect.value === "__CUSTOM__") {
+          const customSub = bulkCustomSubtopicInput ? bulkCustomSubtopicInput.value.trim() : "";
+          if (!customSub) {
+            alert("Please enter a custom subtopic name.");
+            if (bulkCustomSubtopicInput) bulkCustomSubtopicInput.focus();
+            return;
+          }
+          newSubtopic = customSub;
+        } else {
+          newSubtopic = bulkSubtopicSelect.value;
+        }
+      }
+
+      if (newClass === undefined && newSubject === undefined && newCategory === undefined && newSubtopic === undefined) {
+        alert("Please select at least one field (Class, Subject, Topic, or Subtopic) to change.");
         return;
       }
 
@@ -899,6 +993,7 @@ function initQuestionsAdmin(currentUser) {
       if (newClass !== undefined) changesDesc.push(`Class: ${newClass}`);
       if (newSubject !== undefined) changesDesc.push(`Subject: ${newSubject}`);
       if (newCategory !== undefined) changesDesc.push(`Topic: ${newCategory}`);
+      if (newSubtopic !== undefined) changesDesc.push(`Subtopic: ${newSubtopic}`);
 
       if (!confirm(`Apply the following changes to ${selectedQuestionIds.size} selected questions?\n\n• ${changesDesc.join("\n• ")}`)) {
         return;
@@ -917,6 +1012,7 @@ function initQuestionsAdmin(currentUser) {
       if (newClass !== undefined) updateData.classLevel = newClass;
       if (newSubject !== undefined) updateData.subject = newSubject;
       if (newCategory !== undefined) updateData.category = newCategory;
+      if (newSubtopic !== undefined) updateData.subtopic = newSubtopic;
       updateData.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
 
       try {
@@ -951,12 +1047,14 @@ function initQuestionsAdmin(currentUser) {
     const filterClass = classFilter ? classFilter.value : "All";
     const filterSubject = subjectFilter ? subjectFilter.value : "All";
     const filterTopic = topicFilter ? topicFilter.value : "All";
+    const filterSubtopic = subtopicFilter ? subtopicFilter.value : "All";
 
     const visible = allQuestions.filter((q) => {
       const matchClass = filterClass === "All" || q.classLevel === filterClass;
       const matchSubject = filterSubject === "All" || (q.subject || normalizeSubject(q)) === filterSubject;
       const matchTopic = filterTopic === "All" || (q.category || "General") === filterTopic;
-      return matchClass && matchSubject && matchTopic;
+      const matchSubtopic = filterSubtopic === "All" || (q.subtopic || "") === filterSubtopic;
+      return matchClass && matchSubject && matchTopic && matchSubtopic;
     });
 
     const visibleManageable = visible.filter((q) => canModeratorManageQuestion(q));
@@ -965,7 +1063,7 @@ function initQuestionsAdmin(currentUser) {
       const perClass = CLASS_LEVELS.map(
         (lvl) => `Class ${lvl}: ${allQuestions.filter((q) => q.classLevel === lvl).length}`
       ).join(" · ");
-      const filterActive = filterClass !== "All" || filterSubject !== "All" || filterTopic !== "All";
+      const filterActive = filterClass !== "All" || filterSubject !== "All" || filterTopic !== "All" || filterSubtopic !== "All";
       countLabel.textContent = allQuestions.length
         ? (filterActive
             ? `Showing ${visible.length} of ${allQuestions.length} — ${perClass}`
@@ -1006,7 +1104,8 @@ function initQuestionsAdmin(currentUser) {
             <strong style="display:block; word-break:break-word; margin-bottom:4px;">${escapeHtml(q.question || "")}</strong>
             <span class="admin-tag">Class ${escapeHtml(q.classLevel)}</span>
             <span class="admin-tag" style="background:#e0f2fe; color:#0369a1; font-weight:600;">${escapeHtml(subj)}</span>
-            ${q.category ? `<span class="admin-tag clickable-topic" data-topic="${escapeHtml(q.category)}" title="Click to filter by ${escapeHtml(q.category)}">${escapeHtml(q.category)}</span>` : ""}
+            ${q.category ? `<span class="admin-tag clickable-topic" data-topic="${escapeHtml(q.category)}" title="Click to filter by topic: ${escapeHtml(q.category)}" style="cursor:pointer;">${escapeHtml(q.category)}</span>` : ""}
+            ${q.subtopic ? `<span class="admin-tag clickable-subtopic" data-subtopic="${escapeHtml(q.subtopic)}" title="Click to filter by subtopic: ${escapeHtml(q.subtopic)}" style="background:#fef3c7; color:#92400e; font-weight:600; cursor:pointer;">${escapeHtml(q.subtopic)}</span>` : ""}
           </div>
         </div>
         <div class="admin-row-actions">
@@ -1035,6 +1134,19 @@ function initQuestionsAdmin(currentUser) {
       if (topicTag && topicFilter) {
         topicTag.addEventListener("click", () => {
           topicFilter.value = q.category;
+          syncSubtopicDropdown();
+          renderQuestionList();
+        });
+      }
+
+      const subtopicTag = row.querySelector(".clickable-subtopic");
+      if (subtopicTag && subtopicFilter) {
+        subtopicTag.addEventListener("click", () => {
+          if (topicFilter && q.category) {
+            topicFilter.value = q.category;
+            syncSubtopicDropdown();
+          }
+          subtopicFilter.value = q.subtopic;
           renderQuestionList();
         });
       }
@@ -1063,6 +1175,7 @@ function initQuestionsAdmin(currentUser) {
     document.getElementById("correctIndex").value = q.correctIndex ?? 0;
     document.getElementById("qExplanation").value = q.explanation || "";
     document.getElementById("qCategory").value = q.category || "";
+    if (qSubtopicInput) qSubtopicInput.value = q.subtopic || "";
     document.getElementById("qClass").value = q.classLevel;
     const subj = q.subject || normalizeSubject(q);
     if (qSubjectSelect) {
@@ -1112,6 +1225,7 @@ function initQuestionsAdmin(currentUser) {
       explanation: document.getElementById("qExplanation").value.trim(),
       subject: chosenSubject,
       category: document.getElementById("qCategory").value.trim() || "General",
+      subtopic: qSubtopicInput ? qSubtopicInput.value.trim() : "",
       classLevel: normalizeClass(document.getElementById("qClass").value),
     };
 
@@ -1136,6 +1250,7 @@ function initQuestionsAdmin(currentUser) {
   function resetQuestionForm() {
     form.reset();
     idField.value = "";
+    if (qSubtopicInput) qSubtopicInput.value = "";
     if (activeModeratorPerms && activeModeratorPerms.mcq) {
       applyMcqClassRestriction(activeModeratorPerms.mcq);
     } else {
@@ -1197,10 +1312,10 @@ function initQuestionsAdmin(currentUser) {
   document.getElementById("downloadQuestionCsvTemplate").addEventListener("click", (e) => {
     e.preventDefault();
     const csv =
-      "question,option_a,option_b,option_c,option_d,correct,explanation,subject,category,class\n" +
-      '"What does len() return for a list?","Its length","Its type","Its memory address","Nothing",A,"len() returns the number of items in a list.","Computer Science","Python Basics",10\n' +
-      '"What is the chemical formula of water?","CO2","H2O","NaCl","O2",B,"Water is composed of two hydrogen atoms and one oxygen atom.","Science","Chemistry",9\n' +
-      '"What is the sum of angles in a triangle?","90°","180°","270°","360°",B,"The interior angles of a triangle always add up to 180°.","Mathematics","Geometry",8\n';
+      "question,option_a,option_b,option_c,option_d,correct,explanation,subject,category,subtopic,class\n" +
+      '"What does len() return for a list?","Its length","Its type","Its memory address","Nothing",A,"len() returns the number of items in a list.","Computer Science","Python","Python Basics",10\n' +
+      '"What is the chemical formula of water?","CO2","H2O","NaCl","O2",B,"Water is composed of two hydrogen atoms and one oxygen atom.","Science","Chemistry","Compounds",9\n' +
+      '"What is the sum of angles in a triangle?","90°","180°","270°","360°",B,"The interior angles of a triangle always add up to 180°.","Mathematics","Geometry","Triangles",8\n';
     downloadTextFile("questions-template.csv", csv, "text/csv");
   });
 
@@ -1213,7 +1328,9 @@ function initQuestionsAdmin(currentUser) {
           options: ["Its length", "Its type", "Its memory address", "Nothing"],
           correctIndex: 0,
           explanation: "len() returns the number of items in a list.",
-          category: "Python Basics",
+          subject: "Computer Science",
+          category: "Python",
+          subtopic: "Python Basics",
           classLevel: "10",
         },
         {
@@ -1221,7 +1338,9 @@ function initQuestionsAdmin(currentUser) {
           options: ["//", "#", "/*", "--"],
           correctIndex: 1,
           explanation: "Python comments begin with #.",
-          category: "Python Basics",
+          subject: "Computer Science",
+          category: "Python",
+          subtopic: "Python Basics",
           classLevel: "8",
         },
       ],

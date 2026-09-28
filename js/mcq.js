@@ -352,6 +352,16 @@ function categoriesInClassAndSubject(classValue, subjectValue) {
   );
 }
 
+function subtopicsInPool(classValue, subjectValue, categoryValue) {
+  let pool = questionsInClassAndSubject(classValue, subjectValue);
+  if (categoryValue && categoryValue !== "All") {
+    pool = pool.filter((q) => q.category === categoryValue);
+  }
+  return [...new Set(pool.map((q) => q.subtopic).filter(Boolean))].sort((a, b) =>
+    a.localeCompare(b)
+  );
+}
+
 /* ---------- Elements ---------- */
 const quizStart = document.getElementById("quizStart");
 const quizPlay = document.getElementById("quizPlay");
@@ -365,6 +375,7 @@ const classRadios = [...document.querySelectorAll('input[name="quizClass"]')];
 const subjectRadios = [...document.querySelectorAll('input[name="quizSubject"]')];
 const countRadios = [...document.querySelectorAll('input[name="quizCount"]')];
 const categorySelect = document.getElementById("categorySelect");
+const subtopicSelect = document.getElementById("subtopicSelect");
 const startQuizBtn = document.getElementById("startQuizBtn");
 const topicProgress = document.getElementById("topicProgress");
 const topicList = document.getElementById("topicList");
@@ -631,7 +642,8 @@ db.collection("questions")
         ...data,
         subject: normalizeSubject(data),
         classLevel: questionClass(data),
-        category: data.category || "General"
+        category: data.category || "General",
+        subtopic: data.subtopic ? String(data.subtopic).trim() : "",
       };
     });
 
@@ -653,6 +665,7 @@ db.collection("questions")
     refreshClassOptions();
     refreshSubjectOptions();
     refreshCategoryOptions();
+    refreshSubtopicOptions();
     refreshStatus();
   })
   .catch((err) => {
@@ -662,6 +675,7 @@ db.collection("questions")
     refreshClassOptions();
     refreshSubjectOptions();
     refreshCategoryOptions();
+    refreshSubtopicOptions();
     refreshStatus();
   });
 
@@ -688,9 +702,16 @@ function questionsInClass(classValue) {
 /* The pool the Start button would actually use right now.
    Always a fresh array — the caller shuffles it in place. */
 function currentPool() {
-  const category = categorySelect.value;
-  const pool = questionsInClassAndSubject(selectedClass(), selectedSubject());
-  return category === "All" ? [...pool] : pool.filter((q) => q.category === category);
+  const category = categorySelect ? categorySelect.value : "All";
+  const subtopic = subtopicSelect ? subtopicSelect.value : "All";
+  let pool = questionsInClassAndSubject(selectedClass(), selectedSubject());
+  if (category !== "All") {
+    pool = pool.filter((q) => q.category === category);
+  }
+  if (subtopic !== "All") {
+    pool = pool.filter((q) => (q.subtopic || "") === subtopic);
+  }
+  return pool;
 }
 
 /* Class picker: updates class dropdown and radio count chips */
@@ -813,7 +834,26 @@ function refreshCategoryOptions() {
   categorySelect.value = categories.includes(previous) ? previous : "All";
   categorySelect.disabled = categories.length === 0;
 
+  refreshSubtopicOptions();
   renderTopicProgress();
+}
+
+function refreshSubtopicOptions() {
+  if (!subtopicSelect) return;
+  const previous = subtopicSelect.value;
+  const currentClass = selectedClass();
+  const currentSubj = selectedSubject();
+  const currentTopic = categorySelect ? categorySelect.value : "All";
+
+  const subtopics = subtopicsInPool(currentClass, currentSubj, currentTopic);
+
+  subtopicSelect.innerHTML = [
+    `<option value="All">All subtopics (${subtopics.length})</option>`,
+    ...subtopics.map((s) => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`),
+  ].join("");
+
+  subtopicSelect.value = subtopics.includes(previous) ? previous : "All";
+  subtopicSelect.disabled = subtopics.length === 0;
 }
 
 /* ---------- Topic progress ----------
@@ -982,11 +1022,17 @@ function refreshStatus() {
   if (subj !== "All") {
     label += ` (${subj})`;
   }
+  const chosenCat = categorySelect ? categorySelect.value : "All";
+  const chosenSub = subtopicSelect ? subtopicSelect.value : "All";
+  if (chosenCat !== "All") {
+    label += ` for “${chosenCat}”`;
+  }
+  if (chosenSub !== "All") {
+    label += ` › “${chosenSub}”`;
+  }
 
   if (!available) {
-    questionBankStatus.textContent = `No questions ${label} yet${
-      categorySelect.value === "All" ? "" : ` for “${categorySelect.value}”`
-    } — add some from the Admin Panel.`;
+    questionBankStatus.textContent = `No questions ${label} yet — add some from the Admin Panel.`;
   } else {
     questionBankStatus.textContent = `${available} question${available === 1 ? "" : "s"} available ${label}.`;
   }
@@ -1025,7 +1071,15 @@ subjectRadios.forEach((radio) => {
     renderTopicProgress();
   });
 });
-categorySelect.addEventListener("change", refreshStatus);
+if (categorySelect) {
+  categorySelect.addEventListener("change", () => {
+    refreshSubtopicOptions();
+    refreshStatus();
+  });
+}
+if (subtopicSelect) {
+  subtopicSelect.addEventListener("change", refreshStatus);
+}
 
 /* ---------- Start quiz ---------- */
 function startQuizEngine() {
@@ -1217,7 +1271,10 @@ function renderQuestion() {
   }
 
   if (q.category) {
-    quizQuestionCategory.textContent = q.category;
+    quizQuestionCategory.textContent = q.subtopic ? `${q.category} › ${q.subtopic}` : q.category;
+    quizQuestionCategory.hidden = false;
+  } else if (q.subtopic) {
+    quizQuestionCategory.textContent = q.subtopic;
     quizQuestionCategory.hidden = false;
   } else {
     quizQuestionCategory.hidden = true;
