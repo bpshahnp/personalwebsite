@@ -367,24 +367,28 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* ---------- Quiz Share Modal & Social Deep-Linking ---------- */
+  /**
+   * Returns the share URL for a quiz card.
+   * Points to quiz-share.html?id=<quizId> so:
+   *   - Social crawlers (FB, WhatsApp, Twitter, etc.) hit the page and
+   *     get a Cloudflare Worker that injects the quiz's own image as og:image
+   *   - Regular users are auto-redirected from quiz-share.html to
+   *     premium.html?quiz=<id> which launches the quiz directly
+   */
   function getQuizShareUrl(cat) {
     if (!cat) return window.location.href;
     try {
       const origin = window.location.origin && window.location.origin !== "null"
         ? window.location.origin
         : "https://bholaprasadshah.com.np";
-      let pathname = window.location.pathname || "/premium.html";
-      if (!pathname.endsWith(".html") && !pathname.endsWith("/")) {
-        pathname += "/premium.html";
-      } else if (pathname.endsWith("/")) {
-        pathname += "premium.html";
-      }
-      const url = new URL(pathname, origin);
-      url.searchParams.set("quiz", cat.id);
+      // Build quiz-share.html URL in the same directory as the current page
+      let dir = window.location.pathname.replace(/\/[^/]*$/, "") || "";
+      const url = new URL(dir + "/quiz-share.html", origin);
+      url.searchParams.set("id", cat.id);
       url.hash = "";
       return url.toString();
     } catch (_) {
-      return `https://bholaprasadshah.com.np/premium.html?quiz=${encodeURIComponent(cat.id)}`;
+      return `https://bholaprasadshah.com.np/quiz-share.html?id=${encodeURIComponent(cat.id)}`;
     }
   }
 
@@ -399,6 +403,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const previewName     = document.getElementById("shareModalQuizName");
     const previewLevel    = document.getElementById("shareModalQuizLevel");
     const previewMeta     = document.getElementById("shareModalQuizMeta");
+    const previewThumb    = document.getElementById("shareModalQuizThumb");
+    const previewFallback = document.getElementById("shareModalQuizThumbFallback");
     const directLinkInput = document.getElementById("shareModalDirectLink");
     const copyText        = document.getElementById("shareCopyText");
     const copyIcon        = document.getElementById("shareCopyIcon");
@@ -409,6 +415,21 @@ document.addEventListener("DOMContentLoaded", () => {
     if (directLinkInput) directLinkInput.value = shareUrl;
     if (copyText) copyText.textContent = "Copy";
     if (copyIcon) copyIcon.innerHTML = '<rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>';
+
+    // Set quiz image in preview thumbnail
+    if (previewThumb) {
+      if (cat.imageUrl) {
+        previewThumb.style.backgroundImage = `url('${escapeHtml(cat.imageUrl)}')`;
+        previewThumb.style.backgroundSize  = "cover";
+        previewThumb.style.backgroundPosition = "center";
+        previewThumb.style.background = `url('${escapeHtml(cat.imageUrl)}') center/cover no-repeat`;
+        if (previewFallback) previewFallback.style.display = "none";
+      } else {
+        previewThumb.style.backgroundImage = "";
+        previewThumb.style.background = "linear-gradient(135deg, #1e293b 0%, #3b82f6 100%)";
+        if (previewFallback) previewFallback.style.display = "flex";
+      }
+    }
 
     const shareTitle = `Challenge: "${cat.name || 'Premium Quiz'}"`;
     const shareText = `Can you beat this quiz: "${cat.name || 'Premium Quiz'}"? Test your knowledge now on B. Prasad Shah's Portal!`;

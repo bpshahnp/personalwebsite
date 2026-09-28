@@ -1842,11 +1842,18 @@
           <button type="button" id="shareModalCloseBtn" aria-label="Close" style="background:none; border:none; font-size:1.8rem; line-height:1; cursor:pointer; color:#94a3b8; padding:0 4px;">&times;</button>
         </div>
 
-        <!-- Quiz Mini Preview Box -->
-        <div id="shareModalQuizPreview" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:12px 14px; margin-bottom:18px;">
-          <div id="shareModalQuizLevel" class="premium-card-level-badge" style="margin-bottom:4px;">Level</div>
-          <div id="shareModalQuizName" style="font-size:1rem; font-weight:700; color:#0f172a; margin-bottom:2px;">Quiz Name</div>
-          <div id="shareModalQuizMeta" style="font-size:0.78rem; color:#64748b;">10 Questions · 3 Credits</div>
+        <!-- Quiz Mini Preview Box (with image thumbnail) -->
+        <div id="shareModalQuizPreview" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; margin-bottom:18px; display:flex; align-items:stretch; gap:0;">
+          <!-- Image thumbnail -->
+          <div id="shareModalQuizThumb" style="width:80px; flex-shrink:0; background:linear-gradient(135deg,#1e293b 0%,#3b82f6 100%); background-size:cover; background-position:center; border-radius:0; position:relative;">
+            <div id="shareModalQuizThumbFallback" style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:1.5rem; opacity:0.6;">📝</div>
+          </div>
+          <!-- Text -->
+          <div style="padding:10px 12px; flex:1; min-width:0;">
+            <div id="shareModalQuizLevel" class="premium-card-level-badge" style="margin-bottom:3px;">Level</div>
+            <div id="shareModalQuizName" style="font-size:0.95rem; font-weight:700; color:#0f172a; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Quiz Name</div>
+            <div id="shareModalQuizMeta" style="font-size:0.75rem; color:#64748b;">10 Questions · 3 Credits</div>
+          </div>
         </div>
 
         <!-- Native Share Button (Mobile/Supported devices) -->
