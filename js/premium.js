@@ -225,7 +225,7 @@ document.addEventListener("DOMContentLoaded", () => {
       promptModalIcon.style.color = iconColor || "#2563eb";
     }
     if (promptModalTitle) promptModalTitle.textContent = title || "";
-    if (promptModalDesc) promptModalDesc.textContent = desc || "";
+    if (promptModalDesc) promptModalDesc.innerHTML = desc || "";
     if (promptModalActionBtn) {
       promptModalActionBtn.textContent = actionText || "Proceed";
       promptModalActionBtn.onclick = () => {
@@ -1199,7 +1199,7 @@ document.addEventListener("DOMContentLoaded", () => {
       iconSvg: '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>',
       iconBg: '#eff6ff',
       iconColor: '#2563eb',
-      title: `Play "${escapeHtml(targetCat.name || 'Premium Quiz')}"`,
+      title: `Play "${targetCat.name || 'Premium Quiz'}"`,
       desc: `You've opened <strong>${escapeHtml(targetCat.name || 'this quiz')}</strong>! Sign in or create a free account to play now.<br><br><span style="display:inline-block; margin-top:4px; color:#059669; font-weight:700;">✨ New accounts receive 2 FREE credits automatically!</span>`,
       actionText: "Sign In / Sign Up to Play",
       onAction: () => {
@@ -1231,7 +1231,7 @@ document.addEventListener("DOMContentLoaded", () => {
         iconSvg: '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>',
         iconBg: '#eff6ff',
         iconColor: '#2563eb',
-        title: isAutoStart ? `Play "${escapeHtml(category.name || 'Premium Quiz')}"` : "Account Required",
+        title: isAutoStart ? `Play "${category.name || 'Premium Quiz'}"` : "Account Required",
         desc: isAutoStart
           ? `You opened <strong>${escapeHtml(category.name || 'this quiz')}</strong>! Sign in or create a free account to start playing.<br><br><span style="display:inline-block; margin-top:4px; color:#059669; font-weight:700;">✨ New accounts receive 2 FREE credits automatically!</span>`
           : `To play or try "${escapeHtml(category.name || 'this quiz')}", please create a free account or sign in first.<br><br><span style="display:inline-block; margin-top:4px; color:#059669; font-weight:700;">✨ New accounts receive 2 FREE credits!</span>`,
