@@ -14,14 +14,13 @@
 
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyBbcikq94xF11ECeqJHBD4WXe8PCbZrkJg",
-  authDomain: "personalwebsite-9b430.firebaseapp.com",
-  databaseURL: "https://personalwebsite-9b430-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "personalwebsite-9b430",
-  storageBucket: "personalwebsite-9b430.firebasestorage.app",
-  messagingSenderId: "385218355179",
-  appId: "1:385218355179:web:b07ddad4538f7aef9983ae",
-  measurementId: "G-G5ZY2VQC5Y"
+  apiKey: "AIzaSyDblaevAp_Mhg7nzJ7T-KHgCFOht1fklC8",
+  authDomain: "bprasadshah-np.firebaseapp.com",
+  projectId: "bprasadshah-np",
+  storageBucket: "bprasadshah-np.firebasestorage.app",
+  messagingSenderId: "324277525588",
+  appId: "1:324277525588:web:548390a8d63cc0411de1c1",
+  measurementId: "G-C7V657TN1B"
 };
 
 // Initialize Firebase (compat SDK, loaded via <script> tags in index.html)

@@ -25,8 +25,8 @@
  */
 
 // ── CONFIG ──────────────────────────────────────────────────────────────────
-const FIRESTORE_PROJECT = "personalwebsite-9b430";
-const FIREBASE_API_KEY  = "AIzaSyBbcikq94xF11ECeqJHBD4WXe8PCbZrkJg";
+const FIRESTORE_PROJECT = "bprasadshah-np";
+const FIREBASE_API_KEY  = "AIzaSyDblaevAp_Mhg7nzJ7T-KHgCFOht1fklC8";
 const SITE_ORIGIN       = "https://bholaprasadshah.com.np";
 const DEFAULT_OG_IMAGE  = `${SITE_ORIGIN}/assets/og-image.png`;
 const DEFAULT_OG_TITLE  = "Premium Quiz Portal | B. Prasad Shah";
