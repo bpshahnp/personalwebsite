@@ -1075,48 +1075,126 @@
 
   /* ============================================================
      PREMIUM ACCESS & TOURNAMENT WINNER RECOGNITION
+     Rule: Exactly ONE member who:
+       1) Has completed all 7 days of the tournament (day_1 through day_7)
+       2) Has the highest totalPoints
+       3) Tiebreaker: highest totalCorrect, then earliest completion time
+       4) Meets the admin threshold (premiumMinScore)
      ============================================================ */
   const premiumBanner = document.getElementById("premiumAccessBanner");
   let pMinScore = 50;
 
-  // Load min score from Firestore
+  // Load min score from Firestore (check siteSettings/liveQuiz first, fallback to siteSettings/config)
   if (typeof db !== "undefined" && db) {
-    db.collection("siteSettings").doc("config").get()
+    db.collection("siteSettings").doc("liveQuiz").get()
       .then(s => {
-        if (s.exists && s.data().minScoreForPremium != null) {
-          pMinScore = Number(s.data().minScoreForPremium);
+        if (s.exists && s.data().premiumMinScore != null) {
+          pMinScore = Number(s.data().premiumMinScore);
+        } else {
+          return db.collection("siteSettings").doc("config").get().then(c => {
+            if (c.exists && c.data().minScoreForPremium != null) {
+              pMinScore = Number(c.data().minScoreForPremium);
+            }
+          });
         }
       })
       .catch(() => {});
   }
 
+  function getDocCompletedDaysCount(doc) {
+    if (!doc) return 0;
+    const daysObj = doc.days;
+    if (daysObj && typeof daysObj === "object") {
+      let count = 0;
+      for (let i = 1; i <= 7; i++) {
+        const d = daysObj[`day_${i}`];
+        if (d && (d.completedAt || d.points != null || d.score != null)) {
+          count++;
+        }
+      }
+      return count;
+    }
+    let count = 0;
+    for (let i = 1; i <= 7; i++) {
+      if (doc[`days.day_${i}`]) count++;
+    }
+    return count;
+  }
+
   async function checkWeeklyWinner(user) {
     if (!user || isPracticeMode) return;
-    const ranked = leaderboardDocs
-      .map(d => ({ uid: d.userId, pts: Number(d.totalPoints || 0) }))
-      .filter(x => x.pts > 0)
-      .sort((a, b) => b.pts - a.pts);
-    if (!ranked.length || ranked[0].pts < pMinScore) return;
-    const top = ranked[0].pts;
-    if (!ranked.some(x => x.uid === user.uid && x.pts === top)) return;
 
-    const docId = user.uid + "_" + currentWeekKey;
-    try {
-      const ex = await db.collection("premiumUnlocks").doc(docId).get();
-      if (!ex.exists) {
-        await db.collection("premiumUnlocks").doc(docId).set({
-          userId: user.uid,
-          userName: user.displayName || (user.email ? user.email.split("@")[0] : "Champion"),
-          weekKey: currentWeekKey,
-          weekPoints: top,
-          unlockedAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-      }
-    } catch (e) {
-      console.warn("premiumUnlocks write:", e);
+    // Filter to ONLY members who have completed all 7 days and met minimum score
+    const eligible = leaderboardDocs
+      .map(d => {
+        const daysCount = getDocCompletedDaysCount(d);
+        const pts = Number(d.totalPoints || 0);
+        const correct = Number(d.totalCorrect || 0);
+        const updatedAt = d.updatedAt;
+        return {
+          uid: d.userId,
+          name: d.userName || "Learner",
+          pts,
+          correct,
+          daysCount,
+          updatedAt
+        };
+      })
+      .filter(x => x.daysCount === 7 && x.pts >= pMinScore);
+
+    // If nobody has completed all 7 days yet, no one is crowned yet
+    if (!eligible.length) {
+      if (premiumBanner) premiumBanner.hidden = true;
+      return;
     }
 
-    if (premiumBanner) premiumBanner.hidden = false;
+    // Sort to determine strictly ONE single champion
+    eligible.sort((a, b) => {
+      // 1. Highest points
+      if (b.pts !== a.pts) return b.pts - a.pts;
+      // 2. Tiebreaker: Highest total correct answers
+      if (b.correct !== a.correct) return b.correct - a.correct;
+      // 3. Tiebreaker: Earliest completion time
+      const aTime = a.updatedAt && a.updatedAt.toMillis ? a.updatedAt.toMillis() : Infinity;
+      const bTime = b.updatedAt && b.updatedAt.toMillis ? b.updatedAt.toMillis() : Infinity;
+      return aTime - bTime;
+    });
+
+    const singleWinner = eligible[0]; // Strictly ONE winner
+
+    // Check if current user is that single champion
+    const isWinner = singleWinner && singleWinner.uid === user.uid;
+
+    if (isWinner) {
+      // 7 days of free premium access
+      const now = new Date();
+      const unlockedUntil = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+      const unlockPayload = {
+        userId: singleWinner.uid,
+        userName: singleWinner.name,
+        weekKey: currentWeekKey,
+        weekPoints: singleWinner.pts,
+        daysCompleted: 7,
+        unlockedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        unlockedUntil: firebase.firestore.Timestamp.fromDate(unlockedUntil),
+        reason: "weekly_tournament_champion"
+      };
+
+      try {
+        // Write both document formats so both live.js and premium.js recognize the user
+        await Promise.all([
+          db.collection("premiumUnlocks").doc(`${singleWinner.uid}_${currentWeekKey}`).set(unlockPayload, { merge: true }),
+          db.collection("premiumUnlocks").doc(singleWinner.uid).set(unlockPayload, { merge: true })
+        ]);
+      } catch (e) {
+        console.warn("premiumUnlocks write:", e);
+      }
+
+      if (premiumBanner) premiumBanner.hidden = false;
+    } else {
+      if (premiumBanner) premiumBanner.hidden = true;
+    }
   }
 
   async function checkPremiumAccess(user) {
@@ -1125,12 +1203,26 @@
       return;
     }
     try {
-      const s = await db.collection("premiumUnlocks").doc(user.uid + "_" + currentWeekKey).get();
-      if (s.exists) {
-        if (premiumBanner) premiumBanner.hidden = false;
-      } else {
-        if (premiumBanner) premiumBanner.hidden = true;
+      const [weekSnap, userSnap] = await Promise.all([
+        db.collection("premiumUnlocks").doc(`${user.uid}_${currentWeekKey}`).get(),
+        db.collection("premiumUnlocks").doc(user.uid).get()
+      ]);
+
+      const candidate = (weekSnap.exists && weekSnap.data().weekKey === currentWeekKey)
+        ? weekSnap.data()
+        : (userSnap.exists ? userSnap.data() : null);
+
+      if (candidate) {
+        let isExpired = false;
+        if (candidate.unlockedUntil && candidate.unlockedUntil.toDate) {
+          isExpired = candidate.unlockedUntil.toDate() <= new Date();
+        }
+        if (!isExpired) {
+          if (premiumBanner) premiumBanner.hidden = false;
+          return;
+        }
       }
+      if (premiumBanner) premiumBanner.hidden = true;
     } catch (e) {
       if (premiumBanner) premiumBanner.hidden = true;
     }

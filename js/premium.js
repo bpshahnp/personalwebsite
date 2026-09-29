@@ -721,32 +721,29 @@ document.addEventListener("DOMContentLoaded", () => {
   async function checkIsWeeklyChampion(userId) {
     if (!userId || !db) return false;
     try {
-      const unlockSnap = await db.collection("premiumUnlocks").doc(userId).get();
-      if (unlockSnap.exists) {
-        const d = unlockSnap.data();
-        if (d.unlockedUntil && d.unlockedUntil.toDate) {
-          if (d.unlockedUntil.toDate() > new Date()) return true;
+      // 1. Calculate current week key (e.g. 2026-W38)
+      const now = new Date();
+      const localDay = now.getDay();
+      const dayNr = localDay === 0 ? 7 : localDay;
+      const target = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      target.setDate(target.getDate() + 4 - dayNr);
+      const yearStart = new Date(target.getFullYear(), 0, 1);
+      const weekNo = Math.ceil((((target - yearStart) / 86400000) + 1) / 7);
+      const pad = (n) => String(n).padStart(2, "0");
+      const currentWeekKey = `${target.getFullYear()}-W${pad(weekNo)}`;
+
+      // 2. Check direct user unlock doc (premiumUnlocks/USER_ID)
+      //    and weekly unlock doc (premiumUnlocks/USER_ID_WEEK_KEY)
+      const [userSnap, weekSnap] = await Promise.all([
+        db.collection("premiumUnlocks").doc(userId).get(),
+        db.collection("premiumUnlocks").doc(`${userId}_${currentWeekKey}`).get()
+      ]);
+
+      const unlockDoc = weekSnap.exists ? weekSnap.data() : (userSnap.exists ? userSnap.data() : null);
+      if (unlockDoc) {
+        if (unlockDoc.unlockedUntil && unlockDoc.unlockedUntil.toDate) {
+          if (unlockDoc.unlockedUntil.toDate() > new Date()) return true;
         } else {
-          return true;
-        }
-      }
-
-      let threshold = 50;
-      try {
-        const settingsSnap = await db.collection("siteSettings").doc("liveQuiz").get();
-        if (settingsSnap.exists && settingsSnap.data().premiumMinScore != null) {
-          threshold = Number(settingsSnap.data().premiumMinScore);
-        }
-      } catch(e) {}
-
-      const scoresSnap = await db.collection("liveQuizScores")
-        .orderBy("score", "desc")
-        .limit(1)
-        .get();
-
-      if (!scoresSnap.empty) {
-        const topDoc = scoresSnap.docs[0].data();
-        if (topDoc.userId === userId && Number(topDoc.score || 0) >= threshold) {
           return true;
         }
       }
