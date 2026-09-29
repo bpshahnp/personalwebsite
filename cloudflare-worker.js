@@ -8,45 +8,25 @@
  *   crawlers request a quiz share link, this worker:
  *
  *     1. Detects the crawler via User-Agent
- *     2. Reads ?id= or ?quiz= from the URL
- *     3. Fetches quiz data (name, description, imageUrl) from Firestore
- *     4. STRIPS the default generic OG tags from the HTML
- *     5. INJECTS quiz-specific og:image, og:title, og:description
+ *     2. Reads ?id= (or ?quiz=) from the URL
+ *     3. Reads ?t= (title), ?img= (image), ?d= (description) from URL params
+ *        -> FAST PATH: Injects metadata immediately without DB dependency!
+ *     4. If params missing, fetches from Firestore REST API
+ *     5. If Firestore is down/quota-limited, formats quiz slug into a clean title
+ *     6. STRIPS default generic OG tags from the HTML
+ *     7. INJECTS quiz-specific og:image, og:title, og:description
  *
  *   This works for BOTH URL formats:
  *     - https://bholaprasadshah.com.np/quiz-share.html?id=<quiz_id>
  *     - https://bholaprasadshah.com.np/premium.html?quiz=<quiz_id>
  *
  *   Regular browser requests are passed through unchanged (fast).
- *
- * ── HOW TO DEPLOY (Dashboard — no CLI needed) ────────────────────
- *
- *   STEP 1: Go to https://dash.cloudflare.com
- *   STEP 2: Click "Workers & Pages" in the left menu
- *   STEP 3: Click "Create" → "Create Worker"
- *   STEP 4: Delete the default code, paste THIS entire file
- *   STEP 5: Click "Deploy"
- *   STEP 6: In your new worker page, click "Settings" tab
- *           → "Triggers" → "Add Route"
- *
- *   Add THESE TWO routes (one per line, add both):
- *     bholaprasadshah.com.np/quiz-share.html*
- *     bholaprasadshah.com.np/premium.html*
- *
- *   STEP 7: Done! Test at:
- *     https://developers.facebook.com/tools/debug/
- *     (enter: https://bholaprasadshah.com.np/quiz-share.html?id=YOUR_QUIZ_ID)
- *
- *   NOTE: Facebook caches OG data. After deploying, paste any old
- *   shared link into the Facebook Sharing Debugger and click
- *   "Scrape Again" to clear the cache.
- *
- * COSTS: Cloudflare Workers Free Tier = 100,000 requests/day. Free.
  * ================================================================
  */
 
 // ── CONFIG ──────────────────────────────────────────────────────────────────
 const FIRESTORE_PROJECT = "personalwebsite-9b430";
+const FIREBASE_API_KEY  = "AIzaSyBbcikq94xF11ECeqJHBD4WXe8PCbZrkJg";
 const SITE_ORIGIN       = "https://bholaprasadshah.com.np";
 const DEFAULT_OG_IMAGE  = `${SITE_ORIGIN}/assets/og-image.png`;
 const DEFAULT_OG_TITLE  = "Premium Quiz Portal | B. Prasad Shah";
@@ -54,28 +34,24 @@ const DEFAULT_OG_DESC   = "Challenge yourself with premium competitive quizzes. 
 // ────────────────────────────────────────────────────────────────────────────
 
 // ── CRAWLER DETECTION ────────────────────────────────────────────────────────
-/**
- * Returns true if the User-Agent is a social media / search crawler.
- * Only crawlers get the expensive Firestore lookup — real users skip it.
- */
 function isSocialCrawler(userAgent = "") {
   const ua = userAgent.toLowerCase();
   return (
-    ua.includes("facebookexternalhit") ||  // Facebook / Messenger
+    ua.includes("facebookexternalhit") ||
     ua.includes("facebot") ||
-    ua.includes("twitterbot") ||           // Twitter / X
-    ua.includes("linkedinbot") ||          // LinkedIn
-    ua.includes("whatsapp") ||             // WhatsApp
-    ua.includes("telegrambot") ||          // Telegram
-    ua.includes("slackbot") ||             // Slack
-    ua.includes("discordbot") ||           // Discord
-    ua.includes("applebot") ||             // Apple
-    ua.includes("googlebot") ||            // Google search
-    ua.includes("bingbot") ||              // Bing
-    ua.includes("pinterestbot") ||         // Pinterest
-    ua.includes("vkshare") ||              // VK
-    ua.includes("redditbot") ||            // Reddit
-    ua.includes("quora link preview") ||   // Quora
+    ua.includes("twitterbot") ||
+    ua.includes("linkedinbot") ||
+    ua.includes("whatsapp") ||
+    ua.includes("telegrambot") ||
+    ua.includes("slackbot") ||
+    ua.includes("discordbot") ||
+    ua.includes("applebot") ||
+    ua.includes("googlebot") ||
+    ua.includes("bingbot") ||
+    ua.includes("pinterestbot") ||
+    ua.includes("vkshare") ||
+    ua.includes("redditbot") ||
+    ua.includes("quora link preview") ||
     ua.includes("outbrain") ||
     ua.includes("rogerbot") ||
     ua.includes("semrushbot") ||
@@ -86,29 +62,25 @@ function isSocialCrawler(userAgent = "") {
   );
 }
 
-// ── FIRESTORE REST HELPERS ───────────────────────────────────────────────────
-/** Unwrap a Firestore field value object to a plain JS value */
+// ── HELPERS ──────────────────────────────────────────────────────────────────
 function fsVal(f) {
   if (!f) return null;
   return f.stringValue ?? f.integerValue ?? f.doubleValue ?? f.booleanValue ?? null;
 }
 
-/** Fetch a single premiumQuizContent document by ID via Firestore REST */
-async function fetchQuizData(quizId) {
-  const url =
-    `https://firestore.googleapis.com/v1/projects/${FIRESTORE_PROJECT}` +
-    `/databases/(default)/documents/premiumQuizContent/${encodeURIComponent(quizId)}`;
-
-  const res = await fetch(url, {
-    cf: { cacheEverything: true, cacheTtl: 300 }   // cache 5 min at edge
-  });
-  if (!res.ok) return null;
-  const json = await res.json();
-  if (json.error || !json.fields) return null;
-  return json.fields;
+function slugToTitle(slug) {
+  if (!slug) return "Premium Quiz";
+  return slug
+    .replace(/[-_]+/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+    .replace(/\bI\b/g, "I")
+    .replace(/\bIi\b/g, "II")
+    .replace(/\bIii\b/g, "III")
+    .replace(/\bIv\b/g, "IV")
+    .replace(/\bGk\b/g, "GK")
+    .trim();
 }
 
-// ── HTML TRANSFORMATION ──────────────────────────────────────────────────────
 const esc = (s) =>
   String(s || "")
     .replace(/&/g, "&amp;")
@@ -116,23 +88,31 @@ const esc = (s) =>
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
 
-/**
- * Remove ALL existing <title>, <meta name="description">,
- * and all og: / twitter: meta tags so there are no duplicates.
- */
+async function fetchQuizData(quizId) {
+  try {
+    const url =
+      `https://firestore.googleapis.com/v1/projects/${FIRESTORE_PROJECT}` +
+      `/databases/(default)/documents/premiumQuizContent/${encodeURIComponent(quizId)}?key=${FIREBASE_API_KEY}`;
+
+    const res = await fetch(url, {
+      cf: { cacheEverything: true, cacheTtl: 3600 }
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    if (json.error || !json.fields) return null;
+    return json.fields;
+  } catch (_) {
+    return null;
+  }
+}
+
 function stripOgTags(html) {
   return html
-    // <title>…</title>
     .replace(/<title[^>]*>[\s\S]*?<\/title>/gi, "")
-    // self-closing <meta …/> — og:, twitter:, description
     .replace(/<meta\s[^>]*(property|name)="(og:|twitter:|description)[^"]*"[^>]*\/?>/gi, "")
-    // just in case they're not self-closing
     .replace(/<meta\s[^>]*(property|name)="(og:|twitter:|description)[^"]*"[^>]*><\/meta>/gi, "");
 }
 
-/**
- * Build the complete OG + Twitter meta block and insert it into <head>.
- */
 function injectOgTags(html, { title, description, imageUrl, canonicalUrl }) {
   const block = `
   <title>${esc(title)}</title>
@@ -151,13 +131,11 @@ function injectOgTags(html, { title, description, imageUrl, canonicalUrl }) {
   <meta name="twitter:description" content="${esc(description)}" />
   <meta name="twitter:image" content="${esc(imageUrl)}" />`;
 
-  // Insert immediately after <head> (before anything else)
   return html.replace(/(<head[^>]*>)/i, `$1\n${block}`);
 }
 
-/** Build quiz-specific OG values from Firestore fields */
-function buildOgValues(fields, quizId, isSharePage) {
-  const name        = fsVal(fields.name)        || "Premium Quiz";
+function buildOgFromFields(fields, quizId, canonicalUrl) {
+  const name        = fsVal(fields.name)        || slugToTitle(quizId);
   const description = fsVal(fields.description) || "A timed competitive examination quiz on B. Prasad Shah's Portal.";
   const imageUrl    = fsVal(fields.imageUrl)    || null;
   const credits     = Number(fsVal(fields.credits) || 3);
@@ -170,13 +148,9 @@ function buildOgValues(fields, quizId, isSharePage) {
     "Sign up free and start immediately!"
   ].filter(Boolean).join(" ");
 
-  // Use the quiz imageUrl only if it's a valid public URL
   const ogImage = (imageUrl && /^https?:\/\//i.test(imageUrl))
     ? imageUrl
     : DEFAULT_OG_IMAGE;
-
-  // Canonical URL always points to quiz-share.html for clean link previews
-  const canonicalUrl = `${SITE_ORIGIN}/quiz-share.html?id=${encodeURIComponent(quizId)}`;
 
   return { title: ogTitle, description: ogDesc, imageUrl: ogImage, canonicalUrl };
 }
@@ -191,7 +165,6 @@ async function handleRequest(request) {
   const pathname  = url.pathname;
   const ua        = request.headers.get("User-Agent") || "";
 
-  // Only process quiz share URLs
   const isSharePage   = pathname.endsWith("quiz-share.html");
   const isPremiumPage = pathname.endsWith("premium.html");
 
@@ -199,60 +172,75 @@ async function handleRequest(request) {
     return fetch(request);
   }
 
-  // Extract quiz ID from either ?id= or ?quiz=
   const quizId = url.searchParams.get("id") || url.searchParams.get("quiz");
 
-  // No quiz ID, or not a crawler — pass through untouched
   if (!quizId || !isSocialCrawler(ua)) {
     return fetch(request);
   }
 
-  // ── CRAWLER + quiz ID: fetch quiz and inject OG tags ────────────────────
   try {
-    // Fetch quiz data and original HTML in parallel
-    const [fields, originalResp] = await Promise.all([
-      fetchQuizData(quizId),
-      fetch(request)
-    ]);
+    const paramTitle = url.searchParams.get("t")   || url.searchParams.get("title");
+    const paramImg   = url.searchParams.get("img") || url.searchParams.get("image");
+    const paramDesc  = url.searchParams.get("d")   || url.searchParams.get("desc");
 
-    const rawHtml = await originalResp.text();
+    let ogValues = null;
 
-    let ogValues;
-    if (fields) {
-      ogValues = buildOgValues(fields, quizId, isSharePage);
-    } else {
-      // Quiz not found — use defaults
+    // 1. FAST PATH: Check if title and/or image are provided directly in URL query params
+    if (paramTitle || paramImg) {
+      const rawTitle = paramTitle || slugToTitle(quizId);
+      const title    = `${rawTitle} — Free Quiz Challenge | B. Prasad Shah`;
+      const desc     = paramDesc
+        ? `${paramDesc} Play now on B. Prasad Shah's Portal!`
+        : `Challenge yourself with ${rawTitle}. Sign up free and play!`;
+      const img      = (paramImg && /^https?:\/\//i.test(paramImg))
+        ? paramImg
+        : DEFAULT_OG_IMAGE;
+
       ogValues = {
-        title:        DEFAULT_OG_TITLE,
-        description:  DEFAULT_OG_DESC,
-        imageUrl:     DEFAULT_OG_IMAGE,
-        canonicalUrl: `${SITE_ORIGIN}/quiz-share.html?id=${encodeURIComponent(quizId)}`
+        title,
+        description: desc,
+        imageUrl: img,
+        canonicalUrl: request.url
       };
     }
 
-    // 1. Strip all old OG/title/description tags
+    // 2. FALLBACK PATH: If URL didn't have params, fetch from Firestore
+    if (!ogValues) {
+      const fields = await fetchQuizData(quizId);
+      if (fields) {
+        ogValues = buildOgFromFields(fields, quizId, request.url);
+      } else {
+        // If Firestore is quota-limited or unavailable, derive from the quiz slug!
+        const prettyName = slugToTitle(quizId);
+        ogValues = {
+          title:        `${prettyName} — Free Quiz Challenge | B. Prasad Shah`,
+          description:  `Challenge yourself with ${prettyName} on B. Prasad Shah's Portal. Sign up free and play!`,
+          imageUrl:     DEFAULT_OG_IMAGE,
+          canonicalUrl: request.url
+        };
+      }
+    }
+
+    // Fetch the underlying static page
+    const originalResp = await fetch(request);
+    const rawHtml      = await originalResp.text();
+
+    // Strip old OG tags and inject new ones
     const strippedHtml = stripOgTags(rawHtml);
-    // 2. Inject the quiz-specific tags at the top of <head>
-    const finalHtml = injectOgTags(strippedHtml, ogValues);
+    const finalHtml    = injectOgTags(strippedHtml, ogValues);
 
     return new Response(finalHtml, {
       status: originalResp.status,
       headers: {
         "Content-Type":  "text/html; charset=UTF-8",
-        "Cache-Control": "public, max-age=300",    // edge-cache 5 min
+        "Cache-Control": "public, max-age=300",
         "Vary":          "User-Agent",
-        "X-OG-Worker":  `quiz:${quizId}`,
-        // Preserve important original headers
-        ...Object.fromEntries(
-          ["X-Frame-Options", "X-Content-Type-Options", "Referrer-Policy"]
-            .map(h => [h, originalResp.headers.get(h)])
-            .filter(([, v]) => v)
-        )
+        "X-OG-Worker":   `quiz:${quizId}`,
+        "X-OG-Source":   paramTitle || paramImg ? "url-params" : "firestore-or-slug"
       }
     });
 
   } catch (err) {
-    // On any error, serve original page unchanged — never break the site
     console.error("OG Worker error:", err.message);
     return fetch(request);
   }

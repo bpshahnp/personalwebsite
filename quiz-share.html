@@ -269,11 +269,13 @@
   }
 
   async function loadQuizAndRedirect() {
-    const params   = new URLSearchParams(window.location.search);
-    const quizId   = params.get("id") || params.get("quiz");
+    const params     = new URLSearchParams(window.location.search);
+    const quizId     = params.get("id") || params.get("quiz");
+    const paramTitle = params.get("t") || params.get("title");
+    const paramImg   = params.get("img") || params.get("image");
+    const paramDesc  = params.get("d") || params.get("desc");
 
     if (!quizId) {
-      // No quiz ID — show fallback
       cardTitle.textContent = "Quiz Not Found";
       cardDesc.textContent  = "No quiz was specified. Please use a full quiz share link.";
       redirectNote.textContent = "";
@@ -286,85 +288,88 @@
     const targetUrl = `${location.origin || SITE_ORIGIN}/premium.html?quiz=${encodeURIComponent(quizId)}`;
     playBtn.href = targetUrl;
 
+    // Fast path: if title or image passed in URL, populate card immediately
+    if (paramTitle) {
+      cardTitle.textContent = paramTitle;
+    } else {
+      cardTitle.textContent = quizId.replace(/[-_]+/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+    }
+    if (paramDesc) {
+      cardDesc.textContent = paramDesc;
+    }
+    if (paramImg && /^https?:\/\//i.test(paramImg)) {
+      cardImg.style.backgroundImage = `url('${escH(paramImg)}')`;
+      cardImg.style.backgroundSize  = "cover";
+      cardImg.style.backgroundPosition = "center";
+      cardImg.querySelector(".share-card-img-placeholder")?.remove();
+    }
+
+    // Start auto-redirect countdown
+    let secondsLeft = 2;
+    redirectNote.textContent = `Redirecting to quiz in ${secondsLeft}s…`;
+    const interval = setInterval(() => {
+      secondsLeft--;
+      if (secondsLeft <= 0) {
+        clearInterval(interval);
+        redirectNote.textContent = "Launching quiz…";
+        window.location.replace(targetUrl);
+      } else {
+        redirectNote.textContent = `Redirecting to quiz in ${secondsLeft}s…`;
+      }
+    }, 1000);
+
+    playBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      clearInterval(interval);
+      window.location.href = targetUrl;
+    });
+
     try {
-      // Fetch from Firestore REST API (no auth required for public collection)
+      // Optional enrich: fetch from Firestore REST API if quota allows
       const firestoreUrl =
         `https://firestore.googleapis.com/v1/projects/${FIRESTORE_PROJECT}/databases/(default)/documents/premiumQuizContent/${encodeURIComponent(quizId)}`;
       const res  = await fetch(firestoreUrl);
       const json = await res.json();
 
-      if (!res.ok || json.error || !json.fields) {
-        throw new Error("Quiz not found");
-      }
+      if (res.ok && !json.error && json.fields) {
+        const f = json.fields;
+        const name        = f.name        ? f.name.stringValue        : (paramTitle || cardTitle.textContent);
+        const description = f.description ? f.description.stringValue : (paramDesc || cardDesc.textContent);
+        const imageUrl    = f.imageUrl    ? f.imageUrl.stringValue     : paramImg;
+        const credits     = f.credits     ? Number(f.credits.integerValue || f.credits.doubleValue || 3) : 3;
+        const qCount      = f.questionCount ? Number(f.questionCount.integerValue || 0) : 0;
+        const catLabel    = getQuizCategoryLabel({
+          category: f.category ? f.category.stringValue : ""
+        });
 
-      const f = json.fields;
+        cardTitle.textContent = name;
+        cardDesc.textContent  = description;
+        cardBadge.textContent = catLabel;
 
-      const name        = f.name        ? f.name.stringValue        : "Premium Quiz";
-      const description = f.description ? f.description.stringValue : "A comprehensive timed competitive examination quiz.";
-      const imageUrl    = f.imageUrl    ? f.imageUrl.stringValue     : null;
-      const credits     = f.credits     ? Number(f.credits.integerValue || f.credits.doubleValue || 3) : 3;
-      const qCount      = f.questionCount ? Number(f.questionCount.integerValue || 0) : 0;
-      const catLabel    = getQuizCategoryLabel({
-        category: f.category ? f.category.stringValue : ""
-      });
+        cardMeta.innerHTML = `
+          <span>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Timed Quiz
+          </span>
+          ${qCount > 0 ? `<span>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            ${qCount} Questions
+          </span>` : ""}
+          <span>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M15 9.5a3.5 3.5 0 0 0-7 0c0 2 1.5 3 3.5 3.5s3.5 1.5 3.5 3.5a3.5 3.5 0 0 1-7 0"/></svg>
+            ${credits} Credit${credits === 1 ? "" : "s"}
+          </span>
+        `;
 
-      // Populate card
-      cardTitle.textContent = name;
-      cardDesc.textContent  = description;
-      cardBadge.textContent = catLabel;
-
-      cardMeta.innerHTML = `
-        <span>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          Timed Quiz
-        </span>
-        ${qCount > 0 ? `<span>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-          ${qCount} Questions
-        </span>` : ""}
-        <span>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M15 9.5a3.5 3.5 0 0 0-7 0c0 2 1.5 3 3.5 3.5s3.5 1.5 3.5 3.5a3.5 3.5 0 0 1-7 0"/></svg>
-          ${credits} Credit${credits === 1 ? "" : "s"}
-        </span>
-      `;
-
-      // Set background image on card
-      if (imageUrl) {
-        cardImg.style.backgroundImage = `url('${escH(imageUrl)}')`;
-        cardImg.style.backgroundSize  = "cover";
-        cardImg.style.backgroundPosition = "center";
-        cardImg.querySelector(".share-card-img-placeholder")?.remove();
-      }
-
-      // Auto-redirect after 2 seconds
-      let secondsLeft = 2;
-      redirectNote.textContent = `Redirecting to quiz in ${secondsLeft}s…`;
-      const interval = setInterval(() => {
-        secondsLeft--;
-        if (secondsLeft <= 0) {
-          clearInterval(interval);
-          redirectNote.textContent = "Launching quiz…";
-          window.location.replace(targetUrl);
-        } else {
-          redirectNote.textContent = `Redirecting to quiz in ${secondsLeft}s…`;
+        if (imageUrl && /^https?:\/\//i.test(imageUrl)) {
+          cardImg.style.backgroundImage = `url('${escH(imageUrl)}')`;
+          cardImg.style.backgroundSize  = "cover";
+          cardImg.style.backgroundPosition = "center";
+          cardImg.querySelector(".share-card-img-placeholder")?.remove();
         }
-      }, 1000);
-
-      // Play button skips countdown
-      playBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        clearInterval(interval);
-        window.location.href = targetUrl;
-      });
-
-    } catch (err) {
-      console.error("Failed to load quiz:", err);
-      cardTitle.textContent = "Quiz Not Found";
-      cardDesc.textContent  = "This quiz may have been removed or the link is invalid. Browse all available quizzes below.";
-      cardMeta.innerHTML    = "";
-      redirectNote.textContent = "";
-      playBtn.textContent = "Browse All Quizzes";
-      playBtn.href = "premium.html";
+      }
+    } catch (_) {
+      // Quietly ignore network/quota errors since card is already populated and redirecting
     }
   }
 
