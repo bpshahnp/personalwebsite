@@ -385,10 +385,23 @@ document.addEventListener("DOMContentLoaded", () => {
       let dir = window.location.pathname.replace(/\/[^/]*$/, "") || "";
       const url = new URL(dir + "/quiz-share.html", origin);
       url.searchParams.set("id", cat.id);
+      if (cat.name) {
+        url.searchParams.set("t", cat.name.trim());
+      }
+      if (cat.imageUrl && /^https?:\/\//i.test(cat.imageUrl.trim())) {
+        url.searchParams.set("img", cat.imageUrl.trim());
+      }
+      if (cat.description) {
+        const shortDesc = cat.description.trim().slice(0, 140);
+        url.searchParams.set("d", shortDesc);
+      }
       url.hash = "";
       return url.toString();
     } catch (_) {
-      return `https://bholaprasadshah.com.np/quiz-share.html?id=${encodeURIComponent(cat.id)}`;
+      let fallback = `https://bholaprasadshah.com.np/quiz-share.html?id=${encodeURIComponent(cat.id)}`;
+      if (cat.name) fallback += `&t=${encodeURIComponent(cat.name.trim())}`;
+      if (cat.imageUrl) fallback += `&img=${encodeURIComponent(cat.imageUrl.trim())}`;
+      return fallback;
     }
   }
 
