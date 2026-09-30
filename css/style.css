@@ -2111,8 +2111,9 @@ img { max-width: 100%; display: block; }
 /* ---------- Layout ---------- */
 .pyhub-layout {
   display: grid;
-  grid-template-columns: 264px minmax(0, 1fr);
+  grid-template-columns: 310px minmax(0, 1fr);
   align-items: start;
+  gap: 28px;
   padding: 0 24px 88px;
 }
 
@@ -2124,23 +2125,31 @@ img { max-width: 100%; display: block; }
   display: flex;
   flex-direction: column;
   border-right: 1px solid var(--line);
-  padding: 22px 20px 20px 0;
-  margin-right: 28px;
+  padding: 20px 16px 20px 0;
+  margin-right: 0;
 }
-.rail-head { flex: none; }
+.rail-head { flex: none; margin-bottom: 6px; }
 .rail-search {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 10px;
   background: var(--white);
   border: 1px solid var(--line);
-  border-radius: 7px;
-  padding: 0 11px;
+  border-radius: 9px;
+  padding: 0 12px;
   color: var(--mist);
+  transition: all 0.18s ease;
 }
 .rail-search:focus-within {
   border-color: var(--orange);
-  box-shadow: 0 0 0 3px rgba(232, 131, 78, 0.15);
+  box-shadow: 0 0 0 3px rgba(232, 131, 78, 0.18);
+}
+.rail-search svg {
+  flex-shrink: 0;
+  color: var(--mist);
+}
+.rail-search:focus-within svg {
+  color: var(--orange);
 }
 .rail-search input {
   flex: 1;
@@ -2149,55 +2158,126 @@ img { max-width: 100%; display: block; }
   background: none;
   padding: 9px 0;
   font: inherit;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   color: var(--ink);
 }
 .rail-search input:focus { outline: none; }
 .rail-search input::-webkit-search-cancel-button { -webkit-appearance: none; }
-.rail-count { margin: 10px 0 2px; font-size: 0.76rem; color: var(--mist); }
+.rail-count {
+  margin: 10px 2px 2px;
+  font-size: 0.73rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--mist);
+}
 
 .rail-list {
   flex: 1;
   overflow-y: auto;
-  margin: 0 -8px;
-  padding: 8px 8px 0;
+  margin: 0 -6px 0 0;
+  padding: 8px 10px 12px 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.28) transparent;
 }
-.rail-group + .rail-group { margin-top: 20px; }
+.rail-list::-webkit-scrollbar {
+  width: 6px;
+}
+.rail-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+.rail-list::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.25);
+  border-radius: 999px;
+}
+.rail-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.45);
+}
+
+.rail-group + .rail-group { margin-top: 18px; }
 .rail-group-title {
-  font-family: var(--font-display);
-  font-weight: 500;
-  font-size: 0.9rem;
-  color: var(--navy-deep);
-  margin: 0 0 7px;
-  padding-bottom: 6px;
+  font-family: var(--font-body, system-ui, -apple-system, sans-serif);
+  font-weight: 700;
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--mist);
+  margin: 0 0 6px;
+  padding-bottom: 5px;
   border-bottom: 1px solid var(--line);
 }
-.rail-items { list-style: none; margin: 0; padding: 0; }
+.rail-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
 .rail-item {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   width: 100%;
   text-align: left;
-  background: none;
-  border: none;
-  border-left: 2px solid transparent;
-  border-radius: 0 6px 6px 0;
-  padding: 7px 10px 7px 12px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-left: 3px solid transparent;
+  border-radius: 7px;
+  padding: 7px 10px;
   font: inherit;
-  font-size: 0.89rem;
+  font-size: 0.86rem;
+  font-weight: 500;
+  line-height: 1.35;
   color: var(--ink);
   cursor: pointer;
+  transition: all 0.15s ease;
 }
-.rail-item:hover { background: var(--white); }
+.rail-item-icon {
+  flex-shrink: 0;
+  opacity: 0.45;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.rail-item-title {
+  flex: 1;
+  min-width: 0;
+}
+.rail-item:hover {
+  background: var(--white);
+  color: var(--navy-deep);
+  border-color: var(--line);
+  padding-left: 12px;
+}
+.rail-item:hover .rail-item-icon {
+  opacity: 0.8;
+  color: var(--orange);
+}
 .rail-item.active {
   background: var(--white);
+  border-color: var(--line);
   border-left-color: var(--orange);
   color: var(--navy-deep);
   font-weight: 600;
-  box-shadow: 0 1px 3px rgba(15, 23, 41, 0.07);
+  box-shadow: 0 1px 4px rgba(15, 23, 41, 0.08);
 }
-.rail-empty { margin: 4px 0 0; font-size: 0.86rem; color: var(--mist); }
+.rail-item.active .rail-item-icon {
+  opacity: 1;
+  color: var(--orange);
+}
+.rail-empty { margin: 8px 0 0; font-size: 0.86rem; color: var(--mist); }
 .rail-clear {
-  display: block;
+  display: inline-block;
+  margin-top: 8px;
+  padding: 4px 10px;
+  background: var(--cream);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--orange);
+  cursor: pointer;
+}
   margin-top: 8px;
   padding: 0;
   background: none;
@@ -4542,6 +4622,43 @@ img { max-width: 100%; display: block; }
   background: #1e293b;
   border-right-color: var(--line);
 }
+[data-theme="dark"] .pyhub-rail .rail-head {
+  border-bottom-color: var(--line);
+}
+[data-theme="dark"] .pyhub-rail .rail-count {
+  color: var(--mist);
+}
+[data-theme="dark"] .pyhub-rail .rail-group-title {
+  color: #64748b;
+  border-bottom-color: var(--line);
+}
+[data-theme="dark"] .pyhub-rail .rail-item {
+  color: #cbd5e1;
+}
+[data-theme="dark"] .pyhub-rail .rail-item:hover {
+  background: #334155;
+  color: #f1f5f9;
+  border-color: var(--line);
+}
+[data-theme="dark"] .pyhub-rail .rail-item:hover .rail-item-icon {
+  color: var(--orange);
+}
+[data-theme="dark"] .pyhub-rail .rail-item.active {
+  background: #1e3a5f;
+  border-color: var(--line);
+  border-left-color: var(--orange);
+  color: #f8fafc;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+[data-theme="dark"] .pyhub-rail .rail-item.active .rail-item-icon {
+  color: var(--orange);
+}
+[data-theme="dark"] .pyhub-rail .rail-clear {
+  background: #1e293b;
+  border-color: var(--line);
+  color: var(--orange);
+}
+
 
 /* ---------- Leaderboard & Chips ---------- */
 [data-theme="dark"] .board-chip,
