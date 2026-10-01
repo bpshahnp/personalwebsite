@@ -2360,4 +2360,24 @@ document.addEventListener("keydown", e => {
       preview();
     });
   }
+
+  // Automatically resolve absolute URLs for social sharing previews when served over HTTP/HTTPS
+  try {
+    if (window.location && window.location.protocol.startsWith('http')) {
+      const loc = window.location;
+      const fullUrl = loc.origin + loc.pathname;
+      const dirPath = loc.pathname.substring(0, loc.pathname.lastIndexOf('/') + 1);
+      const imgUrl = loc.origin + dirPath + 'og-preview.png';
+
+      const setMeta = (sel, attr, val) => {
+        const el = document.querySelector(sel);
+        if (el) el.setAttribute(attr, val);
+      };
+      setMeta('meta[property="og:url"]', 'content', fullUrl);
+      setMeta('meta[name="twitter:url"]', 'content', fullUrl);
+      setMeta('meta[property="og:image"]', 'content', imgUrl);
+      setMeta('meta[property="og:image:secure_url"]', 'content', imgUrl);
+      setMeta('meta[name="twitter:image"]', 'content', imgUrl);
+    }
+  } catch (err) {}
 })();
