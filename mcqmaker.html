@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -484,6 +484,72 @@ textarea {
   margin-bottom: 12px;
 }
 
+/* Library / Saved Papers Cards */
+.active-paper-box {
+  background: var(--primary-subtle);
+  border: 1px solid var(--primary-border);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  margin-bottom: 12px;
+}
+.paper-card {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  transition: all 0.15s ease;
+}
+.paper-card:hover {
+  border-color: var(--line-strong);
+  box-shadow: var(--shadow-sm);
+}
+.paper-card.is-active {
+  border-color: var(--primary);
+  background: #f8faff;
+  box-shadow: 0 0 0 1.5px var(--primary);
+}
+.paper-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 3px;
+  gap: 8px;
+}
+.paper-card-title {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.paper-card-meta {
+  font-size: 11px;
+  color: var(--mute);
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.paper-card-actions {
+  display: flex;
+  gap: 4px;
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px dashed var(--line);
+  flex-wrap: wrap;
+}
+.active-badge {
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--primary);
+  color: #ffffff;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
 /* Status Bar in Sidebar */
 .status-bar {
   padding: 10px 16px;
@@ -918,18 +984,53 @@ dialog::backdrop {
       </svg>
       MCQ Paper Maker
     </div>
-    <div class="brand-badge">Pro Suite</div>
+    <div style="display:flex;align-items:center;gap:6px">
+      <button class="btn btn-sm" id="btn-quick-library" title="Open Saved Papers Library">📁 Library</button>
+      <div class="brand-badge">Pro Suite</div>
+    </div>
   </div>
 
   <div class="tabs">
-    <button class="tab-btn active" data-tab="setup">⚙️ Setup</button>
+    <button class="tab-btn active" data-tab="library">📁 Library (<span id="lib-count-badge">0</span>)</button>
+    <button class="tab-btn" data-tab="setup">⚙️ Setup</button>
     <button class="tab-btn" data-tab="questions">📝 Questions (<span id="qcount">0</span>)</button>
-    <button class="tab-btn" data-tab="import">📥 Import &amp; Presets</button>
-    <button class="tab-btn" data-tab="export">🖨️ Export &amp; OMR</button>
+    <button class="tab-btn" data-tab="import">📥 Import</button>
+    <button class="tab-btn" data-tab="export">🖨️ Export</button>
+  </div>
+
+  <!-- Tab 0: Saved Papers Library & Storage -->
+  <div class="tab-pane active" id="tab-library">
+    <div style="display:flex;gap:6px;margin-bottom:12px">
+      <button class="btn btn-primary" id="btn-new-paper" style="flex:1">➕ New Blank Paper</button>
+      <button class="btn" id="btn-save-as-copy" title="Save a copy of current paper">📑 Save as Copy</button>
+    </div>
+
+    <!-- Active Paper Card -->
+    <div class="active-paper-box" id="active-paper-indicator">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--primary);letter-spacing:0.5px">Currently Editing:</div>
+      <div style="font-size:14px;font-weight:700;color:var(--ink);margin:2px 0" id="active-paper-title-display">Untitled Paper</div>
+      <div style="font-size:11.5px;color:var(--mute)" id="active-paper-meta-display">0 Questions • Auto-saving active</div>
+    </div>
+
+    <div class="section-hdr">Saved Papers (<span id="lib-count">0</span>)</div>
+    <div class="search-bar" style="margin-bottom:8px">
+      <input type="text" id="lib-search" placeholder="🔍 Search saved papers...">
+    </div>
+
+    <div id="library-list" style="margin-bottom:14px"></div>
+
+    <div class="section-hdr">Storage Backup &amp; Info</div>
+    <div class="field" style="font-size:11.5px;color:var(--mute);margin-bottom:8px">
+      <span id="storage-usage-label">Storage: Calculating...</span>
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-sm" id="btn-backup-library">📥 Export All Papers (.json)</button>
+      <label class="btn btn-sm">📤 Restore All Papers<input type="file" id="input-restore-library" accept=".json,application/json" hidden></label>
+    </div>
   </div>
 
   <!-- Tab 1: Setup -->
-  <div class="tab-pane active" id="tab-setup">
+  <div class="tab-pane" id="tab-setup">
     <div class="section-hdr">Exam Header Information</div>
     <div class="field">
       <label>Institution / School / University Name</label>
@@ -1051,12 +1152,23 @@ dialog::backdrop {
     </div>
 
 
-    <div class="section-hdr">Exam Paper Mode</div>
-    <div class="field">
-      <select id="mode">
-        <option value="student" selected>🎓 Student Question Paper (Unmarked)</option>
-        <option value="teacher">👨‍🏫 Teacher Master Copy (Correct Answers Highlighted)</option>
-      </select>
+    <div class="section-hdr">Answer Key &amp; Paper Mode</div>
+    <div class="field-row">
+      <div>
+        <label>Answer Key</label>
+        <select id="key-mode">
+          <option value="none" selected>🚫 Hide Answer Key (Do Not Print)</option>
+          <option value="end">📄 Print at End of Paper</option>
+          <option value="separate">📑 Print on Separate Page</option>
+        </select>
+      </div>
+      <div>
+        <label>Exam Mode</label>
+        <select id="mode">
+          <option value="student" selected>🎓 Student Question Paper</option>
+          <option value="teacher">👨‍🏫 Teacher Master Copy</option>
+        </select>
+      </div>
     </div>
   </div>
 
@@ -1133,10 +1245,10 @@ dialog::backdrop {
     <div class="section-hdr">Answer Key Settings</div>
     <div class="field">
       <label>Answer Key Placement</label>
-      <select id="key-mode">
-        <option value="none">Do Not Print Answer Key</option>
-        <option value="end" selected>Print Compact Key at End of Paper</option>
-        <option value="separate">Print on Dedicated Separate Page</option>
+      <select id="key-mode-export">
+        <option value="none" selected>🚫 Hide Answer Key (Do Not Print)</option>
+        <option value="end">📄 Print Compact Key at End of Paper</option>
+        <option value="separate">📑 Print on Dedicated Separate Page</option>
       </select>
     </div>
     <div class="field">
@@ -1186,7 +1298,12 @@ dialog::backdrop {
     </div>
 
     <div class="preview-actions">
-      <button class="btn btn-sm" id="btn-quick-toggle" title="Switch Student / Teacher View">Toggle Key</button>
+      <select id="top-key-mode" style="padding:4px 8px;font-size:11.5px;background:#334155;color:#fff;border:1px solid #475569;border-radius:4px;cursor:pointer" title="Answer Key Display on Paper">
+        <option value="none" selected>Key: Hidden (Off)</option>
+        <option value="end">Key: Show at End</option>
+        <option value="separate">Key: Separate Page</option>
+      </select>
+      <button class="btn btn-sm" id="btn-quick-toggle" title="Switch Student / Teacher View">Teacher View</button>
       <button class="btn btn-sm btn-primary" id="btn-top-print">🖨️ Print / PDF</button>
     </div>
   </div>
@@ -2203,7 +2320,9 @@ $("z-100").onclick = () => {
   preview();
 };
 $("btn-quick-toggle").onclick = () => {
-  $("mode").value = $("mode").value === "student" ? "teacher" : "student";
+  const newMode = $("mode").value === "student" ? "teacher" : "student";
+  $("mode").value = newMode;
+  $("btn-quick-toggle").textContent = newMode === "teacher" ? "Student View" : "Teacher View";
   preview();
 };
 
@@ -2215,6 +2334,25 @@ $("btn-quick-toggle").onclick = () => {
 ].forEach(id => {
   const el = $(id);
   if (el) el.addEventListener("input", debouncedPreview);
+});
+
+// Sync answer-key dropdowns: top-key-mode and key-mode-export mirror key-mode (authoritative)
+["top-key-mode", "key-mode-export"].forEach(id => {
+  const el = $(id);
+  if (!el) return;
+  el.addEventListener("change", () => {
+    $("key-mode").value = el.value;
+    const other = id === "top-key-mode" ? "key-mode-export" : "top-key-mode";
+    if ($(other)) $(other).value = el.value;
+    debouncedPreview();
+  });
+});
+// key-mode (Setup tab) also syncs the mirrors when changed via Setup tab
+$("key-mode").addEventListener("change", () => {
+  const v = $("key-mode").value;
+  if ($("top-key-mode")) $("top-key-mode").value = v;
+  if ($("key-mode-export")) $("key-mode-export").value = v;
+  debouncedPreview();
 });
 
 window.addEventListener("resize", debouncedPreview);
@@ -2988,55 +3126,215 @@ $("puse").onclick = () => {
 };
 
 /* =========================================================================
-   Storage & Project Save / Restore
+   Storage & Project Save / Restore (Paper Library System)
    ========================================================================= */
 
 let ready = false;
 let pend = false;
 let tmr = null;
+let currentPaperId = null;
+let libSearchTerm = "";
 
-const IDB = {
-  open() {
+const Storage = {
+  db: null,
+
+  async open() {
+    if (this.db) return this.db;
     return new Promise((ok, no) => {
-      const r = indexedDB.open("mcq-maker-pro", 2);
-      r.onupgradeneeded = () => r.result.createObjectStore("s");
-      r.onsuccess = () => ok(r.result);
+      const r = indexedDB.open("mcq-maker-pro", 3);
+      r.onupgradeneeded = () => {
+        const db = r.result;
+        if (!db.objectStoreNames.contains("s")) db.createObjectStore("s");
+        if (!db.objectStoreNames.contains("papers")) db.createObjectStore("papers", { keyPath: "id" });
+        if (!db.objectStoreNames.contains("meta")) db.createObjectStore("meta");
+      };
+      r.onsuccess = () => { this.db = r.result; ok(this.db); };
       r.onerror = () => no(r.error);
     });
   },
-  async put(v) {
+
+  async getAllPapers() {
     try {
       const d = await this.open();
       return new Promise((ok, no) => {
-        const t = d.transaction("s", "readwrite");
-        t.objectStore("s").put(v, "state");
-        t.oncomplete = () => { d.close(); ok(); };
+        const t = d.transaction("papers", "readonly");
+        const req = t.objectStore("papers").getAll();
+        req.onsuccess = () => {
+          const list = req.result || [];
+          list.sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0));
+          ok(list);
+        };
+        req.onerror = () => no(req.error);
+      });
+    } catch (e) {
+      try {
+        const raw = localStorage.getItem("mcq_library_fallback");
+        const list = raw ? JSON.parse(raw) : [];
+        list.sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0));
+        return list;
+      } catch (err) {
+        return [];
+      }
+    }
+  },
+
+  async getPaper(id) {
+    try {
+      const d = await this.open();
+      return new Promise((ok, no) => {
+        const t = d.transaction("papers", "readonly");
+        const req = t.objectStore("papers").get(id);
+        req.onsuccess = () => ok(req.result || null);
+        req.onerror = () => no(req.error);
+      });
+    } catch (e) {
+      const all = await this.getAllPapers();
+      return all.find(p => p.id === id) || null;
+    }
+  },
+
+  async savePaper(paper) {
+    if (!paper.id) paper.id = "paper_" + Date.now();
+    paper.updatedAt = new Date().toISOString();
+    try {
+      const d = await this.open();
+      return new Promise((ok, no) => {
+        const t = d.transaction("papers", "readwrite");
+        t.objectStore("papers").put(paper);
+        t.oncomplete = () => ok(paper);
         t.onerror = () => no(t.error);
       });
     } catch (e) {
-      localStorage.setItem("mcq_state_fallback", JSON.stringify(v));
+      const all = await this.getAllPapers();
+      const idx = all.findIndex(p => p.id === paper.id);
+      if (idx >= 0) all[idx] = paper;
+      else all.unshift(paper);
+      localStorage.setItem("mcq_library_fallback", JSON.stringify(all));
+      return paper;
     }
   },
-  async get() {
+
+  async deletePaper(id) {
     try {
       const d = await this.open();
       return new Promise((ok, no) => {
-        const t = d.transaction("s", "readonly");
-        const r = t.objectStore("s").get("state");
-        r.onsuccess = () => { d.close(); ok(r.result); };
-        r.onerror = () => no(r.error);
+        const t = d.transaction("papers", "readwrite");
+        t.objectStore("papers").delete(id);
+        t.oncomplete = () => ok();
+        t.onerror = () => no(t.error);
       });
     } catch (e) {
-      const fb = localStorage.getItem("mcq_state_fallback");
-      return fb ? JSON.parse(fb) : null;
+      const all = (await this.getAllPapers()).filter(p => p.id !== id);
+      localStorage.setItem("mcq_library_fallback", JSON.stringify(all));
+    }
+  },
+
+  async getActiveId() {
+    try {
+      const d = await this.open();
+      return new Promise(ok => {
+        const t = d.transaction("meta", "readonly");
+        const req = t.objectStore("meta").get("activeId");
+        req.onsuccess = () => ok(req.result || null);
+        req.onerror = () => ok(null);
+      });
+    } catch (e) {
+      return localStorage.getItem("mcq_active_id");
+    }
+  },
+
+  async setActiveId(id) {
+    currentPaperId = id;
+    try {
+      const d = await this.open();
+      const t = d.transaction("meta", "readwrite");
+      t.objectStore("meta").put(id, "activeId");
+    } catch (e) {
+      localStorage.setItem("mcq_active_id", id);
     }
   }
 };
 
+function timeAgo(date) {
+  if (!date || isNaN(date.getTime())) return "Recently";
+  const seconds = Math.floor((new Date() - date) / 1000);
+  if (seconds < 60) return "Just now";
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 30) return `${days}d ago`;
+  return date.toLocaleDateString();
+}
+
+async function renderLibrary() {
+  const allPapers = await Storage.getAllPapers();
+  const countBadge = $("lib-count-badge");
+  const countLabel = $("lib-count");
+  if (countBadge) countBadge.textContent = allPapers.length;
+  if (countLabel) countLabel.textContent = allPapers.length;
+
+  const activePaper = allPapers.find(p => p.id === currentPaperId);
+  const activeTitleEl = $("active-paper-title-display");
+  const activeMetaEl = $("active-paper-meta-display");
+  if (activeTitleEl) activeTitleEl.textContent = (activePaper ? activePaper.title : S().title) || "Untitled Paper";
+  if (activeMetaEl) activeMetaEl.textContent = `${qs.length} Questions • ${totalMarksCalc()} Marks • Auto-saving active`;
+
+  const bytes = new Blob([JSON.stringify(allPapers)]).size;
+  const kb = (bytes / 1024).toFixed(1);
+  const usageEl = $("storage-usage-label");
+  if (usageEl) {
+    usageEl.textContent = `Storage: ${allPapers.length} saved papers (~${kb} KB used in Browser Storage)`;
+  }
+
+  const filtered = allPapers.filter(p => {
+    if (!libSearchTerm) return true;
+    const term = libSearchTerm.toLowerCase();
+    return (p.title || "").toLowerCase().includes(term) || (p.subject || "").toLowerCase().includes(term);
+  });
+
+  const listEl = $("library-list");
+  if (!listEl) return;
+
+  if (!filtered.length) {
+    listEl.innerHTML = allPapers.length
+      ? '<div style="color:var(--mute);padding:14px;text-align:center;font-size:12px">No papers match your search.</div>'
+      : '<div style="color:var(--mute);padding:14px;text-align:center;font-size:12px">No saved papers yet. Click "New Blank Paper" to start.</div>';
+    return;
+  }
+
+  listEl.innerHTML = filtered.map(p => {
+    const isActive = p.id === currentPaperId;
+    return `
+      <div class="paper-card ${isActive ? 'is-active' : ''}">
+        <div class="paper-card-top">
+          <span class="paper-card-title" title="${esc(p.title)}">
+            ${isActive ? '<span class="active-badge">Editing</span> ' : ''}${esc(p.title || 'Untitled Paper')}
+          </span>
+          <span style="font-size:11px;color:var(--mute)">${timeAgo(new Date(p.updatedAt))}</span>
+        </div>
+        <div class="paper-card-meta">
+          ${p.subject ? `<span>📘 ${esc(p.subject)}</span> •` : ''}
+          ${p.grade ? `<span>🏫 ${esc(p.grade)}</span> •` : ''}
+          <span>📝 ${p.qCount || 0} Qs</span> •
+          <span>🎯 ${p.totalMarks || 0} Marks</span>
+        </div>
+        <div class="paper-card-actions">
+          ${!isActive ? `<button class="btn btn-sm btn-primary" data-load-paper="${p.id}">📂 Open</button>` : ''}
+          <button class="btn btn-sm" data-dup-paper="${p.id}" title="Duplicate this paper">📑 Duplicate</button>
+          <button class="btn btn-sm" data-dl-paper="${p.id}" title="Download .json file">💾 JSON</button>
+          ${allPapers.length > 1 ? `<button class="btn btn-sm btn-danger" data-del-paper="${p.id}" title="Delete paper">🗑️</button>` : ''}
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
 function snapshot() {
   const s = S();
   return {
-    version: 2,
+    version: 3,
     qs,
     settings: s
   };
@@ -3069,6 +3367,10 @@ function applyState(d) {
   if (s.showDate !== undefined) $("hdr-date").checked = !!s.showDate;
   if (s.keyMode !== undefined) $("key-mode").value = s.keyMode;
   else if (s.key !== undefined) $("key-mode").value = s.key ? "end" : "none";
+  // Sync mirror dropdowns
+  const km = $("key-mode").value;
+  if ($("top-key-mode")) $("top-key-mode").value = km;
+  if ($("key-mode-export")) $("key-mode-export").value = km;
   if (s.showOMR !== undefined) $("show-omr").checked = !!s.showOMR;
 
   return true;
@@ -3077,9 +3379,26 @@ function applyState(d) {
 async function saveNow() {
   clearTimeout(tmr);
   try {
-    await IDB.put(snapshot());
+    const snap = snapshot();
+    if (!currentPaperId) {
+      currentPaperId = "paper_" + Date.now();
+      await Storage.setActiveId(currentPaperId);
+    }
+    const record = {
+      id: currentPaperId,
+      title: S().title || "Untitled Paper",
+      subject: S().subject || "",
+      grade: S().grade || "",
+      qCount: qs.length,
+      totalMarks: totalMarksCalc(),
+      updatedAt: new Date().toISOString(),
+      data: snap
+    };
+    await Storage.savePaper(record);
+
     pend = false;
-    $("sv").textContent = "Auto-saved at " + new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    $("sv").textContent = `Auto-saved "${record.title}" at ` + new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    renderLibrary();
   } catch (e) {
     $("sv").textContent = "Auto-save ready.";
   }
@@ -3092,6 +3411,175 @@ function queueSave() {
   clearTimeout(tmr);
   tmr = setTimeout(saveNow, 600);
 }
+
+// Storage UI Event Handlers
+$("btn-new-paper").onclick = async () => {
+  const newId = "paper_" + Date.now();
+  const newPaper = {
+    id: newId,
+    title: "New MCQ Paper",
+    subject: "",
+    grade: "",
+    qCount: 1,
+    totalMarks: 1,
+    updatedAt: new Date().toISOString(),
+    data: {
+      qs: [{ q: "", o: ["", "", "", ""], a: 0, ol: "", marks: 1, exp: "" }],
+      settings: { ...S(), title: "New MCQ Paper", subject: "", grade: "", time: "", marks: "Auto", instructions: "Select the correct option for each question." }
+    }
+  };
+  await Storage.savePaper(newPaper);
+  await Storage.setActiveId(newId);
+  applyState(newPaper.data);
+  renderList();
+  preview();
+  renderLibrary();
+  showToast("Created new paper!");
+};
+
+$("btn-save-as-copy").onclick = async () => {
+  const defTitle = (S().title || "MCQ Paper") + " (Copy)";
+  const newTitle = prompt("Enter title for new copy:", defTitle);
+  if (!newTitle) return;
+  const newId = "paper_" + Date.now();
+  const snap = snapshot();
+  snap.settings.title = newTitle;
+  $("title").value = newTitle;
+  const clone = {
+    id: newId,
+    title: newTitle,
+    subject: S().subject || "",
+    grade: S().grade || "",
+    qCount: qs.length,
+    totalMarks: totalMarksCalc(),
+    updatedAt: new Date().toISOString(),
+    data: snap
+  };
+  await Storage.savePaper(clone);
+  await Storage.setActiveId(newId);
+  preview();
+  renderLibrary();
+  showToast(`Saved copy: "${newTitle}"`);
+};
+
+if ($("btn-quick-library")) {
+  $("btn-quick-library").onclick = () => {
+    const libTabBtn = document.querySelector('.tab-btn[data-tab="library"]');
+    if (libTabBtn) libTabBtn.click();
+  };
+}
+
+$("lib-search").addEventListener("input", e => {
+  libSearchTerm = e.target.value.trim();
+  renderLibrary();
+});
+
+$("library-list").addEventListener("click", async e => {
+  const btn = e.target.closest("button");
+  if (!btn) return;
+  const d = btn.dataset;
+
+  if (d.loadPaper) {
+    const p = await Storage.getPaper(d.loadPaper);
+    if (p) {
+      await saveNow();
+      await Storage.setActiveId(p.id);
+      applyState(p.data);
+      renderList();
+      preview();
+      renderLibrary();
+      showToast(`Opened "${p.title}"`);
+    }
+  } else if (d.dupPaper) {
+    const p = await Storage.getPaper(d.dupPaper);
+    if (p) {
+      const cloneId = "paper_" + Date.now();
+      const cloneTitle = (p.title || "Paper") + " (Copy)";
+      const cloneData = JSON.parse(JSON.stringify(p.data));
+      if (cloneData.settings) cloneData.settings.title = cloneTitle;
+      const clone = {
+        ...p,
+        id: cloneId,
+        title: cloneTitle,
+        updatedAt: new Date().toISOString(),
+        data: cloneData
+      };
+      await Storage.savePaper(clone);
+      renderLibrary();
+      showToast(`Duplicated "${p.title}"`);
+    }
+  } else if (d.dlPaper) {
+    const p = await Storage.getPaper(d.dlPaper);
+    if (p) {
+      const b = new Blob([JSON.stringify(p.data, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(b);
+      a.download = (p.title || "mcq_exam").replace(/[^\w-]+/g, "_") + ".mcq.json";
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    }
+  } else if (d.delPaper) {
+    const p = await Storage.getPaper(d.delPaper);
+    if (!p) return;
+    if (confirm(`Are you sure you want to delete "${p.title}" from storage?`)) {
+      await Storage.deletePaper(p.id);
+      if (currentPaperId === p.id) {
+        const remaining = await Storage.getAllPapers();
+        if (remaining.length) {
+          await Storage.setActiveId(remaining[0].id);
+          applyState(remaining[0].data);
+          renderList();
+          preview();
+        } else {
+          $("btn-new-paper").click();
+        }
+      }
+      renderLibrary();
+      showToast(`Deleted "${p.title}"`);
+    }
+  }
+});
+
+$("btn-backup-library").onclick = async () => {
+  const all = await Storage.getAllPapers();
+  const backup = {
+    app: "MCQ Paper Maker Pro",
+    version: 3,
+    exportedAt: new Date().toISOString(),
+    papers: all
+  };
+  const b = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(b);
+  a.download = `mcq_all_papers_backup_${new Date().toISOString().slice(0, 10)}.json`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  showToast(`Exported all ${all.length} papers to backup file!`);
+};
+
+$("input-restore-library").onchange = e => {
+  const f = e.target.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = async () => {
+    try {
+      const parsed = JSON.parse(r.result);
+      const papers = Array.isArray(parsed.papers) ? parsed.papers : (Array.isArray(parsed) ? parsed : null);
+      if (!papers || !papers.length) throw new Error("No papers found in backup");
+      for (const p of papers) {
+        if (p.id && p.title && p.data) {
+          await Storage.savePaper(p);
+        }
+      }
+      renderLibrary();
+      showToast(`Successfully restored ${papers.length} papers!`);
+    } catch (err) {
+      alert("Invalid backup file: " + err.message);
+    }
+  };
+  r.readAsText(f);
+  e.target.value = "";
+};
 
 $("psave").onclick = () => {
   const b = new Blob([JSON.stringify(snapshot(), null, 2)], { type: "application/json" });
@@ -3107,12 +3595,28 @@ $("popen").onchange = e => {
   const f = e.target.files[0];
   if (!f) return;
   const r = new FileReader();
-  r.onload = () => {
+  r.onload = async () => {
     try {
-      if (!applyState(JSON.parse(r.result))) throw 0;
+      const parsed = JSON.parse(r.result);
+      if (!applyState(parsed)) throw 0;
+      const newId = "paper_" + Date.now();
+      const newTitle = (parsed.settings && parsed.settings.title) || f.name.replace(/\.mcq\.json$/i, "");
+      const newRecord = {
+        id: newId,
+        title: newTitle,
+        subject: (parsed.settings && parsed.settings.subject) || "",
+        grade: (parsed.settings && parsed.settings.grade) || "",
+        qCount: qs.length,
+        totalMarks: totalMarksCalc(),
+        updatedAt: new Date().toISOString(),
+        data: parsed
+      };
+      await Storage.savePaper(newRecord);
+      await Storage.setActiveId(newId);
       renderList();
       preview();
-      showToast("Project opened successfully!");
+      renderLibrary();
+      showToast("Project file imported into library!");
     } catch (err) {
       alert("This file is not a valid MCQ Maker project file.");
     }
@@ -3130,7 +3634,8 @@ document.addEventListener("keydown", e => {
   }
   if ((e.ctrlKey || e.metaKey) && e.key === "s") {
     e.preventDefault();
-    $("psave").click();
+    saveNow();
+    showToast("Saved to library!");
   }
   if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === "A" || e.key === "a")) {
     e.preventDefault();
@@ -3141,16 +3646,39 @@ document.addEventListener("keydown", e => {
 // App Initialization
 (async () => {
   try {
-    const d = await IDB.get();
-    if (d && applyState(d)) {
-      $("sv").textContent = "Restored previous session.";
+    await Storage.open();
+    let allPapers = await Storage.getAllPapers();
+    let activeId = await Storage.getActiveId();
+
+    if (!allPapers.length) {
+      const initialRecord = {
+        id: "paper_" + Date.now(),
+        title: $("title").value || "Sample Exam Paper",
+        subject: $("subject").value || "Mathematics",
+        grade: $("grade").value || "Grade 10",
+        qCount: qs.length,
+        totalMarks: totalMarksCalc(),
+        updatedAt: new Date().toISOString(),
+        data: snapshot()
+      };
+      await Storage.savePaper(initialRecord);
+      allPapers = [initialRecord];
+      activeId = initialRecord.id;
+    }
+
+    const activePaper = allPapers.find(p => p.id === activeId) || allPapers[0];
+    await Storage.setActiveId(activePaper.id);
+    if (activePaper.data) {
+      applyState(activePaper.data);
+      $("sv").textContent = `Loaded "${activePaper.title}".`;
     }
   } catch (e) {
-    $("sv").textContent = "Session initialized.";
+    $("sv").textContent = "Storage ready.";
   }
   ready = true;
   renderList();
   preview();
+  renderLibrary();
 
   // If MathJax takes longer to load, re-render preview when ready
   if (window.MathJax && MathJax.startup && MathJax.startup.promise) {
