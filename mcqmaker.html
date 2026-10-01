@@ -1,0 +1,3133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MCQ Paper Maker — Professional Exam & Quiz Generator</title>
+<script>
+window.MathJax = {
+  svg: { fontCache: 'none' },
+  startup: { typeset: false }
+};
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.js"></script>
+<style>
+:root {
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --primary-subtle: #eff6ff;
+  --primary-border: #bfdbfe;
+  --ink: #0f172a;
+  --ink-secondary: #334155;
+  --mute: #64748b;
+  --line: #e2e8f0;
+  --line-strong: #cbd5e1;
+  --bg: #f8fafc;
+  --preview-bg: #475569;
+  --card: #ffffff;
+  --success: #16a34a;
+  --success-bg: #f0fdf4;
+  --success-border: #bbf7d0;
+  --danger: #dc2626;
+  --danger-bg: #fef2f2;
+  --radius: 8px;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 25px -3px rgb(0 0 0 / 0.2);
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+  font-size: 13px;
+  line-height: 1.5;
+  overflow: hidden;
+}
+
+.app {
+  display: grid;
+  grid-template-columns: 460px 1fr;
+  height: 100vh;
+}
+
+/* Sidebar Styling */
+aside {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--card);
+  border-right: 1px solid var(--line);
+  min-width: 0;
+  position: relative;
+  z-index: 10;
+}
+
+.brand {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffffff;
+}
+.brand-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.brand-title svg {
+  color: var(--primary);
+  flex-shrink: 0;
+}
+.brand-badge {
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--primary-subtle);
+  color: var(--primary);
+  font-weight: 600;
+  border: 1px solid var(--primary-border);
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  border-bottom: 1px solid var(--line);
+  background: #f8fafc;
+  padding: 0 8px;
+  gap: 4px;
+}
+.tab-btn {
+  flex: 1;
+  padding: 10px 6px;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  color: var(--mute);
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+.tab-btn:hover {
+  color: var(--ink);
+  background: #f1f5f9;
+}
+.tab-btn.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+  background: #ffffff;
+}
+
+.tab-pane {
+  display: none;
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+.tab-pane.active {
+  display: block;
+}
+
+/* Form controls */
+.field {
+  margin-bottom: 12px;
+}
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.field-row-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+label {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--ink-secondary);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+input[type=text],
+input[type=number],
+select,
+textarea {
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  font: inherit;
+  font-size: 13px;
+  background: #ffffff;
+  color: var(--ink);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+input[type=text]:focus,
+input[type=number]:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+textarea {
+  resize: vertical;
+  min-height: 54px;
+  line-height: 1.4;
+}
+
+.check-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 6px;
+}
+.check-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--ink-secondary);
+  cursor: pointer;
+  user-select: none;
+  text-transform: none;
+  font-weight: 400;
+}
+.check-item input[type=checkbox] {
+  cursor: pointer;
+  accent-color: var(--primary);
+  width: 15px;
+  height: 15px;
+}
+
+.section-hdr {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--mute);
+  margin: 16px 0 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.section-hdr:first-child {
+  margin-top: 0;
+}
+
+/* Buttons */
+.btn {
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 7px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--line-strong);
+  background: #ffffff;
+  color: var(--ink-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+  user-select: none;
+  text-decoration: none;
+}
+.btn:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  color: var(--ink);
+}
+.btn:active {
+  transform: translateY(1px);
+}
+.btn-primary {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #ffffff;
+}
+.btn-primary:hover {
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
+  color: #ffffff;
+}
+.btn-danger {
+  color: var(--danger);
+  border-color: #fca5a5;
+  background: #ffffff;
+}
+.btn-danger:hover {
+  background: var(--danger-bg);
+  border-color: var(--danger);
+}
+.btn-sm {
+  padding: 4px 8px;
+  font-size: 11.5px;
+}
+.btn-group {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* Mode Switch Banner */
+.mode-banner {
+  padding: 8px 12px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.mode-banner.student {
+  background: var(--primary-subtle);
+  border: 1px solid var(--primary-border);
+  color: var(--primary);
+}
+.mode-banner.teacher {
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
+  color: var(--success);
+}
+
+/* Math Toolbar */
+.math-toolbar {
+  background: #f8fafc;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 8px;
+  margin-bottom: 12px;
+}
+.math-category-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 6px;
+  overflow-x: auto;
+}
+.math-cat-btn {
+  padding: 3px 8px;
+  font-size: 11px;
+  border-radius: 4px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--mute);
+  cursor: pointer;
+  font-weight: 600;
+}
+.math-cat-btn.active {
+  background: #ffffff;
+  border-color: var(--line-strong);
+  color: var(--ink);
+}
+.math-symbols {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  max-height: 80px;
+  overflow-y: auto;
+}
+.math-sym-btn {
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+  background: #ffffff;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: serif;
+  cursor: pointer;
+  min-width: 28px;
+  text-align: center;
+}
+.math-sym-btn:hover {
+  background: var(--primary-subtle);
+  border-color: var(--primary-border);
+  color: var(--primary);
+}
+
+/* Question Cards */
+.qc {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  margin-bottom: 12px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  overflow: hidden;
+}
+.qc:hover {
+  border-color: var(--line-strong);
+  box-shadow: var(--shadow-sm);
+}
+.qc-top {
+  padding: 8px 12px;
+  background: #f8fafc;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.qc-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 12.5px;
+}
+.qc-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.qc-body {
+  padding: 12px;
+}
+.qc.collapsed .qc-body {
+  display: none;
+}
+.oi {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 6px;
+}
+.oi-letter {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1f5f9;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 11.5px;
+  color: var(--ink-secondary);
+  flex-shrink: 0;
+}
+.oi-letter.correct {
+  background: var(--success-bg);
+  color: var(--success);
+  border: 1px solid var(--success-border);
+}
+.oi input[type=radio] {
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--success);
+  width: 16px;
+  height: 16px;
+}
+.oi-del {
+  color: var(--mute);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  padding: 2px 4px;
+  font-size: 14px;
+  border-radius: 4px;
+}
+.oi-del:hover {
+  color: var(--danger);
+  background: var(--danger-bg);
+}
+
+.qc-footer {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--line);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+}
+.qc-img-preview {
+  margin-top: 8px;
+  padding: 6px;
+  background: #f8fafc;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.qc-img-preview img {
+  height: 38px;
+  object-fit: contain;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+
+/* Question Search Bar */
+.search-bar {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+/* Status Bar in Sidebar */
+.status-bar {
+  padding: 10px 16px;
+  border-top: 1px solid var(--line);
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11.5px;
+  color: var(--mute);
+}
+
+/* Main Preview Area */
+main {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--preview-bg);
+  overflow: hidden;
+  position: relative;
+}
+
+.preview-toolbar {
+  padding: 8px 16px;
+  background: #1e293b;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  z-index: 5;
+}
+.preview-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.preview-zoom {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #cbd5e1;
+  font-size: 12px;
+}
+.preview-badge {
+  background: rgba(255,255,255,0.1);
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.preview-scroll {
+  flex: 1;
+  overflow: auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Printed Paper Sheet Simulation */
+.sw {
+  margin: 0 auto 24px;
+  position: relative;
+  transition: transform 0.15s ease;
+}
+.pl {
+  text-align: center;
+  font-size: 12px;
+  color: #94a3b8;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+.sheet {
+  background: #ffffff;
+  color: #000000;
+  box-shadow: var(--shadow-lg);
+  transform-origin: 0 0;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* Professional Academic Exam Header */
+.exam-header {
+  border-bottom: 2px solid #000000;
+  padding-bottom: 6px;
+  margin-bottom: 8px;
+  text-align: center;
+}
+.inst-name {
+  font-size: 1.35em;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 2px;
+}
+.exam-title {
+  font-size: 1.15em;
+  font-weight: 700;
+  margin: 0 0 4px;
+}
+.exam-meta-grid {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 2px 14px;
+  font-size: 0.9em;
+  font-weight: 600;
+  margin: 4px 0;
+  padding: 4px 0;
+  border-top: 1px solid #000000;
+  border-bottom: 1px solid #000000;
+}
+.exam-instructions {
+  font-size: 0.85em;
+  font-style: italic;
+  margin-top: 4px;
+  text-align: left;
+}
+.student-info-box {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 12px;
+  font-size: 0.88em;
+  font-weight: 600;
+  margin-top: 6px;
+  padding-top: 4px;
+}
+
+/* Exam Columns Body */
+.tiles {
+  display: grid;
+  gap: 0;
+  height: 100%;
+}
+.tile {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+}
+.tile.c {
+  padding: 4mm;
+  border: 1px dashed #cbd5e1;
+}
+.body {
+  column-gap: 8mm;
+  column-fill: auto;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Question & Option Layout */
+.q {
+  break-inside: avoid;
+  page-break-inside: avoid;
+  margin-bottom: 8px;
+  line-height: 1.35;
+}
+.q-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.q-marks {
+  font-size: 0.85em;
+  font-weight: 600;
+  margin-left: 6px;
+  white-space: nowrap;
+}
+.qimg {
+  text-align: center;
+  margin: 4px 0;
+}
+.qimg.left { text-align: left; }
+.qimg.right { text-align: right; }
+.qimg img {
+  max-width: 100%;
+  height: auto;
+}
+
+.opts {
+  display: grid;
+  gap: 2px 10px;
+  margin-top: 3px;
+  padding-left: 12px;
+}
+.o-row { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.o-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.o-col { grid-template-columns: minmax(0, 1fr); }
+.o-row-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.o-row-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.o-row-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+
+.op {
+  display: flex;
+  gap: 4px;
+  min-width: 0;
+  align-items: baseline;
+}
+.op > span:first-child {
+  flex: none;
+  font-weight: 600;
+}
+.ot {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.op.correct-marked {
+  font-weight: 700;
+  color: #15803d;
+}
+.teacher-tick {
+  color: #15803d;
+  font-weight: 800;
+  margin-left: 2px;
+}
+
+/* Answer Key Styling */
+.key-box {
+  margin-top: 10px;
+  padding-top: 6px;
+  border-top: 1px solid #000000;
+  font-size: 0.88em;
+  break-inside: avoid;
+}
+.key-box-title {
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+.key-grid-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9em;
+  margin-top: 6px;
+}
+.key-grid-table th,
+.key-grid-table td {
+  border: 1px solid #000000;
+  padding: 3px 6px;
+  text-align: center;
+}
+.key-grid-table th {
+  background: #f1f5f9;
+  font-weight: 700;
+}
+
+/* OMR Bubble Sheet */
+.omr-container {
+  padding: 10mm;
+  font-family: Arial, sans-serif;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.omr-header {
+  border: 2px solid #000000;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  text-align: center;
+}
+.omr-student-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 10px;
+  border: 1px solid #000000;
+  padding: 8px;
+  margin-bottom: 12px;
+  font-size: 11px;
+}
+.omr-col-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  flex: 1;
+}
+.omr-q-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 5px;
+  font-size: 11px;
+}
+.omr-q-num {
+  font-weight: 700;
+  width: 22px;
+}
+.omr-bubble {
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  border: 1.5px solid #000000;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 700;
+  margin: 0 1px;
+}
+
+/* MathJax Elements */
+.dm { text-align: center; margin: 4px 0; }
+.im svg { vertical-align: middle; max-width: 100%; }
+
+/* Dialogs */
+dialog {
+  width: min(600px, 94vw);
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: var(--shadow-lg);
+  background: #ffffff;
+}
+dialog::backdrop {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(2px);
+}
+
+/* Toast */
+.toast-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+.toast {
+  padding: 10px 16px;
+  background: #1e293b;
+  color: #ffffff;
+  border-radius: 6px;
+  font-size: 12.5px;
+  box-shadow: var(--shadow);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.2s ease;
+  pointer-events: auto;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Print Rules */
+@media print {
+  body {
+    background: #ffffff !important;
+    margin: 0 !important;
+  }
+  .app {
+    display: block !important;
+    height: auto !important;
+  }
+  aside,
+  .noprint,
+  .preview-toolbar,
+  .toast-container {
+    display: none !important;
+  }
+  main {
+    padding: 0 !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+    height: auto !important;
+  }
+  .preview-scroll {
+    padding: 0 !important;
+    overflow: visible !important;
+    display: block !important;
+  }
+  .sw {
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+    page-break-after: always;
+    break-after: page;
+  }
+  .sw:last-child {
+    page-break-after: auto;
+    break-after: auto;
+  }
+  .sheet {
+    box-shadow: none !important;
+    margin: 0 !important;
+    transform: none !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+}
+
+@media (max-width: 960px) {
+  .app {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+  aside {
+    height: 600px;
+    border-right: 0;
+    border-bottom: 2px solid var(--line);
+  }
+  main {
+    height: 800px;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+<!-- Sidebar -->
+<aside>
+  <div class="brand">
+    <div class="brand-title">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+        <line x1="16" y1="13" x2="8" y2="13"></line>
+        <line x1="16" y1="17" x2="8" y2="17"></line>
+        <polyline points="10 9 9 9 8 9"></polyline>
+      </svg>
+      MCQ Paper Maker
+    </div>
+    <div class="brand-badge">Pro Suite</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="setup">⚙️ Setup</button>
+    <button class="tab-btn" data-tab="questions">📝 Questions (<span id="qcount">0</span>)</button>
+    <button class="tab-btn" data-tab="import">📥 Import &amp; Presets</button>
+    <button class="tab-btn" data-tab="export">🖨️ Export &amp; OMR</button>
+  </div>
+
+  <!-- Tab 1: Setup -->
+  <div class="tab-pane active" id="tab-setup">
+    <div class="section-hdr">Exam Header Information</div>
+    <div class="field">
+      <label>Institution / School / University Name</label>
+      <input type="text" id="inst" value="Springfield High School" placeholder="e.g. Apex International College">
+    </div>
+    <div class="field-row">
+      <div>
+        <label>Exam Title</label>
+        <input type="text" id="title" value="Terminal Examination 2026">
+      </div>
+      <div>
+        <label>Subject</label>
+        <input type="text" id="subject" value="Mathematics">
+      </div>
+    </div>
+    <div class="field-row-3">
+      <div>
+        <label>Grade / Class</label>
+        <input type="text" id="grade" value="Grade 10">
+      </div>
+      <div>
+        <label>Time Allowed</label>
+        <input type="text" id="time" value="45 Minutes">
+      </div>
+      <div>
+        <label>Full Marks</label>
+        <input type="text" id="marks" value="Auto">
+      </div>
+    </div>
+    <div class="field">
+      <label>General Instructions</label>
+      <textarea id="instructions" rows="2" placeholder="e.g. All questions are compulsory. Select the correct option.">All questions carry equal marks. Select the single best answer for each question.</textarea>
+    </div>
+
+    <div class="field">
+      <label>Student Information Header Fields</label>
+      <div class="check-group">
+        <label class="check-item"><input type="checkbox" id="hdr-name" checked> Name</label>
+        <label class="check-item"><input type="checkbox" id="hdr-roll" checked> Roll No / ID</label>
+        <label class="check-item"><input type="checkbox" id="hdr-sec" checked> Section</label>
+        <label class="check-item"><input type="checkbox" id="hdr-date" checked> Date</label>
+      </div>
+    </div>
+
+    <div class="section-hdr">Page &amp; Typography Settings</div>
+    <div class="field-row">
+      <div>
+        <label>Paper Size</label>
+        <select id="size">
+          <option value="A4" selected>A4 (210 × 297 mm)</option>
+          <option value="Letter">Letter (8.5 × 11 in)</option>
+          <option value="Legal">Legal (8.5 × 14 in)</option>
+        </select>
+      </div>
+      <div>
+        <label>Orientation</label>
+        <select id="or">
+          <option value="p" selected>Portrait</option>
+          <option value="l">Landscape</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field-row">
+      <div>
+        <label>Columns (1-copy mode)</label>
+        <select id="cols">
+          <option value="1">1 Column</option>
+          <option value="2" selected>2 Columns</option>
+          <option value="3">3 Columns</option>
+          <option value="4">4 Columns</option>
+        </select>
+      </div>
+      <div>
+        <label>Copies Per Sheet</label>
+        <select id="copies">
+          <option value="1" selected>1 (Full Page)</option>
+          <option value="2">2 (Half Sheets)</option>
+          <option value="4">4 (Quarter Sheets)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field-row">
+      <div>
+        <label>Paper Font Family</label>
+        <select id="font">
+          <option value="Times New Roman, serif" selected>Times New Roman (Academic)</option>
+          <option value="Arial, sans-serif">Arial (Modern Clean)</option>
+          <option value="Georgia, serif">Georgia (Book Serif)</option>
+          <option value="system-ui, sans-serif">System UI (Neutral)</option>
+        </select>
+      </div>
+      <div>
+        <label>Base Font Size (pt)</label>
+        <input type="number" id="fs" value="11" min="8" max="16" step="0.5">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Default Options Layout</label>
+      <select id="ol">
+        <option value="auto" selected>Auto (Balanced based on option length)</option>
+        <option value="row">1 × 4 (Single Horizontal Row)</option>
+        <option value="grid">2 × 2 (Two Columns)</option>
+        <option value="col">4 × 1 (Stacked Vertically)</option>
+      </select>
+    </div>
+
+    <div class="section-hdr">Exam Paper Mode</div>
+    <div class="field">
+      <select id="mode">
+        <option value="student" selected>🎓 Student Question Paper (Unmarked)</option>
+        <option value="teacher">👨‍🏫 Teacher Master Copy (Correct Answers Highlighted)</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Tab 2: Questions Editor -->
+  <div class="tab-pane" id="tab-questions">
+    <div class="search-bar">
+      <input type="text" id="qsearch" placeholder="🔍 Search questions...">
+      <button class="btn btn-sm" id="btn-expand-all" title="Expand or Collapse All">Toggle All</button>
+    </div>
+
+    <!-- Math Toolbar -->
+    <div class="math-toolbar">
+      <div style="font-size:11px;font-weight:700;color:var(--mute);margin-bottom:4px">LaTeX &amp; Symbols Palette (Click to insert):</div>
+      <div class="math-category-tabs">
+        <button class="math-cat-btn active" data-cat="alg">Algebra</button>
+        <button class="math-cat-btn" data-cat="sym">Symbols</button>
+        <button class="math-cat-btn" data-cat="calc">Calculus</button>
+        <button class="math-cat-btn" data-cat="greek">Greek</button>
+        <button class="math-cat-btn" data-cat="sci">Science</button>
+      </div>
+      <div class="math-symbols" id="tb"></div>
+    </div>
+
+    <!-- Question Cards List -->
+    <div id="list"></div>
+
+    <div class="btn-group" style="margin-top:12px">
+      <button class="btn btn-primary" id="add">➕ Add Question</button>
+      <button class="btn" id="shq">🔀 Shuffle Questions</button>
+      <button class="btn" id="sho">🔀 Shuffle Options</button>
+      <button class="btn btn-danger btn-sm" id="clr">🗑️ Clear All</button>
+    </div>
+  </div>
+
+  <!-- Tab 3: Import & Presets -->
+  <div class="tab-pane" id="tab-import">
+    <div class="section-hdr">Universal Raw Text &amp; AI Import</div>
+    <p style="color:var(--mute);font-size:12px;margin:0 0 8px">
+      Paste text from Word, PDF, Aiken format, or AI (ChatGPT/Claude/Gemini). Numbering, letters (A-D or A-E), and asterisk answers (*A or Answer: B) are automatically detected.
+    </p>
+    <textarea id="raw" rows="8" placeholder="1. What is the derivative of sin(x)?&#10;A) cos(x)&#10;B) -cos(x)&#10;C) tan(x)&#10;D) sec(x)&#10;Answer: A&#10;&#10;2. Chemical formula for table salt?&#10;A. NaCl  B. H2O  C. CO2  D. KCl&#10;Ans: A"></textarea>
+
+    <div class="btn-group" style="margin:8px 0">
+      <button class="btn btn-primary" id="impadd">Import &amp; Append</button>
+      <button class="btn" id="imprep">Import &amp; Replace All</button>
+      <label class="btn">📁 Load .txt File<input type="file" id="impfile" accept=".txt,text/plain" hidden></label>
+    </div>
+    <div class="note" id="imsg" style="color:var(--primary);font-size:12px;font-weight:500;margin-top:4px"></div>
+
+    <div class="section-hdr">Load Ready-to-Use Sample Tests</div>
+    <div class="btn-group">
+      <button class="btn btn-sm" id="load-sample-math">📐 Math &amp; Calculus</button>
+      <button class="btn btn-sm" id="load-sample-physics">⚡ Physics &amp; Chemistry</button>
+      <button class="btn btn-sm" id="load-sample-gk">🌍 General Science &amp; Logic</button>
+    </div>
+
+    <div class="section-hdr">Project Backup &amp; LMS Export</div>
+    <div class="btn-group">
+      <button class="btn btn-sm" id="psave">💾 Save Project (.json)</button>
+      <label class="btn btn-sm">📂 Open Project<input type="file" id="popen" accept=".json,application/json" hidden></label>
+      <button class="btn btn-sm" id="btn-export-aiken">📤 Export Aiken (.txt)</button>
+    </div>
+  </div>
+
+  <!-- Tab 4: Export & OMR -->
+  <div class="tab-pane" id="tab-export">
+    <div class="section-hdr">Primary Export Options</div>
+    <div class="btn-group" style="margin-bottom:16px">
+      <button class="btn btn-primary" id="bprint" style="flex:1">🖨️ Print Paper</button>
+      <button class="btn btn-primary" id="bpdf" style="flex:1">📑 Save as PDF</button>
+      <button class="btn" id="bdoc" style="flex:1">📝 Word (.docx)</button>
+    </div>
+
+    <div class="section-hdr">Answer Key Settings</div>
+    <div class="field">
+      <label>Answer Key Placement</label>
+      <select id="key-mode">
+        <option value="none">Do Not Print Answer Key</option>
+        <option value="end" selected>Print Compact Key at End of Paper</option>
+        <option value="separate">Print on Dedicated Separate Page</option>
+      </select>
+    </div>
+    <div class="field">
+      <label class="check-item">
+        <input type="checkbox" id="key-expl" checked> Include Explanations in Answer Key (if provided)
+      </label>
+    </div>
+
+    <div class="section-hdr">Printable OMR Bubble Sheet</div>
+    <div class="field">
+      <label class="check-item">
+        <input type="checkbox" id="show-omr"> Generate &amp; Attach Printable OMR Bubble Sheet
+      </label>
+      <div style="font-size:11.5px;color:var(--mute);margin-top:4px">
+        Adds a standardized student response sheet with Roll Number grid and circular bubbles (A-D/E) for every question.
+      </div>
+    </div>
+
+    <div class="section-hdr">Print Perfection Tips</div>
+    <div style="font-size:12px;color:var(--mute);line-height:1.4">
+      • In browser print settings, set <b>Destination</b> to your printer or <b>Save as PDF</b>.<br>
+      • Ensure <b>Scale</b> is set to <b>100%</b> (or Default).<br>
+      • Uncheck <b>Headers and footers</b> to keep your exam sheet clean.
+    </div>
+  </div>
+
+  <div class="status-bar">
+    <span id="sv">Auto-save is on.</span>
+    <span id="total-marks-label">Total: 0 Marks</span>
+  </div>
+</aside>
+
+<!-- Main Preview Area -->
+<main>
+  <div class="preview-toolbar">
+    <div class="preview-actions">
+      <span class="preview-badge" id="preview-mode-tag">🎓 Student Copy</span>
+      <span class="preview-badge" id="page-count-badge">Pages: 1</span>
+    </div>
+
+    <div class="preview-zoom">
+      <button class="btn btn-sm" id="z-out" title="Zoom Out">🔍 -</button>
+      <span id="z-val" style="min-width:44px;text-align:center">Fit</span>
+      <button class="btn btn-sm" id="z-in" title="Zoom In">🔍 +</button>
+      <button class="btn btn-sm" id="z-fit">Fit</button>
+      <button class="btn btn-sm" id="z-100">100%</button>
+    </div>
+
+    <div class="preview-actions">
+      <button class="btn btn-sm" id="btn-quick-toggle" title="Switch Student / Teacher View">Toggle Key</button>
+      <button class="btn btn-sm btn-primary" id="btn-top-print">🖨️ Print / PDF</button>
+    </div>
+  </div>
+
+  <div class="preview-scroll">
+    <div id="wrap"></div>
+  </div>
+</main>
+</div>
+
+<!-- Graph Plotter Modal -->
+<dialog id="pd">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <h3 style="margin:0;font-size:16px">📈 Math Function Plotter</h3>
+    <button class="btn btn-sm" id="pcl">✕ Close</button>
+  </div>
+
+  <div class="field">
+    <label>Presets</label>
+    <select id="p-presets">
+      <option value="">-- Choose a Preset --</option>
+      <option value="y = x^2 - 4">Parabola (y = x² - 4)</option>
+      <option value="y = 2*x + 1">Linear (y = 2x + 1)</option>
+      <option value="y = x^3 - 3*x">Cubic (y = x³ - 3x)</option>
+      <option value="y = sin(x)">Trigonometric: Sine (y = sin(x))</option>
+      <option value="y = cos(x)">Trigonometric: Cosine (y = cos(x))</option>
+      <option value="y = exp(-x^2)">Bell Curve / Gaussian (y = e^(-x²))</option>
+      <option value="y = 2^x">Exponential (y = 2ˣ)</option>
+      <option value="y = ln(x)">Logarithmic (y = ln(x))</option>
+      <option value="y = 1/x">Hyperbola (y = 1/x)</option>
+      <option value="y = x^2 - 2&#10;y = 2*x + 1">Intersecting Parabola &amp; Line</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label>Functions of x (one function per line, e.g. y = x^2 - 4)</label>
+    <textarea id="pf" rows="2">y = x^2 - 4</textarea>
+  </div>
+
+  <div class="field-row">
+    <div><label>x min</label><input type="text" id="px0" value="-5"></div>
+    <div><label>x max</label><input type="text" id="px1" value="5"></div>
+    <div><label>y min (blank = auto)</label><input type="text" id="py0"></div>
+    <div><label>y max (blank = auto)</label><input type="text" id="py1"></div>
+  </div>
+
+  <div class="check-group" style="margin-bottom:8px">
+    <label class="check-item"><input type="checkbox" id="pgrid" checked> Show Grid</label>
+    <label class="check-item"><input type="checkbox" id="parrows" checked> Axis Arrows</label>
+  </div>
+
+  <canvas id="pc" width="1200" height="850" style="width:100%;height:auto;border:1px solid var(--line-strong);border-radius:6px;background:#ffffff;display:block"></canvas>
+
+  <div class="btn-group" style="margin-top:14px;justify-content:flex-end">
+    <button class="btn btn-primary" id="puse">Insert Plot into Question</button>
+  </div>
+</dialog>
+
+<!-- Aiken Export Modal -->
+<dialog id="modal-aiken">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <h3 style="margin:0;font-size:16px">📤 Aiken Format Export</h3>
+    <button class="btn btn-sm" id="btn-close-aiken">✕ Close</button>
+  </div>
+  <p style="font-size:12px;color:var(--mute);margin:0 0 8px">
+    Standard format for Moodle, Canvas, and Blackboard question banks.
+  </p>
+  <textarea id="aiken-txt" rows="12" style="font-family:monospace;font-size:12px" readonly></textarea>
+  <div class="btn-group" style="margin-top:12px;justify-content:flex-end">
+    <button class="btn" id="btn-copy-aiken">📋 Copy to Clipboard</button>
+    <button class="btn btn-primary" id="btn-download-aiken">💾 Download .txt</button>
+  </div>
+</dialog>
+
+<!-- Toast notification container -->
+<div class="toast-container" id="toasts"></div>
+
+<script>
+/* =========================================================================
+   MCQ Paper Maker Core Engine
+   ========================================================================= */
+
+const L = ["A", "B", "C", "D", "E", "F"];
+
+// Default questions state
+let qs = [
+  {
+    q: "Solve for $x$: $2x + 3 = 11$",
+    o: ["$2$", "$3$", "$4$", "$5$"],
+    a: 2,
+    ol: "row",
+    img: null,
+    marks: 1,
+    exp: "Subtract 3 from both sides: $2x = 8$, so $x = 4$."
+  },
+  {
+    q: "The value of the definite integral $$\\int_0^1 x\\,dx$$ is",
+    o: ["$0$", "$\\frac{1}{2}$", "$1$", "$2$"],
+    a: 1,
+    ol: "row",
+    img: null,
+    marks: 1,
+    exp: "$\\int_0^1 x\\,dx = \\left[\\frac{x^2}{2}\\right]_0^1 = \\frac{1}{2} - 0 = \\frac{1}{2}$."
+  },
+  {
+    q: "Which element is represented by the chemical symbol **Fe**?",
+    o: ["Fluorine", "Iron", "Lead", "Zinc"],
+    a: 1,
+    ol: "grid",
+    img: null,
+    marks: 1,
+    exp: "Fe comes from the Latin word *Ferrum*, meaning Iron."
+  },
+  {
+    q: "The roots of the quadratic equation $f(x) = x^2 - 4$ are",
+    o: ["$\\pm 2$", "$2$", "$-2$", "$4$"],
+    a: 0,
+    ol: "row",
+    img: null,
+    marks: 1,
+    exp: "$x^2 = 4 \\implies x = \\pm 2$."
+  },
+  {
+    q: "The formula for the volume of a sphere of radius $r$ is",
+    o: ["$\\pi r^2$", "$2\\pi r$", "$\\frac{4}{3}\\pi r^3$", "$4\\pi r^2$"],
+    a: 2,
+    ol: "grid",
+    img: null,
+    marks: 1,
+    exp: "Volume of a sphere is $V = \\frac{4}{3}\\pi r^3$."
+  }
+];
+
+const $ = id => document.getElementById(id);
+const esc = t => String(t ?? "").replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+// Toast notification helper
+function showToast(msg, duration = 2400) {
+  const c = $("toasts");
+  const el = document.createElement("div");
+  el.className = "toast";
+  el.textContent = msg;
+  c.appendChild(el);
+  requestAnimationFrame(() => el.classList.add("show"));
+  setTimeout(() => {
+    el.classList.remove("show");
+    setTimeout(() => el.remove(), 250);
+  }, duration);
+}
+
+// Sidebar Tab switching
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
+    btn.classList.add("active");
+    const pane = $("tab-" + btn.dataset.tab);
+    if (pane) pane.classList.add("active");
+  };
+});
+
+// App Settings Getter
+const S = () => ({
+  inst: $("inst").value.trim(),
+  title: $("title").value.trim(),
+  subject: $("subject").value.trim(),
+  grade: $("grade").value.trim(),
+  time: $("time").value.trim(),
+  marks: $("marks").value.trim(),
+  instructions: $("instructions").value.trim(),
+  showName: $("hdr-name").checked,
+  showRoll: $("hdr-roll").checked,
+  showSec: $("hdr-sec").checked,
+  showDate: $("hdr-date").checked,
+  size: $("size").value,
+  or: $("or").value,
+  cols: +$("cols").value,
+  copies: +$("copies").value,
+  font: $("font").value,
+  fs: +$("fs").value || 11,
+  ol: $("ol").value,
+  mode: $("mode").value,
+  keyMode: $("key-mode").value,
+  keyExpl: $("key-expl").checked,
+  showOMR: $("show-omr").checked
+});
+
+function totalMarksCalc() {
+  const sum = qs.reduce((acc, q) => acc + (Number(q.marks) || 1), 0);
+  $("total-marks-label").textContent = `Total: ${sum} Mark${sum !== 1 ? 's' : ''}`;
+  return sum;
+}
+
+function tileCols(s) {
+  return s.copies === 4 ? 2 : s.copies === 2 ? (s.or === "l" ? 2 : 1) : 1;
+}
+
+/* =========================================================================
+   Rich Text & Markdown + LaTeX Parser
+   ========================================================================= */
+
+function mj() {
+  return window.MathJax && typeof MathJax.tex2svg === "function";
+}
+
+const mcache = {};
+function mathSVG(tex, d) {
+  const k = (d ? "d" : "i") + tex;
+  if (k in mcache) return mcache[k];
+  let r = "";
+  try {
+    const el = MathJax.tex2svg(tex, { display: !!d });
+    const svg = el.querySelector("svg");
+    if (svg) r = svg.outerHTML;
+  } catch (e) {
+    r = "";
+  }
+  return (mcache[k] = r);
+}
+
+function segs(t) {
+  const out = [];
+  const re = /\$\$([\s\S]+?)\$\$|\$([^$]+?)\$|\\\(([\s\S]+?)\\\)/g;
+  let i = 0, m;
+  while ((m = re.exec(t))) {
+    if (m.index > i) out.push({ t: t.slice(i, m.index) });
+    out.push({ m: (m[1] ?? m[2] ?? m[3]).trim(), d: m[1] !== undefined });
+    i = re.lastIndex;
+  }
+  if (i < t.length) out.push({ t: t.slice(i) });
+  return out;
+}
+
+function formatMarkdown(str) {
+  return esc(str)
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/__(.*?)__/g, '<u>$1</u>')
+    .replace(/~([a-zA-Z0-9+\-_=]+)~/g, '<sub>$1</sub>')
+    .replace(/\^([a-zA-Z0-9+\-_=]+)\^/g, '<sup>$1</sup>')
+    .replace(/`([^`]+)`/g, '<code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:0.9em">$1</code>')
+    .replace(/\n/g, '<br>');
+}
+
+function rich(t, inl) {
+  return segs(t || "").map(g => {
+    if (g.t !== undefined) return formatMarkdown(g.t);
+    const dm = g.d && !inl;
+    const v = mj() ? mathSVG(g.m, dm) : "";
+    if (!v) return `<code style="color:#c00">$${esc(g.m)}$</code>`;
+    return dm ? `<div class="dm">${v}</div>` : `<span class="im">${v}</span>`;
+  }).join("");
+}
+
+/* =========================================================================
+   Sidebar Questions List Rendering & Editing
+   ========================================================================= */
+
+let searchFilter = "";
+
+function renderList() {
+  const qcCount = qs.length;
+  $("qcount").textContent = qcCount;
+  totalMarksCalc();
+
+  const filtered = qs.map((q, i) => ({ q, i })).filter(({ q }) => {
+    if (!searchFilter) return true;
+    const term = searchFilter.toLowerCase();
+    return q.q.toLowerCase().includes(term) || q.o.some(o => (o || "").toLowerCase().includes(term));
+  });
+
+  if (!filtered.length) {
+    $("list").innerHTML = qs.length
+      ? '<div style="color:var(--mute);padding:16px;text-align:center">No questions match your search.</div>'
+      : '<div style="color:var(--mute);padding:16px;text-align:center">No questions yet. Click "Add Question" or import questions.</div>';
+    return;
+  }
+
+  const LO = [
+    ["", "Layout: Paper Default"],
+    ["row", "Layout: 1 × 4 Row"],
+    ["grid", "Layout: 2 × 2 Grid"],
+    ["col", "Layout: 4 × 1 Stacked"],
+    ["auto", "Layout: Auto"]
+  ];
+
+  $("list").innerHTML = filtered.map(({ q, i }) => `
+    <div class="qc" data-i="${i}" id="qc-${i}">
+      <div class="qc-top">
+        <div class="qc-title">
+          <span style="background:var(--primary);color:#fff;width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px">${i + 1}</span>
+          <span>Question ${i + 1}</span>
+        </div>
+        <div class="qc-actions">
+          <button class="btn btn-sm" data-act="up" data-i="${i}" title="Move Up" ${i === 0 ? "disabled" : ""}>↑</button>
+          <button class="btn btn-sm" data-act="down" data-i="${i}" title="Move Down" ${i === qs.length - 1 ? "disabled" : ""}>↓</button>
+          <button class="btn btn-sm" data-act="dup" data-i="${i}" title="Duplicate">📋</button>
+          <button class="btn btn-sm btn-danger" data-act="del" data-i="${i}" title="Delete">🗑️</button>
+        </div>
+      </div>
+      <div class="qc-body">
+        <label>Question Text (Supports LaTeX $...$ &amp; Markdown **bold**):</label>
+        <textarea data-q="${i}" rows="2">${esc(q.q)}</textarea>
+
+        <div style="margin-top:8px">
+          <label>Options &amp; Correct Answer:</label>
+          ${q.o.map((o, j) => `
+            <div class="oi">
+              <input type="radio" name="ans-${i}" data-a="${i}:${j}" ${q.a === j ? "checked" : ""} title="Mark as correct answer">
+              <span class="oi-letter ${q.a === j ? "correct" : ""}">${L[j]}</span>
+              <input type="text" data-o="${i}:${j}" value="${esc(o)}" placeholder="Option ${L[j]}">
+              ${q.o.length > 2 ? `<button class="oi-del" data-del-opt="${i}:${j}" title="Remove option">✕</button>` : ""}
+            </div>
+          `).join("")}
+          ${q.o.length < 6 ? `
+            <button class="btn btn-sm" data-add-opt="${i}" style="margin-top:6px">+ Add Option ${L[q.o.length] || ""}</button>
+          ` : ""}
+        </div>
+
+        <div class="qc-footer">
+          <div style="display:flex;gap:6px;align-items:center">
+            <span style="color:var(--mute)">Layout:</span>
+            <select data-ol="${i}" style="width:auto;padding:3px 6px">
+              ${LO.map(([v, t]) => `<option value="${v}" ${(q.ol || "") === v ? "selected" : ""}>${t}</option>`).join("")}
+            </select>
+            <span style="color:var(--mute);margin-left:4px">Marks:</span>
+            <input type="number" data-marks="${i}" value="${q.marks || 1}" min="0.5" step="0.5" style="width:52px;padding:3px 6px">
+          </div>
+
+          <div style="display:flex;gap:4px">
+            <label class="btn btn-sm">📷 Image<input type="file" accept="image/*" data-img="${i}" hidden></label>
+            <button class="btn btn-sm" data-plot="${i}">📈 Plot</button>
+          </div>
+        </div>
+
+        ${q.img ? `
+          <div class="qc-img-preview">
+            <img src="${q.img.src}" alt="Question Image">
+            <div style="flex:1">
+              <div style="font-size:11px;color:var(--mute);margin-bottom:2px">Width: <span id="wlabel-${i}">${q.img.wmm}</span> mm</div>
+              <input type="range" min="20" max="150" value="${q.img.wmm}" data-w="${i}">
+            </div>
+            <button class="btn btn-sm btn-danger" data-rm-img="${i}">Remove</button>
+          </div>
+        ` : ""}
+
+        <details style="margin-top:8px">
+          <summary style="font-size:11.5px;color:var(--mute);cursor:pointer">Add Explanation / Solution (Optional)</summary>
+          <textarea data-exp="${i}" rows="1" placeholder="Explanation for answer key..." style="margin-top:4px">${esc(q.exp || "")}</textarea>
+        </details>
+      </div>
+    </div>
+  `).join("");
+}
+
+// Search filter listener
+$("qsearch").addEventListener("input", e => {
+  searchFilter = e.target.value.trim();
+  renderList();
+});
+
+// Expand/Collapse All
+let allCollapsed = false;
+$("btn-expand-all").onclick = () => {
+  allCollapsed = !allCollapsed;
+  document.querySelectorAll(".qc").forEach(el => {
+    el.classList.toggle("collapsed", allCollapsed);
+  });
+};
+
+// Delegated inputs inside questions list
+$("list").addEventListener("input", e => {
+  const d = e.target.dataset;
+  if (d.q !== undefined) qs[d.q].q = e.target.value;
+  if (d.o) {
+    const [i, j] = d.o.split(":");
+    qs[i].o[j] = e.target.value;
+  }
+  if (d.a) {
+    const [i, j] = d.a.split(":");
+    qs[i].a = +j;
+  }
+  if (d.w !== undefined) {
+    qs[d.w].img.wmm = +e.target.value;
+    const lbl = $("wlabel-" + d.w);
+    if (lbl) lbl.textContent = e.target.value;
+  }
+  if (d.ol !== undefined) qs[d.ol].ol = e.target.value;
+  if (d.marks !== undefined) {
+    qs[d.marks].marks = +e.target.value || 1;
+    totalMarksCalc();
+  }
+  if (d.exp !== undefined) qs[d.exp].exp = e.target.value;
+  debouncedPreview();
+});
+
+$("list").addEventListener("change", e => {
+  const d = e.target.dataset;
+  if (d.a) {
+    const [i, j] = d.a.split(":");
+    qs[i].a = +j;
+    renderList();
+    debouncedPreview();
+  }
+  if (d.img !== undefined && e.target.files[0]) {
+    setImg(+d.img, e.target.files[0]);
+  }
+});
+
+// Click handlers for question card buttons
+$("list").addEventListener("click", e => {
+  const t = e.target.closest("button");
+  if (!t) return;
+  const d = t.dataset;
+
+  if (d.act === "del") {
+    qs.splice(+d.i, 1);
+    renderList();
+    debouncedPreview();
+    showToast("Question deleted");
+  } else if (d.act === "dup") {
+    const orig = qs[+d.i];
+    const clone = JSON.parse(JSON.stringify(orig));
+    qs.splice(+d.i + 1, 0, clone);
+    renderList();
+    debouncedPreview();
+    showToast("Question duplicated");
+  } else if (d.act === "up" && +d.i > 0) {
+    const i = +d.i;
+    [qs[i - 1], qs[i]] = [qs[i], qs[i - 1]];
+    renderList();
+    debouncedPreview();
+  } else if (d.act === "down" && +d.i < qs.length - 1) {
+    const i = +d.i;
+    [qs[i + 1], qs[i]] = [qs[i], qs[i + 1]];
+    renderList();
+    debouncedPreview();
+  } else if (d.addOpt !== undefined) {
+    const i = +d.addOpt;
+    if (qs[i].o.length < 6) {
+      qs[i].o.push("");
+      renderList();
+      debouncedPreview();
+    }
+  } else if (d.delOpt !== undefined) {
+    const [i, j] = d.delOpt.split(":").map(Number);
+    if (qs[i].o.length > 2) {
+      qs[i].o.splice(j, 1);
+      if (qs[i].a >= qs[i].o.length) qs[i].a = qs[i].o.length - 1;
+      renderList();
+      debouncedPreview();
+    }
+  } else if (d.rmImg !== undefined) {
+    qs[+d.rmImg].img = null;
+    renderList();
+    debouncedPreview();
+  } else if (d.plot !== undefined) {
+    plotQ = +d.plot;
+    $("pd").showModal();
+    drawPlot();
+  }
+});
+
+// Add new question
+$("add").onclick = () => {
+  qs.push({
+    q: "",
+    o: ["", "", "", ""],
+    a: 0,
+    ol: "",
+    img: null,
+    marks: 1,
+    exp: ""
+  });
+  renderList();
+  debouncedPreview();
+  // Scroll to new question in list
+  setTimeout(() => {
+    const last = document.getElementById("qc-" + (qs.length - 1));
+    if (last) last.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, 50);
+};
+
+// Clear all questions
+$("clr").onclick = () => {
+  if (confirm("Are you sure you want to delete all questions?")) {
+    qs = [];
+    renderList();
+    debouncedPreview();
+    showToast("All questions cleared");
+  }
+};
+
+// Shuffling
+const shuffleArray = arr => {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+};
+
+$("shq").onclick = () => {
+  if (!qs.length) return;
+  shuffleArray(qs);
+  renderList();
+  debouncedPreview();
+  showToast("Questions shuffled");
+};
+
+$("sho").onclick = () => {
+  if (!qs.length) return;
+  qs.forEach(q => {
+    const correctVal = q.o[q.a];
+    shuffleArray(q.o);
+    q.a = Math.max(0, q.o.indexOf(correctVal));
+  });
+  renderList();
+  debouncedPreview();
+  showToast("Options shuffled for all questions");
+};
+
+// Image Upload Helper
+function setImg(i, file) {
+  const r = new FileReader();
+  r.onload = () => {
+    const im = new Image();
+    im.onload = () => {
+      const k = Math.min(1, 1600 / Math.max(im.naturalWidth, im.naturalHeight));
+      const c = document.createElement("canvas");
+      c.width = Math.round(im.naturalWidth * k);
+      c.height = Math.round(im.naturalHeight * k);
+      const g = c.getContext("2d");
+      g.fillStyle = "#fff";
+      g.fillRect(0, 0, c.width, c.height);
+      g.drawImage(im, 0, 0, c.width, c.height);
+      qs[i].img = {
+        src: c.toDataURL("image/png"),
+        wmm: Math.max(30, Math.min(90, Math.round(im.naturalWidth * 25.4 / 96))),
+        nw: c.width,
+        nh: c.height
+      };
+      renderList();
+      debouncedPreview();
+      showToast("Image attached to Question " + (i + 1));
+    };
+    im.src = r.result;
+  };
+  r.readAsDataURL(file);
+}
+
+// Paste image support
+document.addEventListener("paste", e => {
+  const c = e.target.closest && e.target.closest(".qc");
+  if (!c) return;
+  const f = [...e.clipboardData.files].find(f => f.type.startsWith("image/"));
+  if (f) {
+    e.preventDefault();
+    setImg(+c.dataset.i, f);
+  }
+});
+
+/* =========================================================================
+   Math Toolbar & Symbol Palettes
+   ========================================================================= */
+
+const PALETTES = {
+  alg: [
+    ["x²", "^{2}"], ["xⁿ", "^{n}"], ["xₙ", "_{n}"], ["a/b", "\\frac{a}{b}"],
+    ["√x", "\\sqrt{x}"], ["ⁿ√x", "\\sqrt[n]{x}"], ["|x|", "\\left|x\\right|"],
+    ["( )", "\\left( \\right)"], ["[ ]", "\\left[ \\right]"], ["{ }", "\\left\\{ \\right\\}"],
+    ["x̄", "\\bar{x}"], ["x̂", "\\hat{x}"]
+  ],
+  sym: [
+    ["±", "\\pm"], ["×", "\\times"], ["÷", "\\div"], ["·", "\\cdot"],
+    ["≠", "\\neq"], ["≤", "\\leq"], ["≥", "\\geq"], ["≈", "\\approx"],
+    ["≡", "\\equiv"], ["∝", "\\propto"], ["°", "^\\circ"], ["∞", "\\infty"],
+    ["∠", "\\angle"], ["△", "\\triangle"], ["⊥", "\\perp"], ["∥", "\\parallel"]
+  ],
+  calc: [
+    ["∫", "\\int_{a}^{b} x\\,dx"], ["∬", "\\iint"], ["∮", "\\oint"],
+    ["∑", "\\sum_{i=1}^{n}"], ["∏", "\\prod_{i=1}^{n}"], ["lim", "\\lim_{x\\to 0}"],
+    ["dy/dx", "\\frac{dy}{dx}"], ["∂f/∂x", "\\frac{\\partial f}{\\partial x}"],
+    ["∈", "\\in"], ["∉", "\\notin"], ["⊂", "\\subset"], ["∪", "\\cup"], ["∩", "\\cap"]
+  ],
+  greek: [
+    ["α", "\\alpha"], ["β", "\\beta"], ["γ", "\\gamma"], ["θ", "\\theta"],
+    ["λ", "\\lambda"], ["μ", "\\mu"], ["π", "\\pi"], ["σ", "\\sigma"],
+    ["φ", "\\phi"], ["ω", "\\omega"], ["Δ", "\\Delta"], ["Ω", "\\Omega"]
+  ],
+  sci: [
+    ["v⃗", "\\vec{v}"], ["→", "\\to"], ["⇌", "\\rightleftharpoons"],
+    ["↑", "\\uparrow"], ["↓", "\\downarrow"], ["ΔH", "\\Delta H"],
+    ["mol", "\\text{ mol}"], ["m/s²", "\\text{ m/s}^2"], ["Hz", "\\text{ Hz}"]
+  ]
+};
+
+let activePalette = "alg";
+function renderPalette() {
+  const syms = PALETTES[activePalette] || [];
+  $("tb").innerHTML = syms.map(([lbl, val]) => `
+    <button class="math-sym-btn" data-val="${esc(val)}" title="${esc(val)}">${lbl}</button>
+  `).join("");
+}
+renderPalette();
+
+document.querySelectorAll(".math-cat-btn").forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll(".math-cat-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    activePalette = btn.dataset.cat;
+    renderPalette();
+  };
+});
+
+let lastFocusedField = null;
+document.addEventListener("focusin", e => {
+  if (e.target.matches("textarea, input[type=text]")) {
+    lastFocusedField = e.target;
+  }
+});
+
+$("tb").addEventListener("mousedown", e => e.preventDefault());
+$("tb").addEventListener("click", e => {
+  const btn = e.target.closest("button");
+  if (!btn || !lastFocusedField) return;
+  const sn = btn.dataset.val;
+  const f = lastFocusedField;
+  const p1 = f.selectionStart;
+  const p2 = f.selectionEnd;
+  const v = f.value;
+
+  const insideMath = (v.slice(0, p1).match(/\$/g) || []).length % 2 === 1;
+  const insertText = insideMath ? sn : `$${sn}$`;
+
+  f.value = v.slice(0, p1) + insertText + v.slice(p2);
+  f.focus();
+  const newPos = p1 + insertText.length;
+  f.setSelectionRange(newPos, newPos);
+  f.dispatchEvent(new Event("input", { bubbles: true }));
+});
+
+/* =========================================================================
+   Option Layouts & Question HTML
+   ========================================================================= */
+
+function lay(q, s) {
+  let v = q.ol || s.ol;
+  const len = q.o.length;
+  if (v === "auto") {
+    const maxChars = Math.max(...q.o.map(o => (o || "").replace(/\$|\\[a-zA-Z]+/g, "").length));
+    if (len === 2) v = maxChars <= 18 ? "row-2" : "col";
+    else if (len === 3) v = maxChars <= 14 ? "row-3" : "col";
+    else if (len === 5) v = maxChars <= 8 ? "row-5" : "col";
+    else v = maxChars <= 10 ? "row" : maxChars <= 28 ? "grid" : "col";
+  } else if (v === "row") {
+    if (len === 2) v = "row-2";
+    else if (len === 3) v = "row-3";
+    else if (len === 5) v = "row-5";
+  }
+  return v;
+}
+
+function qHTML(q, i, s) {
+  const isTeacher = s.mode === "teacher";
+  const marksBadge = (Number(q.marks) || 1) !== 1 ? `<span class="q-marks">[${q.marks} marks]</span>` : '';
+
+  return `
+    <div class="q">
+      <div class="q-title">
+        <div><b>${i + 1}.</b> ${rich(q.q)}</div>
+        ${marksBadge}
+      </div>
+      ${q.img ? `
+        <div class="qimg">
+          <img src="${q.img.src}" style="width:${q.img.wmm}mm;aspect-ratio:${q.img.nw}/${q.img.nh}">
+        </div>
+      ` : ""}
+      <div class="opts o-${lay(q, s)}">
+        ${q.o.map((o, j) => {
+          const isCorrect = isTeacher && q.a === j;
+          return `
+            <span class="op ${isCorrect ? "correct-marked" : ""}">
+              <span>(${L[j]})</span>
+              <span class="ot">${rich(o, 1)}</span>
+              ${isCorrect ? '<span class="teacher-tick">✓</span>' : ''}
+            </span>
+          `;
+        }).join("")}
+      </div>
+    </div>
+  `;
+}
+
+/* =========================================================================
+   Answer Key & OMR Generator
+   ========================================================================= */
+
+function keyCompactHTML() {
+  if (!qs.length) return "";
+  const pairs = qs.map((q, i) => `<b>${i + 1}.</b> ${L[q.a]}`).join("&nbsp;&nbsp;&nbsp; ");
+  return `
+    <div class="key-box">
+      <div class="key-box-title">ANSWER KEY:</div>
+      <div>${pairs}</div>
+    </div>
+  `;
+}
+
+function keyTableHTML(includeExpl) {
+  if (!qs.length) return "";
+  let rows = "";
+  for (let i = 0; i < qs.length; i += 5) {
+    const chunk = qs.slice(i, i + 5);
+    rows += `<tr>${chunk.map((q, idx) => `<th>Q${i + idx + 1}</th>`).join("")}</tr>`;
+    rows += `<tr>${chunk.map(q => `<td><b>${L[q.a]}</b></td>`).join("")}</tr>`;
+  }
+  const expls = includeExpl
+    ? qs.map((q, i) => q.exp ? `<div><b>Q${i + 1}:</b> ${rich(q.exp)}</div>` : "").filter(Boolean).join("")
+    : "";
+
+  return `
+    <div class="key-box" style="margin-top:20px">
+      <h2 style="text-align:center;font-size:1.3em;margin-bottom:8px">EXAMINATION ANSWER KEY &amp; SOLUTIONS</h2>
+      <table class="key-grid-table">${rows}</table>
+      ${expls ? `<div style="margin-top:14px;font-size:0.9em"><b>Explanations / Solutions:</b>${expls}</div>` : ""}
+    </div>
+  `;
+}
+
+function omrSheetHTML(s) {
+  const qCount = qs.length || 20;
+  const cols = 4;
+  const perCol = Math.ceil(qCount / cols);
+
+  let colHtml = "";
+  for (let c = 0; c < cols; c++) {
+    let items = "";
+    for (let r = 0; r < perCol; r++) {
+      const idx = c * perCol + r;
+      if (idx >= qCount) break;
+      const num = String(idx + 1).padStart(2, "0");
+      items += `
+        <div class="omr-q-row">
+          <span class="omr-q-num">${num}</span>
+          <div>
+            <span class="omr-bubble">A</span>
+            <span class="omr-bubble">B</span>
+            <span class="omr-bubble">C</span>
+            <span class="omr-bubble">D</span>
+          </div>
+        </div>
+      `;
+    }
+    colHtml += `<div>${items}</div>`;
+  }
+
+  return `
+    <div class="omr-container">
+      <div class="omr-header">
+        <h2 style="margin:0 0 2px;font-size:16px">${esc(s.inst || s.title)}</h2>
+        <div style="font-weight:700;font-size:13px">${esc(s.title)} — OMR RESPONSE SHEET</div>
+      </div>
+      <div class="omr-student-grid">
+        <div>
+          <div><b>Candidate Name:</b> ________________________________________________</div>
+          <div style="margin-top:8px"><b>Subject:</b> ${esc(s.subject)} &nbsp;&nbsp;&nbsp; <b>Class:</b> ${esc(s.grade)} &nbsp;&nbsp;&nbsp; <b>Date:</b> _________</div>
+        </div>
+        <div style="border-left:1px solid #000;padding-left:8px">
+          <div><b>Roll Number / Candidate ID:</b></div>
+          <div style="display:flex;gap:4px;margin-top:4px">
+            ${Array(6).fill('<div style="width:18px;height:24px;border:1px solid #000"></div>').join("")}
+          </div>
+        </div>
+      </div>
+      <div style="font-size:10px;margin-bottom:10px;color:#333">
+        <b>Instructions:</b> Use blue or black ballpoint pen only. Darken circles completely: <b>(A) [●] (C) (D)</b>. Do not make stray marks.
+      </div>
+      <div class="omr-col-grid">
+        ${colHtml}
+      </div>
+    </div>
+  `;
+}
+
+/* =========================================================================
+   Pagination & Screen Preview Layout Engine
+   ========================================================================= */
+
+function dimsMM(s) {
+  let d = [210, 297]; // A4 default
+  if (s.size === "Letter") d = [215.9, 279.4];
+  if (s.size === "Legal") d = [215.9, 355.6];
+  return s.or === "l" ? [d[1], d[0]] : d;
+}
+
+let previewDebounceTimer = null;
+function debouncedPreview() {
+  clearTimeout(previewDebounceTimer);
+  previewDebounceTimer = setTimeout(preview, 100);
+}
+
+let currentZoom = "fit";
+
+function preview() {
+  const s = S();
+  const [w, h] = dimsMM(s);
+  const isMultiCopy = s.copies > 1;
+  const tc = tileCols(s);
+  const rows = s.copies / tc;
+
+  $("cols").disabled = isMultiCopy;
+
+  // Update mode tags
+  const isTeacher = s.mode === "teacher";
+  const tag = $("preview-mode-tag");
+  tag.textContent = isTeacher ? "👨‍🏫 Teacher Master Copy" : "🎓 Student Copy";
+  tag.style.background = isTeacher ? "var(--success)" : "rgba(255,255,255,0.1)";
+
+  // Compute Full Marks display
+  const calculatedMarks = totalMarksCalc();
+  const fullMarksText = s.marks && s.marks.toLowerCase() !== "auto" ? s.marks : calculatedMarks + " Marks";
+
+  const makeExamHeader = () => `
+    <div class="exam-header">
+      ${s.inst ? `<div class="inst-name">${esc(s.inst)}</div>` : ""}
+      <div class="exam-title">${esc(s.title)}</div>
+      <div class="exam-meta-grid">
+        ${s.subject ? `<span><b>Subject:</b> ${esc(s.subject)}</span>` : ""}
+        ${s.grade ? `<span><b>Class:</b> ${esc(s.grade)}</span>` : ""}
+        ${s.time ? `<span><b>Time:</b> ${esc(s.time)}</span>` : ""}
+        <span><b>Full Marks:</b> ${esc(fullMarksText)}</span>
+      </div>
+      ${s.instructions ? `<div class="exam-instructions">${esc(s.instructions)}</div>` : ""}
+      ${(s.showName || s.showRoll || s.showSec || s.showDate) ? `
+        <div class="student-info-box">
+          ${s.showName ? `<span>Name: _______________________________</span>` : ""}
+          ${s.showRoll ? `<span>Roll No: ___________</span>` : ""}
+          ${s.showSec ? `<span>Section: _______</span>` : ""}
+          ${s.showDate ? `<span>Date: ___________</span>` : ""}
+        </div>
+      ` : ""}
+    </div>
+  `;
+
+  // Build items list
+  const its = qs.map((q, i) => qHTML(q, i, s));
+  if (s.keyMode === "end" && qs.length) {
+    its.push(keyCompactHTML());
+  }
+
+  const wrap = $("wrap");
+  wrap.innerHTML = "";
+  const sheets = [];
+  let idx = 0;
+
+  // Pagination loop
+  do {
+    const isFirstPage = sheets.length === 0;
+    const sh = document.createElement("div");
+    sh.className = "sheet";
+    sh.style.cssText = `width:${w}mm;height:${h}mm;padding:12mm 12mm 14mm;font-family:${s.font};font-size:${s.fs}pt`;
+
+    const tl = document.createElement("div");
+    tl.className = "tiles";
+    tl.style.cssText = `grid-template-columns:repeat(${tc},minmax(0,1fr));grid-template-rows:repeat(${rows},minmax(0,1fr))`;
+
+    const bodies = [];
+    for (let t = 0; t < s.copies; t++) {
+      const tile = document.createElement("div");
+      tile.className = "tile" + (isMultiCopy ? " c" : "");
+      tile.innerHTML = (isFirstPage ? makeExamHeader() : "") + `<div class="body" style="column-count:${isMultiCopy ? 1 : s.cols}"></div>`;
+      tl.appendChild(tile);
+      bodies.push(tile.querySelector(".body"));
+    }
+
+    sh.appendChild(tl);
+    wrap.appendChild(sh);
+    sheets.push(sh);
+
+    const b0 = bodies[0];
+    let k = 0;
+    while (idx + k < its.length) {
+      b0.insertAdjacentHTML("beforeend", its[idx + k]);
+      if (b0.scrollHeight > b0.clientHeight + 1 || b0.scrollWidth > b0.clientWidth + 1) {
+        if (k > 0) b0.lastElementChild.remove();
+        else k = 1; // Question is larger than whole page, keep to avoid infinite loop
+        break;
+      }
+      k++;
+    }
+    idx += k;
+
+    // Sync content to other tiles for 2 or 4 copies
+    for (let t = 1; t < bodies.length; t++) {
+      bodies[t].innerHTML = b0.innerHTML;
+    }
+  } while (idx < its.length && sheets.length < 50);
+
+  // Dedicated Separate Page for Answer Key
+  if (s.keyMode === "separate" && qs.length) {
+    const sh = document.createElement("div");
+    sh.className = "sheet";
+    sh.style.cssText = `width:${w}mm;height:${h}mm;padding:12mm 12mm 14mm;font-family:${s.font};font-size:${s.fs}pt`;
+    sh.innerHTML = keyTableHTML(s.keyExpl);
+    wrap.appendChild(sh);
+    sheets.push(sh);
+  }
+
+  // Attached Printable OMR Bubble Sheet
+  if (s.showOMR && qs.length) {
+    const sh = document.createElement("div");
+    sh.className = "sheet";
+    sh.style.cssText = `width:${w}mm;height:${h}mm;padding:0;overflow:hidden`;
+    sh.innerHTML = omrSheetHTML(s);
+    wrap.appendChild(sh);
+    sheets.push(sh);
+  }
+
+  // Zoom and layout scaling calculation
+  applyZoom(sheets, w, h);
+
+  // Dynamic Print Stylesheet
+  let st = $("pg");
+  if (!st) {
+    st = document.createElement("style");
+    st.id = "pg";
+    document.head.appendChild(st);
+  }
+  st.textContent = `
+    @page {
+      size: ${s.size} ${s.or === "l" ? "landscape" : "portrait"};
+      margin: 12mm;
+    }
+    @media print {
+      .sheet {
+        width: ${w - 24}mm !important;
+        height: ${h - 26}mm !important;
+        padding: 0 !important;
+      }
+    }
+  `;
+
+  $("page-count-badge").textContent = `Pages: ${sheets.length}`;
+  queueSave();
+}
+
+function applyZoom(sheets, w, h) {
+  const containerW = $("wrap").parentElement.clientWidth - 48;
+  const baseScale = containerW / (w * 3.7795);
+
+  let z = 1;
+  if (currentZoom === "fit") {
+    z = Math.min(1.15, Math.max(0.4, baseScale));
+    $("z-val").textContent = "Fit";
+  } else {
+    z = Number(currentZoom) || 1;
+    $("z-val").textContent = Math.round(z * 100) + "%";
+  }
+
+  sheets.forEach((sh, i) => {
+    let sw = sh.parentElement;
+    if (!sw || !sw.classList.contains("sw")) {
+      sw = document.createElement("div");
+      sw.className = "sw";
+      $("wrap").insertBefore(sw, sh);
+      sw.appendChild(sh);
+
+      const pl = document.createElement("div");
+      pl.className = "pl noprint";
+      pl.textContent = `Page ${i + 1} of ${sheets.length}`;
+      sw.insertBefore(pl, sh);
+    }
+    sw.style.width = `${w * z}mm`;
+    sw.style.height = `${h * z}mm`;
+    sh.style.transform = `scale(${z})`;
+  });
+}
+
+// Zoom controls
+$("z-out").onclick = () => {
+  let cur = currentZoom === "fit" ? 0.8 : Number(currentZoom);
+  currentZoom = Math.max(0.4, Math.round((cur - 0.1) * 10) / 10);
+  preview();
+};
+$("z-in").onclick = () => {
+  let cur = currentZoom === "fit" ? 0.8 : Number(currentZoom);
+  currentZoom = Math.min(1.8, Math.round((cur + 0.1) * 10) / 10);
+  preview();
+};
+$("z-fit").onclick = () => {
+  currentZoom = "fit";
+  preview();
+};
+$("z-100").onclick = () => {
+  currentZoom = 1;
+  preview();
+};
+$("btn-quick-toggle").onclick = () => {
+  $("mode").value = $("mode").value === "student" ? "teacher" : "student";
+  preview();
+};
+
+// Listen to all setup input changes
+[
+  "inst", "title", "subject", "grade", "time", "marks", "instructions",
+  "hdr-name", "hdr-roll", "hdr-sec", "hdr-date",
+  "size", "or", "cols", "copies", "font", "fs", "ol", "mode", "key-mode", "key-expl", "show-omr"
+].forEach(id => {
+  const el = $(id);
+  if (el) el.addEventListener("input", debouncedPreview);
+});
+
+window.addEventListener("resize", debouncedPreview);
+
+$("bprint").onclick = () => { preview(); window.print(); };
+$("bpdf").onclick = () => { preview(); window.print(); };
+$("btn-top-print").onclick = () => { preview(); window.print(); };
+
+/* =========================================================================
+   DOCX Export
+   ========================================================================= */
+
+async function mathPNG(tex, disp, fpx) {
+  const k = (disp ? "d" : "i") + fpx + tex;
+  const svg = MathJax.tex2svg(tex, { display: !!disp }).querySelector("svg");
+  if (!svg) return null;
+  const vb = svg.getAttribute("viewBox").split(/\s+/).map(Number);
+  const w = (vb[2] / 1000) * fpx;
+  const h = (vb[3] / 1000) * fpx;
+
+  svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+  svg.setAttribute("width", w + "px");
+  svg.setAttribute("height", h + "px");
+  svg.removeAttribute("style");
+
+  const xml = svg.outerHTML.replace(/currentColor/g, "#000");
+  const img = new Image();
+  await new Promise((ok, no) => {
+    img.onload = ok;
+    img.onerror = no;
+    img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(xml);
+  });
+
+  const sc = 3;
+  const cv = document.createElement("canvas");
+  cv.width = Math.ceil(w * sc);
+  cv.height = Math.ceil(h * sc);
+  cv.getContext("2d").drawImage(img, 0, 0, cv.width, cv.height);
+  const blob = await new Promise(r => cv.toBlob(r));
+  return { data: new Uint8Array(await blob.arrayBuffer()), w, h };
+}
+
+$("bdoc").onclick = async () => {
+  if (!window.docx) {
+    alert("DOCX export library is loading. Please check your internet connection.");
+    return;
+  }
+  const btn = $("bdoc");
+  btn.disabled = true;
+  btn.textContent = "Generating Word Document...";
+
+  try {
+    const D = docx;
+    const s = S();
+    const sz = s.fs * 2;
+    const fpx = (s.fs * 96) / 72;
+
+    const nb = { style: D.BorderStyle.NONE, size: 0, color: "FFFFFF" };
+    const nob = { top: nb, bottom: nb, left: nb, right: nb, insideHorizontal: nb, insideVertical: nb };
+    const dims = s.size === "A4" ? [11906, 16838] : [12240, 15840];
+    const page = {
+      size: {
+        width: dims[0],
+        height: dims[1],
+        orientation: s.or === "l" ? D.PageOrientation.LANDSCAPE : D.PageOrientation.PORTRAIT
+      },
+      margin: { top: 720, bottom: 720, left: 720, right: 720 }
+    };
+
+    const U = (s.or === "l" ? dims[1] : dims[0]) - 1440;
+    const tc = tileCols(s);
+    const inner = s.copies === 1 ? Math.floor((U - 420 * (s.cols - 1)) / s.cols) : Math.floor(U / tc) - 280;
+    const avail = (inner / 15) * 0.95;
+    const DXA = D.WidthType.DXA;
+
+    const P = (t, o = {}) => new D.Paragraph({
+      children: [new D.TextRun({ text: t, size: sz, bold: !!o.b, italics: !!o.it })],
+      spacing: { before: o.before || 0, after: o.after ?? 40 },
+      alignment: o.al || D.AlignmentType.LEFT
+    });
+
+    const head = () => {
+      const hList = [];
+      if (s.inst) {
+        hList.push(new D.Paragraph({
+          alignment: D.AlignmentType.CENTER,
+          children: [new D.TextRun({ text: s.inst.toUpperCase(), bold: true, size: sz + 8 })],
+          spacing: { after: 40 }
+        }));
+      }
+      hList.push(new D.Paragraph({
+        alignment: D.AlignmentType.CENTER,
+        children: [new D.TextRun({ text: s.title, bold: true, size: sz + 4 })],
+        spacing: { after: 60 }
+      }));
+
+      const metaLine = [
+        s.subject ? `Subject: ${s.subject}` : "",
+        s.grade ? `Class: ${s.grade}` : "",
+        s.time ? `Time: ${s.time}` : "",
+        `Full Marks: ${s.marks || totalMarksCalc()}`
+      ].filter(Boolean).join("    |    ");
+
+      hList.push(P(metaLine, { b: true, al: D.AlignmentType.CENTER, after: 80 }));
+
+      if (s.instructions) {
+        hList.push(P(`Instructions: ${s.instructions}`, { it: true, after: 80 }));
+      }
+
+      const stFields = [];
+      if (s.showName) stFields.push("Name: ______________________");
+      if (s.showRoll) stFields.push("Roll No: _______");
+      if (s.showSec) stFields.push("Section: _____");
+      if (s.showDate) stFields.push("Date: _________");
+      if (stFields.length) {
+        hList.push(P(stFields.join("    "), { after: 120 }));
+      }
+      return hList;
+    };
+
+    const rp = async (t, o = {}) => {
+      const out = [];
+      let first = true;
+      let runs = o.pre ? [new D.TextRun({ text: o.pre, bold: !!o.bp, size: sz })] : [];
+
+      const flush = al => {
+        out.push(new D.Paragraph({
+          children: runs.length ? runs : [new D.TextRun({ text: "", size: sz })],
+          alignment: al,
+          spacing: { before: first ? (o.before || 0) : 0, after: o.after ?? 40 },
+          keepNext: !!o.kn
+        }));
+        runs = [];
+        first = false;
+      };
+
+      for (const g of segs(t || "")) {
+        if (g.t !== undefined) {
+          g.t.split("\n").forEach((ln, i) => runs.push(new D.TextRun({ text: ln, size: sz, break: i ? 1 : 0 })));
+          continue;
+        }
+        let m = null;
+        if (mj()) {
+          try { m = await mathPNG(g.m, g.d && !o.inl, fpx); } catch (e) {}
+        }
+        if (!m) {
+          runs.push(new D.TextRun({ text: "$" + g.m + "$", size: sz }));
+          continue;
+        }
+        const im = new D.ImageRun({
+          data: m.data,
+          type: "png",
+          transformation: { width: Math.max(1, Math.round(m.w)), height: Math.max(1, Math.round(m.h)) }
+        });
+        if (g.d && !o.inl) {
+          if (runs.length) flush();
+          runs.push(im);
+          flush(D.AlignmentType.CENTER);
+        } else {
+          runs.push(im);
+        }
+      }
+      if (runs.length || !out.length) flush();
+      return out;
+    };
+
+    const qImg = q => {
+      if (!q.img) return [];
+      const data = Uint8Array.from(atob(q.img.src.split(",")[1]), c => c.charCodeAt(0));
+      const w = Math.min((q.img.wmm * 96) / 25.4, avail);
+      const hh = (w * q.img.nh) / q.img.nw;
+      return [new D.Paragraph({
+        alignment: D.AlignmentType.CENTER,
+        keepNext: true,
+        spacing: { after: 40 },
+        children: [new D.ImageRun({ data, type: "png", transformation: { width: Math.round(w), height: Math.round(hh) } })]
+      })];
+    };
+
+    const body = async () => {
+      const out = [];
+      const isTeacher = s.mode === "teacher";
+
+      for (const [i, q] of qs.entries()) {
+        const marksTxt = (Number(q.marks) || 1) !== 1 ? `  [${q.marks} marks]` : '';
+        out.push(...await rp(q.q + marksTxt, { pre: `${i + 1}. `, bp: 1, before: 100, kn: 1, after: 60 }));
+        out.push(...qImg(q));
+
+        const ly = lay(q, s);
+        const optCount = q.o.length;
+
+        if (ly === "col") {
+          for (let j = 0; j < optCount; j++) {
+            const mark = isTeacher && q.a === j ? " [✓]" : "";
+            out.push(...await rp(q.o[j] + mark, { pre: `(${L[j]}) `, inl: 1, after: 30 }));
+          }
+        } else {
+          const n = ly.includes("row") ? optCount : 2;
+          const rows = [];
+          const cw = Math.floor(inner / n);
+
+          for (let k = 0; k < optCount; k += n) {
+            const cells = [];
+            for (let j = k; j < Math.min(k + n, optCount); j++) {
+              const mark = isTeacher && q.a === j ? " [✓]" : "";
+              cells.push(new D.TableCell({
+                width: { size: cw, type: DXA },
+                borders: nob,
+                children: await rp(q.o[j] + mark, { pre: `(${L[j]}) `, inl: 1, after: 20 })
+              }));
+            }
+            rows.push(new D.TableRow({ cantSplit: true, children: cells }));
+          }
+          out.push(new D.Table({
+            width: { size: cw * n, type: DXA },
+            columnWidths: Array(n).fill(cw),
+            layout: D.TableLayoutType.FIXED,
+            borders: nob,
+            rows
+          }));
+        }
+      }
+
+      if (s.keyMode !== "none" && qs.length) {
+        const keyTxt = qs.map((q, i) => `${i + 1}-${L[q.a]}`).join(",  ");
+        out.push(P("ANSWER KEY: " + keyTxt, { b: true, before: 200 }));
+      }
+      return out;
+    };
+
+    let sections;
+    if (s.copies === 1) {
+      sections = [
+        { properties: { page }, children: head() },
+        { properties: { page, type: D.SectionType.CONTINUOUS, column: { count: s.cols, space: 420 } }, children: await body() }
+      ];
+    } else {
+      const rows = [];
+      const cw = Math.floor(U / tc);
+      for (let r = 0; r < s.copies / tc; r++) {
+        const cells = [];
+        for (let c = 0; c < tc; c++) {
+          cells.push(new D.TableCell({
+            width: { size: cw, type: DXA },
+            margins: { top: 100, bottom: 100, left: 140, right: 140 },
+            children: [...head(), ...await body()]
+          }));
+        }
+        rows.push(new D.TableRow({ children: cells }));
+      }
+      sections = [
+        {
+          properties: { page },
+          children: [
+            new D.Table({
+              width: { size: cw * tc, type: DXA },
+              columnWidths: Array(tc).fill(cw),
+              layout: D.TableLayoutType.FIXED,
+              borders: nob,
+              rows
+            })
+          ]
+        }
+      ];
+    }
+
+    const blob = await D.Packer.toBlob(new D.Document({ sections }));
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = (s.title || "mcq_exam").replace(/[^\w-]+/g, "_") + ".docx";
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    showToast("DOCX file generated and downloaded!");
+  } catch (err) {
+    alert("DOCX export error: " + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "📝 Word (.docx)";
+  }
+};
+
+/* =========================================================================
+   Smart Text & AI Import Parser
+   ========================================================================= */
+
+function parseRaw(txt) {
+  const out = [];
+  let cur = null;
+  let blank = true;
+
+  const optRe = /^\s*(\*?)\s*\(?([A-Fa-f])[\)\.\:\-]\s*(\*?)\s*(.*?)\s*(\*?)\s*$/;
+  const ansRe = /^\s*(?:correct\s*answer|answer|ans|key)\s*[:\-=]\s*\(?([A-Fa-f])\b/i;
+  const explRe = /^\s*(?:explanation|solution|reason)\s*[:\-=]\s*(.*)$/i;
+  const numRe = /^\s*(?:q(?:uestion)?\s*)?\d+\s*[\.\)\:\-]\s*/i;
+
+  const strip = s => s.replace(numRe, "").replace(/^\*+|\*+$/g, "").trim();
+
+  const start = t => {
+    cur = { q: t, o: [], a: -1, exp: "", marks: 1 };
+    out.push(cur);
+  };
+
+  const lines = txt.replace(/\r/g, "").split("\n");
+
+  for (let raw of lines) {
+    let line = raw.trim();
+    if (!line) {
+      blank = true;
+      continue;
+    }
+
+    // Clean AI markdown bullets like "- A) option" or "**Question 1:**"
+    line = line.replace(/^[\*\-\+]\s+/, "");
+
+    // Check for layout directive
+    const lm = line.match(/^\s*layout\s*[:=]\s*(?:(1\s*[x×*]\s*4)|(2\s*[x×*]\s*2)|(4\s*[x×*]\s*1)|(auto))/i);
+    if (lm && cur) {
+      cur.ol = lm[1] ? "row" : lm[2] ? "grid" : lm[3] ? "col" : "auto";
+      blank = false;
+      continue;
+    }
+
+    // Check for Explanation
+    const em = line.match(explRe);
+    if (em && cur) {
+      cur.exp = em[1].trim();
+      blank = false;
+      continue;
+    }
+
+    // Check for Answer line
+    const am = line.match(ansRe);
+    if (am && cur) {
+      cur.a = "ABCDEF".indexOf(am[1].toUpperCase());
+      blank = false;
+      continue;
+    }
+
+    // Check for inline options: A) ... B) ... C) ... D) ...
+    let parts = [line];
+    if (/\(?[Aa][\)\.\:]\s.*\(?[Bb][\)\.\:]\s/.test(line)) {
+      parts = line.split(/\s+(?=\(?[A-Fa-f][\)\.\:]\s)/);
+    }
+
+    for (const p of parts) {
+      const m = p.match(optRe);
+      if (m && cur && cur.o.length < 6) {
+        cur.o.push(m[4]);
+        if (m[1] || m[3] || m[5]) cur.a = cur.o.length - 1;
+      } else if (cur && !cur.o.length && !blank && !numRe.test(p)) {
+        cur.q += " " + p;
+      } else {
+        start(strip(p));
+      }
+      blank = false;
+    }
+  }
+
+  let noAns = 0;
+  const list = out.filter(q => q.q).map(q => {
+    while (q.o.length < 4) q.o.push("");
+    if (q.a < 0) {
+      q.a = 0;
+      noAns++;
+    }
+    return q;
+  });
+
+  return { list, noAns };
+}
+
+function doImport(replace) {
+  const txt = $("raw").value.trim();
+  if (!txt) {
+    $("imsg").textContent = "Please paste questions into the text box first.";
+    return;
+  }
+  const { list, noAns } = parseRaw(txt);
+  if (!list.length) {
+    $("imsg").textContent = "Could not parse questions. Ensure questions and options (A-D) are structured properly.";
+    return;
+  }
+  if (replace) qs = list;
+  else qs = qs.concat(list);
+
+  renderList();
+  preview();
+  $("imsg").textContent = `Successfully imported ${list.length} question${list.length > 1 ? "s" : ""}.` +
+    (noAns ? ` (${noAns} had no answer marked, defaulted to A)` : "");
+  $("raw").value = "";
+  showToast(`Imported ${list.length} questions`);
+}
+
+$("impadd").onclick = () => doImport(false);
+$("imprep").onclick = () => {
+  if (!qs.length || confirm("Replace all current questions with the imported ones?")) {
+    doImport(true);
+  }
+};
+
+$("impfile").onchange = e => {
+  const f = e.target.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    $("raw").value = r.result;
+    $("imsg").textContent = `File "${f.name}" loaded into editor. Choose Import & Append or Replace.`;
+  };
+  r.readAsText(f);
+  e.target.value = "";
+};
+
+/* =========================================================================
+   Sample Test Presets
+   ========================================================================= */
+
+$("load-sample-math").onclick = () => {
+  if (qs.length && !confirm("Replace current questions with Mathematics Sample Test?")) return;
+  qs = [
+    {
+      q: "Evaluate the limit: $$\\lim_{x \\to 0} \\frac{\\sin(3x)}{x}$$",
+      o: ["$0$", "$1$", "$3$", "Does not exist"],
+      a: 2,
+      ol: "row",
+      marks: 1,
+      exp: "Using $\\lim_{x \\to 0} \\frac{\\sin(kx)}{kx} = 1$, we get $3 \\times 1 = 3$."
+    },
+    {
+      q: "If $f(x) = x^3 - 3x^2 + 2$, what is the derivative $f'(x)$?",
+      o: ["$3x^2 - 6x$", "$3x^2 - 3$", "$x^2 - 6x$", "$3x^2 - 6x + 2$"],
+      a: 0,
+      ol: "grid",
+      marks: 1,
+      exp: "Differentiating term by term gives $3x^2 - 6x$."
+    },
+    {
+      q: "The discriminant of the quadratic equation $ax^2 + bx + c = 0$ is",
+      o: ["$b^2 - 4ac$", "$b^2 + 4ac$", "$\\sqrt{b^2 - 4ac}$", "$4ac - b^2$"],
+      a: 0,
+      ol: "grid",
+      marks: 1,
+      exp: "Discriminant $\\Delta = b^2 - 4ac$."
+    },
+    {
+      q: "The solution to the matrix equation $\\begin{pmatrix} 1 & 2 \\\\ 3 & 4 \\end{pmatrix}$ determinant is",
+      o: ["$-2$", "$2$", "$10$", "$-10$"],
+      a: 0,
+      ol: "row",
+      marks: 1,
+      exp: "$\\det = (1)(4) - (2)(3) = 4 - 6 = -2$."
+    }
+  ];
+  $("title").value = "Mathematics Final Examination";
+  $("subject").value = "Calculus & Algebra";
+  renderList();
+  preview();
+  showToast("Loaded Math & Calculus Sample");
+};
+
+$("load-sample-physics").onclick = () => {
+  if (qs.length && !confirm("Replace current questions with Science Sample Test?")) return;
+  qs = [
+    {
+      q: "According to Newton's Second Law of Motion, the formula for force $\\vec{F}$ is",
+      o: ["$\\vec{F} = m\\vec{a}$", "$\\vec{F} = \\frac{m}{\\vec{a}}$", "$\\vec{F} = \\frac{1}{2}m\\vec{v}^2$", "$\\vec{F} = m\\vec{g}h$"],
+      a: 0,
+      ol: "grid",
+      marks: 1,
+      exp: "Force is the product of mass and acceleration."
+    },
+    {
+      q: "What is the pH value of pure water at $25^\\circ\\text{C}$?",
+      o: ["$0$", "$7$", "$14$", "$1$"],
+      a: 1,
+      ol: "row",
+      marks: 1,
+      exp: "Pure neutral water has a pH of exactly 7."
+    },
+    {
+      q: "Which law explains why a ship made of steel floats on water?",
+      o: ["Pascal's Principle", "Archimedes' Principle", "Bernoulli's Theorem", "Hooke's Law"],
+      a: 1,
+      ol: "col",
+      marks: 1,
+      exp: "Archimedes' principle states buoyant force equals the weight of displaced fluid."
+    }
+  ];
+  $("title").value = "General Physics & Chemistry Quiz";
+  $("subject").value = "Physical Sciences";
+  renderList();
+  preview();
+  showToast("Loaded Science Sample");
+};
+
+$("load-sample-gk").onclick = () => {
+  if (qs.length && !confirm("Replace current questions with General Knowledge Sample Test?")) return;
+  qs = [
+    {
+      q: "Which planet in the solar system is known as the **Red Planet**?",
+      o: ["Venus", "Mars", "Jupiter", "Saturn"],
+      a: 1,
+      ol: "row",
+      marks: 1,
+      exp: "Mars appears red due to iron oxide (rust) on its surface."
+    },
+    {
+      q: "What is the primary gas found in the Earth's atmosphere?",
+      o: ["Oxygen", "Nitrogen", "Carbon Dioxide", "Argon"],
+      a: 1,
+      ol: "row",
+      marks: 1,
+      exp: "Nitrogen makes up approximately 78% of the atmosphere."
+    },
+    {
+      q: "Who is known as the father of modern computer science?",
+      o: ["Alan Turing", "Charles Babbage", "Ada Lovelace", "John von Neumann"],
+      a: 0,
+      ol: "grid",
+      marks: 1,
+      exp: "Alan Turing developed theoretical foundational concepts of computation."
+    }
+  ];
+  $("title").value = "General Knowledge Assessment";
+  $("subject").value = "General Science & Tech";
+  renderList();
+  preview();
+  showToast("Loaded General Knowledge Sample");
+};
+
+/* =========================================================================
+   Aiken Format Export
+   ========================================================================= */
+
+$("btn-export-aiken").onclick = () => {
+  if (!qs.length) {
+    alert("No questions to export.");
+    return;
+  }
+  const lines = [];
+  qs.forEach(q => {
+    lines.push(q.q.replace(/\n/g, " "));
+    q.o.forEach((o, j) => {
+      lines.push(`${L[j]}. ${o}`);
+    });
+    lines.push(`ANSWER: ${L[q.a]}`);
+    lines.push("");
+  });
+  $("aiken-txt").value = lines.join("\n");
+  $("modal-aiken").showModal();
+};
+
+$("btn-close-aiken").onclick = () => $("modal-aiken").close();
+
+$("btn-copy-aiken").onclick = () => {
+  navigator.clipboard.writeText($("aiken-txt").value);
+  showToast("Aiken text copied to clipboard!");
+};
+
+$("btn-download-aiken").onclick = () => {
+  const b = new Blob([$("aiken-txt").value], { type: "text/plain" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(b);
+  a.download = (S().title || "questions") + "_aiken.txt";
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+};
+
+/* =========================================================================
+   Enhanced Math Graph Plotter
+   ========================================================================= */
+
+let plotQ = 0;
+
+function fnOf(s) {
+  let e = s
+    .replace(/^\s*(y|f\(x\))\s*=/i, "")
+    .replace(/\^/g, "**")
+    .replace(/(\d)\s*(?=[x\(]\b)/g, "$1*")
+    .replace(/\)\s*(?=[x\(])/g, ")*")
+    .replace(/\b(sin|cos|tan|asin|acos|atan|sqrt|cbrt|abs|exp|floor|ceil)\b/g, "Math.$1")
+    .replace(/\bln\b/g, "Math.log")
+    .replace(/\blog\b/g, "Math.log10")
+    .replace(/\bpi\b/gi, "Math.PI")
+    .replace(/\be\b/g, "Math.E")
+    .trim();
+
+  if (e[0] === "-" || e[0] === "+") e = "0" + e;
+  return new Function("x", "return " + e);
+}
+
+const nice = r => {
+  const p = 10 ** Math.floor(Math.log10(r));
+  const f = r / p;
+  return (f < 1.5 ? 1 : f < 3.5 ? 2 : f < 7.5 ? 5 : 10) * p;
+};
+
+function drawPlot() {
+  const c = $("pc");
+  const g = c.getContext("2d");
+  const W = c.width;
+  const H = c.height;
+  const M = 80;
+
+  g.fillStyle = "#ffffff";
+  g.fillRect(0, 0, W, H);
+
+  let x0 = parseFloat($("px0").value);
+  let x1 = parseFloat($("px1").value);
+  if (!(x1 > x0)) { x0 = -5; x1 = 5; }
+
+  let fns;
+  try {
+    fns = $("pf").value.split("\n").map(s => s.trim()).filter(Boolean).map(fnOf);
+  } catch (e) {
+    g.fillStyle = "#dc2626";
+    g.font = "bold 26px sans-serif";
+    g.fillText("Syntax error in function: " + e.message, 30, 60);
+    return;
+  }
+
+  const N = 800;
+  const pts = fns.map(f => {
+    const a = [];
+    for (let k = 0; k <= N; k++) {
+      const x = x0 + ((x1 - x0) * k) / N;
+      let y;
+      try { y = f(x); } catch (err) { y = NaN; }
+      a.push([x, y]);
+    }
+    return a;
+  });
+
+  let y0 = parseFloat($("py0").value);
+  let y1 = parseFloat($("py1").value);
+  if (!(y1 > y0)) {
+    const ys = pts.flat().map(p => p[1]).filter(Number.isFinite).sort((a, b) => a - b);
+    if (ys.length) {
+      y0 = ys[Math.floor(ys.length * 0.02)];
+      y1 = ys[Math.floor(ys.length * 0.98)];
+      const pad = (y1 - y0 || 2) * 0.15;
+      y0 -= pad;
+      y1 += pad;
+    } else {
+      y0 = -5;
+      y1 = 5;
+    }
+  }
+
+  const X = x => M + ((x - x0) / (x1 - x0)) * (W - 2 * M);
+  const Y = y => H - M - ((y - y0) / (y1 - y0)) * (H - 2 * M);
+
+  const sx = nice((x1 - x0) / 10);
+  const sy = nice((y1 - y0) * 0.125);
+
+  const showGrid = $("pgrid").checked;
+  const showArrows = $("parrows").checked;
+
+  // Grid
+  if (showGrid) {
+    g.strokeStyle = "#e2e8f0";
+    g.lineWidth = 1.5;
+    for (let x = Math.ceil(x0 / sx) * sx; x <= x1 + 1e-9; x += sx) {
+      g.beginPath();
+      g.moveTo(X(x), M);
+      g.lineTo(X(x), H - M);
+      g.stroke();
+    }
+    for (let y = Math.ceil(y0 / sy) * sy; y <= y1 + 1e-9; y += sy) {
+      g.beginPath();
+      g.moveTo(M, Y(y));
+      g.lineTo(W - M, Y(y));
+      g.stroke();
+    }
+  }
+
+  // Axes
+  const ax = Math.min(Math.max(0, y0), y1);
+  const ay = Math.min(Math.max(0, x0), x1);
+
+  g.strokeStyle = "#0f172a";
+  g.lineWidth = 3;
+
+  // X Axis
+  g.beginPath();
+  g.moveTo(M, Y(ax));
+  g.lineTo(W - M, Y(ax));
+  g.stroke();
+
+  // Y Axis
+  g.beginPath();
+  g.moveTo(X(ay), M);
+  g.lineTo(X(ay), H - M);
+  g.stroke();
+
+  // Axis Labels & Ticks
+  g.font = "20px sans-serif";
+  g.fillStyle = "#334155";
+  for (let x = Math.ceil(x0 / sx) * sx; x <= x1 + 1e-9; x += sx) {
+    if (Math.abs(x) > 1e-9) {
+      g.textAlign = "center";
+      g.fillText(+x.toFixed(4), X(x), Y(ax) + 26);
+    }
+  }
+  for (let y = Math.ceil(y0 / sy) * sy; y <= y1 + 1e-9; y += sy) {
+    if (Math.abs(y) > 1e-9) {
+      g.textAlign = "right";
+      g.fillText(+y.toFixed(4), X(ay) - 10, Y(y) + 7);
+    }
+  }
+
+  // Axis Names
+  g.font = "italic 26px serif";
+  g.fillStyle = "#000000";
+  g.fillText("x", W - M + 14, Y(ax) + 8);
+  g.fillText("y", X(ay) + 12, M - 10);
+
+  // Plot Functions with distinct styles
+  const colors = ["#2563eb", "#dc2626", "#16a34a", "#9333ea"];
+  const dashes = [[], [12, 6], [4, 4], [16, 6, 4, 6]];
+
+  g.save();
+  g.beginPath();
+  g.rect(M, M, W - 2 * M, H - 2 * M);
+  g.clip();
+
+  pts.forEach((a, k) => {
+    g.strokeStyle = colors[k % colors.length];
+    g.setLineDash(dashes[k % dashes.length]);
+    g.lineWidth = 4;
+    g.beginPath();
+    let pen = false;
+    let py = 0;
+    a.forEach(([x, y]) => {
+      if (!Number.isFinite(y)) { pen = false; return; }
+      const Yy = Y(y);
+      if (pen && Math.abs(Yy - py) > H * 1.5) { pen = false; }
+      if (pen) g.lineTo(X(x), Yy);
+      else g.moveTo(X(x), Yy);
+      pen = true;
+      py = Yy;
+    });
+    g.stroke();
+  });
+  g.restore();
+}
+
+["pf", "px0", "px1", "py0", "py1", "pgrid", "parrows"].forEach(id => {
+  $(id).addEventListener("input", drawPlot);
+});
+
+$("p-presets").onchange = e => {
+  if (e.target.value) {
+    $("pf").value = e.target.value;
+    drawPlot();
+  }
+};
+
+$("pcl").onclick = () => $("pd").close();
+
+$("puse").onclick = () => {
+  qs[plotQ].img = {
+    src: $("pc").toDataURL("image/png"),
+    wmm: 75,
+    nw: 1200,
+    nh: 850
+  };
+  $("pd").close();
+  renderList();
+  preview();
+  showToast("Plot attached to Question " + (plotQ + 1));
+};
+
+/* =========================================================================
+   Storage & Project Save / Restore
+   ========================================================================= */
+
+let ready = false;
+let pend = false;
+let tmr = null;
+
+const IDB = {
+  open() {
+    return new Promise((ok, no) => {
+      const r = indexedDB.open("mcq-maker-pro", 2);
+      r.onupgradeneeded = () => r.result.createObjectStore("s");
+      r.onsuccess = () => ok(r.result);
+      r.onerror = () => no(r.error);
+    });
+  },
+  async put(v) {
+    try {
+      const d = await this.open();
+      return new Promise((ok, no) => {
+        const t = d.transaction("s", "readwrite");
+        t.objectStore("s").put(v, "state");
+        t.oncomplete = () => { d.close(); ok(); };
+        t.onerror = () => no(t.error);
+      });
+    } catch (e) {
+      localStorage.setItem("mcq_state_fallback", JSON.stringify(v));
+    }
+  },
+  async get() {
+    try {
+      const d = await this.open();
+      return new Promise((ok, no) => {
+        const t = d.transaction("s", "readonly");
+        const r = t.objectStore("s").get("state");
+        r.onsuccess = () => { d.close(); ok(r.result); };
+        r.onerror = () => no(r.error);
+      });
+    } catch (e) {
+      const fb = localStorage.getItem("mcq_state_fallback");
+      return fb ? JSON.parse(fb) : null;
+    }
+  }
+};
+
+function snapshot() {
+  const s = S();
+  return {
+    version: 2,
+    qs,
+    settings: s
+  };
+}
+
+function applyState(d) {
+  if (!d || !Array.isArray(d.qs)) return false;
+  qs = d.qs.map(q => ({
+    q: q.q || "",
+    o: Array.isArray(q.o) ? q.o : ["", "", "", ""],
+    a: q.a >= 0 && q.a < (q.o ? q.o.length : 4) ? q.a : 0,
+    ol: q.ol || "",
+    img: q.img || null,
+    marks: Number(q.marks) || 1,
+    exp: q.exp || ""
+  }));
+
+  const s = d.settings || d.s || {};
+  const mapIds = [
+    "inst", "title", "subject", "grade", "time", "marks", "instructions",
+    "size", "or", "cols", "copies", "font", "fs", "ol", "mode"
+  ];
+  mapIds.forEach(id => {
+    if (s[id] !== undefined && $(id)) $(id).value = s[id];
+  });
+
+  if (s.showName !== undefined) $("hdr-name").checked = !!s.showName;
+  if (s.showRoll !== undefined) $("hdr-roll").checked = !!s.showRoll;
+  if (s.showSec !== undefined) $("hdr-sec").checked = !!s.showSec;
+  if (s.showDate !== undefined) $("hdr-date").checked = !!s.showDate;
+  if (s.keyMode !== undefined) $("key-mode").value = s.keyMode;
+  else if (s.key !== undefined) $("key-mode").value = s.key ? "end" : "none";
+  if (s.showOMR !== undefined) $("show-omr").checked = !!s.showOMR;
+
+  return true;
+}
+
+async function saveNow() {
+  clearTimeout(tmr);
+  try {
+    await IDB.put(snapshot());
+    pend = false;
+    $("sv").textContent = "Auto-saved at " + new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  } catch (e) {
+    $("sv").textContent = "Auto-save ready.";
+  }
+}
+
+function queueSave() {
+  if (!ready) return;
+  pend = true;
+  $("sv").textContent = "Saving...";
+  clearTimeout(tmr);
+  tmr = setTimeout(saveNow, 600);
+}
+
+$("psave").onclick = () => {
+  const b = new Blob([JSON.stringify(snapshot(), null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(b);
+  a.download = (S().title || "mcq_exam").replace(/[^\w-]+/g, "_") + ".mcq.json";
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  showToast("Project saved to file!");
+};
+
+$("popen").onchange = e => {
+  const f = e.target.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      if (!applyState(JSON.parse(r.result))) throw 0;
+      renderList();
+      preview();
+      showToast("Project opened successfully!");
+    } catch (err) {
+      alert("This file is not a valid MCQ Maker project file.");
+    }
+  };
+  r.readAsText(f);
+  e.target.value = "";
+};
+
+// Keyboard Shortcuts
+document.addEventListener("keydown", e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === "p") {
+    e.preventDefault();
+    preview();
+    window.print();
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+    e.preventDefault();
+    $("psave").click();
+  }
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === "A" || e.key === "a")) {
+    e.preventDefault();
+    $("add").click();
+  }
+});
+
+// App Initialization
+(async () => {
+  try {
+    const d = await IDB.get();
+    if (d && applyState(d)) {
+      $("sv").textContent = "Restored previous session.";
+    }
+  } catch (e) {
+    $("sv").textContent = "Session initialized.";
+  }
+  ready = true;
+  renderList();
+  preview();
+
+  // If MathJax takes longer to load, re-render preview when ready
+  if (window.MathJax && MathJax.startup && MathJax.startup.promise) {
+    MathJax.startup.promise.then(() => {
+      preview();
+    });
+  }
+})();
+</script>
+</body>
+</html>
