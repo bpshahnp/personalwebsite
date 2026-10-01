@@ -700,8 +700,56 @@ main {
   min-width: 0;
 }
 .tile.c {
-  padding: 2mm;
-  border: 0.5px dashed #cbd5e1;
+  /* Padding is set dynamically in JS based on gutter margin */
+  overflow: hidden;
+  position: relative;
+}
+
+/* Cut-line guides (visible on screen, hidden when printing) */
+.cut-v {
+  position: absolute;
+  top: 0; bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  border-left: 1.5px dashed #94a3b8;
+  pointer-events: none;
+  z-index: 10;
+}
+.cut-h {
+  position: absolute;
+  left: 0; right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 0;
+  border-top: 1.5px dashed #94a3b8;
+  pointer-events: none;
+  z-index: 10;
+}
+.cut-label {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #e2e8f0;
+  color: #64748b;
+  font-size: 9px;
+  font-family: Arial, sans-serif;
+  font-weight: 600;
+  padding: 1px 5px;
+  border-radius: 3px;
+  white-space: nowrap;
+  letter-spacing: 0.5px;
+}
+.cut-label-h {
+  top: auto;
+  left: 8px;
+  transform: none;
+}
+@media print {
+  .cut-v, .cut-h, .cut-label {
+    display: none !important;
+  }
 }
 .body {
   column-gap: 5mm;
@@ -1102,6 +1150,7 @@ dialog::backdrop {
           <option value="compact" selected>Compact (6 mm) - Recommended</option>
           <option value="normal">Normal (10 mm)</option>
           <option value="spacious">Spacious (14 mm)</option>
+          <option value="duplex">Duplex / Back-Print Safe (12 mm outer, 18 mm gutter)</option>
         </select>
       </div>
       <div>
@@ -2111,10 +2160,14 @@ let currentZoom = "fit";
 
 function getMargins(s) {
   const m = s.margin || "compact";
-  if (m === "tight") return { top: 4, side: 5, bot: 4, print: 4 };
-  if (m === "compact") return { top: 6, side: 8, bot: 6, print: 6 };
-  if (m === "normal") return { top: 10, side: 12, bot: 10, print: 10 };
-  return { top: 14, side: 16, bot: 14, print: 14 };
+  // Returns: top/bot/side = sheet outer padding (mm); print = @page margin; gutter = inner cut-edge padding per tile
+  if (m === "tight")   return { top: 4,  side: 5,  bot: 4,  print: 3,  gutter: 6  };
+  if (m === "compact") return { top: 6,  side: 8,  bot: 6,  print: 5,  gutter: 8  };
+  if (m === "normal")  return { top: 10, side: 12, bot: 10, print: 8,  gutter: 12 };
+  if (m === "spacious")return { top: 14, side: 16, bot: 14, print: 12, gutter: 16 };
+  // duplex: generous outer margin + wide gutter so front/back content clears the cut line
+  // outer side 12mm, gutter 18mm (9mm each side of cut = 18mm safe zone at cut)
+  return { top: 12, side: 12, bot: 12, print: 10, gutter: 18, duplex: true };
 }
 
 function preview() {
@@ -2182,19 +2235,55 @@ function preview() {
     const isFirstPage = sheets.length === 0;
     const sh = document.createElement("div");
     sh.className = "sheet";
-    sh.style.cssText = `width:${w}mm;height:${h}mm;padding:${mg.top}mm ${mg.side}mm ${mg.bot}mm;font-family:${s.font};font-size:${s.fs}pt`;
+    // Multi-copy: tiles handle all padding internally; outer sheet gets no padding (border shown instead)
+    const sheetPad = isMultiCopy
+      ? `0mm`
+      : `${mg.top}mm ${mg.side}mm ${mg.bot}mm`;
+    sh.style.cssText = `width:${w}mm;height:${h}mm;padding:${sheetPad};font-family:${s.font};font-size:${s.fs}pt`;
 
     const tl = document.createElement("div");
     tl.className = "tiles";
     tl.style.cssText = `grid-template-columns:repeat(${tc},minmax(0,1fr));grid-template-rows:repeat(${rows},minmax(0,1fr))`;
 
     const bodies = [];
+    const gutter = mg.gutter || mg.side;
     for (let t = 0; t < s.copies; t++) {
       const tile = document.createElement("div");
       tile.className = "tile" + (isMultiCopy ? " c" : "");
+      // Per-tile gutter: apply half of gutter to each inner edge so total gap at cut = gutter mm
+      if (isMultiCopy) {
+        const col = t % tc; // column index
+        const row = Math.floor(t / tc); // row index
+        const halfG = (gutter / 2).toFixed(1);
+        const outerSide = mg.side;
+        // Horizontal: left tile gets normal left, inner right; right tile gets inner left, normal right
+        const pl = tc > 1 ? (col === 0 ? `${outerSide}mm` : `${halfG}mm`) : `${outerSide}mm`;
+        const pr = tc > 1 ? (col === tc - 1 ? `${outerSide}mm` : `${halfG}mm`) : `${outerSide}mm`;
+        // Vertical: top tile gets normal top, inner bottom; bottom tile gets inner top, normal bottom
+        const pt = rows > 1 ? (row === 0 ? `${mg.top}mm` : `${halfG}mm`) : `${mg.top}mm`;
+        const pb = rows > 1 ? (row === rows - 1 ? `${mg.bot}mm` : `${halfG}mm`) : `${mg.bot}mm`;
+        tile.style.cssText = `padding:${pt} ${pr} ${pb} ${pl};box-sizing:border-box;`;
+      }
       tile.innerHTML = (isFirstPage ? makeExamHeader() : "") + `<div class="body" style="column-count:${isMultiCopy ? 1 : s.cols}"></div>`;
       tl.appendChild(tile);
       bodies.push(tile.querySelector(".body"));
+    }
+    // Render cut guides between tiles
+    if (isMultiCopy) {
+      if (tc > 1) {
+        // Vertical cut line (between columns)
+        const vCut = document.createElement("div");
+        vCut.className = "cut-v";
+        vCut.innerHTML = `<span class="cut-label">✂ Cut here</span>`;
+        sh.appendChild(vCut);
+      }
+      if (rows > 1) {
+        // Horizontal cut line (between rows)
+        const hCut = document.createElement("div");
+        hCut.className = "cut-h";
+        hCut.innerHTML = `<span class="cut-label cut-label-h">✂ Cut here</span>`;
+        sh.appendChild(hCut);
+      }
     }
 
     sh.appendChild(tl);
@@ -2224,7 +2313,11 @@ function preview() {
   if (s.keyMode === "separate" && qs.length) {
     const sh = document.createElement("div");
     sh.className = "sheet";
-    sh.style.cssText = `width:${w}mm;height:${h}mm;padding:${mg.top}mm ${mg.side}mm ${mg.bot}mm;font-family:${s.font};font-size:${s.fs}pt`;
+    // Multi-copy: tiles handle all padding internally; outer sheet gets no padding (border shown instead)
+    const sheetPad = isMultiCopy
+      ? `0mm`
+      : `${mg.top}mm ${mg.side}mm ${mg.bot}mm`;
+    sh.style.cssText = `width:${w}mm;height:${h}mm;padding:${sheetPad};font-family:${s.font};font-size:${s.fs}pt`;
     sh.innerHTML = keyTableHTML(s.keyExpl);
     wrap.appendChild(sh);
     sheets.push(sh);
@@ -2259,7 +2352,11 @@ function preview() {
       .sheet {
         width: ${w - mg.print * 2}mm !important;
         height: ${h - mg.print * 2}mm !important;
-        padding: 0 !important;
+        padding: ${isMultiCopy ? "0" : "0"} !important;
+        position: relative;
+      }
+      .cut-v, .cut-h, .cut-label {
+        display: none !important;
       }
     }
   `;
