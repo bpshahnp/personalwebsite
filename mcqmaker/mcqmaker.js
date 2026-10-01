@@ -858,10 +858,17 @@ function preview() {
     sheets.push(sh);
 
     const b0 = bodies[0];
+    const tile0 = b0.closest ? (b0.closest(".tile") || b0.parentElement) : b0.parentElement;
     let k = 0;
     while (idx + k < its.length) {
       b0.insertAdjacentHTML("beforeend", its[idx + k]);
-      if (b0.scrollHeight > b0.clientHeight + 1 || b0.scrollWidth > b0.clientWidth + 1) {
+      const overflows =
+        b0.scrollHeight > b0.clientHeight ||
+        b0.scrollWidth > b0.clientWidth + 1 ||
+        (tile0 && tile0.scrollHeight > tile0.clientHeight) ||
+        sh.scrollHeight > sh.clientHeight;
+
+      if (overflows) {
         if (k > 0) b0.lastElementChild.remove();
         else k = 1; // Question is larger than whole page, keep to avoid infinite loop
         break;
@@ -913,14 +920,17 @@ function preview() {
   st.textContent = `
     @page {
       size: ${s.size} ${s.or === "l" ? "landscape" : "portrait"};
-      margin: ${mg.print}mm;
+      margin: 0;
     }
     @media print {
       .sheet {
-        width: ${w - mg.print * 2}mm !important;
-        height: ${h - mg.print * 2}mm !important;
-        padding: ${isMultiCopy ? "0" : "0"} !important;
+        width: ${w}mm !important;
+        height: ${h}mm !important;
+        max-width: ${w}mm !important;
+        max-height: ${h}mm !important;
+        margin: 0 !important;
         position: relative;
+        box-sizing: border-box !important;
       }
       .cut-v, .cut-h, .cut-label {
         display: none !important;

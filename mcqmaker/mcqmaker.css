@@ -944,9 +944,14 @@ dialog::backdrop {
 
 /* Print Rules */
 @media print {
-  body {
+  *, *::before, *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  html, body {
     background: #ffffff !important;
     margin: 0 !important;
+    padding: 0 !important;
   }
   .app {
     display: block !important;
@@ -960,14 +965,20 @@ dialog::backdrop {
   }
   main {
     padding: 0 !important;
+    margin: 0 !important;
     overflow: visible !important;
     background: #ffffff !important;
     height: auto !important;
   }
   .preview-scroll {
     padding: 0 !important;
+    margin: 0 !important;
     overflow: visible !important;
     display: block !important;
+  }
+  #wrap {
+    margin: 0 !important;
+    padding: 0 !important;
   }
   .sw {
     width: 100% !important;
