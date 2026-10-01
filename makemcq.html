@@ -75,6 +75,8 @@ dialog{width:min(560px,94vw);border:1px solid var(--line);border-radius:10px;pad
     <button class="p" id="bpdf">Export PDF</button>
     <button class="p" id="bdoc">Export DOCX</button>
   </div>
+  <div class="row"><button id="psave">Save project file</button><label class="btn">Open project file<input type="file" id="popen" accept=".json,application/json" hidden></label></div>
+  <div class="note" id="sv">Auto-save is on.</div>
   <div class="note">PDF opens the print dialog: choose “Save as PDF”, margins “Default/None”, and turn off headers and footers.</div>
   <details class="imp" open>
     <summary>Import raw questions</summary>
@@ -155,6 +157,7 @@ function preview(){
   sh.style.zoom=Math.min(1,avail/px);
   let st=$("pg");if(!st){st=document.createElement("style");st.id="pg";document.head.appendChild(st)}
   st.textContent=`@page{size:${s.size} ${s.or=="l"?"landscape":"portrait"};margin:12mm}`;
+  queueSave();
 }
 ["title","or","size","cols","copies","ol","fs","key"].forEach(id=>{$(id).addEventListener("input",preview)});
 window.addEventListener("resize",preview);
@@ -390,7 +393,36 @@ window.addEventListener("load",()=>{if(window.MathJax&&MathJax.startup&&MathJax.
 const shuf=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 $("shq").onclick=()=>{shuf(qs);renderList();preview()};
 $("sho").onclick=()=>{qs.forEach(q=>{const idx=shuf(q.o.map((_,i)=>i));q.o=idx.map(i=>q.o[i]);q.a=idx.indexOf(q.a)});renderList();preview()};
-renderList();preview();
+/* ---------- Auto-save (restores your work after a refresh) ---------- */
+let ready=false,pend=false,tmr=null;
+const IDB={
+  open(){return new Promise((ok,no)=>{const r=indexedDB.open("mcq-maker",1);r.onupgradeneeded=()=>r.result.createObjectStore("s");r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)})},
+  async put(v){const d=await this.open();return new Promise((ok,no)=>{const t=d.transaction("s","readwrite");t.objectStore("s").put(v,"state");t.oncomplete=()=>{d.close();ok()};t.onerror=()=>no(t.error)})},
+  async get(){const d=await this.open();return new Promise((ok,no)=>{const r=d.transaction("s").objectStore("s").get("state");r.onsuccess=()=>{d.close();ok(r.result)};r.onerror=()=>no(r.error)})}
+};
+const NOSAVE="Auto-save is unavailable in this browser. Use Save project file to keep your work.";
+function snapshot(){const s=S();return{v:1,qs,s:{title:s.title,or:s.or,size:s.size,cols:s.cols,copies:s.copies,ol:s.ol,fs:s.fs,key:s.key}}}
+function applyState(d){
+  if(!d||!Array.isArray(d.qs))return false;
+  qs=d.qs.map(q=>({q:q.q||"",o:[0,1,2,3].map(i=>(q.o||[])[i]||""),a:q.a>=0&&q.a<4?q.a:0,ol:q.ol||"",img:q.img||null}));
+  const s=d.s||{};["title","or","size","cols","copies","ol","fs"].forEach(id=>{if(s[id]!==undefined)$(id).value=s[id]});
+  $("key").checked=!!s.key;return true;
+}
+async function saveNow(){clearTimeout(tmr);
+  try{await IDB.put(snapshot());pend=false;$("sv").textContent="Auto-saved at "+new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}
+  catch(e){$("sv").textContent=NOSAVE}}
+function queueSave(){if(!ready)return;pend=true;$("sv").textContent="Saving…";clearTimeout(tmr);tmr=setTimeout(saveNow,500)}
+window.addEventListener("beforeunload",e=>{if(pend){e.preventDefault();e.returnValue=""}});
+document.addEventListener("visibilitychange",()=>{if(document.hidden&&pend)saveNow()});
+$("psave").onclick=()=>{const b=new Blob([JSON.stringify(snapshot())],{type:"application/json"}),a=document.createElement("a");
+  a.href=URL.createObjectURL(b);a.download=(S().title||"mcq").replace(/[^\w-]+/g,"_")+".mcq.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)};
+$("popen").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=()=>{try{if(!applyState(JSON.parse(r.result)))throw 0;renderList();preview();$("sv").textContent="Project file opened."}catch(x){alert("This file is not a valid project file.")}};
+  r.readAsText(f);e.target.value=""};
+(async()=>{
+  try{const d=await IDB.get();if(d&&applyState(d))$("sv").textContent="Restored your last session."}catch(e){$("sv").textContent=NOSAVE}
+  ready=true;renderList();preview();
+})();
 </script>
 </body>
 </html>
