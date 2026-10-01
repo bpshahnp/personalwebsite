@@ -32,12 +32,12 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .imp summary{font-size:14px;font-weight:600;cursor:pointer;margin-bottom:8px}
 .imp input[type=file]{font-size:12px;max-width:100%}
 .note{font-size:12px;color:var(--mute);margin-top:6px}
-.sheet{background:#fff;margin:0 auto;box-shadow:0 2px 12px #0003;color:#000;font-family:"Times New Roman",serif}
-.tiles{display:grid;gap:0}
+.sheet{overflow:hidden;background:#fff;margin:0;transform-origin:0 0;box-shadow:0 2px 12px #0003;color:#000;font-family:"Times New Roman",serif}
+.tiles{display:grid;gap:0;height:100%}.tile{display:flex;flex-direction:column;min-height:0;min-width:0}.pl{text-align:center;font-size:12px;color:var(--mute);margin:6px 0}
 .tile.c{padding:4mm}
 .tile h2{text-align:center;margin:0 0 4px;font-size:1.25em}
 .meta{display:flex;flex-wrap:wrap;gap:2px 10px;justify-content:space-between;font-size:.9em;margin-bottom:8px;border-bottom:1px solid #000;padding-bottom:4px}
-.body{column-gap:8mm}
+.body{column-gap:8mm;column-fill:auto;flex:1;min-height:0;overflow:hidden}
 .q{break-inside:avoid;margin-bottom:8px}
 .opts{display:grid;gap:2px 10px;margin-top:3px;padding-left:14px}
 .o-row{grid-template-columns:repeat(4,minmax(0,1fr))}.o-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.o-col{grid-template-columns:minmax(0,1fr)}
@@ -47,12 +47,13 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .btn{font-size:13px;padding:8px 12px;border-radius:6px;border:1px solid var(--line);background:#fff;cursor:pointer}
 .gx{flex-wrap:wrap}.gx .th{height:30px;border:1px solid var(--line)}.gx input[type=range]{width:90px}
 .qimg{text-align:center;margin:4px 0}.qimg img{max-width:100%;height:auto}
+.sw{margin:0 auto 18px}
 .dm{text-align:center;margin:4px 0}.im svg{max-width:100%}
 dialog{width:min(560px,94vw);border:1px solid var(--line);border-radius:10px;padding:14px}
 @media(max-width:900px){.app{display:block;height:auto}aside{border:0}}
 @media print{
  body{background:#fff}.app{display:block;height:auto}aside,.noprint{display:none!important}
- main{padding:0;overflow:visible}.sheet{zoom:1!important;box-shadow:none;width:auto!important;min-height:0!important;padding:0!important;margin:0}
+ main{padding:0;overflow:visible}.sheet{zoom:1!important;box-shadow:none;padding:0!important;margin:0;transform:none!important}.sw{width:auto!important;height:auto!important;margin:0!important;break-after:page;page-break-after:always}.sw:last-child{break-after:auto;page-break-after:auto}
 }
 </style>
 </head>
@@ -72,12 +73,13 @@ dialog{width:min(560px,94vw);border:1px solid var(--line);border-radius:10px;pad
   </div>
   <div class="note" id="cnote">Columns apply when 1 copy per sheet is selected. With 2 or 4 copies, each copy is a single column.</div>
   <div class="row">
+    <button class="p" id="bprint">Print</button>
     <button class="p" id="bpdf">Export PDF</button>
     <button class="p" id="bdoc">Export DOCX</button>
   </div>
   <div class="row"><button id="psave">Save project file</button><label class="btn">Open project file<input type="file" id="popen" accept=".json,application/json" hidden></label></div>
   <div class="note" id="sv">Auto-save is on.</div>
-  <div class="note">PDF opens the print dialog: choose “Save as PDF”, margins “Default/None”, and turn off headers and footers.</div>
+  <div class="note">Print and Export PDF both open your browser’s print dialog. For printing, pick your printer; for PDF, choose “Save as PDF”. Use scale 100% and turn off headers and footers. The paper size and orientation are already set from your choices.</div>
   <details class="imp" open>
     <summary>Import raw questions</summary>
     <textarea id="raw" rows="9" placeholder="1. Which planet is the Red Planet?&#10;A) Venus&#10;B) Mars&#10;C) Jupiter&#10;D) Saturn&#10;Answer: B&#10;&#10;2. Chemical symbol for water?&#10;A. H2O  B. CO2  C. O2  D. NaCl&#10;Ans: A"></textarea>
@@ -94,7 +96,7 @@ dialog{width:min(560px,94vw);border:1px solid var(--line);border-radius:10px;pad
   <div id="list"></div>
   <div class="row"><button id="add">Add question</button><button id="clr">Clear all</button><button id="shq">Shuffle questions</button><button id="sho">Shuffle options</button></div>
 </aside>
-<main><div id="wrap"><div class="sheet" id="sheet"></div></div></main>
+<main><div id="wrap"></div></main>
 </div>
 <dialog id="pd"><h3 style="margin-top:0">Plot a graph</h3>
   <label>Functions of x, one per line (e.g. y = x^2 - 4, sin(x), 2x+1, sqrt(x), ln(x))</label>
@@ -139,29 +141,53 @@ $("list").addEventListener("click",e=>{const d=e.target.dataset;
 $("add").onclick=()=>{qs.push({q:"",o:["","","",""],a:0});renderList();preview()};
 $("clr").onclick=()=>{if(confirm("Delete all questions?")){qs=[];renderList();preview()}};
 
-function paperHTML(s,c){
-  let h=`<div class="tile${c?" c":""}"><h2>${esc(s.title)}</h2><div class="meta"><span>Name: ____________</span><span>Section: ______</span><span>Date: ________</span></div>
-  <div class="body" style="column-count:${c?1:s.cols}">`;
-  qs.forEach((q,i)=>{h+=`<div class="q"><div><b>${i+1}.</b> ${rich(q.q)}</div>${q.img?`<div class="qimg"><img src="${q.img.src}" style="width:${q.img.wmm}mm"></div>`:""}<div class="opts o-${lay(q,s)}">${q.o.map((o,j)=>`<span class="op"><span>(${L[j]})</span><span class="ot">${rich(o,1)}</span></span>`).join("")}</div></div>`});
-  h+=`</div>`+(s.key&&qs.length?`<div class="key"><b>Answer key:</b> ${keyText()}</div>`:"")+`</div>`;
-  return h;
-}
+function qHTML(q,i,s){return `<div class="q"><div><b>${i+1}.</b> ${rich(q.q)}</div>${q.img?`<div class="qimg"><img src="${q.img.src}" style="width:${q.img.wmm}mm;aspect-ratio:${q.img.nw}/${q.img.nh}"></div>`:""}<div class="opts o-${lay(q,s)}">${q.o.map((o,j)=>`<span class="op"><span>(${L[j]})</span><span class="ot">${rich(o,1)}</span></span>`).join("")}</div></div>`}
 function dimsMM(s){const d=s.size=="A4"?[210,297]:[215.9,279.4];return s.or=="l"?[d[1],d[0]]:d}
 function preview(){
-  const s=S(),[w,h]=dimsMM(s),c=s.copies>1;
+  const s=S(),[w,h]=dimsMM(s),c=s.copies>1,tc=tileCols(s),rows=s.copies/tc;
   $("cols").disabled=c;
-  const sh=$("sheet");
-  sh.style.width=w+"mm";sh.style.minHeight=h+"mm";sh.style.padding="12mm";sh.style.fontSize=s.fs+"pt";
-  sh.innerHTML=`<div class="tiles" style="grid-template-columns:repeat(${tileCols(s)},1fr)">${Array.from({length:s.copies},()=>paperHTML(s,c)).join("")}</div>`;
-  const px=w*3.7795+48,avail=$("wrap").parentElement.clientWidth-40;
-  sh.style.zoom=Math.min(1,avail/px);
+  const its=qs.map((q,i)=>qHTML(q,i,s));
+  if(s.key&&qs.length)its.push(`<div class="key"><b>Answer key:</b> ${keyText()}</div>`);
+  const wrap=$("wrap");wrap.innerHTML="";
+  const sheets=[];let idx=0;
+  do{
+    const first=!sheets.length,sh=document.createElement("div");
+    sh.className="sheet";sh.style.cssText=`width:${w}mm;height:${h}mm;padding:12mm 12mm 14mm;font-size:${s.fs}pt`;
+    const tl=document.createElement("div");tl.className="tiles";
+    tl.style.cssText=`grid-template-columns:repeat(${tc},minmax(0,1fr));grid-template-rows:repeat(${rows},minmax(0,1fr))`;
+    const bodies=[];
+    for(let t=0;t<s.copies;t++){
+      const tile=document.createElement("div");tile.className="tile"+(c?" c":"");
+      tile.innerHTML=(first?`<h2>${esc(s.title)}</h2><div class="meta"><span>Name: ____________</span><span>Section: ______</span><span>Date: ________</span></div>`:"")+`<div class="body" style="column-count:${c?1:s.cols}"></div>`;
+      tl.appendChild(tile);bodies.push(tile.querySelector(".body"));
+    }
+    sh.appendChild(tl);wrap.appendChild(sh);sheets.push(sh);
+    // add questions one by one until the page is full; the rest go to the next page
+    const b0=bodies[0];let k=0;
+    while(idx+k<its.length){
+      b0.insertAdjacentHTML("beforeend",its[idx+k]);
+      if(b0.scrollHeight>b0.clientHeight+1||b0.scrollWidth>b0.clientWidth+1){
+        if(k>0)b0.lastElementChild.remove();else k=1;
+        break;
+      }
+      k++;
+    }
+    idx+=k;
+    for(let t=1;t<bodies.length;t++)bodies[t].innerHTML=b0.innerHTML;
+  }while(idx<its.length&&sheets.length<100);
+  const z=Math.min(1,($("wrap").parentElement.clientWidth-40)/(w*3.7795));
+  sheets.forEach((sh,i)=>{
+    const sw=document.createElement("div");sw.className="sw";sw.style.cssText=`width:${w*z}mm;height:${h*z}mm`;
+    wrap.insertBefore(sw,sh);sw.appendChild(sh);sh.style.transform=`scale(${z})`;
+    const l=document.createElement("div");l.className="pl noprint";l.textContent=`Page ${i+1} of ${sheets.length}`;wrap.insertBefore(l,sw)});
   let st=$("pg");if(!st){st=document.createElement("style");st.id="pg";document.head.appendChild(st)}
-  st.textContent=`@page{size:${s.size} ${s.or=="l"?"landscape":"portrait"};margin:12mm}`;
+  st.textContent=`@page{size:${s.size} ${s.or=="l"?"landscape":"portrait"};margin:12mm}@media print{.sheet{width:${w-24}mm!important;height:${h-26}mm!important}}`;
   queueSave();
 }
 ["title","or","size","cols","copies","ol","fs","key"].forEach(id=>{$(id).addEventListener("input",preview)});
 window.addEventListener("resize",preview);
 $("bpdf").onclick=()=>{preview();window.print()};
+$("bprint").onclick=()=>{preview();window.print()};
 
 $("bdoc").onclick=async()=>{
   if(!window.docx){alert("The DOCX library could not load. Check your internet connection.");return}
