@@ -747,11 +747,23 @@ function preview() {
 
   $("cols").disabled = isMultiCopy;
 
-  // Update mode tags
+  // Update mode tags & toggle button
   const isTeacher = s.mode === "teacher";
   const tag = $("preview-mode-tag");
-  tag.textContent = isTeacher ? "👨‍🏫 Teacher Master Copy" : "🎓 Student Copy";
-  tag.style.background = isTeacher ? "var(--success)" : "rgba(255,255,255,0.1)";
+  if (tag) {
+    tag.innerHTML = isTeacher
+      ? '<span class="status-dot"></span><span>Teacher Copy</span>'
+      : '<span class="status-dot"></span><span>Student Copy</span>';
+    tag.className = "preview-badge " + (isTeacher ? "badge-teacher" : "badge-student");
+    tag.style.background = "";
+  }
+  const toggleBtn = $("btn-quick-toggle");
+  if (toggleBtn) {
+    toggleBtn.innerHTML = isTeacher
+      ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg><span>Student View</span>'
+      : '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg><span>Teacher View</span>';
+    toggleBtn.classList.toggle("is-active", isTeacher);
+  }
 
   // Compute Full Marks display
   const calculatedMarks = totalMarksCalc();
@@ -996,7 +1008,6 @@ $("z-100").onclick = () => {
 $("btn-quick-toggle").onclick = () => {
   const newMode = $("mode").value === "student" ? "teacher" : "student";
   $("mode").value = newMode;
-  $("btn-quick-toggle").textContent = newMode === "teacher" ? "Student View" : "Teacher View";
   preview();
 };
 
