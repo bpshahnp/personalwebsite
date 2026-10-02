@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Shapes</title>
+<title>Geometry Studio</title>
 <style>
 :root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
 --bg:#f4f5f7;--panel:#fff;--ink:#1c2230;--mute:#667085;--line:#d9dde5;--accent:#3b5bdb;--accentbg:#e7ecff}
@@ -379,11 +379,13 @@ addEventListener('keydown',e=>{
  else if(e.key==='Delete'||e.key==='Backspace')$('del').click();
  else if(e.key==='Enter'&&pend.length)finishPoly();
  else if(e.key==='Escape'){pend=[];draft=null;pick([]);render()}});
-function exportSVG(){
+function exportSVG(transparent,scale=1){
  exporting=true;const b=bounds(),body=shapes.map((s,i)=>shapeSVG(s,i,false).replace(/ data-i="\d+" style="[^"]*"/,'')).join('')+(($('meas').checked)?shapes.map(labels).join(''):'')+(($('vn_on').checked)?shapes.map(nameSVG).join(''):'')+marks()+angleSVG();exporting=false;
- return `<svg xmlns="http://www.w3.org/2000/svg" width="${b.w}" height="${b.h}" viewBox="${b.x} ${b.y} ${b.w} ${b.h}"><rect x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" fill="#fff"/>${body}</svg>`}
+ const bg=transparent?'':`<rect x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" fill="#fff"/>`;
+ const W=Math.round(b.w*scale),H=Math.round(b.h*scale);
+ return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="${b.x} ${b.y} ${b.w} ${b.h}" style="font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif">${bg}${body}</svg>`}
 function save(url,name){const a=document.createElement('a');a.href=url;a.download=name;a.click()}
-$('exsvg').onclick=()=>save(URL.createObjectURL(new Blob([exportSVG()],{type:'image/svg+xml'})),'figure.svg');
+$('exsvg').onclick=()=>save(URL.createObjectURL(new Blob([exportSVG(false)],{type:'image/svg+xml'})),'figure.svg');
 $('expng').onclick=async()=>{try{save(URL.createObjectURL(await pngBlob()),'figure.png')}catch(_){toast('PNG export failed')}};
 let clip=null,pasteN=0,toastT;
 function toast(m){const e=$('toast');e.textContent=m;e.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove('on'),1800)}
@@ -408,8 +410,10 @@ document.addEventListener('paste',e=>{if(e.target.tagName==='INPUT')return;e.pre
 function bounds(){if(!shapes.length){const r=S.getBoundingClientRect();return{x:0,y:0,w:r.width,h:r.height}}
  const bx=shapes.map(sbox),x0=Math.min(...bx.map(b=>b[0])),y0=Math.min(...bx.map(b=>b[1])),x1=Math.max(...bx.map(b=>b[2])),y1=Math.max(...bx.map(b=>b[3])),m=45;
  return{x:x0-m,y:y0-m,w:x1-x0+2*m,h:y1-y0+2*m}}
-function pngBlob(){return new Promise((res,rej)=>{const b=bounds(),img=new Image(),svg=exportSVG();
- img.onload=()=>{const c=document.createElement('canvas');c.width=b.w*2;c.height=b.h*2;const x=c.getContext('2d');x.scale(2,2);x.drawImage(img,0,0,b.w,b.h);c.toBlob(bl=>bl?res(bl):rej(new Error('blob')),'image/png')};
+function pngBlob(){return new Promise((res,rej)=>{
+ const b=bounds(),scale=Math.max(4,Math.round((window.devicePixelRatio||1)*2)),W=Math.round(b.w*scale),H=Math.round(b.h*scale);
+ const img=new Image(),svg=exportSVG(true,scale);
+ img.onload=()=>{const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');x.drawImage(img,0,0,W,H);c.toBlob(bl=>bl?res(bl):rej(new Error('blob')),'image/png')};
  img.onerror=rej;img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)})}
 $('cpi').onclick=async()=>{
  if(!shapes.length){toast('Nothing to copy');return}
