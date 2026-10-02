@@ -1984,32 +1984,33 @@ async function renderLibrary() {
 
   if (!filtered.length) {
     listEl.innerHTML = allPapers.length
-      ? '<div style="color:var(--mute);padding:14px;text-align:center;font-size:12px">No papers match your search.</div>'
-      : '<div style="color:var(--mute);padding:14px;text-align:center;font-size:12px">No saved papers yet. Click "New Blank Paper" to start.</div>';
+      ? '<div class="lib-empty-msg">No papers match your search.</div>'
+      : '<div class="lib-empty-msg">No saved papers yet.<br>Click <strong>New Paper</strong> to get started.</div>';
     return;
   }
 
   listEl.innerHTML = filtered.map(p => {
     const isActive = p.id === currentPaperId;
+    const metaParts = [];
+    if (p.subject) metaParts.push(esc(p.subject));
+    if (p.grade) metaParts.push(esc(p.grade));
+    metaParts.push(`${p.qCount || 0} Questions`);
+    metaParts.push(`${p.totalMarks || 0} Marks`);
+
     return `
       <div class="paper-card ${isActive ? 'is-active' : ''}">
         <div class="paper-card-top">
           <span class="paper-card-title" title="${esc(p.title)}">
             ${isActive ? '<span class="active-badge">Editing</span> ' : ''}${esc(p.title || 'Untitled Paper')}
           </span>
-          <span style="font-size:11px;color:var(--mute)">${timeAgo(new Date(p.updatedAt))}</span>
+          <span class="paper-card-time">${timeAgo(new Date(p.updatedAt))}</span>
         </div>
-        <div class="paper-card-meta">
-          ${p.subject ? `<span>📘 ${esc(p.subject)}</span> •` : ''}
-          ${p.grade ? `<span>🏫 ${esc(p.grade)}</span> •` : ''}
-          <span>📝 ${p.qCount || 0} Qs</span> •
-          <span>🎯 ${p.totalMarks || 0} Marks</span>
-        </div>
+        <div class="paper-card-meta">${metaParts.join(' · ')}</div>
         <div class="paper-card-actions">
-          ${!isActive ? `<button class="btn btn-sm btn-primary" data-load-paper="${p.id}">📂 Open</button>` : ''}
-          <button class="btn btn-sm" data-dup-paper="${p.id}" title="Duplicate this paper">📑 Duplicate</button>
-          <button class="btn btn-sm" data-dl-paper="${p.id}" title="Download .json file">💾 JSON</button>
-          ${allPapers.length > 1 ? `<button class="btn btn-sm btn-danger" data-del-paper="${p.id}" title="Delete paper">🗑️</button>` : ''}
+          ${!isActive ? `<button class="btn btn-sm btn-primary" data-load-paper="${p.id}">Open</button>` : ''}
+          <button class="btn btn-sm" data-dup-paper="${p.id}" title="Duplicate this paper">Duplicate</button>
+          <button class="btn btn-sm" data-dl-paper="${p.id}" title="Download .json backup">JSON</button>
+          ${allPapers.length > 1 ? `<button class="btn btn-sm btn-danger" data-del-paper="${p.id}" title="Delete paper" style="margin-left:auto">Delete</button>` : ''}
         </div>
       </div>
     `;

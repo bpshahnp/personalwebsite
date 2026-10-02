@@ -52,7 +52,7 @@ window.MathJax = {
 <aside>
   <div class="brand">
     <div class="brand-title">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
         <polyline points="14 2 14 8 20 8"></polyline>
         <line x1="16" y1="13" x2="8" y2="13"></line>
@@ -61,49 +61,74 @@ window.MathJax = {
       </svg>
       MCQ Paper Maker
     </div>
-    <div style="display:flex;align-items:center;gap:6px">
-      <button class="btn btn-sm" id="btn-quick-library" title="Open Saved Papers Library">📁 Library</button>
-      <div class="brand-badge">Pro Suite</div>
-    </div>
+    <div class="brand-badge">Pro Suite</div>
   </div>
 
   <div class="tabs">
-    <button class="tab-btn active" data-tab="library">📁 Library (<span id="lib-count-badge">0</span>)</button>
-    <button class="tab-btn" data-tab="setup">⚙️ Setup</button>
-    <button class="tab-btn" data-tab="questions">📝 Questions (<span id="qcount">0</span>)</button>
-    <button class="tab-btn" data-tab="import">📥 Import</button>
-    <button class="tab-btn" data-tab="export">🖨️ Export</button>
+    <button class="tab-btn active" data-tab="library">
+      Library <span class="tab-count" id="lib-count-badge">0</span>
+    </button>
+    <button class="tab-btn" data-tab="setup">Setup</button>
+    <button class="tab-btn" data-tab="questions">
+      Questions <span class="tab-count" id="qcount">0</span>
+    </button>
+    <button class="tab-btn" data-tab="import">Import</button>
+    <button class="tab-btn" data-tab="export">Export</button>
   </div>
 
   <!-- Tab 0: Saved Papers Library & Storage -->
   <div class="tab-pane active" id="tab-library">
-    <div style="display:flex;gap:6px;margin-bottom:12px">
-      <button class="btn btn-primary" id="btn-new-paper" style="flex:1">➕ New Blank Paper</button>
-      <button class="btn" id="btn-save-as-copy" title="Save a copy of current paper">📑 Save as Copy</button>
+
+    <!-- Action Bar -->
+    <div class="lib-action-bar">
+      <button class="btn btn-primary lib-new-btn" id="btn-new-paper">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        New Paper
+      </button>
+      <button class="btn lib-copy-btn" id="btn-save-as-copy" title="Save a copy of current paper">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+        Save Copy
+      </button>
     </div>
 
     <!-- Active Paper Card -->
     <div class="active-paper-box" id="active-paper-indicator">
-      <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--primary);letter-spacing:0.5px">Currently Editing:</div>
-      <div style="font-size:14px;font-weight:700;color:var(--ink);margin:2px 0" id="active-paper-title-display">Untitled Paper</div>
-      <div style="font-size:11.5px;color:var(--mute)" id="active-paper-meta-display">0 Questions • Auto-saving active</div>
+      <div class="active-paper-label">
+        <span class="active-dot"></span>
+        Currently Editing
+      </div>
+      <div class="active-paper-title" id="active-paper-title-display">Untitled Paper</div>
+      <div class="active-paper-meta" id="active-paper-meta-display">0 Questions · Auto-saving active</div>
     </div>
 
-    <div class="section-hdr">Saved Papers (<span id="lib-count">0</span>)</div>
-    <div class="search-bar" style="margin-bottom:8px">
-      <input type="text" id="lib-search" placeholder="🔍 Search saved papers...">
+    <!-- Saved Papers -->
+    <div class="lib-section-header">
+      <span>Saved Papers</span>
+      <span class="lib-count-chip" id="lib-count">0</span>
+    </div>
+    <div class="lib-search-wrap">
+      <svg class="lib-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <input type="text" id="lib-search" placeholder="Search papers…" class="lib-search-input">
     </div>
 
-    <div id="library-list" style="margin-bottom:14px"></div>
+    <div id="library-list"></div>
 
-    <div class="section-hdr">Storage Backup &amp; Info</div>
-    <div class="field" style="font-size:11.5px;color:var(--mute);margin-bottom:8px">
-      <span id="storage-usage-label">Storage: Calculating...</span>
+    <!-- Storage Section -->
+    <div class="lib-storage-section">
+      <div class="lib-storage-label" id="storage-usage-label">Storage: Calculating…</div>
+      <div class="lib-storage-actions">
+        <button class="btn btn-sm" id="btn-backup-library">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          Export All
+        </button>
+        <label class="btn btn-sm">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          Restore
+          <input type="file" id="input-restore-library" accept=".json,application/json" hidden>
+        </label>
+      </div>
     </div>
-    <div class="btn-group">
-      <button class="btn btn-sm" id="btn-backup-library">📥 Export All Papers (.json)</button>
-      <label class="btn btn-sm">📤 Restore All Papers<input type="file" id="input-restore-library" accept=".json,application/json" hidden></label>
-    </div>
+
   </div>
 
   <!-- Tab 1: Setup -->
