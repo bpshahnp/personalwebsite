@@ -411,15 +411,12 @@ window.MathJax = {
     </div>
 
     <!-- Right: Controls -->
-    <div class="preview-actions" style="gap:6px;flex-shrink:0">
-      <div class="top-select-wrap">
-        <select id="top-key-mode" title="Answer Key mode">
-          <option value="none" selected>Key: Off</option>
-          <option value="end">Key: End</option>
-          <option value="separate">Key: Page</option>
-        </select>
-        <svg class="select-chevron" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
-      </div>
+    <div class="preview-actions" style="gap:8px;flex-shrink:0">
+      <select id="top-key-mode" class="top-key-select" title="Answer Key mode">
+        <option value="none" selected>Key: Off</option>
+        <option value="end">Key: End</option>
+        <option value="separate">Key: Page</option>
+      </select>
       <button class="preview-btn mode-toggle-btn" id="btn-quick-toggle" title="Switch Student / Teacher View">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
         <span>Teacher</span>
