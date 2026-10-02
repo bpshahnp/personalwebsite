@@ -387,43 +387,46 @@ window.MathJax = {
 <!-- Main Preview Area -->
 <main>
   <div class="preview-toolbar">
-    <div class="preview-actions">
+    <!-- Left: Mode + Page info -->
+    <div class="preview-actions" style="gap:6px;flex-shrink:0">
       <span class="preview-badge badge-student" id="preview-mode-tag">
         <span class="status-dot"></span>
         <span>Student Copy</span>
       </span>
-      <span class="preview-badge" id="page-count-badge">Pages: 1</span>
+      <span class="preview-badge" id="page-count-badge" style="color:#64748b;background:transparent;border-color:transparent">Pages: 1</span>
     </div>
 
+    <!-- Center: Zoom controls -->
     <div class="preview-zoom-group">
-      <button class="preview-btn" id="z-out" title="Zoom Out">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+      <button class="preview-btn" id="z-out" title="Zoom Out (−)">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
       </button>
       <span id="z-val">Fit</span>
-      <button class="preview-btn" id="z-in" title="Zoom In">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+      <button class="preview-btn" id="z-in" title="Zoom In (+)">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
       </button>
       <div class="zoom-divider"></div>
-      <button class="preview-btn text-btn" id="z-fit" title="Fit to Screen">Fit</button>
-      <button class="preview-btn text-btn" id="z-100" title="100% Actual Size">100%</button>
+      <button class="preview-btn text-btn" id="z-fit" title="Fit to screen">Fit</button>
+      <button class="preview-btn text-btn" id="z-100" title="Actual size">100%</button>
     </div>
 
-    <div class="preview-actions">
+    <!-- Right: Controls -->
+    <div class="preview-actions" style="gap:6px;flex-shrink:0">
       <div class="top-select-wrap">
-        <select id="top-key-mode" title="Answer Key Display on Paper">
-          <option value="none" selected>Key: Hidden (Off)</option>
-          <option value="end">Key: Show at End</option>
-          <option value="separate">Key: Separate Page</option>
+        <select id="top-key-mode" title="Answer Key mode">
+          <option value="none" selected>Key: Off</option>
+          <option value="end">Key: End</option>
+          <option value="separate">Key: Page</option>
         </select>
-        <svg class="select-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        <svg class="select-chevron" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
       </div>
       <button class="preview-btn mode-toggle-btn" id="btn-quick-toggle" title="Switch Student / Teacher View">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-        <span>Teacher View</span>
+        <span>Teacher</span>
       </button>
-      <button class="preview-btn primary-print-btn" id="btn-top-print" title="Print Paper or Save to PDF">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-        <span>Print / PDF</span>
+      <button class="preview-btn primary-print-btn" id="btn-top-print" title="Print or Save as PDF">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+        <span>Print</span>
       </button>
     </div>
   </div>

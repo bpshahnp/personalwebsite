@@ -734,17 +734,20 @@ main {
 }
 
 .preview-toolbar {
-  height: 52px;
-  padding: 0 16px;
+  height: 48px;
+  min-height: 48px;
+  padding: 0 14px;
   background: #0f172a;
   color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
   flex-shrink: 0;
+  flex-wrap: nowrap;
+  overflow: hidden;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   z-index: 20;
 }
 .preview-actions {
