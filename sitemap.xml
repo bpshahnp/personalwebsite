@@ -24,6 +24,12 @@
   <loc>https://bholaprasadshah.com.np/video.html</loc>
   </url>
   <url>
+    <loc>https://bholaprasadshah.com.np/mcqmaker</loc>
+    <lastmod>2026-10-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://bholaprasadshah.com.np/privacy.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>

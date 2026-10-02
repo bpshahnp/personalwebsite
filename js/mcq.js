@@ -1284,6 +1284,8 @@ function renderQuestion() {
   answerReport.innerHTML = "";
   nextQuestionBtn.hidden = true;
   nextQuestionBtn.textContent = currentIndex === total - 1 ? "See results" : "Next question";
+  const mcqShareRowEl = document.getElementById("mcqShareRow");
+  if (mcqShareRowEl) mcqShareRowEl.hidden = true;
   hideLeaveConfirm();
 
   // Fresh order every time the question is shown, so a repeat attempt can't
@@ -1360,6 +1362,10 @@ function selectAnswer(chosenIndex) {
 
   // Mark rail item as correct or incorrect
   updateRailItem(currentIndex, correct);
+
+  // Show share-question button now that the answer is revealed
+  const mcqShareRow = document.getElementById("mcqShareRow");
+  if (mcqShareRow) mcqShareRow.hidden = false;
 
   userAnswers.push({
     question: q.question,
@@ -1554,6 +1560,12 @@ function renderReview() {
       <p class="review-answer">Your answer: <strong>${escapeHtml(a.options[a.chosenIndex] ?? "—")}</strong></p>
       ${!isCorrect ? `<p class="review-answer">Correct answer: <strong>${escapeHtml(a.options[a.correctIndex] ?? "—")}</strong></p>` : ""}
       ${a.explanation ? `<p class="mcq-explanation">${escapeHtml(a.explanation)}</p>` : ""}
+      <div class="review-share-row">
+        <button type="button" class="btn-mcq-share btn-mcq-share-sm" data-review-idx="${idx}" aria-label="Share this question">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          Share
+        </button>
+      </div>
     `;
     reviewList.appendChild(item);
   });
@@ -1699,4 +1711,119 @@ function escapeHtml(str) {
   const div = document.createElement("div");
   div.textContent = str;
   return div.innerHTML;
+}
+
+/* ============================================================
+   MCQ Question Share Modal
+   ============================================================ */
+
+const mcqShareModal   = document.getElementById("mcqShareModal");
+const mcqSharePreview = document.getElementById("mcqSharePreview");
+const mcqShareClose   = document.getElementById("mcqShareModalClose");
+
+// Format a full question block for sharing
+function buildShareText(q) {
+  const labels = ["A", "B", "C", "D"];
+  const options = (q.options || []).map((opt, i) => {
+    const marker = i === q.correctIndex ? "✅" : `${labels[i]})`;
+    return `${marker} ${opt}`;
+  }).join("\n");
+  let text = `📝 ${q.question}\n\n${options}`;
+  if (q.explanation) text += `\n\n💡 ${q.explanation}`;
+  text += "\n\n🔗 Practice more at: https://bholaprasadshah.com.np/mcq.html";
+  return text;
+}
+
+function openMcqShareModal(q) {
+  if (!mcqShareModal) return;
+  const text = buildShareText(q);
+  const encoded = encodeURIComponent(text);
+  const siteUrl = encodeURIComponent("https://bholaprasadshah.com.np/mcq.html");
+
+  // Preview (truncated for readability)
+  if (mcqSharePreview) {
+    mcqSharePreview.textContent = text.length > 220 ? text.slice(0, 220) + "…" : text;
+  }
+
+  // Build share URLs
+  const wa = document.getElementById("mcqShareWhatsApp");
+  const fb = document.getElementById("mcqShareFacebook");
+  const tg = document.getElementById("mcqShareTelegram");
+  const tw = document.getElementById("mcqShareTwitter");
+  const cp = document.getElementById("mcqShareCopy");
+
+  if (wa) wa.href = `https://wa.me/?text=${encoded}`;
+  if (fb) fb.href = `https://www.facebook.com/sharer/sharer.php?u=${siteUrl}&quote=${encoded}`;
+  if (tg) tg.href = `https://t.me/share/url?url=${siteUrl}&text=${encoded}`;
+  if (tw) tw.href = `https://twitter.com/intent/tweet?text=${encoded}`;
+
+  if (cp) {
+    cp.onclick = () => {
+      navigator.clipboard.writeText(text).then(() => {
+        const orig = cp.textContent;
+        cp.textContent = "Copied!";
+        setTimeout(() => { cp.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy text`; }, 1800);
+      }).catch(() => {
+        // Fallback
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+        cp.textContent = "Copied!";
+        setTimeout(() => { cp.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy text`; }, 1800);
+      });
+    };
+  }
+
+  mcqShareModal.hidden = false;
+  document.body.classList.add("mcq-share-modal-open");
+  if (mcqShareClose) mcqShareClose.focus();
+}
+
+function closeMcqShareModal() {
+  if (!mcqShareModal) return;
+  mcqShareModal.hidden = true;
+  document.body.classList.remove("mcq-share-modal-open");
+}
+
+// Close handlers
+if (mcqShareClose) mcqShareClose.addEventListener("click", closeMcqShareModal);
+if (mcqShareModal) {
+  mcqShareModal.addEventListener("click", (e) => {
+    if (e.target === mcqShareModal) closeMcqShareModal();
+  });
+}
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && mcqShareModal && !mcqShareModal.hidden) closeMcqShareModal();
+});
+
+// Wire up the in-quiz share button
+const mcqShareBtn = document.getElementById("mcqShareBtn");
+if (mcqShareBtn) {
+  mcqShareBtn.addEventListener("click", () => {
+    const q = quizQuestions[currentIndex];
+    if (q) openMcqShareModal(q);
+  });
+}
+
+// Wire up review-list share buttons (event delegation)
+if (reviewList) {
+  reviewList.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-review-idx]");
+    if (!btn) return;
+    const idx = Number(btn.dataset.reviewIdx);
+    const a = userAnswers[idx];
+    if (!a) return;
+    // Build a q-shaped object for the share formatter
+    openMcqShareModal({
+      question:     a.question,
+      options:      a.options,
+      correctIndex: a.correctIndex,
+      explanation:  a.explanation,
+    });
+  });
 }

@@ -1784,6 +1784,153 @@ img { max-width: 100%; display: block; }
   stroke: #ffffff;
 }
 
+/* Admin Tab Badges & In-Tab Notification Toasts */
+.admin-tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  border-radius: 9999px;
+  background: #ef4444;
+  color: #ffffff;
+  line-height: 1;
+  margin-left: 4px;
+  box-shadow: 0 1px 4px rgba(239, 68, 68, 0.4);
+  animation: badgePop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.admin-tab.active .admin-tab-badge {
+  background: #ffffff;
+  color: var(--orange);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+@keyframes badgePop {
+  0% { transform: scale(0.6); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+#adminToastContainer {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 100000;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 390px;
+  width: calc(100vw - 36px);
+  pointer-events: none;
+}
+.admin-toast {
+  pointer-events: auto;
+  background: #0f172a;
+  color: #f8fafc;
+  border-radius: 12px;
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  animation: adminToastSlide 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.admin-toast.fade-out {
+  opacity: 0;
+  transform: translateY(-8px) scale(0.96);
+}
+.admin-toast-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.admin-toast-icon.message {
+  background: rgba(59, 130, 246, 0.18);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+.admin-toast-icon.subscription {
+  background: rgba(245, 158, 11, 0.18);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+.admin-toast-body {
+  flex: 1;
+  min-width: 0;
+}
+.admin-toast-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 2px;
+}
+.admin-toast-text {
+  font-size: 0.82rem;
+  color: #94a3b8;
+  line-height: 1.4;
+  margin-bottom: 8px;
+  word-break: break-word;
+}
+.admin-toast-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.admin-toast-btn {
+  background: var(--orange);
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 5px 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.admin-toast-btn:hover {
+  background: #d46b38;
+}
+.admin-toast-close {
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 2px 6px;
+  font-size: 1.2rem;
+  line-height: 1;
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+.admin-toast-close:hover {
+  color: #f1f5f9;
+}
+@keyframes adminToastSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-16px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@media (max-width: 600px) {
+  #adminToastContainer {
+    top: 12px;
+    right: 12px;
+    left: 12px;
+    width: auto;
+    max-width: none;
+  }
+}
+
 /* Bulk import collapsible card */
 .admin-import {
   background: var(--white);

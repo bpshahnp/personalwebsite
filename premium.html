@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -28,7 +28,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     /* ============================================================
-       PREMIUM DESIGN SYSTEM — Executive Study & Examination Suite
+       PREMIUM DESIGN SYSTEM â€” Executive Study & Examination Suite
        ============================================================ */
     :root {
       --gold-primary: #f59e0b;
@@ -1260,7 +1260,7 @@
         <a href="video.html">Video Hub</a>
         <a href="leaderboard.html">Leaderboard</a>
         <div class="dropdown">
-          <button class="dropdown-toggle" type="button" aria-haspopup="true" aria-expanded="false">More ▾</button>
+          <button class="dropdown-toggle" type="button" aria-haspopup="true" aria-expanded="false">More â–¾</button>
           <div class="dropdown-menu">
             <a href="resources.html">Additional Resources</a>
             <a href="index.html#updates">Latest Updates</a>
@@ -1301,7 +1301,7 @@
       <a href="video.html">Video Hub</a>
       <a href="leaderboard.html">Leaderboard</a>
       <div class="dropdown">
-        <button class="dropdown-toggle" type="button">More ▾</button>
+        <button class="dropdown-toggle" type="button">More â–¾</button>
         <div class="dropdown-menu">
           <a href="resources.html">Additional Resources</a>
           <a href="index.html#updates">Latest Updates</a>
@@ -1434,7 +1434,7 @@
         </div>
 
         <div class="category-grid" id="premiumCategoriesGrid">
-          <p class="quiz-muted">Loading categories…</p>
+          <p class="quiz-muted">Loading categoriesâ€¦</p>
         </div>
       </div>
 
@@ -1498,34 +1498,53 @@
 
     <!-- QUIZ RESULTS CARD -->
     <div id="premiumQuizResults" class="premium-card" style="display:none; max-width:540px; margin:0 auto; text-align:center;">
-      <div style="width:64px; height:64px; margin:0 auto 16px; border-radius:50%; background:linear-gradient(135deg, #fef3c7, #fde68a); border:2px solid #f59e0b; display:inline-flex; align-items:center; justify-content:center; color:#b45309; box-shadow:0 6px 20px rgba(245, 158, 11, 0.25);">
+      <div style="width:68px; height:68px; margin:0 auto 18px; border-radius:50%; background:linear-gradient(135deg, #fef3c7, #fde68a); border:2px solid #f59e0b; display:inline-flex; align-items:center; justify-content:center; color:#b45309; box-shadow:0 8px 24px rgba(245,158,11,0.3);">
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
       </div>
       <h2 style="font-family:'Fraunces',serif; font-size:1.6rem; margin-bottom:8px;">Assessment Completed!</h2>
       <p style="color:#64748b; margin-bottom:24px; font-size:0.92rem;">Here is your performance summary for this premium examination session:</p>
-      
-      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:14px; margin-bottom:26px;">
-        <div style="background:var(--cream, #f8fafc); padding:18px 14px; border-radius:14px; border:1px solid var(--line, #e2e8f0);">
-          <div style="font-size:0.75rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px;">SCORE</div>
-          <div style="font-size:1.75rem; font-weight:800; color:#0f172a;" id="resultsFinalScore">0 pts</div>
+
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:28px;">
+
+        <!-- SCORE -->
+        <div style="background:linear-gradient(135deg,rgba(232,131,78,0.13),rgba(232,131,78,0.04)); padding:20px 10px 16px; border-radius:16px; border:1px solid rgba(232,131,78,0.35); position:relative; overflow:hidden;">
+          <div style="position:absolute;top:-14px;right:-14px;width:54px;height:54px;border-radius:50%;background:rgba(232,131,78,0.08);"></div>
+          <div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-bottom:8px;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#e8834e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <span style="font-size:0.68rem;font-weight:700;color:#e8834e;text-transform:uppercase;letter-spacing:0.07em;">Score</span>
+          </div>
+          <div style="font-size:1.55rem;font-weight:800;color:#e8834e;line-height:1;" id="resultsFinalScore">0 pts</div>
         </div>
-        <div style="background:var(--cream, #f8fafc); padding:18px 14px; border-radius:14px; border:1px solid var(--line, #e2e8f0);">
-          <div style="font-size:0.75rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px;">ACCURACY</div>
-          <div style="font-size:1.75rem; font-weight:800; color:#10b981;" id="resultsCorrectCount">0 / 0</div>
+
+        <!-- ACCURACY -->
+        <div style="background:linear-gradient(135deg,rgba(16,185,129,0.13),rgba(16,185,129,0.04)); padding:20px 10px 16px; border-radius:16px; border:1px solid rgba(16,185,129,0.35); position:relative; overflow:hidden;">
+          <div style="position:absolute;top:-14px;right:-14px;width:54px;height:54px;border-radius:50%;background:rgba(16,185,129,0.08);"></div>
+          <div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-bottom:8px;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <span style="font-size:0.68rem;font-weight:700;color:#10b981;text-transform:uppercase;letter-spacing:0.07em;">Accuracy</span>
+          </div>
+          <div style="font-size:1.55rem;font-weight:800;color:#10b981;line-height:1;" id="resultsCorrectCount">0 / 0</div>
         </div>
-        <div style="background:var(--cream, #f8fafc); padding:18px 14px; border-radius:14px; border:1px solid var(--line, #e2e8f0);">
-          <div style="font-size:0.75rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px;">CREDITS REMAINING</div>
-          <div style="font-size:1.75rem; font-weight:800; color:#059669;" id="resultsRemainingCredits">0</div>
+
+        <!-- CREDITS REMAINING -->
+        <div style="background:linear-gradient(135deg,rgba(99,102,241,0.13),rgba(99,102,241,0.04)); padding:20px 10px 16px; border-radius:16px; border:1px solid rgba(99,102,241,0.35); position:relative; overflow:hidden;">
+          <div style="position:absolute;top:-14px;right:-14px;width:54px;height:54px;border-radius:50%;background:rgba(99,102,241,0.08);"></div>
+          <div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-bottom:8px;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+            <span style="font-size:0.68rem;font-weight:700;color:#6366f1;text-transform:uppercase;letter-spacing:0.07em;">Credits Left</span>
+          </div>
+          <div style="font-size:1.55rem;font-weight:800;color:#6366f1;line-height:1;" id="resultsRemainingCredits">0</div>
         </div>
+
       </div>
 
-      <button type="button" class="btn btn-primary" id="resultsReturnBtn" style="padding:12px 28px; font-weight:700; border-radius:9999px;">← Back to All Quizzes</button>
+      <button type="button" class="btn btn-primary" id="resultsReturnBtn" style="padding:12px 28px; font-weight:700; border-radius:9999px;">â† Back to All Quizzes</button>
     </div>
 
     <!-- PAYMENT VERIFICATION PENDING VIEW -->
     <div id="premiumPendingView" class="premium-card" style="display:none; max-width:680px; margin:0 auto;">
       <div style="margin-bottom:18px; display:flex; justify-content:space-between; align-items:center;">
-        <button type="button" class="btn btn-outline btn-sm" id="backToQuizzesFromPendingBtn">← Back to Quizzes</button>
+        <button type="button" class="btn btn-outline btn-sm" id="backToQuizzesFromPendingBtn">â† Back to Quizzes</button>
         <span style="font-size:0.86rem; color:#64748b;">Payment Verification</span>
       </div>
 
@@ -1568,7 +1587,7 @@
     <!-- PAYMENT INSTRUCTIONS & PROOF SUBMISSION FORM VIEW -->
     <div id="premiumPaymentFormView" style="display:none;">
       <div style="margin-bottom:18px; display:flex; justify-content:space-between; align-items:center;">
-        <button type="button" class="btn btn-outline btn-sm" id="backToQuizzesFromPaymentBtn">← Back to Quizzes</button>
+        <button type="button" class="btn btn-outline btn-sm" id="backToQuizzesFromPaymentBtn">â† Back to Quizzes</button>
         <span style="font-size:0.86rem; color:#64748b;">Purchase Quiz Credits</span>
       </div>
 
@@ -1579,20 +1598,20 @@
             <span style="font-weight:700; font-size:0.96rem; color:#0f172a;">Select Credit Package:</span>
             <span style="font-size:0.8rem; color:#64748b; margin-left:6px;">(Each quiz = 3 credits)</span>
           </div>
-          <span id="paymentSelectedPkgSummary" style="font-size:0.88rem; color:#2563eb; font-weight:800; background:#eff6ff; padding:3px 10px; border-radius:9999px;">3 Credits — Rs. 15</span>
+          <span id="paymentSelectedPkgSummary" style="font-size:0.88rem; color:#2563eb; font-weight:800; background:#eff6ff; padding:3px 10px; border-radius:9999px;">3 Credits â€” Rs. 15</span>
         </div>
         <div class="package-pill-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:10px;">
           <button type="button" class="package-pill-btn active" data-pkg-id="pack_3" data-amount="15" data-credits="3" data-label="3 Credits" data-remarks="Purchase: 3 Credits (Rs. 15)">
-            3 Credits · <strong>Rs. 15</strong>
+            3 Credits Â· <strong>Rs. 15</strong>
           </button>
           <button type="button" class="package-pill-btn" data-pkg-id="pack_12" data-amount="50" data-credits="12" data-label="12 Credits" data-remarks="Purchase: 12 Credits (Rs. 50)">
-            12 Credits · <strong>Rs. 50</strong>
+            12 Credits Â· <strong>Rs. 50</strong>
           </button>
           <button type="button" class="package-pill-btn" data-pkg-id="pack_30" data-amount="100" data-credits="30" data-label="30 Credits" data-remarks="Purchase: 30 Credits (Rs. 100)">
-            30 Credits · <strong>Rs. 100</strong>
+            30 Credits Â· <strong>Rs. 100</strong>
           </button>
           <button type="button" class="package-pill-btn" data-pkg-id="pack_unlimited" data-amount="500" data-credits="unlimited" data-label="1 Year Unlimited Pass" data-remarks="Purchase: Annual Pass - Unlimited 1 Year (Rs. 500)">
-            1 Year Pass · <strong>Rs. 500</strong>
+            1 Year Pass Â· <strong>Rs. 500</strong>
           </button>
         </div>
       </div>
@@ -1619,7 +1638,7 @@
             <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px;">
               <div>
                 <div style="font-weight:700; font-size:0.95rem; color:#2563eb;">Bank Transfer (Kumari Bank)</div>
-                <div style="font-size:0.82rem; color:#64748b; margin-top:2px;">Kumari Bank Limited · A/C: <strong>1500295181100001</strong></div>
+                <div style="font-size:0.82rem; color:#64748b; margin-top:2px;">Kumari Bank Limited Â· A/C: <strong>1500295181100001</strong></div>
                 <div style="font-size:0.75rem; color:#94a3b8;">Account Name: Bhola Prasad Shah</div>
               </div>
               <span style="background:#eff6ff; color:#2563eb; font-size:0.75rem; font-weight:700; padding:4px 8px; border-radius:6px; flex-shrink:0;">Fonepay QR</span>
@@ -1703,7 +1722,7 @@
 
             <label>
               Remarks / Note (Optional)
-              <textarea id="payFormRemarks" rows="2" placeholder="Any additional information…"></textarea>
+              <textarea id="payFormRemarks" rows="2" placeholder="Any additional informationâ€¦"></textarea>
             </label>
 
             <div id="payFormStatus" class="status-alert" style="display:none; margin-top:14px;"></div>
@@ -1781,7 +1800,7 @@
           <!-- Package 4: Rs. 500 Unlimited 1 Year -->
           <div class="credit-pack-card featured" data-pkg-id="pack_unlimited" data-amount="500" data-credits="unlimited" data-label="Annual Pass" data-remarks="Purchase: Annual Pass - Unlimited 1 Year (Rs. 500)" style="position:relative;">
             <div style="position:absolute; top:-11px; left:50%; transform:translateX(-50%); background:linear-gradient(135deg, #f59e0b, #d97706); color:#fff; font-size:0.68rem; font-weight:800; text-transform:uppercase; letter-spacing:0.05em; padding:3px 10px; border-radius:9999px; white-space:nowrap; box-shadow:0 2px 8px rgba(217, 119, 6, 0.4);">
-              VIP Pass · 1 Year
+              VIP Pass Â· 1 Year
             </div>
             <div style="margin-top:6px;">
               <span style="font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; color:#b45309; background:#fef3c7; padding:3px 9px; border-radius:9999px; display:inline-block; margin-bottom:8px;">Unlimited</span>
@@ -1846,13 +1865,13 @@
         <div id="shareModalQuizPreview" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; margin-bottom:18px; display:flex; align-items:stretch; gap:0;">
           <!-- Image thumbnail -->
           <div id="shareModalQuizThumb" style="width:80px; flex-shrink:0; background:linear-gradient(135deg,#1e293b 0%,#3b82f6 100%); background-size:cover; background-position:center; border-radius:0; position:relative;">
-            <div id="shareModalQuizThumbFallback" style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:1.5rem; opacity:0.6;">📝</div>
+            <div id="shareModalQuizThumbFallback" style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:1.5rem; opacity:0.6;">ðŸ“</div>
           </div>
           <!-- Text -->
           <div style="padding:10px 12px; flex:1; min-width:0;">
             <div id="shareModalQuizLevel" class="premium-card-level-badge" style="margin-bottom:3px;">Level</div>
             <div id="shareModalQuizName" style="font-size:0.95rem; font-weight:700; color:#0f172a; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Quiz Name</div>
-            <div id="shareModalQuizMeta" style="font-size:0.75rem; color:#64748b;">10 Questions · 3 Credits</div>
+            <div id="shareModalQuizMeta" style="font-size:0.75rem; color:#64748b;">10 Questions Â· 3 Credits</div>
           </div>
         </div>
 
@@ -1914,13 +1933,13 @@
     <div id="qrLightbox" style="display:none; position:fixed; inset:0; z-index:10000; background:rgba(10,17,32,0.88); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); align-items:center; justify-content:center; padding:24px;" role="dialog" aria-modal="true" aria-label="Bank QR Code enlarged view">
       <div style="position:relative; background:#ffffff; border-radius:20px; padding:24px 24px 18px; box-shadow:0 32px 80px rgba(0,0,0,0.45); text-align:center; max-width:360px; width:100%; animation:modalFadeUp 0.2s ease both;">
         <button id="qrLightboxClose" type="button" aria-label="Close" style="position:absolute; top:12px; right:14px; background:none; border:none; font-size:1.8rem; line-height:1; cursor:pointer; color:#94a3b8; padding:0 4px;">&times;</button>
-        <div style="font-weight:700; font-size:1rem; color:#1e293b; margin-bottom:4px;">Kumari Bank — Fonepay QR</div>
+        <div style="font-weight:700; font-size:1rem; color:#1e293b; margin-bottom:4px;">Kumari Bank â€” Fonepay QR</div>
         <div style="font-size:0.8rem; color:#64748b; margin-bottom:16px;">Scan with Kumari Smart, eSewa, Khalti, or any mobile banking app</div>
         <img src="assets/bankqr.png" alt="Kumari Bank Fonepay QR Code" style="width:100%; max-width:280px; height:auto; border-radius:10px; display:block; margin:0 auto;" />
         <div style="margin-top:16px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px 14px; text-align:left;">
           <span style="display:block; font-size:0.7rem; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:2px;">Account Number</span>
           <code style="font-size:1rem; font-weight:800; color:#0f172a; letter-spacing:0.04em;">1500295181100001</code>
-          <span style="display:block; font-size:0.72rem; color:#94a3b8; margin-top:2px;">Kumari Bank Limited · Bhola Prasad Shah</span>
+          <span style="display:block; font-size:0.72rem; color:#94a3b8; margin-top:2px;">Kumari Bank Limited Â· Bhola Prasad Shah</span>
         </div>
       </div>
     </div>

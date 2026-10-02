@@ -23,7 +23,7 @@
   <meta name="twitter:description" content="Practice thousands of MCQs on GK, Loksewa, Science, Maths and more. Free multiple-choice quiz practice by B. Prasad Shah." />
   <meta name="twitter:image" content="https://bholaprasadshah.com.np/assets/og-image.png?v=20260926_01" />
   <link rel="stylesheet" href="css/style.css?v=20260928_02" />
-  <link rel="stylesheet" href="css/mcq.css?v=20260928_03" />
+  <link rel="stylesheet" href="css/mcq.css?v=20261002_01" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -294,6 +294,13 @@
 
         <div class="answer-report" id="answerReport" aria-live="polite" aria-atomic="true"></div>
 
+        <div class="mcq-share-row" id="mcqShareRow" hidden>
+          <button type="button" class="btn-mcq-share" id="mcqShareBtn" aria-label="Share this question">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            Share this question
+          </button>
+        </div>
+
         <div class="quiz-nav">
           <button class="btn btn-primary" id="nextQuestionBtn" hidden>Next question</button>
         </div>
@@ -342,6 +349,41 @@
   </div>
   <div class="overlay" id="overlay"></div>
 
+  <!-- ===== MCQ Question Share Modal ===== -->
+  <div class="mcq-share-modal" id="mcqShareModal" role="dialog" aria-modal="true" aria-labelledby="mcqShareModalTitle" hidden>
+    <div class="mcq-share-modal-inner">
+      <div class="mcq-share-modal-header">
+        <h3 class="mcq-share-modal-title" id="mcqShareModalTitle">Share this question</h3>
+        <button type="button" class="mcq-share-modal-close" id="mcqShareModalClose" aria-label="Close">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <p class="mcq-share-preview" id="mcqSharePreview"></p>
+      <div class="mcq-share-pills">
+        <a class="mcq-share-pill pill-whatsapp" id="mcqShareWhatsApp" href="#" target="_blank" rel="noopener noreferrer">
+          <svg width="18" height="18" viewBox="0 0 32 32" fill="currentColor" aria-hidden="true"><path d="M16 2C8.28 2 2 8.28 2 16c0 2.44.65 4.78 1.79 6.82L2 30l7.38-1.77A13.93 13.93 0 0016 30c7.72 0 14-6.28 14-14S23.72 2 16 2zm0 25.5a11.44 11.44 0 01-5.84-1.6l-.42-.25-4.38 1.05 1.07-4.27-.27-.44A11.46 11.46 0 014.5 16C4.5 9.6 9.6 4.5 16 4.5S27.5 9.6 27.5 16 22.4 27.5 16 27.5zm6.27-8.58c-.34-.17-2.02-1-2.34-1.11-.32-.11-.55-.17-.78.17-.23.34-.89 1.11-1.09 1.34-.2.23-.4.26-.74.09-.34-.17-1.44-.53-2.74-1.69-1.01-.9-1.7-2.02-1.9-2.36-.2-.34-.02-.52.15-.69.15-.15.34-.4.51-.6.17-.2.23-.34.34-.57.11-.23.06-.43-.03-.6-.09-.17-.78-1.88-1.07-2.57-.28-.67-.57-.58-.78-.59h-.67c-.23 0-.6.09-.91.43-.31.34-1.2 1.17-1.2 2.85s1.22 3.3 1.39 3.53c.17.23 2.4 3.67 5.82 5.14.81.35 1.45.56 1.94.72.81.26 1.55.22 2.14.13.65-.1 2.02-.83 2.3-1.62.28-.8.28-1.48.2-1.62-.09-.14-.32-.23-.66-.4z"/></svg>
+          WhatsApp
+        </a>
+        <a class="mcq-share-pill pill-facebook" id="mcqShareFacebook" href="#" target="_blank" rel="noopener noreferrer">
+          <svg width="18" height="18" viewBox="0 0 32 32" fill="currentColor" aria-hidden="true"><path d="M29 16C29 8.82 23.18 3 16 3S3 8.82 3 16c0 6.52 4.77 11.92 11 12.85V19.5h-3.31V16H14v-2.79c0-3.27 1.95-5.08 4.93-5.08 1.43 0 2.92.26 2.92.26V11.5h-1.64c-1.62 0-2.12 1.01-2.12 2.04V16H21.5l-.54 3.5H18v9.35C24.23 27.92 29 22.52 29 16z"/></svg>
+          Facebook
+        </a>
+        <a class="mcq-share-pill pill-telegram" id="mcqShareTelegram" href="#" target="_blank" rel="noopener noreferrer">
+          <svg width="18" height="18" viewBox="0 0 32 32" fill="currentColor" aria-hidden="true"><path d="M16 3C8.82 3 3 8.82 3 16s5.82 13 13 13 13-5.82 13-13S23.18 3 16 3zm6.38 8.84l-2.2 10.36c-.16.72-.59.9-1.19.56l-3.3-2.43-1.59 1.53c-.18.18-.33.33-.67.33l.24-3.37 6.1-5.51c.27-.24-.06-.37-.41-.14l-7.54 4.75-3.25-1.01c-.71-.22-.72-.71.15-1.05l12.7-4.9c.59-.21 1.11.14.96 1.38z"/></svg>
+          Telegram
+        </a>
+        <a class="mcq-share-pill pill-twitter" id="mcqShareTwitter" href="#" target="_blank" rel="noopener noreferrer">
+          <svg width="18" height="18" viewBox="0 0 32 32" fill="currentColor" aria-hidden="true"><path d="M27.4 4h-4.8l-6.6 8.4L9.6 4H2l11.8 15L2 28h4.8l7.2-9.2 6.6 9.2H28L15.8 12.6 27.4 4z"/></svg>
+          Twitter / X
+        </a>
+        <button type="button" class="mcq-share-pill pill-copy" id="mcqShareCopy">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy text
+        </button>
+      </div>
+    </div>
+  </div>
+
   <footer class="site-footer">
     <div class="container footer-inner">
       <p>&copy; <span id="year"></span> B. Prasad Shah — MCQ Hub</p>
@@ -359,7 +401,7 @@
   <script src="js/firebase-config.js"></script>
   <script src="js/auth-widget.js?v=20260920_01"></script>
   <script src="js/nav-drawer.js?v=20260920_01"></script>
-  <script src="js/mcq.js?v=20260928_01"></script>
+  <script src="js/mcq.js?v=20261002_01"></script>
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
   </script>

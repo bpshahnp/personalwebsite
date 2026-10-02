@@ -124,6 +124,7 @@ function applyOwnerAccess() {
     initLiveQuizAdmin();
     initPremiumQuizAdmin();
     initModeratorsAdmin();
+    initAdminNotifications();
   }
 }
 
@@ -196,6 +197,7 @@ function applyModeratorAccess(user, perms, displayName) {
     if (perms.updates) initUpdatesAdmin();
     if (perms.liveQuiz) initLiveQuizAdmin();
     if (perms.premiumQuiz) initPremiumQuizAdmin();
+    initAdminNotifications();
   }
 
   if (hasMcq) {
@@ -352,8 +354,13 @@ function switchToTab(tabName) {
     const panel = document.getElementById("tab-" + t);
     if (panel) panel.hidden = t !== tabName;
   });
-}
 
+  if (tabName === "messages") {
+    clearTabBadge("messages");
+  } else if (tabName === "premiumquiz") {
+    clearTabBadge("premiumquiz");
+  }
+}
 
 document.querySelectorAll(".admin-tab").forEach((tabBtn) => {
   tabBtn.addEventListener("click", () => {
@@ -361,7 +368,245 @@ document.querySelectorAll(".admin-tab").forEach((tabBtn) => {
   });
 });
 
+/* ============================================
+   ADMIN NOTIFICATIONS SYSTEM (Audio + Desktop + Toasts)
+   ============================================ */
+let adminNotificationsInitialized = false;
+let adminNotificationsEnabled = localStorage.getItem("admin_notify_enabled") !== "false";
+let adminAudioEnabled = localStorage.getItem("admin_audio_enabled") !== "false";
+const notifiedItemIds = new Set();
+const tabUnreadCounts = {
+  messages: 0,
+  premiumquiz: 0
+};
+let originalDocumentTitle = document.title || "Admin Panel";
+let titleFlashInterval = null;
 
+function playNotificationChime() {
+  if (!adminNotificationsEnabled || !adminAudioEnabled) return;
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    if (ctx.state === "suspended") {
+      ctx.resume();
+    }
+    const now = ctx.currentTime;
+
+    // First note: 587.33 Hz (D5)
+    const osc1 = ctx.createOscillator();
+    const gain1 = ctx.createGain();
+    osc1.type = "sine";
+    osc1.frequency.setValueAtTime(587.33, now);
+    gain1.gain.setValueAtTime(0.18, now);
+    gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+    osc1.connect(gain1);
+    gain1.connect(ctx.destination);
+    osc1.start(now);
+    osc1.stop(now + 0.3);
+
+    // Second note (bright chime): 880 Hz (A5)
+    const osc2 = ctx.createOscillator();
+    const gain2 = ctx.createGain();
+    osc2.type = "sine";
+    osc2.frequency.setValueAtTime(880, now + 0.12);
+    gain2.gain.setValueAtTime(0.22, now + 0.12);
+    gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+    osc2.connect(gain2);
+    gain2.connect(ctx.destination);
+    osc2.start(now + 0.12);
+    osc2.stop(now + 0.6);
+  } catch (e) {
+    console.warn("Could not play notification audio:", e);
+  }
+}
+
+function updateNotifyButtonState() {
+  const btn = document.getElementById("adminNotifyToggleBtn");
+  const label = document.getElementById("adminNotifyLabel");
+  const icon = document.getElementById("adminNotifyIcon");
+  if (!btn || !label || !icon) return;
+
+  if (adminNotificationsEnabled) {
+    label.textContent = "Notifications: On";
+    btn.style.color = "var(--orange)";
+    btn.style.borderColor = "var(--orange)";
+    icon.innerHTML = `<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path>`;
+  } else {
+    label.textContent = "Notifications: Muted";
+    btn.style.color = "var(--mist)";
+    btn.style.borderColor = "var(--line)";
+    icon.innerHTML = `<path d="M13.73 21a2 2 0 0 1-3.46 0"></path><path d="M18.63 13A17.89 17.89 0 0 1 18 8"></path><path d="M6.26 6.26A5.86 5.86 0 0 0 6 8c0 7-3 9-3 9h14"></path><path d="M18 8a6 6 0 0 0-9.33-5"></path><line x1="1" y1="1" x2="23" y2="23"></line>`;
+  }
+}
+
+function updateTabBadge(tabKey, count) {
+  tabUnreadCounts[tabKey] = Math.max(0, count);
+  const badgeId = tabKey === "messages" ? "messagesTabBadge" : (tabKey === "premiumquiz" ? "requestsTabBadge" : null);
+  if (!badgeId) return;
+  const badge = document.getElementById(badgeId);
+  if (badge) {
+    if (tabUnreadCounts[tabKey] > 0) {
+      badge.textContent = tabUnreadCounts[tabKey];
+      badge.style.display = "inline-flex";
+    } else {
+      badge.style.display = "none";
+    }
+  }
+
+  // Update browser document title if tab is inactive
+  const totalUnread = (tabUnreadCounts.messages || 0) + (tabUnreadCounts.premiumquiz || 0);
+  if (totalUnread > 0 && document.hidden) {
+    startTitleFlashing(`(${totalUnread}) New Alert!`);
+  } else if (totalUnread === 0) {
+    stopTitleFlashing();
+  }
+}
+
+function clearTabBadge(tabKey) {
+  updateTabBadge(tabKey, 0);
+}
+
+function startTitleFlashing(flashText) {
+  if (titleFlashInterval) return;
+  let showFlash = true;
+  originalDocumentTitle = document.title.replace(/^\(\d+\)\s+/, "");
+  titleFlashInterval = setInterval(() => {
+    document.title = showFlash ? `${flashText} ${originalDocumentTitle}` : originalDocumentTitle;
+    showFlash = !showFlash;
+  }, 1200);
+}
+
+function stopTitleFlashing() {
+  if (titleFlashInterval) {
+    clearInterval(titleFlashInterval);
+    titleFlashInterval = null;
+  }
+  document.title = originalDocumentTitle;
+}
+
+window.addEventListener("focus", () => {
+  stopTitleFlashing();
+});
+
+function showAdminToast({ type, title, body, tabKey }) {
+  const container = document.getElementById("adminToastContainer");
+  if (!container) return;
+
+  const toast = document.createElement("div");
+  toast.className = "admin-toast";
+
+  const isMsg = type === "message";
+  const iconSvg = isMsg
+    ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>`
+    : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`;
+
+  toast.innerHTML = `
+    <div class="admin-toast-icon ${isMsg ? "message" : "subscription"}">
+      ${iconSvg}
+    </div>
+    <div class="admin-toast-body">
+      <div class="admin-toast-title">
+        <span>${escapeHtml(title)}</span>
+        <button type="button" class="admin-toast-close" aria-label="Close">&times;</button>
+      </div>
+      <div class="admin-toast-text">${escapeHtml(body)}</div>
+      <div class="admin-toast-actions">
+        <button type="button" class="admin-toast-btn">${isMsg ? "View Message" : "View Request"}</button>
+      </div>
+    </div>
+  `;
+
+  const dismiss = () => {
+    toast.classList.add("fade-out");
+    setTimeout(() => toast.remove(), 260);
+  };
+
+  toast.querySelector(".admin-toast-close").addEventListener("click", dismiss);
+  toast.querySelector(".admin-toast-btn").addEventListener("click", () => {
+    if (tabKey) switchToTab(tabKey);
+    dismiss();
+  });
+
+  container.appendChild(toast);
+
+  // Auto dismiss after 9 seconds
+  setTimeout(dismiss, 9000);
+}
+
+function triggerAdminNotification({ id, type, title, body, tab }) {
+  if (id && notifiedItemIds.has(id)) return;
+  if (id) notifiedItemIds.add(id);
+
+  if (!adminNotificationsEnabled) return;
+
+  // 1. Play pleasant audio chime
+  playNotificationChime();
+
+  // 2. Browser Desktop Notification (if supported & allowed)
+  if ("Notification" in window && Notification.permission === "granted") {
+    try {
+      const n = new Notification(title, {
+        body: body,
+        icon: "favicon.svg"
+      });
+      n.onclick = () => {
+        window.focus();
+        if (tab) switchToTab(tab);
+        n.close();
+      };
+    } catch (err) {
+      console.warn("Desktop notification error:", err);
+    }
+  }
+
+  // 3. In-tab floating toast alert
+  showAdminToast({ type, title, body, tabKey: tab });
+
+  // 4. Update tab badge if not currently on that tab
+  const activeTabEl = document.querySelector(".admin-tab.active");
+  const currentActiveTab = activeTabEl ? activeTabEl.dataset.tab : null;
+  if (tab && currentActiveTab !== tab) {
+    updateTabBadge(tab, (tabUnreadCounts[tab] || 0) + 1);
+  }
+}
+
+function initAdminNotifications() {
+  if (adminNotificationsInitialized) return;
+  adminNotificationsInitialized = true;
+
+  updateNotifyButtonState();
+
+  const toggleBtn = document.getElementById("adminNotifyToggleBtn");
+  if (toggleBtn) {
+    toggleBtn.addEventListener("click", async () => {
+      if (!adminNotificationsEnabled) {
+        adminNotificationsEnabled = true;
+        adminAudioEnabled = true;
+        localStorage.setItem("admin_notify_enabled", "true");
+        localStorage.setItem("admin_audio_enabled", "true");
+        updateNotifyButtonState();
+
+        if ("Notification" in window && Notification.permission === "default") {
+          try {
+            await Notification.requestPermission();
+          } catch (e) {}
+        }
+        playNotificationChime();
+      } else {
+        adminNotificationsEnabled = false;
+        localStorage.setItem("admin_notify_enabled", "false");
+        updateNotifyButtonState();
+      }
+    });
+  }
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initAdminNotifications);
+} else {
+  initAdminNotifications();
+}
 /* ============================================
    QUESTIONS — add / edit / delete
    ============================================ */
@@ -1638,6 +1883,7 @@ function initResourcesAdmin() {
    visitors create these, admin can only view/delete)
    ============================================ */
 let messagesUnsub = null;
+let messagesInitialLoaded = false;
 
 function initMessagesAdmin() {
   if (messagesUnsub) return;
@@ -1645,6 +1891,23 @@ function initMessagesAdmin() {
 
   messagesUnsub = db.collection("messages").orderBy("createdAt", "desc").onSnapshot(
     (snapshot) => {
+      if (!messagesInitialLoaded) {
+        messagesInitialLoaded = true;
+      } else {
+        snapshot.docChanges().forEach((change) => {
+          if (change.type === "added") {
+            const m = change.doc.data();
+            triggerAdminNotification({
+              id: change.doc.id,
+              type: "message",
+              title: `New Message from ${m.name || "Visitor"}`,
+              body: m.subject ? `Subject: ${m.subject}` : (m.message ? m.message.slice(0, 80) : "You received a new inquiry."),
+              tab: "messages"
+            });
+          }
+        });
+      }
+
       if (snapshot.empty) {
         listEl.innerHTML = `<p class="updates-loading">No messages yet.</p>`;
         return;
@@ -1976,11 +2239,32 @@ function initPremiumQuizAdmin() {
     });
   }
 
+  let requestsInitialLoaded = false;
+
   function subscribePaymentRequests() {
     if (!reqListEl) return;
     db.collection("premiumRequests")
       .orderBy("createdAt", "desc")
       .onSnapshot(snap => {
+        if (!requestsInitialLoaded) {
+          requestsInitialLoaded = true;
+        } else {
+          snap.docChanges().forEach(change => {
+            if (change.type === "added") {
+              const req = change.doc.data();
+              if (!req.status || req.status === "pending") {
+                triggerAdminNotification({
+                  id: change.doc.id,
+                  type: "subscription",
+                  title: `New Premium Request: ${req.userName || req.userEmail || "Subscriber"}`,
+                  body: `NPR ${req.amountNpr || "—"} via ${req.paymentMethod || "receipt verification"}`,
+                  tab: "premiumquiz"
+                });
+              }
+            }
+          });
+        }
+
         allRequests = snap.docs.map(d => Object.assign({ id: d.id }, d.data()));
         renderPaymentRequests();
       }, err => {

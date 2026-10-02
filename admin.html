@@ -139,8 +139,18 @@
   <!-- ===== Admin dashboard ===== -->
   <section class="admin-dashboard" id="dashboard" hidden>
     <div class="container">
-      <h1 class="section-title" id="adminHeaderTitle" style="margin-bottom:4px;">Admin Panel</h1>
-      <p id="adminHeaderSubtitle" class="quiz-muted" style="margin-bottom:16px;" hidden></p>
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:14px;">
+        <div>
+          <h1 class="section-title" id="adminHeaderTitle" style="margin-bottom:4px;">Admin Panel</h1>
+          <p id="adminHeaderSubtitle" class="quiz-muted" style="margin-bottom:0;" hidden></p>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <button type="button" class="btn btn-outline btn-sm" id="adminNotifyToggleBtn" title="Toggle audio alert & desktop notifications" style="display:inline-flex; align-items:center; gap:6px; font-size:0.82rem; border-radius:8px; padding:6px 12px;">
+            <svg id="adminNotifyIcon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            <span id="adminNotifyLabel">Notifications: On</span>
+          </button>
+        </div>
+      </div>
 
       <div class="admin-tabs" role="tablist">
         <button class="admin-tab active" data-tab="questions" role="tab" type="button">
@@ -158,6 +168,7 @@
         <button class="admin-tab" data-tab="messages" role="tab" type="button">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
           <span>Messages</span>
+          <span class="admin-tab-badge" id="messagesTabBadge" style="display:none;">0</span>
         </button>
         <button class="admin-tab" data-tab="updates" role="tab" type="button">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
@@ -170,6 +181,7 @@
         <button class="admin-tab" data-tab="premiumquiz" role="tab" type="button">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
           <span>Premium Quiz</span>
+          <span class="admin-tab-badge" id="requestsTabBadge" style="display:none;">0</span>
         </button>
         <button class="admin-tab" data-tab="moderators" role="tab" type="button" id="moderatorsTabBtn">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
@@ -988,6 +1000,9 @@
     </div>
   </div>
 
+  <!-- Floating Toast Notifications Container -->
+  <div id="adminToastContainer" aria-live="polite" aria-atomic="true"></div>
+
   <!-- Payment Receipt Preview Modal -->
   <div id="receiptPreviewModal" class="modal" hidden style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.8); align-items:center; justify-content:center; padding:16px;">
     <div style="background:#fff; border-radius:12px; max-width:640px; width:100%; max-height:90vh; overflow-y:auto; padding:20px; position:relative; text-align:center;">
@@ -1003,6 +1018,6 @@
   <script src="js/firebase-config.js"></script>
   <script src="js/auth-widget.js"></script>
   <script src="js/nav-drawer.js"></script>
-  <script src="js/admin.js?v=20260928_02"></script>
+  <script src="js/admin.js?v=20261001_01"></script>
 </body>
 </html>
