@@ -652,55 +652,208 @@ function keyTableHTML(includeExpl) {
 }
 
 function omrSheetHTML(s) {
-  const qCount = qs.length || 20;
-  const cols = 4;
+  const qList = qs.length ? qs : Array(20).fill(null);
+  const qCount = qList.length;
+
+  // Determine max options across questions (min 4, max 6)
+  const maxOpts = Math.max(4, Math.min(6, Math.max(...qList.map(q => q && q.o ? q.o.length : 4))));
+  const optLetters = L.slice(0, maxOpts);
+
+  // Determine optimal column count based on question count
+  let cols = 4;
+  if (qCount <= 12) cols = 1;
+  else if (qCount <= 25) cols = 2;
+  else if (qCount <= 50) cols = 3;
+  else if (qCount <= 80) cols = 4;
+  else cols = 5;
+
   const perCol = Math.ceil(qCount / cols);
 
   let colHtml = "";
   for (let c = 0; c < cols; c++) {
-    let items = "";
+    let rowsHtml = "";
     for (let r = 0; r < perCol; r++) {
       const idx = c * perCol + r;
       if (idx >= qCount) break;
       const num = String(idx + 1).padStart(2, "0");
-      items += `
-        <div class="omr-q-row">
+      const isBlockEnd = (idx + 1) % 5 === 0 && (r + 1 < perCol) && (idx + 1 < qCount);
+      const isAltBlock = Math.floor(idx / 5) % 2 === 1;
+
+      const bubbles = optLetters.map(letter => `
+        <span class="omr-bubble" title="Option ${letter}">${letter}</span>
+      `).join("");
+
+      rowsHtml += `
+        <div class="omr-q-row ${isAltBlock ? 'omr-row-alt' : ''} ${isBlockEnd ? 'omr-block-end' : ''}">
           <span class="omr-q-num">${num}</span>
-          <div>
-            <span class="omr-bubble">A</span>
-            <span class="omr-bubble">B</span>
-            <span class="omr-bubble">C</span>
-            <span class="omr-bubble">D</span>
+          <div class="omr-bubbles-group">
+            ${bubbles}
           </div>
         </div>
       `;
     }
-    colHtml += `<div>${items}</div>`;
+
+    const headerBubbles = optLetters.map(l => `<span class="omr-hdr-bubble">${l}</span>`).join("");
+
+    colHtml += `
+      <div class="omr-col-block">
+        <div class="omr-col-hdr">
+          <span class="omr-hdr-num">Q.NO</span>
+          <div class="omr-hdr-bubbles">${headerBubbles}</div>
+        </div>
+        <div class="omr-col-rows">
+          ${rowsHtml}
+        </div>
+      </div>
+    `;
   }
 
-  return `
-    <div class="omr-container">
-      <div class="omr-header">
-        <h2 style="margin:0 0 2px;font-size:16px">${esc(s.inst || s.title)}</h2>
-        <div style="font-weight:700;font-size:13px">${esc(s.title)} — OMR RESPONSE SHEET</div>
+  // Generate Roll Number 0-9 Grid (6 digits)
+  const numDigits = 6;
+  const rollBoxes = Array(numDigits).fill('<div class="omr-roll-box"></div>').join("");
+  let rollGridRows = "";
+  for (let d = 0; d <= 9; d++) {
+    const digitBubbles = Array(numDigits).fill(`<span class="omr-bubble sm">${d}</span>`).join("");
+    rollGridRows += `
+      <div class="omr-roll-row">
+        <span class="omr-digit-lbl">${d}</span>
+        ${digitBubbles}
       </div>
-      <div class="omr-student-grid">
-        <div>
-          <div><b>Candidate Name:</b> ________________________________________________</div>
-          <div style="margin-top:8px"><b>Subject:</b> ${esc(s.subject)} &nbsp;&nbsp;&nbsp; <b>Class:</b> ${esc(s.grade)} &nbsp;&nbsp;&nbsp; <b>Date:</b> _________</div>
-        </div>
-        <div style="border-left:1px solid #000;padding-left:8px">
-          <div><b>Roll Number / Candidate ID:</b></div>
-          <div style="display:flex;gap:4px;margin-top:4px">
-            ${Array(6).fill('<div style="width:18px;height:24px;border:1px solid #000"></div>').join("")}
+    `;
+  }
+
+  // Set Code bubbles (A, B, C, D)
+  const setBubbles = ["A", "B", "C", "D"].map(set => `
+    <div class="omr-set-item">
+      <span class="omr-bubble sm">${set}</span>
+      <span class="omr-set-lbl">Set ${set}</span>
+    </div>
+  `).join("");
+
+  return `
+    <div class="omr-sheet-wrapper">
+      <!-- Corner Fiducial Marks (Optical Alignment) -->
+      <div class="omr-fiducial omr-fid-tl"></div>
+      <div class="omr-fiducial omr-fid-tr"></div>
+      <div class="omr-fiducial omr-fid-bl"></div>
+      <div class="omr-fiducial omr-fid-br"></div>
+
+      <!-- Main OMR Content Container -->
+      <div class="omr-main-container">
+        
+        <!-- Top Exam Header -->
+        <div class="omr-exam-header">
+          <div class="omr-inst-title">${esc(s.inst ? s.inst.toUpperCase() : "EXAMINATION BOARD / INSTITUTION")}</div>
+          <div class="omr-exam-title">${esc(s.title ? s.title.toUpperCase() : "MULTIPLE CHOICE QUESTION EXAMINATION")}</div>
+          <div class="omr-sheet-badge">★ OMR RESPONSE &amp; EVALUATION SHEET ★</div>
+          
+          <div class="omr-meta-strip">
+            <span><b>SUBJECT:</b> ${esc(s.subject || "General")}</span>
+            <span><b>CLASS/GRADE:</b> ${esc(s.grade || "-")}</span>
+            <span><b>DATE:</b> ___________</span>
+            <span><b>MAX MARKS:</b> ${esc(s.marks && s.marks.toLowerCase() !== "auto" ? s.marks : totalMarksCalc())}</span>
           </div>
         </div>
-      </div>
-      <div style="font-size:10px;margin-bottom:10px;color:#333">
-        <b>Instructions:</b> Use blue or black ballpoint pen only. Darken circles completely: <b>(A) [●] (C) (D)</b>. Do not make stray marks.
-      </div>
-      <div class="omr-col-grid">
-        ${colHtml}
+
+        <!-- Upper Grid: Candidate Details, Roll No Matrix, Set Code & Signatures -->
+        <div class="omr-top-grid">
+          
+          <!-- Box 1: Candidate Particulars & Signatures -->
+          <div class="omr-box omr-cand-box">
+            <div class="omr-box-title">1. CANDIDATE PARTICULARS</div>
+            <div class="omr-cand-fields">
+              <div class="omr-field-line">
+                <span class="omr-lbl">Candidate Name:</span>
+                <span class="omr-line"></span>
+              </div>
+              <div class="omr-field-line">
+                <span class="omr-lbl">Father's/Guardian's Name:</span>
+                <span class="omr-line"></span>
+              </div>
+              <div class="omr-cand-row">
+                <div class="omr-field-line" style="flex:1">
+                  <span class="omr-lbl">Roll No (Words):</span>
+                  <span class="omr-line"></span>
+                </div>
+                <div class="omr-field-line" style="width:100px">
+                  <span class="omr-lbl">Room No:</span>
+                  <span class="omr-line"></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="omr-signatures-grid">
+              <div class="omr-sig-box">
+                <div class="omr-sig-space"></div>
+                <div class="omr-sig-label">Signature of Candidate</div>
+              </div>
+              <div class="omr-sig-box">
+                <div class="omr-sig-space"></div>
+                <div class="omr-sig-label">Signature of Invigilator</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Box 2: Roll Number / Candidate ID with 0-9 Matrix -->
+          <div class="omr-box omr-roll-box-container">
+            <div class="omr-box-title">2. ROLL NUMBER / ID</div>
+            <div class="omr-roll-write-row">
+              <span style="width:12px"></span>
+              ${rollBoxes}
+            </div>
+            <div class="omr-roll-matrix">
+              ${rollGridRows}
+            </div>
+          </div>
+
+          <!-- Box 3: Test Booklet Set Code -->
+          <div class="omr-box omr-set-box-container">
+            <div class="omr-box-title">3. TEST SET</div>
+            <div class="omr-set-sub">Booklet Code</div>
+            <div class="omr-set-grid">
+              ${setBubbles}
+            </div>
+            <div class="omr-eval-box">
+              <div class="omr-eval-title">OFFICIAL SCORE</div>
+              <div class="omr-eval-marks">Score: _____</div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Instructions Ribbon -->
+        <div class="omr-instructions-ribbon">
+          <div class="omr-inst-left">
+            <span class="omr-inst-tag">INSTRUCTIONS</span>
+            <span>• Use <b>Blue / Black Ballpoint Pen</b> only.</span>
+            <span>• Darken circles <b>completely</b>.</span>
+            <span>• Do not fold or make stray marks.</span>
+          </div>
+          <div class="omr-inst-examples">
+            <div class="omr-ex-item"><span class="omr-ex-lbl">CORRECT:</span> <span class="omr-bubble sm filled">A</span></div>
+            <div class="omr-ex-item"><span class="omr-ex-lbl">WRONG:</span> <span class="omr-bubble sm strike">✓</span> <span class="omr-bubble sm strike">✕</span> <span class="omr-bubble sm strike">◐</span></div>
+          </div>
+        </div>
+
+        <!-- Main Answer Bubble Response Grid -->
+        <div class="omr-responses-container">
+          <div class="omr-responses-title">4. CANDIDATE RESPONSES (DARKEN THE APPROPRIATE CIRCLE FOR EACH QUESTION)</div>
+          <div class="omr-questions-grid omr-cols-${cols}">
+            ${colHtml}
+          </div>
+        </div>
+
+        <!-- Footer / Timing Marks -->
+        <div class="omr-footer-bar">
+          <div class="omr-timing-bar">
+            ${Array(34).fill('<span class="omr-timing-tick"></span>').join("")}
+          </div>
+          <div class="omr-footer-text">
+            <span>MCQ PAPER MAKER PRO — STANDARDIZED OMR SCANNER SHEET</span>
+            <span>DO NOT CREASE OR BEND THIS PAGE</span>
+          </div>
+        </div>
+
       </div>
     </div>
   `;
