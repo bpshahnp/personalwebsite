@@ -302,7 +302,144 @@ function info(){
   v.forEach((p,i)=>row('Side '+N[i]+N[(i+1)%n],u(dist(p,v[(i+1)%n]))));
   v.forEach((_,i)=>row('∠'+N[i],angleAt(v,i).toFixed(1)+'°'))}
  el.innerHTML=`<b>${name}</b>`+r.join('')}
+let lastLblClick={time:0,x:0,y:0};
+function findLabelTarget(e){
+ if(!e)return null;
+ const t=e.target;
+ if(t&&t.closest){const f=t.closest('[data-lbl],[data-vtx],[data-ang]');if(f)return f}
+ const el=document.elementFromPoint(e.clientX,e.clientY);
+ return el&&el.closest?el.closest('[data-lbl],[data-vtx],[data-ang]'):null;
+}
+function openInlineEdit(cx,cy,initialVal,placeholder,onSave){
+ let ed=$('inline-edit');
+ if(!ed){
+  ed=document.createElement('input');
+  ed.id='inline-edit';
+  ed.type='text';
+  ed.autocomplete='off';
+  ed.spellcheck=false;
+  ed.style.cssText='position:absolute;z-index:100;transform:translate(-50%,-50%);padding:5px 9px;font-size:14px;font-weight:700;border:2px solid var(--accent,#3b5bdb);border-radius:8px;background:var(--panel,#fff);color:var(--ink,#1c2230);box-shadow:0 6px 20px rgba(0,0,0,0.3);outline:none;text-align:center;min-width:75px;max-width:180px;';
+  $('wrap').appendChild(ed);
+  ed.onpointerdown=e=>e.stopPropagation();
+  ed.onmousedown=e=>e.stopPropagation();
+ }
+ ed.value=initialVal||'';
+ ed.placeholder=placeholder||'';
+ const W=$('wrap').clientWidth||500,H=$('wrap').clientHeight||400;
+ ed.style.left=Math.max(50,Math.min(W-50,cx))+'px';
+ ed.style.top=Math.max(25,Math.min(H-25,cy))+'px';
+ ed.style.display='block';
+ setTimeout(()=>{ed.focus();ed.select()},20);
+ let done=false;
+ const commit=()=>{if(done)return;done=true;ed.style.display='none';onSave(ed.value.trim())};
+ ed.onkeydown=e=>{
+  e.stopPropagation();
+  if(e.key==='Enter'){e.preventDefault();commit()}
+  else if(e.key==='Escape'){done=true;ed.style.display='none'}
+ };
+ ed.onblur=commit;
+}
+function renameVertex(vtx,val){
+ if(!val||val===vtx)return;
+ snapshot();
+ const mp={[vtx]:val};
+ migrate(mp);
+ shapes.forEach(sh=>{if(sh.names)sh.names=sh.names.map(n=>n===vtx?val:n)});
+ render();
+ toast(`Vertex ${vtx} renamed to ${val}`);
+}
+function triggerLabelEdit(el,clientX,clientY){
+ if(!el)return;
+ const wrapRect=$('wrap').getBoundingClientRect(),r=el.getBoundingClientRect();
+ const cx=r.width>0?(r.left+r.width/2-wrapRect.left):(clientX-wrapRect.left);
+ const cy=r.height>0?(r.top+r.height/2-wrapRect.top):(clientY-wrapRect.top);
+
+ // 1. Measurement label
+ const k=el.dataset&&el.dataset.lbl;
+ if(k!==undefined){
+  const s=shapes[+el.dataset.i];
+  if(s){
+   const cur=(s.lbls&&s.lbls[k])||'';
+   openInlineEdit(cx,cy,cur,'e.g. 5 cm, x',val=>{
+    snapshot();
+    s.lbls=s.lbls||{};
+    if(val.toLowerCase()==='hide'){
+     s.hid=[...(s.hid||[]),k];
+     toast('Label hidden');
+    }else if(val){
+     s.lbls[k]=val;
+     toast('Label set to ' + val);
+    }else{
+     delete s.lbls[k];
+     toast('Reset to measured value');
+    }
+    render();
+   });
+   return;
+  }
+ }
+
+ // 2. Vertex label
+ const vtx=el.dataset&&el.dataset.vtx;
+ if(vtx!==undefined){
+  openInlineEdit(cx,cy,vtx,'Vertex name',val=>{
+   if(!val||val===vtx)return;
+   renameVertex(vtx,val.replace(/[<>&"]/g,''));
+  });
+  return;
+ }
+
+ // 3. Angle label
+ const angKey=el.dataset&&el.dataset.ang;
+ if(angKey!==undefined){
+  const a=ANG.find(x=>x.key===angKey);
+  const cur=alabels[angKey]||(a?String(parseFloat(a.deg.toFixed(1))):'');
+  openInlineEdit(cx,cy,cur,'e.g. 45 or x',val=>{
+   snapshot();
+   const v=val.replace(/°/g,'').trim();
+   if(numAng(v)&&a&&a.mv){
+    delete alabels[angKey];
+    setAngle(a,+v);
+    toast(`Angle reshaped to ${v}°`);
+   }else if(v){
+    alabels[angKey]=v;
+    toast(`Angle label set to ${v}`);
+   }else{
+    delete alabels[angKey];
+    toast('Reset to measured angle');
+   }
+   if(!$('arc').checked&&!$('alab').checked)$('alab').checked=true;
+   render();
+  });
+  return;
+ }
+}
 S.onpointerdown=e=>{
+ const ed=$('inline-edit');
+ if(ed&&ed.style.display!=='none'&&!ed.contains(e.target)){
+  ed.blur();
+ }
+ if(tool==='select'){
+  const lbl=findLabelTarget(e);
+  if(lbl){
+   const now=Date.now(),dt=now-lastLblClick.time;
+   const dxy=Math.hypot(e.clientX-lastLblClick.x,e.clientY-lastLblClick.y);
+   if(dt<500&&dxy<35){
+    lastLblClick={time:0,x:0,y:0};
+    triggerLabelEdit(lbl,e.clientX,e.clientY);
+    e.preventDefault();
+    return;
+   }
+   lastLblClick={time:now,x:e.clientX,y:e.clientY};
+   if(lbl.dataset.i!==undefined){
+    pick([+lbl.dataset.i]);
+    info();
+   }
+   e.preventDefault();
+   return;
+  }
+ }
+ lastLblClick={time:0,x:0,y:0};
  const p=pt(e);S.setPointerCapture(e.pointerId);
  if(e.button===1||spaceDown||tool==='pan'){drag={m:'pan',sx:e.clientX,sy:e.clientY,vx:view.x,vy:view.y};S.style.cursor='grabbing';return}
  if(tool==='select'){const h=e.target.dataset.h,i=e.target.dataset.i;
@@ -332,102 +469,11 @@ S.onpointerup=()=>{
   if(x1-x0>3||y1-y0>3)pick(expand([...drag.base,...shapes.map((s,i)=>i).filter(i=>{const q=sbox(shapes[i]);return q[0]>=x0&&q[1]>=y0&&q[2]<=x1&&q[3]<=y1})]))}
  if(drag&&drag.m==='pan')S.style.cursor=tool==='pan'?'grab':tool==='select'?'default':'crosshair';
  drag=null;render()};
-function openInlineEdit(cx,cy,initialVal,placeholder,onSave){
- let ed=$('inline-edit');
- if(!ed){
-  ed=document.createElement('input');
-  ed.id='inline-edit';
-  ed.type='text';
-  ed.style.cssText='position:absolute;z-index:25;transform:translate(-50%,-50%);padding:4px 8px;font-size:13px;font-weight:600;border:2px solid var(--accent,#3b5bdb);border-radius:6px;background:var(--panel,#fff);color:var(--ink,#1c2230);box-shadow:0 4px 14px rgba(0,0,0,0.25);outline:none;text-align:center;min-width:70px;max-width:160px;';
-  $('wrap').appendChild(ed);
- }
- ed.value=initialVal||'';
- ed.placeholder=placeholder||'';
- const W=$('wrap').clientWidth||500,H=$('wrap').clientHeight||400;
- ed.style.left=Math.max(45,Math.min(W-45,cx))+'px';
- ed.style.top=Math.max(22,Math.min(H-22,cy))+'px';
- ed.style.display='block';
- ed.focus();
- ed.select();
- let done=false;
- const commit=()=>{if(done)return;done=true;ed.style.display='none';onSave(ed.value.trim())};
- ed.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();commit()}else if(e.key==='Escape'){done=true;ed.style.display='none'}};
- ed.onblur=commit;
-}
-function renameVertex(vtx,val){
- if(!val||val===vtx)return;
- snapshot();
- const mp={[vtx]:val};
- migrate(mp);
- shapes.forEach(sh=>{if(sh.names)sh.names=sh.names.map(n=>n===vtx?val:n)});
- render();
- toast(`Vertex ${vtx} renamed to ${val}`);
-}
 S.ondblclick=e=>{
- const el=document.elementFromPoint(e.clientX,e.clientY);
- if(el){
-  const wrapRect=$('wrap').getBoundingClientRect(),r=el.getBoundingClientRect();
-  const cx=r.left+r.width/2-wrapRect.left,cy=r.top+r.height/2-wrapRect.top;
-
-  // 1. Measurement label on figure
-  const k=el.dataset&&el.dataset.lbl;
-  if(k!==undefined){
-   const s=shapes[+el.dataset.i];
-   if(s){
-    const cur=(s.lbls&&s.lbls[k])||'';
-    openInlineEdit(cx,cy,cur,'e.g. 5 cm, x',val=>{
-     snapshot();
-     s.lbls=s.lbls||{};
-     if(val.toLowerCase()==='hide'){
-      s.hid=[...(s.hid||[]),k];
-      toast('Label hidden');
-     }else if(val){
-      s.lbls[k]=val;
-      toast('Label updated');
-     }else{
-      delete s.lbls[k];
-      toast('Reset to measured value');
-     }
-     render();
-    });
-    return;
-   }
-  }
-
-  // 2. Vertex label on figure
-  const vtx=el.dataset&&el.dataset.vtx;
-  if(vtx!==undefined){
-   openInlineEdit(cx,cy,vtx,'Name',val=>{
-    if(!val||val===vtx)return;
-    renameVertex(vtx,val.replace(/[<>&"]/g,''));
-   });
-   return;
-  }
-
-  // 3. Angle label on figure
-  const angKey=el.dataset&&el.dataset.ang;
-  if(angKey!==undefined){
-   const a=ANG.find(x=>x.key===angKey);
-   const cur=alabels[angKey]||(a?String(parseFloat(a.deg.toFixed(1))):'');
-   openInlineEdit(cx,cy,cur,'e.g. 45 or x',val=>{
-    snapshot();
-    const v=val.replace(/°/g,'').trim();
-    if(numAng(v)&&a&&a.mv){
-     delete alabels[angKey];
-     setAngle(a,+v);
-     toast(`Angle reshaped to ${v}°`);
-    }else if(v){
-     alabels[angKey]=v;
-     toast(`Angle label set to ${v}`);
-    }else{
-     delete alabels[angKey];
-     toast('Reset to measured angle');
-    }
-    if(!$('arc').checked&&!$('alab').checked)$('alab').checked=true;
-    render();
-   });
-   return;
-  }
+ const lbl=findLabelTarget(e);
+ if(lbl){
+  triggerLabelEdit(lbl,e.clientX,e.clientY);
+  return;
  }
  if(pend.length>=3)finishPoly();
 };
