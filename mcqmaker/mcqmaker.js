@@ -211,72 +211,48 @@ function renderList() {
     <div class="qc" data-i="${i}" id="qc-${i}">
       <div class="qc-top">
         <div class="qc-title">
-          <span class="qc-num">${i + 1}</span>
-          <span class="qc-label">Question ${i + 1}</span>
+          <span style="background:var(--primary);color:#fff;width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px">${i + 1}</span>
+          <span>Question ${i + 1}</span>
         </div>
         <div class="qc-actions">
-          <button class="qc-btn-action" data-act="up" data-i="${i}" title="Move Up" ${i === 0 ? "disabled" : ""}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg>
-          </button>
-          <button class="qc-btn-action" data-act="down" data-i="${i}" title="Move Down" ${i === qs.length - 1 ? "disabled" : ""}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
-          </button>
-          <button class="qc-btn-action" data-act="dup" data-i="${i}" title="Duplicate Question">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-          </button>
-          <button class="qc-btn-action qc-btn-delete" data-act="del" data-i="${i}" title="Delete Question">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-          </button>
+          <button class="btn btn-sm" data-act="up" data-i="${i}" title="Move Up" ${i === 0 ? "disabled" : ""}>↑</button>
+          <button class="btn btn-sm" data-act="down" data-i="${i}" title="Move Down" ${i === qs.length - 1 ? "disabled" : ""}>↓</button>
+          <button class="btn btn-sm" data-act="dup" data-i="${i}" title="Duplicate">📋</button>
+          <button class="btn btn-sm btn-danger" data-act="del" data-i="${i}" title="Delete">🗑️</button>
         </div>
       </div>
       <div class="qc-body">
-        <label>Question Text (LaTeX $...$ &amp; **bold** supported):</label>
-        <textarea data-q="${i}" rows="2" placeholder="Enter question statement...">${esc(q.q)}</textarea>
+        <label>Question Text (Supports LaTeX $...$ &amp; Markdown **bold**):</label>
+        <textarea data-q="${i}" rows="2">${esc(q.q)}</textarea>
 
-        <div style="margin-top:10px">
+        <div style="margin-top:8px">
           <label>Options &amp; Correct Answer:</label>
           ${q.o.map((o, j) => `
             <div class="oi">
-              <label class="oi-radio-wrap" title="Click to mark option ${L[j]} as correct">
-                <input type="radio" name="ans-${i}" data-a="${i}:${j}" ${q.a === j ? "checked" : ""}>
-                <span class="oi-letter ${q.a === j ? "correct" : ""}">${L[j]}</span>
-              </label>
-              <input type="text" data-o="${i}:${j}" value="${esc(o)}" placeholder="Option ${L[j]}" class="oi-input">
-              ${q.o.length > 2 ? `
-                <button class="oi-del" data-del-opt="${i}:${j}" title="Remove this option">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                </button>
-              ` : ""}
+              <input type="radio" name="ans-${i}" data-a="${i}:${j}" ${q.a === j ? "checked" : ""} title="Mark as correct answer">
+              <span class="oi-letter ${q.a === j ? "correct" : ""}">${L[j]}</span>
+              <input type="text" data-o="${i}:${j}" value="${esc(o)}" placeholder="Option ${L[j]}">
+              ${q.o.length > 2 ? `<button class="oi-del" data-del-opt="${i}:${j}" title="Remove option">✕</button>` : ""}
             </div>
           `).join("")}
           ${q.o.length < 6 ? `
-            <button class="btn btn-sm" data-add-opt="${i}" style="margin-top:8px">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-              Add Option ${L[q.o.length] || ""}
-            </button>
+            <button class="btn btn-sm" data-add-opt="${i}" style="margin-top:6px">+ Add Option ${L[q.o.length] || ""}</button>
           ` : ""}
         </div>
 
         <div class="qc-footer">
-          <div class="qc-footer-left">
-            <span class="qc-foot-label">Layout:</span>
-            <select data-ol="${i}" class="qc-select">
+          <div style="display:flex;gap:6px;align-items:center">
+            <span style="color:var(--mute)">Layout:</span>
+            <select data-ol="${i}" style="width:auto;padding:3px 6px">
               ${LO.map(([v, t]) => `<option value="${v}" ${(q.ol || "") === v ? "selected" : ""}>${t}</option>`).join("")}
             </select>
-            <span class="qc-foot-label" style="margin-left:6px">Marks:</span>
-            <input type="number" data-marks="${i}" value="${q.marks || 1}" min="0.5" step="0.5" class="qc-marks-input">
+            <span style="color:var(--mute);margin-left:4px">Marks:</span>
+            <input type="number" data-marks="${i}" value="${q.marks || 1}" min="0.5" step="0.5" style="width:52px;padding:3px 6px">
           </div>
 
-          <div class="qc-footer-right">
-            <label class="btn btn-sm" title="Attach image to question">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-              Image
-              <input type="file" accept="image/*" data-img="${i}" hidden>
-            </label>
-            <button class="btn btn-sm" data-plot="${i}" title="Plot math function graph">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
-              Plot
-            </button>
+          <div style="display:flex;gap:4px">
+            <label class="btn btn-sm">📷 Image<input type="file" accept="image/*" data-img="${i}" hidden></label>
+            <button class="btn btn-sm" data-plot="${i}">📈 Plot</button>
           </div>
         </div>
 
@@ -284,16 +260,16 @@ function renderList() {
           <div class="qc-img-preview">
             <img src="${q.img.src}" alt="Question Image">
             <div style="flex:1">
-              <div style="font-size:11px;color:var(--mute);margin-bottom:4px;font-weight:600">Image Width: <span id="wlabel-${i}">${q.img.wmm}</span> mm</div>
-              <input type="range" min="20" max="150" value="${q.img.wmm}" data-w="${i}" class="qc-range">
+              <div style="font-size:11px;color:var(--mute);margin-bottom:2px">Width: <span id="wlabel-${i}">${q.img.wmm}</span> mm</div>
+              <input type="range" min="20" max="150" value="${q.img.wmm}" data-w="${i}">
             </div>
             <button class="btn btn-sm btn-danger" data-rm-img="${i}">Remove</button>
           </div>
         ` : ""}
 
-        <details class="qc-details" style="margin-top:10px">
-          <summary>Explanation / Solution (Optional)</summary>
-          <textarea data-exp="${i}" rows="2" placeholder="Explanation for answer key..." style="margin-top:6px">${esc(q.exp || "")}</textarea>
+        <details style="margin-top:8px">
+          <summary style="font-size:11.5px;color:var(--mute);cursor:pointer">Add Explanation / Solution (Optional)</summary>
+          <textarea data-exp="${i}" rows="1" placeholder="Explanation for answer key..." style="margin-top:4px">${esc(q.exp || "")}</textarea>
         </details>
       </div>
     </div>
@@ -771,23 +747,11 @@ function preview() {
 
   $("cols").disabled = isMultiCopy;
 
-  // Update mode tags & toggle button
+  // Update mode tags
   const isTeacher = s.mode === "teacher";
   const tag = $("preview-mode-tag");
-  if (tag) {
-    tag.innerHTML = isTeacher
-      ? '<span class="status-dot"></span><span>Teacher Copy</span>'
-      : '<span class="status-dot"></span><span>Student Copy</span>';
-    tag.className = "preview-badge " + (isTeacher ? "badge-teacher" : "badge-student");
-    tag.style.background = "";
-  }
-  const toggleBtn = $("btn-quick-toggle");
-  if (toggleBtn) {
-    toggleBtn.innerHTML = isTeacher
-      ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg><span>Student</span>'
-      : '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg><span>Teacher</span>';
-    toggleBtn.classList.toggle("is-active", isTeacher);
-  }
+  tag.textContent = isTeacher ? "👨‍🏫 Teacher Master Copy" : "🎓 Student Copy";
+  tag.style.background = isTeacher ? "var(--success)" : "rgba(255,255,255,0.1)";
 
   // Compute Full Marks display
   const calculatedMarks = totalMarksCalc();
@@ -1032,6 +996,7 @@ $("z-100").onclick = () => {
 $("btn-quick-toggle").onclick = () => {
   const newMode = $("mode").value === "student" ? "teacher" : "student";
   $("mode").value = newMode;
+  $("btn-quick-toggle").textContent = newMode === "teacher" ? "Student View" : "Teacher View";
   preview();
 };
 
@@ -2008,33 +1973,32 @@ async function renderLibrary() {
 
   if (!filtered.length) {
     listEl.innerHTML = allPapers.length
-      ? '<div class="lib-empty-msg">No papers match your search.</div>'
-      : '<div class="lib-empty-msg">No saved papers yet.<br>Click <strong>New Paper</strong> to get started.</div>';
+      ? '<div style="color:var(--mute);padding:14px;text-align:center;font-size:12px">No papers match your search.</div>'
+      : '<div style="color:var(--mute);padding:14px;text-align:center;font-size:12px">No saved papers yet. Click "New Blank Paper" to start.</div>';
     return;
   }
 
   listEl.innerHTML = filtered.map(p => {
     const isActive = p.id === currentPaperId;
-    const metaParts = [];
-    if (p.subject) metaParts.push(esc(p.subject));
-    if (p.grade) metaParts.push(esc(p.grade));
-    metaParts.push(`${p.qCount || 0} Questions`);
-    metaParts.push(`${p.totalMarks || 0} Marks`);
-
     return `
       <div class="paper-card ${isActive ? 'is-active' : ''}">
         <div class="paper-card-top">
           <span class="paper-card-title" title="${esc(p.title)}">
             ${isActive ? '<span class="active-badge">Editing</span> ' : ''}${esc(p.title || 'Untitled Paper')}
           </span>
-          <span class="paper-card-time">${timeAgo(new Date(p.updatedAt))}</span>
+          <span style="font-size:11px;color:var(--mute)">${timeAgo(new Date(p.updatedAt))}</span>
         </div>
-        <div class="paper-card-meta">${metaParts.join(' · ')}</div>
+        <div class="paper-card-meta">
+          ${p.subject ? `<span>📘 ${esc(p.subject)}</span> •` : ''}
+          ${p.grade ? `<span>🏫 ${esc(p.grade)}</span> •` : ''}
+          <span>📝 ${p.qCount || 0} Qs</span> •
+          <span>🎯 ${p.totalMarks || 0} Marks</span>
+        </div>
         <div class="paper-card-actions">
-          ${!isActive ? `<button class="btn btn-sm btn-primary" data-load-paper="${p.id}">Open</button>` : ''}
-          <button class="btn btn-sm" data-dup-paper="${p.id}" title="Duplicate this paper">Duplicate</button>
-          <button class="btn btn-sm" data-dl-paper="${p.id}" title="Download .json backup">JSON</button>
-          ${allPapers.length > 1 ? `<button class="btn btn-sm btn-danger" data-del-paper="${p.id}" title="Delete paper" style="margin-left:auto">Delete</button>` : ''}
+          ${!isActive ? `<button class="btn btn-sm btn-primary" data-load-paper="${p.id}">📂 Open</button>` : ''}
+          <button class="btn btn-sm" data-dup-paper="${p.id}" title="Duplicate this paper">📑 Duplicate</button>
+          <button class="btn btn-sm" data-dl-paper="${p.id}" title="Download .json file">💾 JSON</button>
+          ${allPapers.length > 1 ? `<button class="btn btn-sm btn-danger" data-del-paper="${p.id}" title="Delete paper">🗑️</button>` : ''}
         </div>
       </div>
     `;

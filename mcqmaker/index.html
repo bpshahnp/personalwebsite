@@ -35,11 +35,6 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='2'><path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'></path><polyline points='14 2 14 8 20 8'></polyline><line x1='16' y1='13' x2='8' y2='13'></line><line x1='16' y1='17' x2='8' y2='17'></line><polyline points='10 9 9 9 8 9'></polyline></svg>">
 <link rel="apple-touch-icon" href="og-preview.png">
 
-<!-- Google Fonts: Inter -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
 <script>
 window.MathJax = {
   svg: { fontCache: 'none' },
@@ -57,93 +52,58 @@ window.MathJax = {
 <aside>
   <div class="brand">
     <div class="brand-title">
-      <div class="brand-icon">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-          <polyline points="14 2 14 8 20 8"></polyline>
-          <line x1="16" y1="13" x2="8" y2="13"></line>
-          <line x1="16" y1="17" x2="8" y2="17"></line>
-          <polyline points="10 9 9 9 8 9"></polyline>
-        </svg>
-      </div>
-      <span>MCQ Paper Maker</span>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+        <line x1="16" y1="13" x2="8" y2="13"></line>
+        <line x1="16" y1="17" x2="8" y2="17"></line>
+        <polyline points="10 9 9 9 8 9"></polyline>
+      </svg>
+      MCQ Paper Maker
     </div>
-    <div class="brand-badge">PRO</div>
+    <div style="display:flex;align-items:center;gap:6px">
+      <button class="btn btn-sm" id="btn-quick-library" title="Open Saved Papers Library">📁 Library</button>
+      <div class="brand-badge">Pro Suite</div>
+    </div>
   </div>
 
   <div class="tabs">
-    <button class="tab-btn active" data-tab="library">
-      <span>Library</span>
-      <span class="tab-count" id="lib-count-badge">0</span>
-    </button>
-    <button class="tab-btn" data-tab="setup">
-      <span>Setup</span>
-    </button>
-    <button class="tab-btn" data-tab="questions">
-      <span>Questions</span>
-      <span class="tab-count" id="qcount">0</span>
-    </button>
-    <button class="tab-btn" data-tab="import">
-      <span>Import</span>
-    </button>
-    <button class="tab-btn" data-tab="export">
-      <span>Export</span>
-    </button>
+    <button class="tab-btn active" data-tab="library">📁 Library (<span id="lib-count-badge">0</span>)</button>
+    <button class="tab-btn" data-tab="setup">⚙️ Setup</button>
+    <button class="tab-btn" data-tab="questions">📝 Questions (<span id="qcount">0</span>)</button>
+    <button class="tab-btn" data-tab="import">📥 Import</button>
+    <button class="tab-btn" data-tab="export">🖨️ Export</button>
   </div>
 
   <!-- Tab 0: Saved Papers Library & Storage -->
   <div class="tab-pane active" id="tab-library">
-
-    <!-- Action Bar -->
-    <div class="lib-action-bar">
-      <button class="btn btn-primary lib-new-btn" id="btn-new-paper">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-        New Paper
-      </button>
-      <button class="btn lib-copy-btn" id="btn-save-as-copy" title="Save a copy of current paper">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-        Save Copy
-      </button>
+    <div style="display:flex;gap:6px;margin-bottom:12px">
+      <button class="btn btn-primary" id="btn-new-paper" style="flex:1">➕ New Blank Paper</button>
+      <button class="btn" id="btn-save-as-copy" title="Save a copy of current paper">📑 Save as Copy</button>
     </div>
 
     <!-- Active Paper Card -->
     <div class="active-paper-box" id="active-paper-indicator">
-      <div class="active-paper-label">
-        <span class="active-dot"></span>
-        Currently Editing
-      </div>
-      <div class="active-paper-title" id="active-paper-title-display">Untitled Paper</div>
-      <div class="active-paper-meta" id="active-paper-meta-display">0 Questions · Auto-saving active</div>
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--primary);letter-spacing:0.5px">Currently Editing:</div>
+      <div style="font-size:14px;font-weight:700;color:var(--ink);margin:2px 0" id="active-paper-title-display">Untitled Paper</div>
+      <div style="font-size:11.5px;color:var(--mute)" id="active-paper-meta-display">0 Questions • Auto-saving active</div>
     </div>
 
-    <!-- Saved Papers -->
-    <div class="lib-section-header">
-      <span>Saved Papers</span>
-      <span class="lib-count-chip" id="lib-count">0</span>
-    </div>
-    <div class="lib-search-wrap">
-      <svg class="lib-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-      <input type="text" id="lib-search" placeholder="Search papers…" class="lib-search-input">
+    <div class="section-hdr">Saved Papers (<span id="lib-count">0</span>)</div>
+    <div class="search-bar" style="margin-bottom:8px">
+      <input type="text" id="lib-search" placeholder="🔍 Search saved papers...">
     </div>
 
-    <div id="library-list"></div>
+    <div id="library-list" style="margin-bottom:14px"></div>
 
-    <!-- Storage Section -->
-    <div class="lib-storage-section">
-      <div class="lib-storage-label" id="storage-usage-label">Storage: Calculating…</div>
-      <div class="lib-storage-actions">
-        <button class="btn btn-sm" id="btn-backup-library">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-          Export All
-        </button>
-        <label class="btn btn-sm">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-          Restore
-          <input type="file" id="input-restore-library" accept=".json,application/json" hidden>
-        </label>
-      </div>
+    <div class="section-hdr">Storage Backup &amp; Info</div>
+    <div class="field" style="font-size:11.5px;color:var(--mute);margin-bottom:8px">
+      <span id="storage-usage-label">Storage: Calculating...</span>
     </div>
-
+    <div class="btn-group">
+      <button class="btn btn-sm" id="btn-backup-library">📥 Export All Papers (.json)</button>
+      <label class="btn btn-sm">📤 Restore All Papers<input type="file" id="input-restore-library" accept=".json,application/json" hidden></label>
+    </div>
   </div>
 
   <!-- Tab 1: Setup -->
@@ -275,16 +235,16 @@ window.MathJax = {
       <div>
         <label>Answer Key</label>
         <select id="key-mode">
-          <option value="none" selected>Hide Answer Key</option>
-          <option value="end">Print at End of Paper</option>
-          <option value="separate">Print on Separate Page</option>
+          <option value="none" selected>🚫 Hide Answer Key (Do Not Print)</option>
+          <option value="end">📄 Print at End of Paper</option>
+          <option value="separate">📑 Print on Separate Page</option>
         </select>
       </div>
       <div>
         <label>Exam Mode</label>
         <select id="mode">
-          <option value="student" selected>Student Question Paper</option>
-          <option value="teacher">Teacher Master Copy</option>
+          <option value="student" selected>🎓 Student Question Paper</option>
+          <option value="teacher">👨‍🏫 Teacher Master Copy</option>
         </select>
       </div>
     </div>
@@ -292,19 +252,14 @@ window.MathJax = {
 
   <!-- Tab 2: Questions Editor -->
   <div class="tab-pane" id="tab-questions">
-    <div class="questions-top-bar">
-      <div class="lib-search-wrap" style="margin-bottom:0;flex:1">
-        <svg class="lib-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-        <input type="text" id="qsearch" placeholder="Search questions…" class="lib-search-input">
-      </div>
-      <button class="btn btn-sm" id="btn-expand-all" title="Expand / Collapse All Questions">Toggle All</button>
+    <div class="search-bar">
+      <input type="text" id="qsearch" placeholder="🔍 Search questions...">
+      <button class="btn btn-sm" id="btn-expand-all" title="Expand or Collapse All">Toggle All</button>
     </div>
 
     <!-- Math Toolbar -->
     <div class="math-toolbar">
-      <div class="math-toolbar-header">
-        <span>LaTeX &amp; Math Formula Palette:</span>
-      </div>
+      <div style="font-size:11px;font-weight:700;color:var(--mute);margin-bottom:4px">LaTeX &amp; Symbols Palette (Click to insert):</div>
       <div class="math-category-tabs">
         <button class="math-cat-btn active" data-cat="alg">Algebra</button>
         <button class="math-cat-btn" data-cat="sym">Symbols</button>
@@ -318,96 +273,60 @@ window.MathJax = {
     <!-- Question Cards List -->
     <div id="list"></div>
 
-    <div class="questions-bottom-bar">
-      <button class="btn btn-primary" id="add">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-        Add Question
-      </button>
-      <button class="btn" id="shq" title="Shuffle questions order">Shuffle Qs</button>
-      <button class="btn" id="sho" title="Shuffle options inside each question">Shuffle Opts</button>
-      <button class="btn btn-danger" id="clr" title="Clear all questions">Clear</button>
+    <div class="btn-group" style="margin-top:12px">
+      <button class="btn btn-primary" id="add">➕ Add Question</button>
+      <button class="btn" id="shq">🔀 Shuffle Questions</button>
+      <button class="btn" id="sho">🔀 Shuffle Options</button>
+      <button class="btn btn-danger btn-sm" id="clr">🗑️ Clear All</button>
     </div>
   </div>
 
   <!-- Tab 3: Import & Presets -->
   <div class="tab-pane" id="tab-import">
-    <div class="section-hdr">Raw Text / AI Import</div>
-    <div class="import-help-box">
-      Paste text from Word, PDF, Aiken format, or AI (ChatGPT, Claude, Gemini). Numbering, letters (A–D/E), and answers (e.g. <code>Answer: B</code> or <code>*B</code>) are auto-detected.
-    </div>
-    <textarea id="raw" rows="7" placeholder="1. What is the derivative of sin(x)?&#10;A) cos(x)&#10;B) -cos(x)&#10;C) tan(x)&#10;D) sec(x)&#10;Answer: A&#10;&#10;2. Chemical formula for table salt?&#10;A. NaCl  B. H2O  C. CO2  D. KCl&#10;Ans: A"></textarea>
+    <div class="section-hdr">Universal Raw Text &amp; AI Import</div>
+    <p style="color:var(--mute);font-size:12px;margin:0 0 8px">
+      Paste text from Word, PDF, Aiken format, or AI (ChatGPT/Claude/Gemini). Numbering, letters (A-D or A-E), and asterisk answers (*A or Answer: B) are automatically detected.
+    </p>
+    <textarea id="raw" rows="8" placeholder="1. What is the derivative of sin(x)?&#10;A) cos(x)&#10;B) -cos(x)&#10;C) tan(x)&#10;D) sec(x)&#10;Answer: A&#10;&#10;2. Chemical formula for table salt?&#10;A. NaCl  B. H2O  C. CO2  D. KCl&#10;Ans: A"></textarea>
 
-    <div class="btn-group" style="margin:10px 0">
-      <button class="btn btn-primary" id="impadd">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-        Import &amp; Append
-      </button>
-      <button class="btn" id="imprep">Replace All</button>
-      <label class="btn">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-        Load .txt
-        <input type="file" id="impfile" accept=".txt,text/plain" hidden>
-      </label>
+    <div class="btn-group" style="margin:8px 0">
+      <button class="btn btn-primary" id="impadd">Import &amp; Append</button>
+      <button class="btn" id="imprep">Import &amp; Replace All</button>
+      <label class="btn">📁 Load .txt File<input type="file" id="impfile" accept=".txt,text/plain" hidden></label>
     </div>
-    <div class="note" id="imsg"></div>
+    <div class="note" id="imsg" style="color:var(--primary);font-size:12px;font-weight:500;margin-top:4px"></div>
 
     <div class="section-hdr">Load Ready-to-Use Sample Tests</div>
-    <div class="sample-grid">
-      <button class="btn btn-sm sample-btn" id="load-sample-math">Mathematics &amp; Calculus</button>
-      <button class="btn btn-sm sample-btn" id="load-sample-physics">Physics &amp; Chemistry</button>
-      <button class="btn btn-sm sample-btn" id="load-sample-gk">General Science &amp; Logic</button>
+    <div class="btn-group">
+      <button class="btn btn-sm" id="load-sample-math">📐 Math &amp; Calculus</button>
+      <button class="btn btn-sm" id="load-sample-physics">⚡ Physics &amp; Chemistry</button>
+      <button class="btn btn-sm" id="load-sample-gk">🌍 General Science &amp; Logic</button>
     </div>
 
-    <div class="section-hdr">Project Backup &amp; LMS</div>
+    <div class="section-hdr">Project Backup &amp; LMS Export</div>
     <div class="btn-group">
-      <button class="btn btn-sm" id="psave">Save JSON</button>
-      <label class="btn btn-sm">Open JSON<input type="file" id="popen" accept=".json,application/json" hidden></label>
-      <button class="btn btn-sm" id="btn-export-aiken">Export Aiken</button>
+      <button class="btn btn-sm" id="psave">💾 Save Project (.json)</button>
+      <label class="btn btn-sm">📂 Open Project<input type="file" id="popen" accept=".json,application/json" hidden></label>
+      <button class="btn btn-sm" id="btn-export-aiken">📤 Export Aiken (.txt)</button>
     </div>
   </div>
 
   <!-- Tab 4: Export & OMR -->
   <div class="tab-pane" id="tab-export">
-    <div class="section-hdr">Export &amp; Print Options</div>
-    <div class="export-cards-grid">
-      <button class="export-card-btn export-card-primary" id="bprint">
-        <div class="export-card-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-        </div>
-        <div class="export-card-info">
-          <span class="export-card-title">Print Exam</span>
-          <span class="export-card-desc">Direct browser printing</span>
-        </div>
-      </button>
-
-      <button class="export-card-btn export-card-pdf" id="bpdf">
-        <div class="export-card-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
-        </div>
-        <div class="export-card-info">
-          <span class="export-card-title">Save as PDF</span>
-          <span class="export-card-desc">High-res vector document</span>
-        </div>
-      </button>
-
-      <button class="export-card-btn export-card-doc" id="bdoc">
-        <div class="export-card-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
-        </div>
-        <div class="export-card-info">
-          <span class="export-card-title">Word Document</span>
-          <span class="export-card-desc">Editable Microsoft .docx</span>
-        </div>
-      </button>
+    <div class="section-hdr">Primary Export Options</div>
+    <div class="btn-group" style="margin-bottom:16px">
+      <button class="btn btn-primary" id="bprint" style="flex:1">🖨️ Print Paper</button>
+      <button class="btn btn-primary" id="bpdf" style="flex:1">📑 Save as PDF</button>
+      <button class="btn" id="bdoc" style="flex:1">📝 Word (.docx)</button>
     </div>
 
     <div class="section-hdr">Answer Key Settings</div>
     <div class="field">
       <label>Answer Key Placement</label>
       <select id="key-mode-export">
-        <option value="none" selected>Hide Answer Key (Do Not Print)</option>
-        <option value="end">Print Compact Key at End of Paper</option>
-        <option value="separate">Print on Dedicated Separate Page</option>
+        <option value="none" selected>🚫 Hide Answer Key (Do Not Print)</option>
+        <option value="end">📄 Print Compact Key at End of Paper</option>
+        <option value="separate">📑 Print on Dedicated Separate Page</option>
       </select>
     </div>
     <div class="field">
@@ -427,63 +346,43 @@ window.MathJax = {
     </div>
 
     <div class="section-hdr">Print Perfection Tips</div>
-    <div class="print-tips-box">
-      <div>• In browser print dialog, set <strong>Destination</strong> to your printer or <strong>Save as PDF</strong>.</div>
-      <div>• Ensure <strong>Scale</strong> is set to <strong>100%</strong> (or Default).</div>
-      <div>• Uncheck <strong>Headers and footers</strong> to keep your exam sheets clean.</div>
+    <div style="font-size:12px;color:var(--mute);line-height:1.4">
+      • In browser print settings, set <b>Destination</b> to your printer or <b>Save as PDF</b>.<br>
+      • Ensure <b>Scale</b> is set to <b>100%</b> (or Default).<br>
+      • Uncheck <b>Headers and footers</b> to keep your exam sheet clean.
     </div>
   </div>
 
   <div class="status-bar">
-    <div class="status-bar-left">
-      <span class="status-live-dot"></span>
-      <span id="sv">Auto-saving active</span>
-    </div>
-    <span class="status-marks-badge" id="total-marks-label">Total: 0 Marks</span>
+    <span id="sv">Auto-save is on.</span>
+    <span id="total-marks-label">Total: 0 Marks</span>
   </div>
 </aside>
 
 <!-- Main Preview Area -->
 <main>
   <div class="preview-toolbar">
-    <!-- Left: Mode + Page info -->
-    <div class="preview-actions" style="gap:6px;flex-shrink:0">
-      <span class="preview-badge badge-student" id="preview-mode-tag">
-        <span class="status-dot"></span>
-        <span>Student Copy</span>
-      </span>
-      <span class="preview-badge" id="page-count-badge" style="color:#64748b;background:transparent;border-color:transparent">Pages: 1</span>
+    <div class="preview-actions">
+      <span class="preview-badge" id="preview-mode-tag">🎓 Student Copy</span>
+      <span class="preview-badge" id="page-count-badge">Pages: 1</span>
     </div>
 
-    <!-- Center: Zoom controls -->
-    <div class="preview-zoom-group">
-      <button class="preview-btn" id="z-out" title="Zoom Out (−)">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-      </button>
-      <span id="z-val">Fit</span>
-      <button class="preview-btn" id="z-in" title="Zoom In (+)">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-      </button>
-      <div class="zoom-divider"></div>
-      <button class="preview-btn text-btn" id="z-fit" title="Fit to screen">Fit</button>
-      <button class="preview-btn text-btn" id="z-100" title="Actual size">100%</button>
+    <div class="preview-zoom">
+      <button class="btn btn-sm" id="z-out" title="Zoom Out">🔍 -</button>
+      <span id="z-val" style="min-width:44px;text-align:center">Fit</span>
+      <button class="btn btn-sm" id="z-in" title="Zoom In">🔍 +</button>
+      <button class="btn btn-sm" id="z-fit">Fit</button>
+      <button class="btn btn-sm" id="z-100">100%</button>
     </div>
 
-    <!-- Right: Controls -->
-    <div class="preview-actions" style="gap:8px;flex-shrink:0">
-      <select id="top-key-mode" class="top-key-select" title="Answer Key mode">
-        <option value="none" selected>Key: Off</option>
-        <option value="end">Key: End</option>
-        <option value="separate">Key: Page</option>
+    <div class="preview-actions">
+      <select id="top-key-mode" style="padding:4px 8px;font-size:11.5px;background:#334155;color:#fff;border:1px solid #475569;border-radius:4px;cursor:pointer" title="Answer Key Display on Paper">
+        <option value="none" selected>Key: Hidden (Off)</option>
+        <option value="end">Key: Show at End</option>
+        <option value="separate">Key: Separate Page</option>
       </select>
-      <button class="preview-btn mode-toggle-btn" id="btn-quick-toggle" title="Switch Student / Teacher View">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-        <span>Teacher</span>
-      </button>
-      <button class="preview-btn primary-print-btn" id="btn-top-print" title="Print or Save as PDF">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-        <span>Print</span>
-      </button>
+      <button class="btn btn-sm" id="btn-quick-toggle" title="Switch Student / Teacher View">Teacher View</button>
+      <button class="btn btn-sm btn-primary" id="btn-top-print">🖨️ Print / PDF</button>
     </div>
   </div>
 
@@ -495,8 +394,8 @@ window.MathJax = {
 
 <!-- Graph Plotter Modal -->
 <dialog id="pd">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-    <h3 style="margin:0;font-size:15px;font-weight:700;color:var(--ink)">Math Function Plotter</h3>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <h3 style="margin:0;font-size:16px">📈 Math Function Plotter</h3>
     <button class="btn btn-sm" id="pcl">✕ Close</button>
   </div>
 
@@ -529,14 +428,14 @@ window.MathJax = {
     <div><label>y max (blank = auto)</label><input type="text" id="py1"></div>
   </div>
 
-  <div class="check-group" style="margin-bottom:12px">
+  <div class="check-group" style="margin-bottom:8px">
     <label class="check-item"><input type="checkbox" id="pgrid" checked> Show Grid</label>
     <label class="check-item"><input type="checkbox" id="parrows" checked> Axis Arrows</label>
   </div>
 
-  <canvas id="pc" width="1200" height="850" style="width:100%;height:auto;border:1px solid var(--line-strong);border-radius:8px;background:#ffffff;display:block"></canvas>
+  <canvas id="pc" width="1200" height="850" style="width:100%;height:auto;border:1px solid var(--line-strong);border-radius:6px;background:#ffffff;display:block"></canvas>
 
-  <div class="btn-group" style="margin-top:16px;justify-content:flex-end">
+  <div class="btn-group" style="margin-top:14px;justify-content:flex-end">
     <button class="btn btn-primary" id="puse">Insert Plot into Question</button>
   </div>
 </dialog>
@@ -544,16 +443,16 @@ window.MathJax = {
 <!-- Aiken Export Modal -->
 <dialog id="modal-aiken">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-    <h3 style="margin:0;font-size:15px;font-weight:700;color:var(--ink)">Aiken Format Export</h3>
+    <h3 style="margin:0;font-size:16px">📤 Aiken Format Export</h3>
     <button class="btn btn-sm" id="btn-close-aiken">✕ Close</button>
   </div>
-  <p style="font-size:12px;color:var(--mute);margin:0 0 10px">
+  <p style="font-size:12px;color:var(--mute);margin:0 0 8px">
     Standard format for Moodle, Canvas, and Blackboard question banks.
   </p>
   <textarea id="aiken-txt" rows="12" style="font-family:monospace;font-size:12px" readonly></textarea>
-  <div class="btn-group" style="margin-top:14px;justify-content:flex-end">
-    <button class="btn" id="btn-copy-aiken">Copy to Clipboard</button>
-    <button class="btn btn-primary" id="btn-download-aiken">Download .txt</button>
+  <div class="btn-group" style="margin-top:12px;justify-content:flex-end">
+    <button class="btn" id="btn-copy-aiken">📋 Copy to Clipboard</button>
+    <button class="btn btn-primary" id="btn-download-aiken">💾 Download .txt</button>
   </div>
 </dialog>
 
