@@ -69,6 +69,7 @@ details>.body{padding:10px 12px;display:grid;gap:8px}
 <label>Stroke <input type="color" id="stroke" value="#1c2230"></label>
 <label>Fill <span class="row"><input type="color" id="fill" value="#7c93ff"><label style="gap:4px"><input type="checkbox" id="nofill"> none</label></span></label>
 <label>Line width <input type="number" id="w" min="1" max="12" value="2"></label>
+<label>Stroke style <select id="dash"><option value="">Solid</option><option value="6 4">Dashed</option><option value="2 3">Dotted</option><option value="10 4 2 4">Dash-dot</option></select></label>
 <label id="nrow" style="display:none">Sides (regular) <input type="number" id="n" min="3" max="20" value="6"></label>
 </div></details>
 
@@ -142,7 +143,7 @@ function expand(a){const gs=new Set(a.map(i=>shapes[i]&&shapes[i].g).filter(Bool
 function sbox(s){const[a,b]=s.pts;if(s.type==='circle'){const r=dist(a,b);return[a.x-r,a.y-r,a.x+r,a.y+r]}
  if(s.type==='ellipse')return[Math.min(a.x,b.x),Math.min(a.y,b.y),Math.max(a.x,b.x),Math.max(a.y,b.y)];
  const v=verts(s);return[Math.min(...v.map(p=>p.x)),Math.min(...v.map(p=>p.y)),Math.max(...v.map(p=>p.x)),Math.max(...v.map(p=>p.y))]}
-const style=()=>({stroke:$('stroke').value,fill:$('nofill').checked?'none':$('fill').value,w:+$('w').value||2});
+const style=()=>({stroke:$('stroke').value,fill:$('nofill').checked?'none':$('fill').value,w:+$('w').value||2,dash:$('dash').value});
 const snapPt=p=>$('snap').checked?{x:Math.round(p.x/(U/2))*(U/2),y:Math.round(p.y/(U/2))*(U/2)}:p;
 const raw=e=>{const r=S.getBoundingClientRect();return{x:(e.clientX-r.left-view.x)/view.k,y:(e.clientY-r.top-view.y)/view.k}};
 const pt=e=>snapPt(raw(e));
@@ -161,7 +162,8 @@ const area=v=>Math.abs(v.reduce((t,p,i)=>{const q=v[(i+1)%v.length];return t+p.x
 function angleAt(v,i){const p=v[i],a=v[(i-1+v.length)%v.length],b=v[(i+1)%v.length];
  let d=Math.abs(Math.atan2(a.y-p.y,a.x-p.x)-Math.atan2(b.y-p.y,b.x-p.x))*180/Math.PI;return d>180?360-d:d}
 function shapeSVG(s,i,d){
- const at=`stroke="${s.stroke}" stroke-width="${s.w}" fill="${s.fill}" fill-opacity=".3" ${d?'stroke-dasharray="6 4" pointer-events="none"':`data-i="${i}" style="cursor:${tool==='select'?'move':'crosshair'}"`} stroke-linejoin="round"`;
+ const da=d?'stroke-dasharray="6 4"':(s.dash?`stroke-dasharray="${s.dash}"`:'');
+ const at=`stroke="${s.stroke}" stroke-width="${s.w}" fill="${s.fill}" fill-opacity=".3" ${da} ${d?'pointer-events="none"':`data-i="${i}" style="cursor:${tool==='select'?'move':'crosshair'}"`} stroke-linejoin="round"`;
  const[a,b]=s.pts;let g='';
  if(s.type==='line')g=`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" ${at} stroke-linecap="round"/>`;
  else if(s.type==='circle')g=`<circle cx="${a.x}" cy="${a.y}" r="${dist(a,b)}" ${at}/>`;
@@ -331,7 +333,7 @@ S.ondblclick=e=>{const el=document.elementFromPoint(e.clientX,e.clientY),k=el&&e
  if(pend.length>=3)finishPoly()};
 function finishPoly(){if(pend.length<3){pend=[];render();return}snapshot();shapes.push({type:'poly',pts:pend,...style()});pick([shapes.length-1]);pend=[];render()}
 function apply(){if(tool==='select')msel.forEach(i=>{const s=shapes[i];Object.assign(s,style());if(s.type==='reg')s.n=Math.max(3,Math.min(20,+$('n').value||6))});render()}
-['stroke','fill','nofill','w','n'].forEach(id=>$(id).onchange=apply);
+['stroke','fill','nofill','w','n','dash'].forEach(id=>$(id).onchange=apply);
 ['mbold','abold','grid','snap','meas','vn_on','par','perp','arc','alab'].forEach(id=>$(id).onchange=render);
 function unitUI(){$('cw').style.display=$('unit').value==='custom'?'flex':'none';$('ulab').textContent=un();render()}
 ['unit','cunit','scale'].forEach(id=>$(id).oninput=unitUI);
@@ -386,7 +388,7 @@ $('expng').onclick=async()=>{try{save(URL.createObjectURL(await pngBlob()),'figu
 let clip=null,pasteN=0,toastT;
 function toast(m){const e=$('toast');e.textContent=m;e.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove('on'),1800)}
 function copySel(){const src=msel.length?msel.map(i=>shapes[i]):shapes;if(!src.length){toast('Nothing to copy');return null}
- clip=JSON.stringify({geometryStudio:1,shapes:src.map(({type,pts,n,stroke,fill,w,g,hid})=>({type,pts,n,stroke,fill,w,g,hid}))});pasteN=0;
+ clip=JSON.stringify({geometryStudio:1,shapes:src.map(({type,pts,n,stroke,fill,w,dash,g,hid})=>({type,pts,n,stroke,fill,w,dash,g,hid}))});pasteN=0;
  toast(msel.length?(src.length>1?'Copied selection':'Copied shape'):'Copied whole diagram');return clip}
 function pasteData(txt){
  let d=null;try{d=JSON.parse(txt)}catch(_){}
@@ -395,7 +397,7 @@ function pasteData(txt){
  const list=((d&&d.shapes)||[]).filter(s=>ok.includes(s.type)&&Array.isArray(s.pts)&&s.pts.length>=2&&s.pts.every(p=>isFinite(p.x)&&isFinite(p.y)));
  if(!list.length){toast('Nothing to paste');return}
  snapshot();pasteN++;const o=pasteN*U,st=shapes.length,gm={};
- list.forEach(s=>{const n={type:s.type,pts:s.pts.map(p=>({x:+p.x+o,y:+p.y+o})),n:Math.max(3,Math.min(20,+s.n||6)),stroke:col(s.stroke),fill:s.fill==='none'?'none':col(s.fill),w:Math.max(1,Math.min(12,+s.w||2))};
+ list.forEach(s=>{const n={type:s.type,pts:s.pts.map(p=>({x:+p.x+o,y:+p.y+o})),n:Math.max(3,Math.min(20,+s.n||6)),stroke:col(s.stroke),fill:s.fill==='none'?'none':col(s.fill),w:Math.max(1,Math.min(12,+s.w||2)),dash:['','6 4','2 3','10 4 2 4'].includes(s.dash)?s.dash:''};
   if(typeof s.g==='string'&&/^\w+$/.test(s.g))n.g=gm[s.g]||(gm[s.g]='g'+Math.random().toString(36).slice(2,8));if(Array.isArray(s.hid))n.hid=s.hid.filter(x=>/^\w+$/.test(x));shapes.push(n)});
  setTool('select');pick(shapes.map((_,i)=>i).slice(st));render();toast('Pasted')}
 $('cp').onclick=()=>{const c=copySel();if(c&&navigator.clipboard)navigator.clipboard.writeText(c).catch(()=>{})};
