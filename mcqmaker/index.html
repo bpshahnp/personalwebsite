@@ -86,7 +86,16 @@ window.MathJax = {
 };
 </script>
 <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.js"></script>
+<script src="docx.min.js"></script>
+<script>
+// Fallback: if local bundle failed to define window.docx, load from CDN
+if (!window.docx) {
+  var s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js';
+  document.head.appendChild(s);
+}
+</script>
+
 <link rel="stylesheet" href="mcqmaker.css">
 </head>
 <body>

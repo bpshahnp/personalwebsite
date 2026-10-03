@@ -1223,9 +1223,18 @@ async function mathPNG(tex, disp, fpx) {
 }
 
 $("bdoc").onclick = async () => {
+  // If local bundle didn't load, try CDN on demand
   if (!window.docx) {
-    alert("DOCX export library is loading. Please check your internet connection.");
-    return;
+    const btn2 = $("bdoc");
+    btn2.disabled = true;
+    btn2.textContent = "Loading library...";
+    await new Promise((res, rej) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js';
+      s.onload = res;
+      s.onerror = () => rej(new Error('Failed to load DOCX library. Please check your internet connection.'));
+      document.head.appendChild(s);
+    }).catch(err => { alert(err.message); btn2.disabled = false; btn2.textContent = "📄 Word (.docx)"; throw err; });
   }
   const btn = $("bdoc");
   btn.disabled = true;
