@@ -1,383 +1,662 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1694584663544438" crossorigin="anonymous"></script>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>B. Prasad Shah | MCQ Hub &amp; Python Hub</title>
-  <meta name="description" content="Master your knowledge with B. Prasad Shah's MCQ Hub, Python Hub, and educational resources." />
-  <!-- Open Graph / Social Media -->
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://bholaprasadshah.com.np/" />
-  <meta property="og:title" content="B. Prasad Shah | MCQ Hub & Python Hub" />
-  <meta property="og:description" content="Master your knowledge with B. Prasad Shah's MCQ Hub, Python Hub, Live Quiz, and educational resources." />
-  <meta property="og:image" content="https://bholaprasadshah.com.np/assets/og-image.png?v=20260926_01" />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
-  <meta property="og:site_name" content="B. Prasad Shah" />
-  <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:url" content="https://bholaprasadshah.com.np/" />
-  <meta name="twitter:title" content="B. Prasad Shah | MCQ Hub & Python Hub" />
-  <meta name="twitter:description" content="Master your knowledge with B. Prasad Shah's MCQ Hub, Python Hub, Live Quiz, and educational resources." />
-  <meta name="twitter:image" content="https://bholaprasadshah.com.np/assets/og-image.png?v=20260926_01" />
-  <link rel="stylesheet" href="css/style.css?v=20260925_03" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Geometry Studio | Draw, Measure &amp; Export Geometric Figures</title>
+<meta name="description" content="Free online geometry drawing tool for math exams and teachers. Draw triangles, circles, polygons with exact measurements, angle arcs, dashed lines, and high-resolution transparent PNG/SVG export.">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f4f5f7;--panel:#fff;--ink:#1c2230;--mute:#667085;--line:#d9dde5;--accent:#3b5bdb;--accentbg:#e7ecff}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#13161d;--panel:#1c212b;--ink:#e8ebf2;--mute:#9aa3b5;--line:#313949;--accent:#8ea2ff;--accentbg:#2a3354}}
+:root[data-theme="dark"]{--bg:#13161d;--panel:#1c212b;--ink:#e8ebf2;--mute:#9aa3b5;--line:#313949;--accent:#8ea2ff;--accentbg:#2a3354}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--panel);border-bottom:1px solid var(--line);flex-wrap:wrap}
+h1{font-size:16px;margin:0 8px 0 0}
+.nav-tabs{display:flex;gap:4px;background:var(--bg);padding:3px;border-radius:8px;border:1px solid var(--line)}
+.nav-tab{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none;color:var(--mute);transition:all .15s}
+.nav-tab:hover{color:var(--ink)}
+.nav-tab.active{background:var(--panel);color:var(--accent);box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+.tools{display:flex;gap:4px;flex-wrap:wrap}
+button,select,input{font:inherit;color:inherit}
+button{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button.on{background:var(--accentbg);border-color:var(--accent);color:var(--accent);font-weight:600}
+.sp{flex:1}
+main{flex:1;min-height:0;display:flex;flex-direction:column}
+@media(min-width:800px){main{flex-direction:row}}
+#wrap{flex:1;min-height:260px;position:relative}
+svg#c{width:100%;height:100%;display:block;background:#fff;touch-action:none;cursor:crosshair}
+aside{background:var(--panel);border-top:1px solid var(--line);padding:12px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;flex:0 0 auto;max-height:48vh}
+aside>*{flex-shrink:0}
+@media(min-width:800px){aside{width:270px;max-height:none;flex:0 0 270px;border-top:0;border-left:1px solid var(--line)}}
+aside h2{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);margin:4px 0 0}
+label{display:flex;align-items:center;gap:8px;justify-content:space-between}
+input[type=number],input[type=text],select{padding:4px;border:1px solid var(--line);border-radius:6px;background:var(--bg)}input[type=number]{width:64px}input[type=text]{width:110px}
+input[type=color]{width:40px;height:26px;padding:0;border:1px solid var(--line);border-radius:6px;background:none}
+#info{background:var(--bg);border-radius:8px;padding:8px 10px;min-height:60px;font-variant-numeric:tabular-nums}
+#info div{display:flex;justify-content:space-between;gap:8px}
+#info span:first-child{color:var(--mute)}
+#status{position:absolute;left:8px;bottom:6px;font-size:12px;color:#667085;background:#ffffffcc;padding:2px 6px;border-radius:6px;pointer-events:none}
+.row{display:flex;gap:6px;flex-wrap:wrap}
+details{border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+summary{cursor:pointer;padding:9px 12px;font-weight:600;font-size:13px;list-style:none;display:flex;justify-content:space-between;align-items:center}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"▸";color:var(--mute);transition:transform .15s}
+details[open]>summary::after{transform:rotate(90deg)}
+details[open]>summary{border-bottom:1px solid var(--line)}
+details>.body{padding:10px 12px;display:grid;gap:8px}
+.hint{font-size:12px;color:var(--mute)}
+#toast{position:absolute;left:50%;top:10px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:6px 12px;border-radius:8px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:2}
+#toast.on{opacity:1}
+.zoom{position:absolute;right:8px;bottom:8px;display:flex;align-items:center;gap:4px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:3px;z-index:2}
+.zoom button{padding:3px 9px}.zoom span{min-width:42px;text-align:center;font-size:12px}
+</style>
 </head>
 <body>
+<header>
+<h1>📐 Geometry Studio</h1>
+<nav class="nav-tabs">
+<a href="index.html" class="nav-tab active">📐 Geometry</a>
+<a href="venn.html" class="nav-tab">⭕ Venn</a>
+</nav>
+<div class="tools" id="tools"></div>
+<span class="sp"></span>
+<button id="undo" title="Ctrl+Z">↶ Undo</button>
+<button id="redo" title="Ctrl+Y">↷ Redo</button>
+<button id="cp" title="Ctrl+C: selected shape, or whole diagram if none selected">⧉ Copy</button>
+<button id="ps" title="Ctrl+V">Paste</button>
+<button id="cpi" title="Copy the diagram as a picture">🖼 Copy image</button>
+</header>
+<main>
+<div id="wrap"><div id="toast"></div><div class="zoom"><button id="zo" title="Zoom out">−</button><span id="zl">100%</span><button id="zi" title="Zoom in">+</button><button id="zf" title="Fit the whole diagram in view">Fit</button></div><svg id="c"></svg><div id="status"></div></div>
+<aside>
+<details open><summary>Shape style</summary><div class="body">
+<label>Stroke <input type="color" id="stroke" value="#1c2230"></label>
+<label>Fill <span class="row"><input type="color" id="fill" value="#7c93ff"><label style="gap:4px"><input type="checkbox" id="nofill"> none</label></span></label>
+<label>Line width <input type="number" id="w" min="1" max="12" value="2"></label>
+<label>Stroke style <select id="dash"><option value="">Solid</option><option value="6 4">Dashed</option><option value="2 3">Dotted</option><option value="10 4 2 4">Dash-dot</option></select></label>
+<label id="nrow" style="display:none">Sides (regular) <input type="number" id="n" min="3" max="20" value="6"></label>
+</div></details>
 
-  <!-- ===== Header ===== -->
-  <header class="site-header">
-    <div class="container header-inner">
-      <a href="#" class="logo">B. <span>Prasad Shah</span></a>
+<details open><summary>Selected shape</summary><div class="body">
+<div id="info"><span class="hint">Pick a shape with the Select tool, or drag a box to select several.</span></div>
+<div class="row">
+<button id="selall" title="Ctrl+A">Select all</button><button id="grp">Group</button><button id="ungrp">Ungroup</button><button id="dup">Duplicate</button><button id="del">Delete</button><button id="clear">Clear all</button>
+</div>
+</div></details>
 
-      <nav class="main-nav" id="mainNav">
-        <a href="#home" class="active">Home</a>
-        <a href="live-quiz.html" class="nav-live-link">Live Quiz <span class="nav-live-dot" aria-hidden="true"></span></a>
-        <a href="premium.html">Premium Quiz</a>
-        <a href="mcq.html">MCQ Hub</a>
-        <a href="python.html">Python Hub</a>
-        <a href="video.html">Video Hub</a>
-        <a href="leaderboard.html">Leaderboard</a>
-        <div class="dropdown">
-          <button class="dropdown-toggle" type="button" aria-haspopup="true" aria-expanded="false">More ▾</button>
-          <div class="dropdown-menu">
-            <a href="resources.html">Additional Resources</a>
-            <a href="#updates">Latest Updates</a>
-            <a href="contact.html">Contact</a>
-            <a href="admin.html">Admin Panel</a>
-          </div>
-        </div>
-      </nav>
+<details><summary>Units</summary><div class="body">
+<label>Unit <select id="unit"><option>mm</option><option selected>cm</option><option>m</option><option>km</option><option>in</option><option>ft</option><option>yd</option><option value="custom">Custom…</option></select></label>
+<label id="cw" style="display:none">Custom name <input type="text" id="cunit" value="units" maxlength="12"></label>
+<label>1 grid square = <span class="row"><input type="number" id="scale" value="1" min="0.001" step="any"><b id="ulab">cm</b></span></label>
+</div></details>
 
-            <div class="header-actions">
-        <button class="theme-toggle-btn" id="themeToggleBtn" type="button" aria-label="Toggle theme"></button>
-        <div class="auth-widget">
-          <button class="auth-icon-btn" id="authIconBtn" aria-label="Account"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></button>
-          <div class="auth-dropdown" id="authDropdown" hidden></div>
-        </div>
-      </div>
+<details><summary>Grid &amp; snapping</summary><div class="body">
+<label>Show grid <input type="checkbox" id="grid" checked></label>
+<label>Snap to grid <input type="checkbox" id="snap" checked></label>
+</div></details>
 
-      <div class="mobile-header-icons">
-        <button class="nav-toggle" id="navToggle" aria-label="Open menu">
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-        </button>
-        <div class="auth-widget">
-          <button class="auth-icon-btn" id="authIconBtnMobile" aria-label="Account"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></button>
-          <div class="auth-dropdown" id="authDropdownMobile" hidden></div>
-        </div>
-      </div>
-    </div>
-  </header>
+<details><summary>Side measurements</summary><div class="body">
+<label>Show measurements <input type="checkbox" id="meas" checked></label>
+<label>Label size (px) <input type="number" id="msz" min="8" max="40" value="14"></label>
+<label>Bold labels <input type="checkbox" id="mbold"></label>
+<b>Choose labels</b>
+<div id="sidelist" style="display:grid;gap:4px"></div>
+<div class="row"><button id="lblhide">Hide all</button><button id="lblshow">Show all</button></div>
+<span class="hint">Applies to the selected shapes (or every shape if none is selected). Untick a label to remove it. You can also double-click any measurement label directly on the figure to edit, rename (e.g. x, 5 cm), or hide it.</span>
+</div></details>
 
-  <!-- ===== Mobile nav drawer (opened by the hamburger; nav links only) ===== -->
-  <div class="nav-drawer" id="navDrawer">
-    <button class="drawer-close" id="drawerClose" aria-label="Close menu">&times;</button>
-    <nav class="drawer-nav">
-      <a href="#home" class="active">Home</a>
-      <a href="live-quiz.html">Live Quiz</a>
-      <a href="premium.html">Premium Quiz</a>
-      <a href="mcq.html">MCQ Hub</a>
-      <a href="python.html">Python Hub</a>
-      <a href="video.html">Video Hub</a>
-      <a href="leaderboard.html">Leaderboard</a>
-      <div class="dropdown">
-        <button class="dropdown-toggle" type="button">More ▾</button>
-        <div class="dropdown-menu">
-          <a href="resources.html">Additional Resources</a>
-          <a href="#updates">Latest Updates</a>
-          <a href="contact.html">Contact</a>
-          <a href="admin.html">Admin Panel</a>
-        </div>
-      </div>
-    </nav>
-  </div>
-  <div class="drawer-overlay" id="drawerOverlay"></div>
+<details><summary>Vertex names</summary><div class="body">
+<label>Show vertex names <input type="checkbox" id="vn_on" checked></label>
+<label>Name size (px) <input type="number" id="vsz" min="8" max="48" value="15"></label>
+<label>Rename selected <input type="text" id="vn" placeholder="A B C" disabled></label>
+<span class="hint">You can also double-click any vertex name directly on the figure to rename it.</span>
+</div></details>
 
-  <!-- ===== Hero ===== -->
-  <section class="hero" id="home">
-    <div class="hero-bg" aria-hidden="true"></div>
-    <div class="container hero-inner">
-      <span class="hero-badge">Interactive Learning Platform</span>
-      <h1>Master Your<br />Knowledge &amp; Code</h1>
-      <p>Your complete educational ecosystem — practice curriculum-aligned MCQs, experiment with runnable Python programs, watch video lessons, and track your rank.</p>
-      
-      <div class="hero-actions">
-        <a href="mcq.html" class="btn btn-primary">Start MCQ Quiz</a>
-        <a href="python.html" class="btn btn-hero-secondary">Explore Python Hub</a>
-      </div>
+<details><summary>Angles</summary><div class="body">
+<label>Show angle arcs <input type="checkbox" id="arc"></label>
+<label>Show angle values <input type="checkbox" id="alab"></label>
+<label>Arc thickness <input type="number" id="aw" min="1" max="8" step="0.5" value="3"></label>
+<label>Arc radius (px) <input type="number" id="arcr" min="10" max="80" value="26"></label>
+<label>Text size (px) <input type="number" id="asz" min="8" max="36" value="15"></label>
+<label>Bold text <input type="checkbox" id="abold" checked></label>
+<label>Colour <input type="color" id="acol" value="#0b7285"></label>
+<b>Angle labels</b>
+<div id="angs" style="display:grid;gap:6px"></div>
+<span class="hint">Type a number (0–180, or up to 359 on a reflex corner) to reshape the angle, or text like x or θ to change the label. You can also double-click any angle directly on the figure.</span>
+</div></details>
 
-      <div class="hero-stats">
-        <div class="stat-item">
-          <span class="stat-number" id="statMcqCount">340+</span>
-          <span class="stat-label">MCQ Questions</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-number" id="statPythonCount">50+</span>
-          <span class="stat-label">Python Programs</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-number" id="statClassRange">Classes 8–10</span>
-          <span class="stat-label">Curriculum Covered</span>
-        </div>
-      </div>
-    </div>
-  </section>
+<details><summary>Parallel &amp; perpendicular marks</summary><div class="body">
+<label>Mark parallel lines (› ››) <input type="checkbox" id="par"></label>
+<label>Mark perpendicular (⌐) <input type="checkbox" id="perp"></label>
+</div></details>
 
-  <!-- ===== Featured Hubs ===== -->
-  <section class="hubs" id="hubs">
-    <div class="container">
-      <div class="section-head">
-        <h2 class="section-title">Explore Hubs</h2>
-        <p class="section-subtitle">Choose a category to start practicing, coding, or studying.</p>
-        <div class="hubs-search-bar">
-          <form class="search-form" id="searchForm" role="search">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            <input type="search" id="searchInput" placeholder="Search hubs and topics..." aria-label="Search topics" />
-          </form>
-        </div>
-      </div>
+<details><summary>Export</summary><div class="body">
+<div class="row"><button id="exsvg">SVG</button><button id="expng">PNG</button></div>
+</div></details>
 
-      <div class="hub-grid">
-        <article class="hub-card" id="live-quiz-hub">
-          <div class="hub-card-header">
-            <div class="hub-icon" data-icon="live">
-              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <circle cx="12" cy="12" r="10"></circle>
-                <polyline points="12 6 12 12 16 14"></polyline>
-              </svg>
-            </div>
-            <span class="hub-pill" style="background: rgba(239, 68, 68, 0.08); color: #dc2626; border-color: rgba(239, 68, 68, 0.25);">
-              <span class="live-pulse-dot" aria-hidden="true"></span> 7-Day Tournament
-            </span>
-          </div>
-          <h3>Live Quiz</h3>
-          <p>Compete in the daily timed challenge! 10 fresh questions renew every day for 7 days. Earn speed bonuses and climb the weekly leaderboard.</p>
-          <div class="hub-tags">
-            <span class="hub-tag">⏱️ 10 Questions</span>
-            <span class="hub-tag">🏆 Daily Ranks</span>
-            <span class="hub-tag">⚡ Speed Bonus</span>
-          </div>
-          <div class="hub-card-footer">
-            <a href="live-quiz.html" class="btn btn-primary">Join Today's Live Quiz <span class="btn-arrow" aria-hidden="true">&rarr;</span></a>
-          </div>
-        </article>
+<p class="hint">1 grid square = 1 unit. Polygon: click points, then double-click, Enter, or click the first point. Drag handles to reshape. Delete removes, Esc cancels. Drag on empty canvas to select several shapes (Shift adds), then drag to move them. Pan with the ✋ tool, Space+drag, middle mouse or the scroll wheel; zoom with Ctrl+wheel or the buttons. Ctrl+C / Ctrl+V copies and pastes the selected shape, or the whole diagram if nothing is selected.</p>
+</aside>
+</main>
+<script>
+const S=document.getElementById('c'),$=id=>document.getElementById(id),U=20;
+const esc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+const TOOLS=[['select','↖ Select'],['pan','✋ Pan'],['line','╱ Line'],['circle','◯ Circle'],['ellipse','⬭ Ellipse'],['rect','▭ Rectangle'],['tri','△ Triangle'],['poly','⬠ Polygon'],['reg','⬡ Regular']];
+let alabels={},angSnap=false,lastSig='',shapes=[],sel=-1,msel=[],view={x:0,y:0,k:1},spaceDown=false,tool='select',draft=null,pend=[],cur=null,drag=null,hist=[],fut=[];
+TOOLS.forEach(([k,t])=>{const b=document.createElement('button');b.textContent=t;b.dataset.k=k;b.onclick=()=>setTool(k);$('tools').append(b)});
+function setTool(k){tool=k;pend=[];draft=null;document.querySelectorAll('#tools button').forEach(b=>b.classList.toggle('on',b.dataset.k===k));S.style.cursor=k==='pan'?'grab':k==='select'?'default':'crosshair';render()}
+function pick(a){msel=[...new Set(a)].filter(i=>shapes[i]);sel=msel.length===1?msel[0]:-1;syncStyle()}
+function syncStyle(){const s=shapes[msel[0]];if(!s)return;const hx=/^#[0-9a-f]{6}$/i;
+ if(hx.test(s.stroke))$('stroke').value=s.stroke;
+ if(s.fill==='none')$('nofill').checked=true;else{$('nofill').checked=false;if(hx.test(s.fill))$('fill').value=s.fill}
+ $('w').value=s.w;$('dash').value=s.dash||'';if(s.type==='reg')$('n').value=s.n}
+function expand(a){const gs=new Set(a.map(i=>shapes[i]&&shapes[i].g).filter(Boolean));return[...new Set([...a,...shapes.map((s,i)=>gs.has(s.g)?i:-1).filter(i=>i>=0)])]}
+function sbox(s){const[a,b]=s.pts;if(s.type==='circle'){const r=dist(a,b);return[a.x-r,a.y-r,a.x+r,a.y+r]}
+ if(s.type==='ellipse')return[Math.min(a.x,b.x),Math.min(a.y,b.y),Math.max(a.x,b.x),Math.max(a.y,b.y)];
+ const v=verts(s);return[Math.min(...v.map(p=>p.x)),Math.min(...v.map(p=>p.y)),Math.max(...v.map(p=>p.x)),Math.max(...v.map(p=>p.y))]}
+const style=()=>({stroke:$('stroke').value,fill:$('nofill').checked?'none':$('fill').value,w:Math.max(1,Math.min(12,+$('w').value||2)),dash:$('dash').value});
+const snapPt=p=>$('snap').checked?{x:Math.round(p.x/(U/2))*(U/2),y:Math.round(p.y/(U/2))*(U/2)}:p;
+const raw=e=>{const r=S.getBoundingClientRect();return{x:(e.clientX-r.left-view.x)/view.k,y:(e.clientY-r.top-view.y)/view.k}};
+const pt=e=>snapPt(raw(e));
+const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y),sc=()=>{const v=+$('scale').value;return v>0?v:1},
+un=()=>{const s=$('unit').value;return s==='custom'?(($('cunit').value||'units').replace(/[<>&"]/g,'')):s},
+fm=x=>{if(!isFinite(x))return'0';const d=x===0?2:Math.min(10,Math.max(2,1-Math.floor(Math.log10(Math.abs(x)))));return String(parseFloat(x.toFixed(d)))},
+nu=v=>fm(v/U*sc()),u=v=>nu(v)+' '+un(),un2=v=>fm(v/U/U*sc()*sc())+' '+un()+'²';
+function snapshot(){hist.push(JSON.stringify({s:shapes,a:alabels}));if(hist.length>100)hist.shift();fut=[]}
+function undo(){if(!hist.length)return;fut.push(JSON.stringify({s:shapes,a:alabels}));const o=JSON.parse(hist.pop());shapes=o.s;alabels=o.a;pick([]);render()}
+function redo(){if(!fut.length)return;hist.push(JSON.stringify({s:shapes,a:alabels}));const o=JSON.parse(fut.pop());shapes=o.s;alabels=o.a;pick([]);render()}
+function verts(s){
+ if(s.type==='rect'){const[a,b]=s.pts;return[{x:a.x,y:a.y},{x:b.x,y:a.y},{x:b.x,y:b.y},{x:a.x,y:b.y}]}
+ if(s.type==='reg'){const[c,v]=s.pts,r=dist(c,v),a0=Math.atan2(v.y-c.y,v.x-c.x);return Array.from({length:s.n},(_,i)=>({x:c.x+r*Math.cos(a0+i*2*Math.PI/s.n),y:c.y+r*Math.sin(a0+i*2*Math.PI/s.n)}))}
+ return s.pts}
+const area=v=>Math.abs(v.reduce((t,p,i)=>{const q=v[(i+1)%v.length];return t+p.x*q.y-q.x*p.y},0))/2;
+function angleAt(v,i){const n=v.length,p=v[i],a=v[(i-1+n)%n],b=v[(i+1)%n];
+ let d=Math.abs(Math.atan2(a.y-p.y,a.x-p.x)-Math.atan2(b.y-p.y,b.x-p.x))*180/Math.PI;if(d>180)d=360-d;
+ const cr=(p.x-a.x)*(b.y-p.y)-(p.y-a.y)*(b.x-p.x),sa=v.reduce((t,q,j)=>{const w=v[(j+1)%n];return t+q.x*w.y-w.x*q.y},0);
+ return cr*sa<-1e-6?360-d:d}
+function shapeSVG(s,i,d){
+ const da=d?'stroke-dasharray="6 4"':(s.dash?`stroke-dasharray="${s.dash}"`:'');
+ const at=`stroke="${s.stroke}" stroke-width="${s.w}" fill="${s.fill}" fill-opacity=".3" ${da} ${d?'pointer-events="none"':`data-i="${i}" style="cursor:${tool==='select'?'move':'crosshair'}"`} stroke-linejoin="round"`;
+ const[a,b]=s.pts;let g='';
+ if(s.type==='line')g=`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" ${at} stroke-linecap="round"/>`;
+ else if(s.type==='circle')g=`<circle cx="${a.x}" cy="${a.y}" r="${dist(a,b)}" ${at}/>`;
+ else if(s.type==='ellipse')g=`<ellipse cx="${(a.x+b.x)/2}" cy="${(a.y+b.y)/2}" rx="${Math.abs(b.x-a.x)/2}" ry="${Math.abs(b.y-a.y)/2}" ${at}/>`;
+ else g=`<polygon points="${verts(s).map(p=>p.x+','+p.y).join(' ')}" ${at}/>`;
+ return g}
+const msz=()=>Math.max(8,Math.min(40,+$('msz').value||14)),mb=()=>$('mbold').checked?700:400;
+let exporting=false;
+const lk=(i,k)=>(!exporting&&i!==undefined)?` data-i="${i}" data-lbl="${k}" style="cursor:pointer" pointer-events="all" title="Double-click to edit"`:' pointer-events="none"';
+const txt=(x,y,t,c='#1c2230',ex=' pointer-events="none"',an='middle')=>`<text x="${x}" y="${y}" font-size="${msz()}" font-weight="${mb()}" text-anchor="${an}" fill="${c}" stroke="#fff" stroke-width="3" paint-order="stroke"${ex}>${esc(t)}</text>`;
+const txtR=(x,y,t,ang,c='#1c2230',ex=' pointer-events="none"')=>{let d=ang*180/Math.PI;if(d>90)d-=180;if(d<-90)d+=180;
+ return `<text x="${x}" y="${y}" transform="rotate(${d} ${x} ${y})" font-size="${msz()}" font-weight="${mb()}" text-anchor="middle" dominant-baseline="middle" fill="${c}" stroke="#fff" stroke-width="3" paint-order="stroke"${ex}>${esc(t)}</text>`};
+function edgeLbl(p,q,t,c,out,ex){const dx=q.x-p.x,dy=q.y-p.y,l=Math.hypot(dx,dy)||1;let nx=dy/l,ny=-dx/l;
+ const flip=out?(nx*out.x+ny*out.y<0):(ny>1e-9||(Math.abs(ny)<=1e-9&&nx<0));if(flip){nx=-nx;ny=-ny}
+ return txtR((p.x+q.x)/2+nx*(msz()/2+5),(p.y+q.y)/2+ny*(msz()/2+5),t,Math.atan2(dy,dx),c,ex)}
+function labels(s,idx){
+ const[a,b]=s.pts,hid=s.hid||[],ok=k=>!hid.includes(k),X=k=>lk(idx,k),L=k=>(s.lbls&&s.lbls[k])?s.lbls[k]:null;let o='';
+ if(s.type==='line'){if(ok('e0'))o+=edgeLbl(a,b,L('e0')||u(dist(a,b)),undefined,undefined,X('e0'))}
+ else if(s.type==='circle'){if(ok('r'))o+=`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#e8590c" stroke-dasharray="4 3" pointer-events="none"/>`+edgeLbl(a,b,L('r')||('r='+u(dist(a,b))),'#e8590c',undefined,X('r'))}
+ else if(s.type==='ellipse'){
+  if(ok('a'))o+=txt((a.x+b.x)/2,Math.min(a.y,b.y)-6,L('a')||('2a='+u(Math.abs(b.x-a.x))),undefined,X('a'));
+  if(ok('b'))o+=txt(Math.max(a.x,b.x)+10,(a.y+b.y)/2+msz()/3,L('b')||('2b='+u(Math.abs(b.y-a.y))),undefined,X('b'),'start')}
+ else{const v=verts(s);v.forEach((p,i)=>{if(!ok('e'+i))return;const q=v[(i+1)%v.length],m={x:(p.x+q.x)/2,y:(p.y+q.y)/2};
+  const c=v.reduce((t,w)=>({x:t.x+w.x/v.length,y:t.y+w.y/v.length}),{x:0,y:0}),dx=m.x-c.x,dy=m.y-c.y;
+  o+=edgeLbl(p,q,L('e'+i)||u(dist(p,q)),undefined,{x:dx,y:dy},X('e'+i))})}
+ return o}
+function render(){
+ assignNames();ANG=computeAngles();
+ const k=view.k;
+ const r0=S.getBoundingClientRect(),W=r0.width,H=r0.height;
+ let h=`<defs><pattern id="g" width="${U}" height="${U}" patternUnits="userSpaceOnUse"><path d="M${U} 0H0V${U}" fill="none" stroke="#e3e6ec" stroke-width="${1/k}"/></pattern></defs><g transform="translate(${view.x} ${view.y}) scale(${k})">`;
+ if($('grid').checked)h+=`<rect x="${-view.x/k}" y="${-view.y/k}" width="${W/k}" height="${H/k}" fill="url(#g)" pointer-events="none"/>`;
+ shapes.forEach((s,i)=>h+=shapeSVG(s,i,false));
+ if($('meas').checked)shapes.forEach((s,i)=>h+=labels(s,i));
+ if($('vn_on').checked)shapes.forEach(s=>h+=nameSVG(s));
+ h+=marks();h+=angleSVG();
+ if(draft){h+=shapeSVG(draft,0,true);h+=labels(draft)}
+ if(pend.length){const pp=[...pend,...(cur?[cur]:[])];h+=`<polyline points="${pp.map(p=>p.x+','+p.y).join(' ')}" fill="none" stroke="${style().stroke}" stroke-dasharray="6 4" pointer-events="none"/>`+pend.map(p=>`<circle cx="${p.x}" cy="${p.y}" r="4" fill="${style().stroke}" pointer-events="none"/>`).join('')}
+ if(tool==='select'){
+  if(sel>=0&&shapes[sel])shapes[sel].pts.forEach((p,i)=>h+=`<circle data-h="${i}" cx="${p.x}" cy="${p.y}" r="${7/k}" fill="#fff" stroke="#3b5bdb" stroke-width="${2/k}" style="cursor:grab"/>`);
+  else if(msel.length>1){let X0=1e9,Y0=1e9,X1=-1e9,Y1=-1e9;const m=4/k;
+   msel.forEach(i=>{const q=sbox(shapes[i]);X0=Math.min(X0,q[0]);Y0=Math.min(Y0,q[1]);X1=Math.max(X1,q[2]);Y1=Math.max(Y1,q[3]);
+    h+=`<rect x="${q[0]-m}" y="${q[1]-m}" width="${q[2]-q[0]+2*m}" height="${q[3]-q[1]+2*m}" fill="none" stroke="#3b5bdb" stroke-opacity=".6" stroke-width="${1/k}" stroke-dasharray="${4/k} ${3/k}" pointer-events="none"/>`});
+   h+=`<rect x="${X0-2*m}" y="${Y0-2*m}" width="${X1-X0+4*m}" height="${Y1-Y0+4*m}" fill="none" stroke="#3b5bdb" stroke-width="${1.5/k}" pointer-events="none"/>`}}
+ if(tool!=='select'&&msel.length){const m=4/k;msel.forEach(i=>{const q=sbox(shapes[i]);h+=`<rect x="${q[0]-m}" y="${q[1]-m}" width="${q[2]-q[0]+2*m}" height="${q[3]-q[1]+2*m}" fill="none" stroke="#3b5bdb" stroke-width="${1.5/k}" stroke-dasharray="${5/k} ${3/k}" pointer-events="none"/>`})}
+ if(drag&&drag.m==='box'){const a=drag.a,b=drag.b;h+=`<rect x="${Math.min(a.x,b.x)}" y="${Math.min(a.y,b.y)}" width="${Math.abs(b.x-a.x)}" height="${Math.abs(b.y-a.y)}" fill="#3b5bdb" fill-opacity=".08" stroke="#3b5bdb" stroke-width="${1/k}" stroke-dasharray="${5/k} ${3/k}" pointer-events="none"/>`}
+ S.innerHTML=h+'</g>';$('zl').textContent=Math.round(view.k*100)+'%';info();angUI();sideUI()}
+function segs(list=shapes){const o=[];list.forEach(s=>{if(s.type==='line')o.push([s.pts[0],s.pts[1]]);
+ else if(s.type!=='circle'&&s.type!=='ellipse'){const v=verts(s);v.forEach((p,i)=>o.push([p,v[(i+1)%v.length]]))}});
+ return o.filter(([p,q])=>dist(p,q)>2)}
+function marks(list=shapes){
+ let h='';const sg=segs(list),C='#d9480f',st=`fill="none" stroke="${C}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"`;
+ if($('par').checked){
+  const groups=[];
+  sg.forEach(g=>{const[p,q]=g,L=dist(p,q),dx=(q.x-p.x)/L,dy=(q.y-p.y)/L;
+   let G=groups.find(G=>Math.abs(G.dx*dy-G.dy*dx)<0.01);if(!G)groups.push(G={dx,dy,items:[]});G.items.push(g)});
+  let k=0;
+  groups.forEach(G=>{const r=G.items[0][0];
+   if(!G.items.some(([p])=>Math.abs((p.x-r.x)*G.dy-(p.y-r.y)*G.dx)>1.5))return;
+   const n=Math.min(++k,3),a=Math.atan2(G.dy,G.dx)*180/Math.PI;
+   G.items.forEach(([p,q])=>{let d='';for(let j=0;j<n;j++){const o=(j-(n-1)/2)*6;d+=`M${-4+o} -4L${3+o} 0L${-4+o} 4`}
+    h+=`<path d="${d}" transform="translate(${(p.x+q.x)/2} ${(p.y+q.y)/2}) rotate(${a})" ${st}/>`})})}
+ if($('perp').checked){
+  for(let i=0;i<sg.length;i++)for(let j=i+1;j<sg.length;j++){
+   const[p,q]=sg[i],[r,s]=sg[j],ax=q.x-p.x,ay=q.y-p.y,bx=s.x-r.x,by=s.y-r.y,l1=Math.hypot(ax,ay),l2=Math.hypot(bx,by);
+   if(Math.abs(ax*bx+ay*by)/(l1*l2)>0.01)continue;
+   const den=ax*by-ay*bx,t=((r.x-p.x)*by-(r.y-p.y)*bx)/den,w=((r.x-p.x)*ay-(r.y-p.y)*ax)/den,e1=3/l1,e2=3/l2;
+   if(t<-e1||t>1+e1||w<-e2||w>1+e2)continue;
+   const X={x:p.x+t*ax,y:p.y+t*ay},s1=t<.5?1:-1,s2=w<.5?1:-1,z=Math.min(10,l1*.4,l2*.4),
+    u={x:s1*ax/l1*z,y:s1*ay/l1*z},v={x:s2*bx/l2*z,y:s2*by/l2*z};
+   h+=`<path d="M${X.x+u.x} ${X.y+u.y}L${X.x+u.x+v.x} ${X.y+u.y+v.y}L${X.x+v.x} ${X.y+v.y}" ${st}/>`}}
+ return h}
+function nameAt(p){const f=PL.find(q=>Math.abs(q.x-p.x)<1.5&&Math.abs(q.y-p.y)<1.5);return f?f.name:'?'}
+function computeAngles(list=shapes){
+ const sg=segs(list),out=[];
+ PL.forEach(X=>{const rays=[];
+  const add=(far,len,split)=>{const th=Math.atan2(far.y-X.y,far.x-X.x);
+   if(!rays.some(r=>Math.abs(Math.atan2(Math.sin(r.th-th),Math.cos(r.th-th)))<0.01))rays.push({th,len,far,split:!!split,dg:sg.filter(([p,q])=>dist(p,far)<1.5||dist(q,far)<1.5).length})};
+  sg.forEach(([p,q])=>{const dp=dist(p,X)<1.5,dq=dist(q,X)<1.5;
+   if(dp&&!dq)add(q,dist(q,X));else if(dq&&!dp)add(p,dist(p,X));
+   else if(!dp&&!dq){const L=dist(p,q),dx=(q.x-p.x)/L,dy=(q.y-p.y)/L,tt=(X.x-p.x)*dx+(X.y-p.y)*dy,off=Math.abs((X.x-p.x)*dy-(X.y-p.y)*dx);
+    if(off<1.5&&tt>1.5&&tt<L-1.5){add(p,tt,true);add(q,L-tt,true)}}});
+  if(rays.length<2)return;
+  rays.sort((a,b)=>a.th-b.th);
+  rays.forEach((r,i)=>{const s=rays[(i+1)%rays.length];let d=s.th-r.th;if(d<=0)d+=2*Math.PI;
+   const deg=d*180/Math.PI;if(deg>179.5||deg<0.5)return;
+   const a=nameAt(r.far),b=nameAt(s.far),n1=a<b?a:b,n2=a<b?b:a;
+   out.push({X,ta:r.th,d,deg,r:Math.min(Math.max(10,Math.min(80,+$('arcr').value||26)),r.len*.4,s.len*.4),V:X.name,mv:(r.split&&s.split)?null:((s.split||(!r.split&&r.dg<s.dg))?{far:r.far,len:r.len,side:'r'}:{far:s.far,len:s.len,side:'s'}),key:n1+'|'+n2+'|'+X.name,txt:'∠'+n1+X.name+n2})})});
+ // reflex interior corners (e.g. the notch of an L-shape): show the interior angle, not its <180 complement
+ list.forEach(s=>{if(s.type==='line'||s.type==='circle'||s.type==='ellipse')return;const v=verts(s),n=v.length;
+  v.forEach((p,i)=>{if(angleAt(v,i)<=180.5)return;
+   const a=nameAt(v[(i-1+n)%n]),b=nameAt(v[(i+1)%n]),key=(a<b?a+'|'+b:b+'|'+a)+'|'+nameAt(p),e=out.find(o=>o.key===key&&dist(o.X,p)<1.5);
+   if(e&&!e.rf){e.ta+=e.d;e.d=2*Math.PI-e.d;e.deg=360-e.deg;e.rf=1;if(e.mv)e.mv={...e.mv,side:e.mv.side==='s'?'r':'s'}}})});
+ return out}
+function migrate(mp){const n={};Object.keys(alabels).forEach(k=>{const[a,b,v]=k.split('|').map(x=>mp[x]||x),lo=a<b?a:b,hi=a<b?b:a;n[lo+'|'+hi+'|'+v]=alabels[k]});alabels=n}
+function angUI(){
+ const box=$('angs');if(box.contains(document.activeElement))return;
+ let list=ANG;if(msel.length){const nm=new Set(msel.flatMap(i=>shapes[i].names||[]));list=ANG.filter(a=>nm.has(a.V))}
+ const sig=msel.join(',')+'|'+list.map(a=>a.key+Math.round(a.deg*10)).join(';');if(sig===lastSig)return;lastSig=sig;
+ box.innerHTML=list.length?list.map(a=>`<label><span>${esc(a.txt)} = ${parseFloat(a.deg.toFixed(1))}°</span><input type="text" data-k="${esc(a.key)}" value="${esc(alabels[a.key]||'')}" placeholder="60 or x" style="width:90px"></label>`).join(''):'<span class="hint">No angles yet. Angles appear where two sides or lines meet.</span>'}
+function angleSVG(A=ANG){
+ if(!$('arc').checked&&!$('alab').checked)return'';
+ let h='';const C=$('acol').value,fs=Math.max(8,Math.min(36,+$('asz').value||15)),sw=Math.max(1,Math.min(8,+$('aw').value||3)),bd=$('abold').checked,st=`fill="none" stroke="${C}" stroke-width="${sw}" stroke-linecap="round"`;
+ A.forEach(a=>{const{X,ta,d,deg,r}=a,K=esc(a.key);
+  const arcEx=(!exporting)?` data-ang="${K}" style="cursor:pointer" pointer-events="stroke" title="Double-click to edit angle"`:' pointer-events="none"';
+  if($('arc').checked){let pth=null;
+   if(Math.abs(deg-90)<.5){if(!$('perp').checked){const z=r*.75,c1=Math.cos(ta)*z,s1=Math.sin(ta)*z,c2=Math.cos(ta+d)*z,s2=Math.sin(ta+d)*z;
+     pth=`M${X.x+c1} ${X.y+s1}L${X.x+c1+c2} ${X.y+s1+s2}L${X.x+c2} ${X.y+s2}`}}
+   else pth=`M${X.x+r*Math.cos(ta)} ${X.y+r*Math.sin(ta)}A${r} ${r} 0 ${d>Math.PI?1:0} 1 ${X.x+r*Math.cos(ta+d)} ${X.y+r*Math.sin(ta+d)}`;
+   if(pth){h+=`<path d="${pth}" ${st}${arcEx}/>`;
+    if(!exporting)h+=`<path d="${pth}" fill="none" stroke="transparent" stroke-width="${Math.max(10,sw)}" stroke-linecap="round" data-ang="${K}" style="cursor:pointer" pointer-events="stroke"/>`}}
+  if($('alab').checked){const c=alabels[a.key],L=c?(/^-?\d+(\.\d+)?$/.test(c)?c+'°':c):String(parseFloat(deg.toFixed(1)))+'°',m=ta+d/2,R=r+fs*.9+sw;
+   const txtEx=(!exporting)?` data-ang="${K}" style="cursor:pointer" pointer-events="all" title="Double-click to edit angle"`:' pointer-events="none"';
+   h+=`<text x="${X.x+R*Math.cos(m)}" y="${X.y+R*Math.sin(m)+fs/3}" font-size="${fs}" font-weight="${bd?700:400}" text-anchor="middle" fill="${C}" stroke="#fff" stroke-width="4" paint-order="stroke"${txtEx}>${esc(L)}</text>`}});
+ return h}
+function npts(s){const[a,b]=s.pts;return s.type==='line'?s.pts:s.type==='circle'?[a,b]:s.type==='ellipse'?[{x:(a.x+b.x)/2,y:(a.y+b.y)/2}]:verts(s)}
+let PL=[],ANG=[];
+function assignNames(){const placed=[],used=new Set();PL=placed;
+ shapes.forEach(s=>{const P=npts(s);s.names=(s.names||[]).slice(0,P.length);s._dup=[];
+  P.forEach((p,i)=>{const f=placed.find(q=>Math.abs(q.x-p.x)<1.5&&Math.abs(q.y-p.y)<1.5);
+   if(f){s.names[i]=f.name;s._dup[i]=true;return}
+   let n=s.names[i],k=0;
+   if(!n||used.has(n))do{n=String.fromCharCode(65+k%26)+(k>=26?Math.floor(k/26):'');k++}while(used.has(n));
+   s.names[i]=n;used.add(n);placed.push({x:p.x,y:p.y,name:n})})})}
+function nameSVG(s){const fs=Math.max(8,Math.min(48,+$('vsz').value||15)),P=npts(s),c=P.reduce((t,p)=>({x:t.x+p.x/P.length,y:t.y+p.y/P.length}),{x:0,y:0});
+ return P.map((p,i)=>{if(s._dup&&s._dup[i])return'';let dx=p.x-c.x,dy=p.y-c.y,l=Math.hypot(dx,dy);if(l<1){dx=1;dy=-1;l=Math.SQRT2}
+  const ex=(!exporting)?` data-vtx="${esc(s.names[i])}" style="cursor:pointer" pointer-events="all" title="Double-click to rename"`:' pointer-events="none"';
+  return `<circle cx="${p.x}" cy="${p.y}" r="3" fill="#3b5bdb" pointer-events="none"/><text x="${p.x+dx/l*(fs+1)}" y="${p.y+dy/l*(fs+1)+fs/3}" font-size="${fs}" font-weight="700" text-anchor="middle" fill="#3b5bdb" stroke="#fff" stroke-width="3" paint-order="stroke"${ex}>${esc(s.names[i])}</text>`}).join('')}
+function info(){
+ $('nrow').style.display=(tool==='reg'||(shapes[sel]&&shapes[sel].type==='reg'))?'flex':'none';
+ const el=$('info'),s=shapes[sel],vn=$('vn');
+ if(!s){const g=msel.length>1&&msel.every(i=>shapes[i].g&&shapes[i].g===shapes[msel[0]].g);
+  el.innerHTML=msel.length>1?`<b>${msel.length} shapes selected${g?' (grouped)':''}</b><span class="hint">Drag any of them to move the whole selection. Use Group to keep them together.</span>`:'<span class="hint">Pick a shape with the Select tool, or drag a box to select several.</span>';vn.value='';vn.disabled=true;return}
+ vn.disabled=false;if(document.activeElement!==vn)vn.value=s.names.join(' ');
+ const r=[],[a,b]=s.pts,N=s.names,row=(k,v)=>r.push(`<div><span>${esc(k)}</span><span>${esc(v)}</span></div>`);let name;
+ if(s.type==='line'){name='Segment '+N.join('');row('Length',u(dist(a,b)));row('Angle',(-Math.atan2(b.y-a.y,b.x-a.x)*180/Math.PI).toFixed(1)+'°');row('Midpoint',`(${nu((a.x+b.x)/2)}, ${nu(-(a.y+b.y)/2)})`)}
+ else if(s.type==='circle'){const R=dist(a,b);name='Circle, centre '+N[0];row('Radius',u(R));row('Diameter',u(2*R));row('Circumference',u(2*Math.PI*R));row('Area',un2(Math.PI*R*R))}
+ else if(s.type==='ellipse'){const p=Math.abs(b.x-a.x)/2,q=Math.abs(b.y-a.y)/2,hh=((p-q)/(p+q||1))**2;name='Ellipse, centre '+N[0];row('Semi-axes',u(p)+' × '+u(q));row('Area',un2(Math.PI*p*q));row('Perimeter ≈',u(Math.PI*(p+q)*(1+3*hh/(10+Math.sqrt(4-3*hh)))))}
+ else{const v=verts(s),n=v.length,per=v.reduce((t,p,i)=>t+dist(p,v[(i+1)%n]),0);
+  name=(s.type==='rect'?'Rectangle':s.type==='reg'?'Regular '+n+'-gon':n===3?'Triangle':n+'-gon')+' '+N.join('');
+  if(s.type==='rect')row('Size',u(Math.abs(b.x-a.x))+' × '+u(Math.abs(b.y-a.y)));
+  row('Perimeter',u(per));row('Area',un2(area(v)));
+  v.forEach((p,i)=>row('Side '+N[i]+N[(i+1)%n],u(dist(p,v[(i+1)%n]))));
+  v.forEach((_,i)=>row('∠'+N[i],angleAt(v,i).toFixed(1)+'°'))}
+ el.innerHTML=`<b>${esc(name)}</b>`+r.join('')}
+let lastLblClick={time:0,x:0,y:0};
+function findLabelTarget(e){
+ if(!e)return null;
+ const t=e.target;
+ if(t&&t.closest){const f=t.closest('[data-lbl],[data-vtx],[data-ang]');if(f)return f}
+ const el=document.elementFromPoint(e.clientX,e.clientY);
+ return el&&el.closest?el.closest('[data-lbl],[data-vtx],[data-ang]'):null;
+}
+function openInlineEdit(cx,cy,initialVal,placeholder,onSave){
+ let ed=$('inline-edit');
+ if(!ed){
+  ed=document.createElement('input');
+  ed.id='inline-edit';
+  ed.type='text';
+  ed.autocomplete='off';
+  ed.spellcheck=false;
+  ed.style.cssText='position:absolute;z-index:100;transform:translate(-50%,-50%);padding:5px 9px;font-size:14px;font-weight:700;border:2px solid var(--accent,#3b5bdb);border-radius:8px;background:var(--panel,#fff);color:var(--ink,#1c2230);box-shadow:0 6px 20px rgba(0,0,0,0.3);outline:none;text-align:center;min-width:75px;max-width:180px;';
+  $('wrap').appendChild(ed);
+  ed.onpointerdown=e=>e.stopPropagation();
+  ed.onmousedown=e=>e.stopPropagation();
+ }
+ ed.value=initialVal||'';
+ ed.placeholder=placeholder||'';
+ const W=$('wrap').clientWidth||500,H=$('wrap').clientHeight||400;
+ ed.style.left=Math.max(50,Math.min(W-50,cx))+'px';
+ ed.style.top=Math.max(25,Math.min(H-25,cy))+'px';
+ ed.style.display='block';
+ setTimeout(()=>{ed.focus();ed.select()},20);
+ let done=false;
+ const commit=()=>{if(done)return;done=true;ed.style.display='none';onSave(ed.value.trim())};
+ ed.onkeydown=e=>{
+  e.stopPropagation();
+  if(e.key==='Enter'){e.preventDefault();commit()}
+  else if(e.key==='Escape'){done=true;ed.style.display='none'}
+ };
+ ed.onblur=commit;
+}
+function renameVertex(vtx,val){
+ val=String(val||'').replace(/[<>&"|\s]/g,'').slice(0,12);
+ if(!val||val===vtx)return;
+ if(PL.some(p=>p.name===val)){toast(`Name ${val} is already used`);return}
+ snapshot();
+ const mp={[vtx]:val};
+ migrate(mp);
+ shapes.forEach(sh=>{if(sh.names)sh.names=sh.names.map(n=>n===vtx?val:n)});
+ render();
+ toast(`Vertex ${vtx} renamed to ${val}`);
+}
+function triggerLabelEdit(el,clientX,clientY){
+ if(!el)return;
+ const wrapRect=$('wrap').getBoundingClientRect(),r=el.getBoundingClientRect();
+ const cx=r.width>0?(r.left+r.width/2-wrapRect.left):(clientX-wrapRect.left);
+ const cy=r.height>0?(r.top+r.height/2-wrapRect.top):(clientY-wrapRect.top);
 
-        <article class="hub-card" id="premium-quiz-hub">
-          <div class="hub-card-header">
-            <div class="hub-icon" data-icon="premium">
-              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-              </svg>
-            </div>
-            <span class="hub-pill">⭐ Pro Arena</span>
-          </div>
-          <h3>Premium Quiz</h3>
-          <p>Unlock timed competitive categories, comprehensive topic sets, credit top-ups, and unlimited practice for champions.</p>
-          <div class="hub-tags">
-            <span class="hub-tag">⭐ Full Access</span>
-            <span class="hub-tag">🎯 Timed Arenas</span>
-            <span class="hub-tag">💳 Credit System</span>
-          </div>
-          <div class="hub-card-footer">
-            <a href="premium.html" class="btn btn-secondary">Enter Premium Quiz <span class="btn-arrow" aria-hidden="true">&rarr;</span></a>
-          </div>
-        </article>
+ // 1. Measurement label
+ const k=el.dataset&&el.dataset.lbl;
+ if(k!==undefined){
+  const s=shapes[+el.dataset.i];
+  if(s){
+   const cur=(s.lbls&&s.lbls[k])||'';
+   openInlineEdit(cx,cy,cur,'e.g. 5 cm, x  (or type hide)',val=>{
+    if(val===cur)return;
+    snapshot();
+    s.lbls=s.lbls||{};
+    if(val.toLowerCase()==='hide'){
+     if(!(s.hid||[]).includes(k))s.hid=[...(s.hid||[]),k];
+     toast('Label hidden');
+    }else if(val){
+     s.lbls[k]=val;
+     toast('Label set to ' + val);
+    }else{
+     delete s.lbls[k];
+     toast('Reset to measured value');
+    }
+    render();
+   });
+   return;
+  }
+ }
 
-        <article class="hub-card" id="mcq-hub">
-          <div class="hub-card-header">
-            <div class="hub-icon" data-icon="mcq">
-              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M9 11l3 3L22 4"></path>
-                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-              </svg>
-            </div>
-            <span class="hub-pill">Interactive Practice</span>
-          </div>
-          <h3>MCQ Hub</h3>
-          <p>Practice diverse curriculum-aligned multiple-choice questions with instant scoring, feedback, and topic completion tracking.</p>
-          <div class="hub-tags">
-            <span class="hub-tag">📚 Classes 8–10</span>
-            <span class="hub-tag">✅ Instant Scoring</span>
-            <span class="hub-tag">📊 Topic Mastery</span>
-          </div>
-          <div class="hub-card-footer">
-            <a href="mcq.html" class="btn btn-secondary">Open MCQ Hub <span class="btn-arrow" aria-hidden="true">&rarr;</span></a>
-          </div>
-        </article>
+ // 2. Vertex label
+ const vtx=el.dataset&&el.dataset.vtx;
+ if(vtx!==undefined){
+  openInlineEdit(cx,cy,vtx,'Vertex name',val=>{
+   if(!val||val===vtx)return;
+   renameVertex(vtx,val.replace(/[<>&"]/g,''));
+  });
+  return;
+ }
 
-        <article class="hub-card" id="python-hub">
-          <div class="hub-card-header">
-            <div class="hub-icon" data-icon="python">
-              <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" aria-hidden="true">
-                <path d="M12 2c-2.7 0-4.9.4-6.3 1.2-1.9 1-2.1 2.3-2.1 4.5v2.8h8.5v1.1H4.3C2 11.6.4 13.3.4 16.3c0 3 1.9 4.8 4.7 4.8h2.3v-2.8c0-1.8 1.6-3.4 3.4-3.4h5.6c1.5 0 2.8-1.2 2.8-2.8V6.4c0-2.2-1.8-3.9-4.2-4.2C13.8 2.1 12.9 2 12 2zm-2.5 2.1c.6 0 1.1.5 1.1 1.1 0 .6-.5 1.1-1.1 1.1s-1.1-.5-1.1-1.1c0-.6.5-1.1 1.1-1.1zm2.5 17.8c2.7 0 4.9-.4 6.3-1.2 1.9-1 2.1-2.3 2.1-4.5v-2.8h-8.5v-1.1h7.8c2.3 0 3.9-1.7 3.9-4.7 0-3-1.9-4.8-4.7-4.8h-2.3v2.8c0 1.8-1.6 3.4-3.4 3.4H9.6c-1.5 0-2.8 1.2-2.8 2.8v5.7c0 2.2 1.8 3.9 4.2 4.2.9.1 1.8.2 2.7.2zm2.5-2.1c-.6 0-1.1-.5-1.1-1.1 0-.6.5-1.1 1.1-1.1s1.1.5 1.1 1.1c0 .6.5 1.1-1.1 1.1z"/>
-              </svg>
-            </div>
-            <span class="hub-pill">Live Code Editor</span>
-          </div>
-          <h3>Python Hub</h3>
-          <p>Read, edit, and execute Python scripts directly in your browser using Pyodide — zero setup or installation required.</p>
-          <div class="hub-tags">
-            <span class="hub-tag">🐍 Browser Pyodide</span>
-            <span class="hub-tag">📦 Zero Setup</span>
-            <span class="hub-tag">🎨 Canvas &amp; Plots</span>
-          </div>
-          <div class="hub-card-footer">
-            <a href="python.html" class="btn btn-secondary">Open Python Hub <span class="btn-arrow" aria-hidden="true">&rarr;</span></a>
-          </div>
-        </article>
-
-        <article class="hub-card" id="video-hub">
-          <div class="hub-card-header">
-            <div class="hub-icon" data-icon="video">
-              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <polygon points="23 7 16 12 23 17 23 7"></polygon>
-                <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
-              </svg>
-            </div>
-            <span class="hub-pill">Video Lessons</span>
-          </div>
-          <h3>Video Hub</h3>
-          <p>Watch step-by-step programming tutorials, conceptual breakdowns, and exam preparation walkthroughs at your pace.</p>
-          <div class="hub-tags">
-            <span class="hub-tag">🎬 Video Lessons</span>
-            <span class="hub-tag">💡 Concepts</span>
-            <span class="hub-tag">📝 Exam Prep</span>
-          </div>
-          <div class="hub-card-footer">
-            <a href="video.html" class="btn btn-secondary">Watch Videos <span class="btn-arrow" aria-hidden="true">&rarr;</span></a>
-          </div>
-        </article>
-
-        <article class="hub-card" id="leaderboard-hub">
-          <div class="hub-card-header">
-            <div class="hub-icon" data-icon="trophy">
-              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
-                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
-                <path d="M4 22h16"></path>
-                <path d="M10 14.66V17c0 .55-.45 1-1 1H7v4h10v-4h-2c-.55 0-1-.45-1-1v-2.34"></path>
-                <path d="M18 2H6v7a6 6 0 0 0 12 0V2z"></path>
-              </svg>
-            </div>
-            <span class="hub-pill">Rankings &amp; Stats</span>
-          </div>
-          <h3>Leaderboard</h3>
-          <p>Compete with peers, track your daily and all-time scores, and climb the ranks across different classes and tournaments.</p>
-          <div class="hub-tags">
-            <span class="hub-tag">🏆 Hall of Fame</span>
-            <span class="hub-tag">⚡ Real-Time</span>
-            <span class="hub-tag">🥇 Champion Badges</span>
-          </div>
-          <div class="hub-card-footer">
-            <a href="leaderboard.html" class="btn btn-secondary">View Leaderboard <span class="btn-arrow" aria-hidden="true">&rarr;</span></a>
-          </div>
-        </article>
-
-        <article class="hub-card" id="resources">
-          <div class="hub-card-header">
-            <div class="hub-icon" data-icon="folder">
-              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-              </svg>
-            </div>
-            <span class="hub-pill">Study Materials</span>
-          </div>
-          <h3>Additional Resources</h3>
-          <p>Explore supplementary notes, downloadable files, typing competitions, and reference guides for self-study.</p>
-          <div class="hub-tags">
-            <span class="hub-tag">📁 Study PDFs</span>
-            <span class="hub-tag">⌨️ Typing Contest</span>
-            <span class="hub-tag">📖 Notes</span>
-          </div>
-          <div class="hub-card-footer">
-            <a href="resources.html" class="btn btn-secondary">Browse Resources <span class="btn-arrow" aria-hidden="true">&rarr;</span></a>
-          </div>
-        </article>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== How It Works ===== -->
-  <section class="how-it-works">
-    <div class="container">
-      <div class="section-head text-center">
-        <h2 class="section-title">How It Works</h2>
-        <p class="section-subtitle">Everything you need to master your studies in three simple steps.</p>
-      </div>
-
-      <div class="steps-grid">
-        <div class="step-card">
-          <div class="step-num">1</div>
-          <h3>Pick Your Topic</h3>
-          <p>Select your class (8, 9, or 10) and targeted topic in the MCQ Hub or browse the Python programs catalog.</p>
-        </div>
-        <div class="step-card">
-          <div class="step-num">2</div>
-          <h3>Practice &amp; Run Code</h3>
-          <p>Answer questions with real-time explanations, or test and edit Python scripts right on the page.</p>
-        </div>
-        <div class="step-card">
-          <div class="step-num">3</div>
-          <h3>Track Mastery</h3>
-          <p>Save your progress, mark topics completed, and climb the leaderboard as your knowledge grows.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== Call to Action Banner ===== -->
-  <section class="cta-banner">
-    <div class="container">
-      <div class="cta-inner">
-        <div class="cta-content">
-          <h2>Ready to test your knowledge?</h2>
-          <p>Take a 5-minute quiz now and see where you stand on the leaderboard.</p>
-        </div>
-        <div class="cta-actions">
-          <a href="mcq.html" class="btn btn-primary">Start a Quiz</a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== Latest Updates (pulled live from Firebase) ===== -->
-  <section class="updates" id="updates">
-    <div class="container">
-      <div class="section-head">
-        <h2 class="section-title">Latest Updates</h2>
-        <p class="section-subtitle">Announcements, new question sets, and recent platform additions.</p>
-      </div>
-      <ul class="updates-list" id="updatesList">
-        <li class="updates-loading">Loading latest updates…</li>
-      </ul>
-    </div>
-  </section>
-
-  <!-- ===== Footer ===== -->
-  <footer class="site-footer" id="contact">
-    <div class="container footer-inner">
-      <p>&copy; <span id="year"></span> B. Prasad Shah</p>
-      <div class="footer-links">
-        <a href="#home">About Us</a>
-        <a href="contact.html">Contact</a>
-        <a href="privacy.html">Privacy Policy</a>
-        <a href="admin.html">Admin</a>
-      </div>
-    </div>
-  </footer>
-
-  <!-- Firebase SDKs (compat build — simplest to drop into plain HTML/JS) -->
-  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
-
-  <script src="js/firebase-config.js"></script>
-  <script src="js/auth-widget.js"></script>
-  <script src="js/nav-drawer.js"></script>
-  <script src="js/script.js"></script>
+ // 3. Angle label
+ const angKey=el.dataset&&el.dataset.ang;
+ if(angKey!==undefined){
+  const a=ANG.find(x=>x.key===angKey);
+  const cur=alabels[angKey]||(a?String(parseFloat(a.deg.toFixed(1))):'');
+  openInlineEdit(cx,cy,cur,'e.g. 45 or x',val=>{
+   if(val===cur)return;
+   snapshot();
+   const v=val.replace(/°/g,'').trim();
+   if(numAng(v,a)&&a&&a.mv){
+    delete alabels[angKey];
+    setAngle(a,+v);
+    toast(`Angle reshaped to ${v}°`);
+   }else if(v){
+    alabels[angKey]=v;
+    toast(`Angle label set to ${v}`);
+   }else{
+    delete alabels[angKey];
+    toast('Reset to measured angle');
+   }
+   if(!$('arc').checked&&!$('alab').checked)$('alab').checked=true;
+   render();
+  });
+  return;
+ }
+}
+const editing=()=>{const ed=$('inline-edit');return !!ed&&ed.style.display!=='none'};
+S.onpointerdown=e=>{
+ if(editing())$('inline-edit').blur();
+ if(e.button>1)return;
+ if(tool==='select'){
+  const lbl=findLabelTarget(e);
+  if(lbl){
+   const now=Date.now(),dt=now-lastLblClick.time;
+   const dxy=Math.hypot(e.clientX-lastLblClick.x,e.clientY-lastLblClick.y);
+   if(dt<500&&dxy<35){
+    lastLblClick={time:0,x:0,y:0};
+    triggerLabelEdit(lbl,e.clientX,e.clientY);
+    e.preventDefault();
+    return;
+   }
+   lastLblClick={time:now,x:e.clientX,y:e.clientY};
+   if(lbl.dataset.i!==undefined){
+    pick([+lbl.dataset.i]);
+    info();
+   }
+   e.preventDefault();
+   return;
+  }
+ }
+ lastLblClick={time:0,x:0,y:0};
+ const p=pt(e);S.setPointerCapture(e.pointerId);
+ if(e.button===1||spaceDown||tool==='pan'){drag={m:'pan',sx:e.clientX,sy:e.clientY,vx:view.x,vy:view.y};S.style.cursor='grabbing';return}
+ if(tool==='select'){const h=e.target.dataset.h,i=e.target.dataset.i;
+  if(h!==undefined){drag={m:'h',h:+h,sn:false}}
+  else if(i!==undefined){const ii=+i,gm=expand([ii]);
+   if(e.shiftKey)pick(expand(msel.includes(ii)?msel.filter(x=>!gm.includes(x)):[...msel,...gm]));
+   else if(!msel.includes(ii))pick(gm);
+   drag={m:'m',last:p,sn:false}}
+  else{const rp=raw(e);drag={m:'box',a:rp,b:rp,base:e.shiftKey?msel.slice():[]};if(!e.shiftKey)pick([])}
+  render();return}
+ if(msel.length)pick([]);
+ if(tool==='poly'||tool==='tri'){
+  if(pend.length>=3&&dist(p,pend[0])<10/view.k){finishPoly();return}
+  if(!pend.length||dist(p,pend[pend.length-1])>1)pend.push(p);
+  if(tool==='tri'&&pend.length===3)finishPoly();else render();return}
+ draft={type:tool,pts:[p,p],n:Math.max(3,Math.min(20,+$('n').value||6)),...style()};render()};
+S.onpointermove=e=>{
+ cur=pt(e);$('status').textContent=`x ${nu(cur.x)}, y ${nu(-cur.y)} ${un()}`;
+ if(draft)draft.pts[1]=cur;
+ else if(drag&&drag.m==='pan'){view.x=drag.vx+e.clientX-drag.sx;view.y=drag.vy+e.clientY-drag.sy}
+ else if(drag&&drag.m==='box')drag.b=raw(e);
+ else if(drag&&drag.m==='h'){const q=shapes[sel];if(q&&q.pts[drag.h]&&(q.pts[drag.h].x!==cur.x||q.pts[drag.h].y!==cur.y)){if(!drag.sn){snapshot();drag.sn=true}q.pts[drag.h]=cur}}
+ else if(drag&&drag.m==='m'){const dx=cur.x-drag.last.x,dy=cur.y-drag.last.y;if(dx||dy){if(!drag.sn){snapshot();drag.sn=true}msel.forEach(i=>shapes[i].pts.forEach(q=>{q.x+=dx;q.y+=dy}));drag.last=cur}}
+ if(draft||drag||pend.length)render()};
+S.onpointerup=()=>{
+ if(draft){if(dist(draft.pts[0],draft.pts[1])>4){snapshot();shapes.push(draft);pick([shapes.length-1])}draft=null}
+ if(drag&&drag.m==='box'){const a=drag.a,b=drag.b,x0=Math.min(a.x,b.x),x1=Math.max(a.x,b.x),y0=Math.min(a.y,b.y),y1=Math.max(a.y,b.y);
+  if(x1-x0>3||y1-y0>3)pick(expand([...drag.base,...shapes.map((s,i)=>i).filter(i=>{const q=sbox(shapes[i]);return q[0]>=x0&&q[1]>=y0&&q[2]<=x1&&q[3]<=y1})]))}
+ if(drag&&drag.m==='pan')S.style.cursor=tool==='pan'?'grab':tool==='select'?'default':'crosshair';
+ drag=null;render()};
+S.onpointercancel=()=>{if(drag&&drag.m==='pan')S.style.cursor=tool==='pan'?'grab':tool==='select'?'default':'crosshair';draft=null;drag=null;render()};
+S.ondblclick=e=>{
+ const lbl=findLabelTarget(e);
+ if(lbl){
+  if(!editing())triggerLabelEdit(lbl,e.clientX,e.clientY);
+  return;
+ }
+ if(pend.length>=3)finishPoly();
+};
+function finishPoly(){if(pend.length<3){pend=[];render();return}snapshot();shapes.push({type:'poly',pts:pend,...style()});pick([shapes.length-1]);pend=[];render()}
+function apply(id){
+ if(id==='fill')$('nofill').checked=false;
+ if(tool==='select'&&msel.length){snapshot();const st=style();
+  msel.forEach(i=>{const s=shapes[i];
+   if(id==='stroke')s.stroke=st.stroke;
+   else if(id==='fill'||id==='nofill')s.fill=st.fill;
+   else if(id==='w')s.w=st.w;
+   else if(id==='dash')s.dash=st.dash;
+   else if(id==='n'&&s.type==='reg')s.n=Math.max(3,Math.min(20,+$('n').value||6))})}
+ render()}
+['stroke','fill','nofill','w','n','dash'].forEach(id=>$(id).onchange=()=>apply(id));
+['mbold','abold','grid','snap','meas','vn_on','par','perp','arc','alab'].forEach(id=>$(id).onchange=render);
+function unitUI(){$('cw').style.display=$('unit').value==='custom'?'flex':'none';$('ulab').textContent=un();render()}
+['unit','cunit','scale'].forEach(id=>$(id).oninput=unitUI);
+function setAngle(a,deg){
+ const m=a.mv;if(!m||!(m.len>0))return;
+ const v=deg*Math.PI/180,th=m.side==='s'?a.ta+v:a.ta+a.d-v,F={x:m.far.x,y:m.far.y},
+  np={x:a.X.x+m.len*Math.cos(th),y:a.X.y+m.len*Math.sin(th)};
+ shapes.forEach(s=>{if((s.type==='rect'||s.type==='reg')&&verts(s).some(p=>dist(p,F)<1.5)){s.pts=verts(s).map(p=>({x:p.x,y:p.y}));s.type='poly';delete s.n}});
+ shapes.forEach(s=>{if(s.type==='line'||s.type==='poly')s.pts.forEach(p=>{if(dist(p,F)<1.5){p.x=np.x;p.y=np.y}})})}
+const numAng=(v,a)=>/^\d+(\.\d+)?$/.test(v)&&+v>0&&+v<(a&&a.deg>180?360:180);
+$('angs').onfocusin=()=>{angSnap=false};
+$('angs').oninput=e=>{const k=e.target.dataset.k;if(k===undefined)return;
+ const v=e.target.value.replace(/[<>&"]/g,'').trim(),a=ANG.find(x=>x.key===k);if(numAng(v,a)&&a&&a.mv)return;
+ if(!angSnap){snapshot();angSnap=true}
+ if(v)alabels[k]=v;else delete alabels[k];
+ if(!$('arc').checked&&!$('alab').checked)$('alab').checked=true;render()};
+$('angs').onchange=e=>{const k=e.target.dataset.k;if(k===undefined)return;const v=e.target.value.trim(),a=ANG.find(x=>x.key===k);
+ if(!numAng(v,a)||!a||!a.mv)return;
+ snapshot();delete alabels[k];setAngle(a,+v);
+ if(!$('arc').checked&&!$('alab').checked)$('alab').checked=true;
+ e.target.value='';e.target.blur();render()};
+['msz','vsz','aw','arcr','asz','acol'].forEach(id=>$(id).oninput=render);
+$('vn').onchange=()=>{const s=shapes[sel];if(!s)return;snapshot();const old=s.names.slice();s.names=$('vn').value.split(/[\s,]+/).map(x=>x.replace(/[<>&"|]/g,'').slice(0,12)).filter(Boolean);
+ const mp={};old.forEach((o,i)=>{if(s.names[i]&&s.names[i]!==o)mp[o]=s.names[i]});migrate(mp);
+ const P=npts(s);shapes.forEach(o=>{if(o===s)return;npts(o).forEach((q,j)=>P.forEach((p,i)=>{if(s.names[i]&&Math.abs(p.x-q.x)<1.5&&Math.abs(p.y-q.y)<1.5)o.names[j]=s.names[i]}))});render()};
+$('undo').onclick=undo;$('redo').onclick=redo;
+function pruneAL(){const nm=new Set(shapes.flatMap(s=>s.names||[]));Object.keys(alabels).forEach(k=>{if(!k.split('|').every(x=>nm.has(x)))delete alabels[k]})}
+$('del').onclick=()=>{if(msel.length){snapshot();const d=new Set(msel);shapes=shapes.filter((_,i)=>!d.has(i));pick([]);pruneAL();render()}};
+$('dup').onclick=()=>{if(!msel.length)return;snapshot();const gm={},st=shapes.length;
+ msel.forEach(i=>{const c=JSON.parse(JSON.stringify(shapes[i]));delete c.names;delete c._dup;if(c.g)c.g=gm[c.g]||(gm[c.g]='g'+Math.random().toString(36).slice(2,8));c.pts.forEach(p=>{p.x+=U;p.y+=U});shapes.push(c)});
+ pick(shapes.map((_,i)=>i).slice(st));render()};
+$('selall').onclick=()=>{setTool('select');pick(shapes.map((_,i)=>i));render()};
+$('grp').onclick=()=>{if(msel.length<2){toast('Select two or more shapes first');return}snapshot();const g='g'+Date.now().toString(36)+Math.random().toString(36).slice(2,5);msel.forEach(i=>shapes[i].g=g);render();toast('Grouped')};
+$('ungrp').onclick=()=>{const tg=msel.filter(i=>shapes[i].g);if(!tg.length)return;snapshot();tg.forEach(i=>delete shapes[i].g);render();toast('Ungrouped')};
+$('clear').onclick=()=>{if(shapes.length){snapshot();shapes=[];alabels={};pick([]);render()}};
+addEventListener('keyup',e=>{if(e.key===' ')spaceDown=false});
+addEventListener('blur',()=>{spaceDown=false});
+addEventListener('resize',()=>activeTab==='geo'?render():vRender());
+const typing=t=>!!t&&(t.tagName==='SELECT'||t.tagName==='TEXTAREA'||(t.tagName==='INPUT'&&!['checkbox','color','button'].includes(t.type)));
+addEventListener('keydown',e=>{
+ if(activeTab!=='geo'||typing(e.target))return;
+ const k=String(e.key||'').toLowerCase(),mod=e.ctrlKey||e.metaKey;
+ if(e.key===' '){if(e.target.tagName==='INPUT')return;spaceDown=true;e.preventDefault();return}
+ if(mod&&k==='a'){e.preventDefault();$('selall').click();return}
+ if(mod&&k==='z'){e.preventDefault();e.shiftKey?redo():undo()}
+ else if(mod&&k==='y'){e.preventDefault();redo()}
+ else if(e.key==='Delete'||e.key==='Backspace'){if(pend.length){pend.pop();render();e.preventDefault()}else $('del').click()}
+ else if(e.key==='Enter'&&pend.length)finishPoly();
+ else if(e.key==='Escape'){pend=[];draft=null;pick([]);render()}});
+function exportSVG(transparent,scale=1,list=shapes){
+ let b,body;exporting=true;
+ try{b=bounds(list);
+  body=list.map((s,i)=>shapeSVG(s,i,false).replace(/ data-i="\d+" style="[^"]*"/,'')).join('')+(($('meas').checked)?list.map(s=>labels(s)).join(''):'')+(($('vn_on').checked)?list.map(s=>nameSVG(s)).join(''):'')+marks(list)+angleSVG(list===shapes?ANG:computeAngles(list))}
+ finally{exporting=false}
+ const bg=transparent?'':`<rect x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" fill="#fff"/>`;
+ const W=Math.round(b.w*scale),H=Math.round(b.h*scale);
+ return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="${b.x} ${b.y} ${b.w} ${b.h}" style="font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif">${bg}${body}</svg>`}
+function save(url,name){const a=document.createElement('a');a.href=url;a.download=name;a.click()}
+$('exsvg').onclick=()=>save(URL.createObjectURL(new Blob([exportSVG(false)],{type:'image/svg+xml'})),'figure.svg');
+$('expng').onclick=async()=>{try{save(URL.createObjectURL(await pngBlob()),'figure.png')}catch(_){toast('PNG export failed')}};
+let clip=null,pasteN=0,toastT;
+function toast(m){const e=$('toast');e.textContent=m;e.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove('on'),1800)}
+function copySel(){const src=msel.length?msel.map(i=>shapes[i]):shapes;if(!src.length)return null;
+ clip=JSON.stringify({geometryStudio:1,shapes:src.map(({type,pts,n,stroke,fill,w,dash,lbls,g,hid})=>({type,pts,n,stroke,fill,w,dash,lbls,g,hid}))});pasteN=0;
+ return clip}
+async function copyAll(){
+ if(!shapes.length){toast('Nothing to copy');return}
+ const c=copySel();if(!c)return;
+ const src=msel.length?msel.map(i=>shapes[i]):shapes;
+ try{
+  await navigator.clipboard.write([new ClipboardItem({
+   'image/png': pngBlob(src),
+   'text/plain': new Blob([c],{type:'text/plain'})
+  })]);
+  toast(msel.length?(msel.length>1?'Copied selection as image':'Copied shape as image'):'Copied diagram as image');
+ }catch(_){
+  try{
+   if(navigator.clipboard&&navigator.clipboard.writeText)await navigator.clipboard.writeText(c);
+   toast('Copied shape data');
+  }catch(__){toast('Copy failed')}
+ }
+}
+function pasteData(txt){
+ let d=null;try{d=JSON.parse(txt)}catch(_){}
+ if(!d||!d.geometryStudio){d=null;if(!String(txt||'').trim()){try{d=JSON.parse(clip)}catch(_){d=null}}}
+ const ok=['line','circle','ellipse','rect','poly','reg'],col=c=>/^#[0-9a-f]{6}$/i.test(c)?c:'#1c2230',num=v=>typeof v==='number'&&isFinite(v),LK=/^(e\d+|r|a|b)$/;
+ const list=(d&&Array.isArray(d.shapes)?d.shapes:[]).filter(s=>s&&ok.includes(s.type)&&Array.isArray(s.pts)&&s.pts.length>=(s.type==='poly'?3:2)&&s.pts.every(p=>p&&num(p.x)&&num(p.y)));
+ if(!list.length){toast('Nothing to paste');return}
+ snapshot();pasteN++;const o=pasteN*U,st=shapes.length,gm={};
+ list.forEach(s=>{const n={type:s.type,pts:(s.type==='poly'?s.pts:s.pts.slice(0,2)).map(p=>({x:p.x+o,y:p.y+o})),n:Math.max(3,Math.min(20,+s.n||6)),stroke:col(s.stroke),fill:s.fill==='none'?'none':col(s.fill),w:Math.max(1,Math.min(12,+s.w||2)),dash:['','6 4','2 3','10 4 2 4'].includes(s.dash)?s.dash:'',lbls:{}};
+  if(s.lbls&&typeof s.lbls==='object')Object.keys(s.lbls).forEach(k=>{if(LK.test(k)&&typeof s.lbls[k]==='string')n.lbls[k]=s.lbls[k].slice(0,120)});
+  if(typeof s.g==='string'&&/^\w+$/.test(s.g))n.g=gm[s.g]||(gm[s.g]='g'+Math.random().toString(36).slice(2,8));
+  if(Array.isArray(s.hid))n.hid=s.hid.filter(x=>typeof x==='string'&&LK.test(x));
+  shapes.push(n)});
+ setTool('select');pick(shapes.map((_,i)=>i).slice(st));render();toast('Pasted')}
+$('cp').onclick=()=>copyAll();
+$('ps').onclick=()=>{if(navigator.clipboard&&navigator.clipboard.readText)navigator.clipboard.readText().then(pasteData).catch(()=>pasteData(''));else pasteData('')};
+document.addEventListener('copy',e=>{if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||String(getSelection()))return;
+ e.preventDefault();copyAll()});
+document.addEventListener('paste',e=>{if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;e.preventDefault();pasteData(e.clipboardData.getData('text/plain'))});
+function bounds(list=shapes){if(!list.length){const r=S.getBoundingClientRect();return{x:0,y:0,w:r.width,h:r.height}}
+ const bx=list.map(s=>{const q=sbox(s).slice();if(s.type==='ellipse'&&$('meas').checked)q[2]+=10+msz()*6;return q}),x0=Math.min(...bx.map(b=>b[0])),y0=Math.min(...bx.map(b=>b[1])),x1=Math.max(...bx.map(b=>b[2])),y1=Math.max(...bx.map(b=>b[3])),m=45;
+ return{x:x0-m,y:y0-m,w:x1-x0+2*m,h:y1-y0+2*m}}
+function pngBlob(list=shapes){return new Promise((res,rej)=>{
+ const b=bounds(list);let scale=Math.max(4,Math.round((window.devicePixelRatio||1)*2));scale=Math.max(.25,Math.min(scale,Math.sqrt(16e6/Math.max(1,b.w*b.h))));const W=Math.round(b.w*scale),H=Math.round(b.h*scale);
+ const img=new Image(),svg=exportSVG(true,scale,list);
+ img.onload=()=>{const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');x.drawImage(img,0,0,W,H);c.toBlob(bl=>bl?res(bl):rej(new Error('blob')),'image/png')};
+ img.onerror=rej;img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)})}
+$('cpi').onclick=()=>copyAll();
+const lblKeys=s=>s.type==='line'?['e0']:s.type==='circle'?['r']:s.type==='ellipse'?['a','b']:verts(s).map((_,i)=>'e'+i);
+function lblName(s,k){const N=s.names||[];
+ if(s.lbls&&s.lbls[k])return s.lbls[k]+' ('+(k==='r'?'Radius':k==='a'?'Width':k==='b'?'Height':'Side')+')';
+ if(s.type==='line')return'Length '+(N[0]||'')+(N[1]||'');
+ if(s.type==='circle')return'Radius';
+ if(s.type==='ellipse')return k==='a'?'Width (2a)':'Height (2b)';
+ const i=+k.slice(1),n=verts(s).length;return'Side '+(N[i]||'')+(N[(i+1)%n]||'')}
+let lastLs='';
+function sideUI(){
+ const box=$('sidelist');
+ if(!msel.length){if(lastLs==='none')return;lastLs='none';box.innerHTML='<span class="hint">Select a shape to choose which of its labels to show.</span>';return}
+ const rows=[];msel.slice(0,8).forEach(i=>{const s=shapes[i];lblKeys(s).forEach(k=>rows.push({i,k,on:!(s.hid||[]).includes(k),t:lblName(s,k)}))});
+ const sig=rows.map(r=>r.i+r.k+r.on+r.t).join('|')+msel.length;if(sig===lastLs)return;lastLs=sig;
+ box.innerHTML=rows.map(r=>`<label><span>${esc(r.t)}</span><input type="checkbox" data-s="${r.i}" data-k="${r.k}" ${r.on?'checked':''}></label>`).join('')+(msel.length>8?'<span class="hint">Showing the first 8 selected shapes.</span>':'')}
+$('sidelist').onchange=e=>{const i=e.target.dataset.s,k=e.target.dataset.k;if(i===undefined)return;const s=shapes[+i];if(!s)return;snapshot();
+ s.hid=(s.hid||[]).filter(x=>x!==k);if(!e.target.checked)s.hid.push(k);if(!s.hid.length)delete s.hid;render()};
+const tgt=()=>msel.length?msel.map(i=>shapes[i]):shapes;
+$('lblhide').onclick=()=>{const T=tgt();if(!T.length)return;snapshot();T.forEach(s=>s.hid=lblKeys(s));render()};
+$('lblshow').onclick=()=>{const T=tgt();if(!T.length)return;snapshot();T.forEach(s=>delete s.hid);render()};
+function zoomAt(f,cx,cy){const k2=Math.max(.15,Math.min(6,view.k*f));view.x=cx-(cx-view.x)*k2/view.k;view.y=cy-(cy-view.y)*k2/view.k;view.k=k2;render()}
+const zc=()=>{const r=S.getBoundingClientRect();return[r.width/2,r.height/2]};
+$('zi').onclick=()=>zoomAt(1.25,...zc());$('zo').onclick=()=>zoomAt(.8,...zc());
+$('zf').onclick=()=>{if(!shapes.length){view={x:0,y:0,k:1};render();return}
+ const r=S.getBoundingClientRect(),b=bounds(),k=Math.max(.15,Math.min(2,Math.min(r.width/b.w,r.height/b.h)));
+ view={k,x:(r.width-b.w*k)/2-b.x*k,y:(r.height-b.h*k)/2-b.y*k};render()};
+S.addEventListener('wheel',e=>{e.preventDefault();const r=S.getBoundingClientRect();
+ if(e.ctrlKey||e.metaKey)zoomAt(Math.exp(-e.deltaY*.002),e.clientX-r.left,e.clientY-r.top);
+ else{view.x-=e.shiftKey?e.deltaY:e.deltaX;view.y-=e.shiftKey?0:e.deltaY;render()}},{passive:false});
+setTool('select');
+render();
+</script>
 </body>
 </html>
