@@ -222,7 +222,7 @@ function getGeometry(){
   }
   const pathOnlyA=`M ${pTop.x} ${pTop.y} A ${R} ${R} 0 1 0 ${pBot.x} ${pBot.y} A ${R} ${R} 0 0 1 ${pTop.x} ${pTop.y} Z`;
   const pathAB=`M ${pTop.x} ${pTop.y} A ${R} ${R} 0 0 1 ${pBot.x} ${pBot.y} A ${R} ${R} 0 0 1 ${pTop.x} ${pTop.y} Z`;
-  const pathOnlyB=`M ${pTop.x} ${pTop.y} A ${R} ${R} 0 0 0 ${pBot.x} ${pBot.y} A ${R} ${R} 0 1 1 ${pTop.x} ${pTop.y} Z`;
+  const pathOnlyB=`M ${pTop.x} ${pTop.y} A ${R} ${R} 0 1 1 ${pBot.x} ${pBot.y} A ${R} ${R} 0 0 0 ${pTop.x} ${pTop.y} Z`;
   const uBox={x:cx-R*1.8-d/2,y:cy-R*1.35,w:R*3.6+d,h:R*2.7};
   return{
    circles:[{id:'A',x:x1,y:y1,r:R,label:state.setNames.A,lx:x1-R*0.7,ly:y1-R*0.8},
