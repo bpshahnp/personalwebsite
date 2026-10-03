@@ -87,7 +87,7 @@ details>.body{padding:10px 12px;display:grid;gap:8px}
 <svg id="c"></svg>
 </div>
 <aside>
-<details open><summary>Diagram Type</summary><div class="body">
+<details open><summary>Diagram Settings</summary><div class="body">
 <label>Sets <select id="mode">
 <option value="2">2 Sets (A, B)</option>
 <option value="3">3 Sets (A, B, C)</option>
@@ -105,7 +105,8 @@ details>.body{padding:10px 12px;display:grid;gap:8px}
 <span class="hint">Click any region directly on the diagram to toggle its shading on or off!</span>
 </div></details>
 
-<details open><summary>Shading Style</summary><div class="body">
+<details><summary>Style</summary><div class="body">
+<p style="margin:0 0 6px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;opacity:.5">Shading</p>
 <label>Pattern <select id="shPattern">
 <option value="solid">Solid Tint</option>
 <option value="hatch" selected>Hatched Lines (///)</option>
@@ -120,9 +121,8 @@ details>.body{padding:10px 12px;display:grid;gap:8px}
 <option value="0">0° (Horizontal —)</option>
 <option value="90">90° (Vertical |)</option>
 </select></label>
-</div></details>
-
-<details><summary>Outlines &amp; Labels</summary><div class="body">
+<hr style="border:none;border-top:1px solid var(--line);margin:10px 0">
+<p style="margin:0 0 6px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;opacity:.5">Outlines &amp; Labels</p>
 <label>Outline Color <input type="color" id="strokeCol" value="#1c2230"></label>
 <label>Outline Width <input type="number" id="strokeW" min="1" max="8" value="2"></label>
 <label>Outline Style <select id="strokeDash">
@@ -140,7 +140,7 @@ details>.body{padding:10px 12px;display:grid;gap:8px}
 <span class="hint">Double-click any number or dot directly on the diagram to edit in place. You can also drag dots to nudge their position.</span>
 </div></details>
 
-<details open><summary>Export</summary><div class="body">
+<details><summary>Export</summary><div class="body">
 <div class="row">
 <button id="cpi-btn" style="flex:1;background:var(--accentbg);border-color:var(--accent);color:var(--accent);font-weight:600">📋 Copy Image</button>
 <button id="expng" style="flex:1">🖼 PNG (Transparent)</button>
