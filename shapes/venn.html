@@ -73,6 +73,7 @@ details>.body{padding:10px 12px;display:grid;gap:8px}
 <button id="redo" title="Ctrl+Y">↷ Redo</button>
 <button id="cp" title="Ctrl+C: Copy high-resolution diagram image & data">⧉ Copy</button>
 <button id="ps" title="Ctrl+V">Paste</button>
+<button id="cpi" title="Copy the diagram as a picture">🖼 Copy image</button>
 </header>
 <main>
 <div id="wrap">
@@ -141,10 +142,11 @@ details>.body{padding:10px 12px;display:grid;gap:8px}
 
 <details open><summary>Export</summary><div class="body">
 <div class="row">
-<button id="expng" style="flex:1;background:var(--accentbg);border-color:var(--accent);color:var(--accent);font-weight:600">🖼 PNG (Transparent)</button>
+<button id="cpi-btn" style="flex:1;background:var(--accentbg);border-color:var(--accent);color:var(--accent);font-weight:600">📋 Copy Image</button>
+<button id="expng" style="flex:1">🖼 PNG (Transparent)</button>
 <button id="exsvg" style="flex:1">📄 SVG</button>
 </div>
-<span class="hint">PNG export is high-resolution (4×) with true transparency, ready for exam papers and Microsoft Word.</span>
+<span class="hint">Copied image and PNG export are high-resolution (4×) with true transparency, ready for exam papers and Microsoft Word.</span>
 </div></details>
 </aside>
 </main>
@@ -461,9 +463,15 @@ async function copyAll(){
    'image/png':blob,
    'text/plain':new Blob([json],{type:'text/plain'})
   })]);
-  toast('Copied transparent diagram image & data');
+  toast('Copied diagram as image');
  }catch(_){
-  toast('Copy failed. Use PNG export button.');
+  try{
+   const json=JSON.stringify({vennStudio:1,...saveStateObj()});
+   if(navigator.clipboard&&navigator.clipboard.writeText)await navigator.clipboard.writeText(json);
+   toast('Copied diagram data');
+  }catch(__){
+   toast('Copy failed. Use PNG export button.');
+  }
  }
 }
 
@@ -704,6 +712,8 @@ addEventListener('resize',render);
 
 // Copy & Export Events
 $('cp').onclick=copyAll;
+$('cpi').onclick=copyAll;
+if($('cpi-btn'))$('cpi-btn').onclick=copyAll;
 $('ps').onclick=()=>{if(navigator.clipboard&&navigator.clipboard.readText)navigator.clipboard.readText().then(pasteData).catch(()=>toast('Paste failed'))};
 document.addEventListener('copy',e=>{if(e.target.tagName==='INPUT')return;e.preventDefault();copyAll()});
 document.addEventListener('paste',e=>{if(e.target.tagName==='INPUT')return;e.preventDefault();pasteData(e.clipboardData.getData('text/plain'))});
