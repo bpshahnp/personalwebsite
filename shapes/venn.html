@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Venn Diagram Studio | Create, Shade &amp; Export Set Diagrams</title>
+<meta name="description" content="Free online Venn Diagram maker for math exams and teachers. Support for 2-set, 3-set, disjoint sets, click-to-shade regions, hatch lines, custom cardinalities, and transparent PNG export.">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f4f5f7;--panel:#fff;--ink:#1c2230;--mute:#667085;--line:#d9dde5;--accent:#3b5bdb;--accentbg:#e7ecff;--region-hover:#3b5bdb33}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#13161d;--panel:#1c212b;--ink:#e8ebf2;--mute:#9aa3b5;--line:#313949;--accent:#8ea2ff;--accentbg:#2a3354;--region-hover:#8ea2ff44}}
+:root[data-theme="dark"]{--bg:#13161d;--panel:#1c212b;--ink:#e8ebf2;--mute:#9aa3b5;--line:#313949;--accent:#8ea2ff;--accentbg:#2a3354;--region-hover:#8ea2ff44}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--panel);border-bottom:1px solid var(--line);flex-wrap:wrap}
+h1{font-size:16px;margin:0 8px 0 0;display:flex;align-items:center;gap:6px}
+.nav-tabs{display:flex;gap:4px;background:var(--bg);padding:3px;border-radius:8px;border:1px solid var(--line)}
+.nav-tab{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none;color:var(--mute);transition:all .15s}
+.nav-tab:hover{color:var(--ink)}
+.nav-tab.active{background:var(--panel);color:var(--accent);box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+.tools{display:flex;gap:4px;flex-wrap:wrap}
+button,select,input{font:inherit;color:inherit}
+button{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;transition:all .15s}
+button:hover{border-color:var(--accent);color:var(--accent)}
+button.on{background:var(--accentbg);border-color:var(--accent);color:var(--accent);font-weight:600}
+.sp{flex:1}
+main{flex:1;min-height:0;display:flex;flex-direction:column}
+@media(min-width:850px){main{flex-direction:row}}
+#wrap{flex:1;min-height:280px;position:relative;overflow:hidden;background:#fff}
+svg#c{width:100%;height:100%;display:block;touch-action:none;cursor:default}
+aside{background:var(--panel);border-top:1px solid var(--line);padding:12px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;flex:0 0 auto;max-height:48vh}
+aside>*{flex-shrink:0}
+@media(min-width:850px){aside{width:280px;max-height:none;flex:0 0 280px;border-top:0;border-left:1px solid var(--line)}}
+aside h2{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);margin:4px 0 0}
+label{display:flex;align-items:center;gap:8px;justify-content:space-between}
+input[type=number],input[type=text],select{padding:4px 6px;border:1px solid var(--line);border-radius:6px;background:var(--bg)}
+input[type=number]{width:64px}input[type=text]{width:120px}
+input[type=color]{width:40px;height:26px;padding:0;border:1px solid var(--line);border-radius:6px;background:none;cursor:pointer}
+input[type=range]{width:100px;accent-color:var(--accent)}
+.row{display:flex;gap:6px;flex-wrap:wrap}
+.row-full{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+details{border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+summary{cursor:pointer;padding:9px 12px;font-weight:600;font-size:13px;list-style:none;display:flex;justify-content:space-between;align-items:center;user-select:none}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"▸";color:var(--mute);transition:transform .15s}
+details[open]>summary::after{transform:rotate(90deg)}
+details[open]>summary{border-bottom:1px solid var(--line)}
+details>.body{padding:10px 12px;display:grid;gap:8px}
+.hint{font-size:12px;color:var(--mute);line-height:1.4}
+#toast{position:absolute;left:50%;top:10px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:6px 14px;border-radius:8px;font-size:13px;font-weight:500;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20;box-shadow:0 4px 12px rgba(0,0,0,0.15)}
+#toast.on{opacity:1}
+.zoom{position:absolute;right:8px;bottom:8px;display:flex;align-items:center;gap:4px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:3px;z-index:2}
+.zoom button{padding:3px 9px}.zoom span{min-width:42px;text-align:center;font-size:12px}
+.preset-btn{font-size:12px;padding:5px 8px;border-radius:6px;background:var(--bg);border:1px solid var(--line);text-align:center;cursor:pointer}
+.preset-btn:hover{background:var(--accentbg);border-color:var(--accent);color:var(--accent)}
+.region-tag{display:inline-flex;align-items:center;gap:4px;padding:3px 6px;border-radius:4px;font-size:11px;background:var(--bg);border:1px solid var(--line)}
+.vpath{cursor:pointer;transition:fill .12s,fill-opacity .12s}
+.vpath:hover{filter:brightness(0.92)}
+.vtext{cursor:pointer;user-select:none}
+</style>
+</head>
+<body>
+<header>
+<h1>⭕ Venn Studio</h1>
+<nav class="nav-tabs">
+<a href="index.html" class="nav-tab">📐 Geometry</a>
+<a href="venn.html" class="nav-tab active">⭕ Venn</a>
+<a href="/mcqmaker" class="nav-tab">📝 MCQ Maker</a>
+</nav>
+<span class="sp"></span>
+<button id="undo" title="Ctrl+Z">↶ Undo</button>
+<button id="redo" title="Ctrl+Y">↷ Redo</button>
+<button id="cp" title="Ctrl+C: Copy high-resolution diagram image & data">⧉ Copy</button>
+<button id="ps" title="Ctrl+V">Paste</button>
+</header>
+<main>
+<div id="wrap">
+<div id="toast"></div>
+<div class="zoom">
+<button id="zo" title="Zoom out">−</button>
+<span id="zl">100%</span>
+<button id="zi" title="Zoom in">+</button>
+<button id="zf" title="Fit to view">Fit</button>
+</div>
+<svg id="c"></svg>
+</div>
+<aside>
+<details open><summary>Diagram Type</summary><div class="body">
+<label>Sets <select id="mode">
+<option value="2">2 Sets (A, B)</option>
+<option value="3">3 Sets (A, B, C)</option>
+<option value="disjoint">Disjoint Sets (A, B)</option>
+<option value="subset">Subset (B ⊆ A)</option>
+</select></label>
+<label>Universal Box (U) <input type="checkbox" id="showU" checked></label>
+<label>Universal Box Label <input type="text" id="labelU" value="U" maxlength="8" style="width:70px"></label>
+<label>Circle Size <input type="range" id="sizeRange" min="70" max="150" value="105"></label>
+<label>Overlap Distance <input type="range" id="distRange" min="30" max="100" value="62"></label>
+</div></details>
+
+<details open><summary>Quick Presets (Shading)</summary><div class="body">
+<div id="presets" class="row-full"></div>
+<span class="hint">Click any region directly on the diagram to toggle its shading on or off!</span>
+</div></details>
+
+<details open><summary>Shading Style</summary><div class="body">
+<label>Pattern <select id="shPattern">
+<option value="solid">Solid Tint</option>
+<option value="hatch" selected>Hatched Lines (///)</option>
+<option value="cross">Crosshatch (XXX)</option>
+<option value="dots">Dots (...)</option>
+</select></label>
+<label>Shade Color <input type="color" id="shColor" value="#3b5bdb"></label>
+<label>Shade Opacity <input type="range" id="shOpacity" min="10" max="100" value="45"></label>
+<label>Hatch Angle <select id="hAngle">
+<option value="45">45° (Standard /)</option>
+<option value="-45">135° (Reverse \)</option>
+<option value="0">0° (Horizontal —)</option>
+<option value="90">90° (Vertical |)</option>
+</select></label>
+</div></details>
+
+<details><summary>Outlines &amp; Labels</summary><div class="body">
+<label>Outline Color <input type="color" id="strokeCol" value="#1c2230"></label>
+<label>Outline Width <input type="number" id="strokeW" min="1" max="8" value="2"></label>
+<label>Outline Style <select id="strokeDash">
+<option value="">Solid</option>
+<option value="6 4">Dashed</option>
+<option value="2 3">Dotted</option>
+</select></label>
+<label>Label Font Size (px) <input type="number" id="fontSize" min="10" max="32" value="16"></label>
+<label>Bold Labels <input type="checkbox" id="boldText" checked></label>
+</div></details>
+
+<details open><summary>Region Values &amp; Counts</summary><div class="body">
+<div id="valList" style="display:grid;gap:6px"></div>
+<span class="hint">Double-click any number or set label directly on the diagram to edit it in place. Type a number or variable (e.g. 15, x, ?).</span>
+</div></details>
+
+<details open><summary>Export</summary><div class="body">
+<div class="row">
+<button id="expng" style="flex:1;background:var(--accentbg);border-color:var(--accent);color:var(--accent);font-weight:600">🖼 PNG (Transparent)</button>
+<button id="exsvg" style="flex:1">📄 SVG</button>
+</div>
+<span class="hint">PNG export is high-resolution (4×) with true transparency, ready for exam papers and Microsoft Word.</span>
+</div></details>
+</aside>
+</main>
+<script>
+const S=document.getElementById('c'),$=id=>document.getElementById(id);
+let view={x:0,y:0,k:1},drag=null,spaceDown=false,exporting=false,hist=[],fut=[];
+let state={
+ mode:'2',
+ showU:true,
+ labelU:'U',
+ setNames:{A:'A',B:'B',C:'C'},
+ shaded:new Set(),
+ values:{},
+ size:105,
+ dist:62,
+ strokeCol:'#1c2230',
+ strokeW:2,
+ strokeDash:'',
+ shColor:'#3b5bdb',
+ shPattern:'hatch',
+ shOpacity:45,
+ hAngle:45,
+ fontSize:16,
+ boldText:true
+};
+
+function snapshot(){
+ hist.push(JSON.stringify({
+  mode:state.mode,showU:state.showU,labelU:state.labelU,setNames:{...state.setNames},
+  shaded:[...state.shaded],values:{...state.values},size:state.size,dist:state.dist,
+  strokeCol:state.strokeCol,strokeW:state.strokeW,strokeDash:state.strokeDash,
+  shColor:state.shColor,shPattern:state.shPattern,shOpacity:state.shOpacity,hAngle:state.hAngle,
+  fontSize:state.fontSize,boldText:state.boldText
+ }));
+ if(hist.length>80)hist.shift();fut=[];
+}
+function undo(){if(!hist.length)return;fut.push(JSON.stringify(saveStateObj()));applyState(JSON.parse(hist.pop()));render()}
+function redo(){if(!fut.length)return;hist.push(JSON.stringify(saveStateObj()));applyState(JSON.parse(fut.pop()));render()}
+function saveStateObj(){return{...state,setNames:{...state.setNames},shaded:[...state.shaded],values:{...state.values}}}
+function applyState(o){Object.assign(state,o);state.shaded=new Set(o.shaded||[]);state.values=o.values||{};state.setNames=o.setNames||{A:'A',B:'B',C:'C'};syncControls()}
+
+function syncControls(){
+ $('mode').value=state.mode;$('showU').checked=state.showU;$('labelU').value=state.labelU;
+ $('sizeRange').value=state.size;$('distRange').value=state.dist;
+ $('strokeCol').value=state.strokeCol;$('strokeW').value=state.strokeW;$('strokeDash').value=state.strokeDash;
+ $('shColor').value=state.shColor;$('shPattern').value=state.shPattern;$('shOpacity').value=state.shOpacity;
+ $('hAngle').value=state.hAngle;$('fontSize').value=state.fontSize;$('boldText').checked=state.boldText;
+ buildPresetButtons();buildValInputs();
+}
+
+function circleIntersections(x0,y0,r0,x1,y1,r1){
+ const d=Math.hypot(x1-x0,y1-y0);
+ if(d>r0+r1||d<Math.abs(r0-r1)||d===0)return null;
+ const a=(r0*r0-r1*r1+d*d)/(2*d);
+ const h=Math.sqrt(Math.max(0,r0*r0-a*a));
+ const x2=x0+a*(x1-x0)/d,y2=y0+a*(y1-y0)/d;
+ return [
+  {x:x2+h*(y1-y0)/d,y:y2-h*(x1-x0)/d},
+  {x:x2-h*(y1-y0)/d,y:y2+h*(x1-x0)/d}
+ ];
+}
+
+function getGeometry(){
+ const m=state.mode,R=state.size,D=state.dist,cx=300,cy=220;
+ if(m==='2'){
+  const d=D*1.2,x1=cx-d/2,y1=cy,x2=cx+d/2,y2=cy;
+  const pts=circleIntersections(x1,y1,R,x2,y2,R);
+  let pTop={x:cx,y:cy-R},pBot={x:cx,y:cy+R};
+  if(pts){
+   pts.sort((a,b)=>a.y-b.y);
+   pTop=pts[0];pBot=pts[1];
+  }
+  const pathOnlyA=`M ${pTop.x} ${pTop.y} A ${R} ${R} 0 1 0 ${pBot.x} ${pBot.y} A ${R} ${R} 0 0 1 ${pTop.x} ${pTop.y} Z`;
+  const pathAB=`M ${pTop.x} ${pTop.y} A ${R} ${R} 0 0 1 ${pBot.x} ${pBot.y} A ${R} ${R} 0 0 1 ${pTop.x} ${pTop.y} Z`;
+  const pathOnlyB=`M ${pTop.x} ${pTop.y} A ${R} ${R} 0 0 0 ${pBot.x} ${pBot.y} A ${R} ${R} 0 1 1 ${pTop.x} ${pTop.y} Z`;
+  const uBox={x:cx-R*1.8-d/2,y:cy-R*1.35,w:R*3.6+d,h:R*2.7};
+  return{
+   circles:[{id:'A',x:x1,y:y1,r:R,label:state.setNames.A,lx:x1-R*0.7,ly:y1-R*0.8},
+            {id:'B',x:x2,y:y2,r:R,label:state.setNames.B,lx:x2+R*0.7,ly:y2-R*0.8}],
+   regions:[
+    {id:'onlyA',name:`Only ${state.setNames.A}`,d:pathOnlyA,cx:x1-d*0.25,cy:y1},
+    {id:'AB',name:`${state.setNames.A} ∩ ${state.setNames.B}`,d:pathAB,cx:cx,cy:cy},
+    {id:'onlyB',name:`Only ${state.setNames.B}`,d:pathOnlyB,cx:x2+d*0.25,cy:y2},
+    {id:'outside',name:`Outside (${state.setNames.A} ∪ ${state.setNames.B})'`,cx:uBox.x+uBox.w*0.88,cy:uBox.y+uBox.h*0.88,isOutside:true}
+   ],
+   uBox
+  };
+ }else if(m==='3'){
+  const d=D*0.95;
+  const cA={x:cx-d*Math.cos(Math.PI/6),y:cy-d*Math.sin(Math.PI/6)};
+  const cB={x:cx+d*Math.cos(Math.PI/6),y:cy-d*Math.sin(Math.PI/6)};
+  const cC={x:cx,y:cy+d};
+  const pAB=circleIntersections(cA.x,cA.y,R,cB.x,cB.y,R)||[{x:cx,y:cy-R},{x:cx,y:cy+R}];
+  const pBC=circleIntersections(cB.x,cB.y,R,cC.x,cC.y,R)||[{x:cx+R,y:cy},{x:cx-R,y:cy}];
+  const pCA=circleIntersections(cC.x,cC.y,R,cA.x,cA.y,R)||[{x:cx-R,y:cy},{x:cx+R,y:cy}];
+  const distC=p=>Math.hypot(p.x-cx,p.y-cy);
+  const sAB=distC(pAB[0])<distC(pAB[1])?{inner:pAB[0],outer:pAB[1]}:{inner:pAB[1],outer:pAB[0]};
+  const sBC=distC(pBC[0])<distC(pBC[1])?{inner:pBC[0],outer:pBC[1]}:{inner:pBC[1],outer:pBC[0]};
+  const sCA=distC(pCA[0])<distC(pCA[1])?{inner:pCA[0],outer:pCA[1]}:{inner:pCA[1],outer:pCA[0]};
+  const I_AB=sAB.inner,I_BC=sBC.inner,I_CA=sCA.inner;
+  const O_AB=sAB.outer,O_BC=sBC.outer,O_CA=sCA.outer;
+
+  const pathABC=`M ${I_AB.x} ${I_AB.y} A ${R} ${R} 0 0 1 ${I_CA.x} ${I_CA.y} A ${R} ${R} 0 0 1 ${I_BC.x} ${I_BC.y} A ${R} ${R} 0 0 1 ${I_AB.x} ${I_AB.y} Z`;
+  const pathAB_only=`M ${O_AB.x} ${O_AB.y} A ${R} ${R} 0 0 0 ${I_CA.x} ${I_CA.y} A ${R} ${R} 0 0 0 ${I_BC.x} ${I_BC.y} A ${R} ${R} 0 0 0 ${O_AB.x} ${O_AB.y} Z`;
+  const pathBC_only=`M ${O_BC.x} ${O_BC.y} A ${R} ${R} 0 0 0 ${I_AB.x} ${I_AB.y} A ${R} ${R} 0 0 0 ${I_CA.x} ${I_CA.y} A ${R} ${R} 0 0 0 ${O_BC.x} ${O_BC.y} Z`;
+  const pathAC_only=`M ${O_CA.x} ${O_CA.y} A ${R} ${R} 0 0 0 ${I_BC.x} ${I_BC.y} A ${R} ${R} 0 0 0 ${I_AB.x} ${I_AB.y} A ${R} ${R} 0 0 0 ${O_CA.x} ${O_CA.y} Z`;
+
+  const pathOnlyA=`M ${O_AB.x} ${O_AB.y} A ${R} ${R} 0 1 0 ${O_CA.x} ${O_CA.y} A ${R} ${R} 0 0 1 ${I_BC.x} ${I_BC.y} A ${R} ${R} 0 0 1 ${O_AB.x} ${O_AB.y} Z`;
+  const pathOnlyB=`M ${O_BC.x} ${O_BC.y} A ${R} ${R} 0 1 0 ${O_AB.x} ${O_AB.y} A ${R} ${R} 0 0 1 ${I_CA.x} ${I_CA.y} A ${R} ${R} 0 0 1 ${O_BC.x} ${O_BC.y} Z`;
+  const pathOnlyC=`M ${O_CA.x} ${O_CA.y} A ${R} ${R} 0 1 0 ${O_BC.x} ${O_BC.y} A ${R} ${R} 0 0 1 ${I_AB.x} ${I_AB.y} A ${R} ${R} 0 0 1 ${O_CA.x} ${O_CA.y} Z`;
+
+  const uBox={x:cx-R*2.1,y:cy-R*1.7,w:R*4.2,h:R*3.6};
+  return{
+   circles:[{id:'A',x:cA.x,y:cA.y,r:R,label:state.setNames.A,lx:cA.x-R*0.7,ly:cA.y-R*0.7},
+            {id:'B',x:cB.x,y:cB.y,r:R,label:state.setNames.B,lx:cB.x+R*0.7,ly:cB.y-R*0.7},
+            {id:'C',x:cC.x,y:cC.y,r:R,label:state.setNames.C,lx:cC.x+R*0.75,ly:cC.y+R*0.8}],
+   regions:[
+    {id:'onlyA',name:`Only ${state.setNames.A}`,d:pathOnlyA,cx:cA.x-d*0.35,cy:cA.y-d*0.25},
+    {id:'onlyB',name:`Only ${state.setNames.B}`,d:pathOnlyB,cx:cB.x+d*0.35,cy:cB.y-d*0.25},
+    {id:'onlyC',name:`Only ${state.setNames.C}`,d:pathOnlyC,cx:cC.x,cy:cC.y+d*0.5},
+    {id:'AB',name:`${state.setNames.A} ∩ ${state.setNames.B} only`,d:pathAB_only,cx:cx,cy:cy-d*0.7},
+    {id:'BC',name:`${state.setNames.B} ∩ ${state.setNames.C} only`,d:pathBC_only,cx:cx+d*0.55,cy:cy+d*0.3},
+    {id:'AC',name:`${state.setNames.A} ∩ ${state.setNames.C} only`,d:pathAC_only,cx:cx-d*0.55,cy:cy+d*0.3},
+    {id:'ABC',name:`${state.setNames.A} ∩ ${state.setNames.B} ∩ ${state.setNames.C}`,d:pathABC,cx:cx,cy:cy+d*0.05},
+    {id:'outside',name:`Outside (${state.setNames.A} ∪ ${state.setNames.B} ∪ ${state.setNames.C})'`,cx:uBox.x+uBox.w*0.88,cy:uBox.y+uBox.h*0.88,isOutside:true}
+   ],
+   uBox
+  };
+ }else if(m==='disjoint'){
+  const d=R*2.4,x1=cx-d/2,y1=cy,x2=cx+d/2,y2=cy;
+  const pathA=`M ${x1-R} ${y1} A ${R} ${R} 0 1 0 ${x1+R} ${y1} A ${R} ${R} 0 1 0 ${x1-R} ${y1} Z`;
+  const pathB=`M ${x2-R} ${y2} A ${R} ${R} 0 1 0 ${x2+R} ${y2} A ${R} ${R} 0 1 0 ${x2-R} ${y2} Z`;
+  const uBox={x:cx-R*2.6,y:cy-R*1.4,w:R*5.2,h:R*2.8};
+  return{
+   circles:[{id:'A',x:x1,y:y1,r:R,label:state.setNames.A,lx:x1,ly:y1-R*1.15},
+            {id:'B',x:x2,y:y2,r:R,label:state.setNames.B,lx:x2,ly:y2-R*1.15}],
+   regions:[
+    {id:'onlyA',name:`Set ${state.setNames.A}`,d:pathA,cx:x1,cy:y1},
+    {id:'onlyB',name:`Set ${state.setNames.B}`,d:pathB,cx:x2,cy:y2},
+    {id:'outside',name:`Outside (${state.setNames.A} ∪ ${state.setNames.B})'`,cx:uBox.x+uBox.w*0.9,cy:uBox.y+uBox.h*0.88,isOutside:true}
+   ],
+   uBox
+  };
+ }else{ // subset: B inside A
+  const rA=R*1.2,rB=R*0.6,xB=cx+rA*0.25,yB=cy;
+  const pathA_only=`M ${cx-rA} ${cy} A ${rA} ${rA} 0 1 0 ${cx+rA} ${cy} A ${rA} ${rA} 0 1 0 ${cx-rA} ${cy} M ${xB-rB} ${yB} A ${rB} ${rB} 0 1 1 ${xB+rB} ${yB} A ${rB} ${rB} 0 1 1 ${xB-rB} ${yB} Z`;
+  const pathB=`M ${xB-rB} ${yB} A ${rB} ${rB} 0 1 0 ${xB+rB} ${yB} A ${rB} ${rB} 0 1 0 ${xB-rB} ${yB} Z`;
+  const uBox={x:cx-rA*1.4,y:cy-rA*1.3,w:rA*2.8,h:rA*2.6};
+  return{
+   circles:[{id:'A',x:cx,y:cy,r:rA,label:state.setNames.A,lx:cx-rA*0.6,ly:cy-rA*0.75},
+            {id:'B',x:xB,y:yB,r:rB,label:state.setNames.B,lx:xB,ly:yB-rB*1.15}],
+   regions:[
+    {id:'onlyA',name:`${state.setNames.A} \\ ${state.setNames.B}`,d:pathA_only,fillRule:'evenodd',cx:cx-rA*0.4,cy:cy},
+    {id:'onlyB',name:`Set ${state.setNames.B}`,d:pathB,cx:xB,cy:yB},
+    {id:'outside',name:`Outside ${state.setNames.A}'`,cx:uBox.x+uBox.w*0.88,cy:uBox.y+uBox.h*0.88,isOutside:true}
+   ],
+   uBox
+  };
+ }
+}
+
+function getPatternsDefs(){
+ const c=state.shColor,ang=state.hAngle;
+ return `<defs>
+ <pattern id="pat-hatch" width="10" height="10" patternTransform="rotate(${ang} 0 0)" patternUnits="userSpaceOnUse">
+  <line x1="0" y1="0" x2="0" y2="10" stroke="${c}" stroke-width="2.2" />
+ </pattern>
+ <pattern id="pat-cross" width="10" height="10" patternTransform="rotate(${ang} 0 0)" patternUnits="userSpaceOnUse">
+  <line x1="0" y1="0" x2="0" y2="10" stroke="${c}" stroke-width="2" />
+  <line x1="0" y1="0" x2="10" y2="0" stroke="${c}" stroke-width="2" />
+ </pattern>
+ <pattern id="pat-dots" width="12" height="12" patternUnits="userSpaceOnUse">
+  <circle cx="6" cy="6" r="2.2" fill="${c}" />
+ </pattern>
+ </defs>`;
+}
+
+function getFillStyle(isShaded){
+ if(!isShaded)return 'fill="none"';
+ const p=state.shPattern,op=state.shOpacity/100;
+ if(p==='hatch')return `fill="url(#pat-hatch)" fill-opacity="${op*1.8}"`;
+ if(p==='cross')return `fill="url(#pat-cross)" fill-opacity="${op*1.8}"`;
+ if(p==='dots')return `fill="url(#pat-dots)" fill-opacity="${op*1.8}"`;
+ return `fill="${state.shColor}" fill-opacity="${op}"`;
+}
+
+function renderSVGContent(){
+ const geo=getGeometry(),uBox=geo.uBox;
+ let h=getPatternsDefs();
+ const sw=state.strokeW,sc=state.strokeCol,sd=state.strokeDash?`stroke-dasharray="${state.strokeDash}"`:'';
+ const fs=state.fontSize,fw=state.boldText?700:400;
+
+ // 1. Outside region background fill (if shaded)
+ const outReg=geo.regions.find(r=>r.isOutside);
+ const isOutShaded=outReg&&state.shaded.has('outside');
+ if(state.showU){
+  let outD=`M ${uBox.x} ${uBox.y} H ${uBox.x+uBox.w} V ${uBox.y+uBox.h} H ${uBox.x} Z`;
+  geo.circles.forEach(c=>{
+   outD+=` M ${c.x-c.r} ${c.y} A ${c.r} ${c.r} 0 1 0 ${c.x+c.r} ${c.y} A ${c.r} ${c.r} 0 1 0 ${c.x-c.r} ${c.y} Z`;
+  });
+  const outFill=isOutShaded?getFillStyle(true):'fill="none"';
+  const outAttr=(!exporting)?`data-region="outside" class="vpath" title="Click to shade outside region"`:'';
+  h+=`<path d="${outD}" fill-rule="evenodd" ${outFill} ${outAttr}/>`;
+ }
+
+ // 2. Internal regions (shading & click targets)
+ geo.regions.forEach(reg=>{
+  if(reg.isOutside)return;
+  const isSh=state.shaded.has(reg.id);
+  const fillAttr=getFillStyle(isSh);
+  const fr=reg.fillRule?`fill-rule="${reg.fillRule}"`:'';
+  const evAttr=(!exporting)?`data-region="${reg.id}" class="vpath" style="cursor:pointer;" title="Click to shade ${reg.name}"`:'';
+  h+=`<path d="${reg.d}" ${fr} ${fillAttr} stroke="transparent" stroke-width="1" ${evAttr}/>`;
+ });
+
+ // 3. Circle outlines
+ geo.circles.forEach(c=>{
+  h+=`<circle cx="${c.x}" cy="${c.y}" r="${c.r}" fill="none" stroke="${sc}" stroke-width="${sw}" ${sd} pointer-events="none"/>`;
+ });
+
+ // 4. Universal box outline
+ if(state.showU){
+  h+=`<rect x="${uBox.x}" y="${uBox.y}" width="${uBox.w}" height="${uBox.h}" fill="none" stroke="${sc}" stroke-width="${sw}" pointer-events="none"/>`;
+  const uName=state.labelU||'U';
+  const evU=(!exporting)?`data-edit-target="labelU" class="vtext" style="cursor:pointer;" title="Double-click to rename"`:'';
+  h+=`<text x="${uBox.x+14}" y="${uBox.y+fs+8}" font-size="${fs+2}" font-weight="700" fill="${sc}" stroke="#fff" stroke-width="3" paint-order="stroke" ${evU}>${uName}</text>`;
+ }
+
+ // 5. Set labels (A, B, C)
+ geo.circles.forEach(c=>{
+  const evL=(!exporting)?`data-edit-target="setName_${c.id}" class="vtext" style="cursor:pointer;" title="Double-click to rename"`:'';
+  h+=`<text x="${c.lx}" y="${c.ly}" font-size="${fs+2}" font-weight="700" text-anchor="middle" fill="${sc}" stroke="#fff" stroke-width="3" paint-order="stroke" ${evL}>${c.label}</text>`;
+ });
+
+ // 6. Region values/cardinalities (e.g. 15, x)
+ geo.regions.forEach(reg=>{
+  const val=state.values[reg.id];
+  const evVal=(!exporting)?`data-edit-target="val_${reg.id}" class="vtext" style="cursor:pointer;" title="Double-click to edit value"`:'';
+  if(val){
+   h+=`<text x="${reg.cx}" y="${reg.cy+fs/3}" font-size="${fs}" font-weight="${fw}" text-anchor="middle" fill="${sc}" stroke="#fff" stroke-width="3.5" paint-order="stroke" ${evVal}>${val}</text>`;
+  }else if(!exporting){
+   h+=`<text x="${reg.cx}" y="${reg.cy+fs/3}" font-size="${fs-3}" font-weight="500" text-anchor="middle" fill="${sc}44" ${evVal}>•</text>`;
+  }
+ });
+
+ return h;
+}
+
+function render(){
+ const k=view.k;
+ const inner=renderSVGContent();
+ S.innerHTML=`<g transform="translate(${view.x} ${view.y}) scale(${k})">${inner}</g>`;
+ $('zl').textContent=Math.round(k*100)+'%';
+}
+
+function getBounds(){
+ const geo=getGeometry(),uBox=geo.uBox;
+ if(state.showU){
+  return {x:uBox.x-15,y:uBox.y-15,w:uBox.w+30,h:uBox.h+30};
+ }
+ let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+ geo.circles.forEach(c=>{
+  x0=Math.min(x0,c.x-c.r-25);y0=Math.min(y0,c.y-c.r-25);
+  x1=Math.max(x1,c.x+c.r+25);y1=Math.max(y1,c.y+c.r+25);
+ });
+ return {x:x0,y:y0,w:x1-x0,h:y1-y0};
+}
+
+function exportSVG(transparent,scale=1){
+ exporting=true;const b=getBounds(),content=renderSVGContent();exporting=false;
+ const W=Math.round(b.w*scale),H=Math.round(b.h*scale);
+ const bg=transparent?'':`<rect x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" fill="#fff"/>`;
+ return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="${b.x} ${b.y} ${b.w} ${b.h}" style="font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif">${bg}${content}</svg>`;
+}
+
+function pngBlob(){
+ return new Promise((res,rej)=>{
+  const b=getBounds(),scale=Math.max(4,Math.round((window.devicePixelRatio||1)*2)),W=Math.round(b.w*scale),H=Math.round(b.h*scale);
+  const img=new Image(),svg=exportSVG(true,scale);
+  img.onload=()=>{
+   const c=document.createElement('canvas');c.width=W;c.height=H;
+   const x=c.getContext('2d');x.drawImage(img,0,0,W,H);
+   c.toBlob(bl=>bl?res(bl):rej(new Error('blob')),'image/png');
+  };
+  img.onerror=rej;
+  img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+ });
+}
+
+function toast(m){
+ const e=$('toast');e.textContent=m;e.classList.add('on');
+ clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('on'),1900);
+}
+
+async function copyAll(){
+ snapshot();
+ try{
+  const blob=await pngBlob();
+  const json=JSON.stringify({vennStudio:1,...saveStateObj()});
+  await navigator.clipboard.write([new ClipboardItem({
+   'image/png':blob,
+   'text/plain':new Blob([json],{type:'text/plain'})
+  })]);
+  toast('Copied transparent diagram image & data');
+ }catch(_){
+  toast('Copy failed. Use PNG export button.');
+ }
+}
+
+function pasteData(txt){
+ let d=null;try{d=JSON.parse(txt)}catch(_){}
+ if(!d||!d.vennStudio)return;
+ snapshot();applyState(d);render();toast('Pasted diagram');
+}
+
+// Inline Text Editor
+function openInlineEdit(cx,cy,initialVal,placeholder,onSave){
+ let ed=$('inline-edit');
+ if(!ed){
+  ed=document.createElement('input');
+  ed.id='inline-edit';
+  ed.type='text';
+  ed.autocomplete='off';
+  ed.spellcheck=false;
+  ed.style.cssText='position:absolute;z-index:100;transform:translate(-50%,-50%);padding:5px 9px;font-size:14px;font-weight:700;border:2px solid var(--accent,#3b5bdb);border-radius:8px;background:var(--panel,#fff);color:var(--ink,#1c2230);box-shadow:0 6px 20px rgba(0,0,0,0.3);outline:none;text-align:center;min-width:70px;max-width:160px;';
+  $('wrap').appendChild(ed);
+  ed.onpointerdown=e=>e.stopPropagation();
+  ed.onmousedown=e=>e.stopPropagation();
+ }
+ ed.value=initialVal||'';
+ ed.placeholder=placeholder||'';
+ const W=$('wrap').clientWidth||500,H=$('wrap').clientHeight||400;
+ ed.style.left=Math.max(45,Math.min(W-45,cx))+'px';
+ ed.style.top=Math.max(25,Math.min(H-25,cy))+'px';
+ ed.style.display='block';
+ setTimeout(()=>{ed.focus();ed.select()},20);
+ let done=false;
+ const commit=()=>{if(done)return;done=true;ed.style.display='none';onSave(ed.value.trim())};
+ ed.onkeydown=e=>{
+  e.stopPropagation();
+  if(e.key==='Enter'){e.preventDefault();commit()}
+  else if(e.key==='Escape'){done=true;ed.style.display='none'}
+ };
+ ed.onblur=commit;
+}
+
+// Preset Buttons Builder
+function buildPresetButtons(){
+ const box=$('presets');box.innerHTML='';
+ const m=state.mode;
+ const btn=(txt,fn)=>{
+  const b=document.createElement('button');
+  b.className='preset-btn';b.textContent=txt;
+  b.onclick=()=>{snapshot();fn();render()};
+  box.appendChild(b);
+ };
+ btn('Clear All',()=>{state.shaded.clear()});
+ if(m==='2'){
+  btn('Shade A ∩ B',()=>{state.shaded.clear();state.shaded.add('AB')});
+  btn('Shade A ∪ B',()=>{state.shaded.clear();state.shaded.add('onlyA');state.shaded.add('AB');state.shaded.add('onlyB')});
+  btn('Only A (A \\ B)',()=>{state.shaded.clear();state.shaded.add('onlyA')});
+  btn('Only B (B \\ A)',()=>{state.shaded.clear();state.shaded.add('onlyB')});
+  btn('(A ∪ B)\' Outside',()=>{state.shaded.clear();state.shaded.add('outside')});
+  btn('A\' (Not in A)',()=>{state.shaded.clear();state.shaded.add('onlyB');state.shaded.add('outside')});
+  btn('B\' (Not in B)',()=>{state.shaded.clear();state.shaded.add('onlyA');state.shaded.add('outside')});
+  btn('A △ B (Diff)',()=>{state.shaded.clear();state.shaded.add('onlyA');state.shaded.add('onlyB')});
+ }else if(m==='3'){
+  btn('A ∩ B ∩ C (Center)',()=>{state.shaded.clear();state.shaded.add('ABC')});
+  btn('A ∪ B ∪ C (All)',()=>{state.shaded.clear();['onlyA','onlyB','onlyC','AB','BC','AC','ABC'].forEach(r=>state.shaded.add(r))});
+  btn('Only A',()=>{state.shaded.clear();state.shaded.add('onlyA')});
+  btn('Only 1 Set (Each)',()=>{state.shaded.clear();state.shaded.add('onlyA');state.shaded.add('onlyB');state.shaded.add('onlyC')});
+  btn('(A∪B∪C)\' Outside',()=>{state.shaded.clear();state.shaded.add('outside')});
+  btn('A ∩ B (Total)',()=>{state.shaded.clear();state.shaded.add('AB');state.shaded.add('ABC')});
+  btn('Exactly 2 Sets',()=>{state.shaded.clear();state.shaded.add('AB');state.shaded.add('BC');state.shaded.add('AC')});
+ }else if(m==='disjoint'){
+  btn('Shade Set A',()=>{state.shaded.clear();state.shaded.add('onlyA')});
+  btn('Shade Set B',()=>{state.shaded.clear();state.shaded.add('onlyB')});
+  btn('Shade A ∪ B',()=>{state.shaded.clear();state.shaded.add('onlyA');state.shaded.add('onlyB')});
+  btn('(A ∪ B)\' Outside',()=>{state.shaded.clear();state.shaded.add('outside')});
+ }else{ // subset
+  btn('Shade Set B (Subset)',()=>{state.shaded.clear();state.shaded.add('onlyB')});
+  btn('Shade A \\ B',()=>{state.shaded.clear();state.shaded.add('onlyA')});
+  btn('Shade Set A (All)',()=>{state.shaded.clear();state.shaded.add('onlyA');state.shaded.add('onlyB')});
+  btn('Outside A\'',()=>{state.shaded.clear();state.shaded.add('outside')});
+ }
+}
+
+function buildValInputs(){
+ const box=$('valList');box.innerHTML='';
+ const geo=getGeometry();
+ geo.regions.forEach(reg=>{
+  const lbl=document.createElement('label');
+  lbl.innerHTML=`<span>${reg.name}</span><input type="text" data-reg="${reg.id}" value="${state.values[reg.id]||''}" placeholder="e.g. 10 or x" style="width:90px">`;
+  box.appendChild(lbl);
+ });
+}
+
+$('valList').oninput=e=>{
+ const reg=e.target.dataset.reg;if(!reg)return;
+ const v=e.target.value.replace(/[<>&"]/g,'').trim();
+ if(v)state.values[reg]=v;else delete state.values[reg];
+ render();
+};
+
+// Controls Events
+$('mode').onchange=e=>{snapshot();state.mode=e.target.value;state.shaded.clear();state.values={};syncControls();render();fitView()};
+$('showU').onchange=e=>{snapshot();state.showU=e.target.checked;render()};
+$('labelU').oninput=e=>{state.labelU=e.target.value.replace(/[<>&"]/g,'')||'U';render()};
+$('sizeRange').oninput=e=>{state.size=+e.target.value;render()};
+$('distRange').oninput=e=>{state.dist=+e.target.value;render()};
+['sizeRange','distRange'].forEach(id=>$(id).onchange=()=>snapshot());
+
+$('shPattern').onchange=e=>{snapshot();state.shPattern=e.target.value;render()};
+$('shColor').oninput=e=>{state.shColor=e.target.value;render()};
+$('shColor').onchange=()=>snapshot();
+$('shOpacity').oninput=e=>{state.shOpacity=+e.target.value;render()};
+$('shOpacity').onchange=()=>snapshot();
+$('hAngle').onchange=e=>{snapshot();state.hAngle=+e.target.value;render()};
+
+$('strokeCol').oninput=e=>{state.strokeCol=e.target.value;render()};
+$('strokeCol').onchange=()=>snapshot();
+$('strokeW').oninput=e=>{state.strokeW=+e.target.value||2;render()};
+$('strokeW').onchange=()=>snapshot();
+$('strokeDash').onchange=e=>{snapshot();state.strokeDash=e.target.value;render()};
+$('fontSize').oninput=e=>{state.fontSize=+e.target.value||16;render()};
+$('fontSize').onchange=()=>snapshot();
+$('boldText').onchange=e=>{snapshot();state.boldText=e.target.checked;render()};
+
+// Pointer Events (Pan, Zoom, Region click & double-click)
+let lastClickInfo={time:0,x:0,y:0};
+
+S.onpointerdown=e=>{
+ const ed=$('inline-edit');
+ if(ed&&ed.style.display!=='none'&&!ed.contains(e.target))ed.blur();
+ if(e.button===1||spaceDown){drag={m:'pan',sx:e.clientX,sy:e.clientY,vx:view.x,vy:view.y};S.style.cursor='grabbing';return}
+
+ const wrapRect=$('wrap').getBoundingClientRect();
+ const cx=e.clientX-wrapRect.left,cy=e.clientY-wrapRect.top;
+ const t=document.elementFromPoint(e.clientX,e.clientY);
+
+ // Check double-click on editable texts
+ const edTarget=t&&t.dataset&&t.dataset.editTarget;
+ if(edTarget){
+  const now=Date.now(),dt=now-lastClickInfo.time;
+  if(dt<500&&Math.hypot(e.clientX-lastClickInfo.x,e.clientY-lastClickInfo.y)<30){
+   lastClickInfo={time:0,x:0,y:0};
+   if(edTarget==='labelU'){
+    openInlineEdit(cx,cy,state.labelU,'U',val=>{snapshot();state.labelU=val||'U';$('labelU').value=state.labelU;render()});
+   }else if(edTarget.startsWith('setName_')){
+    const setKey=edTarget.split('_')[1];
+    openInlineEdit(cx,cy,state.setNames[setKey]||setKey,'Set Name',val=>{
+     if(!val)return;snapshot();state.setNames[setKey]=val;buildValInputs();buildPresetButtons();render();
+    });
+   }else if(edTarget.startsWith('val_')){
+    const regId=edTarget.split('_')[1];
+    openInlineEdit(cx,cy,state.values[regId]||'','Value',val=>{
+     snapshot();if(val)state.values[regId]=val;else delete state.values[regId];buildValInputs();render();
+    });
+   }
+   e.preventDefault();return;
+  }
+  lastClickInfo={time:now,x:e.clientX,y:e.clientY};
+  e.preventDefault();return;
+ }
+
+ // Check click on region (toggle shade)
+ const regEl=t&&t.closest&&t.closest('[data-region]');
+ if(regEl){
+  const regId=regEl.dataset.region;
+  if(regId){
+   snapshot();
+   if(state.shaded.has(regId))state.shaded.delete(regId);
+   else state.shaded.add(regId);
+   render();
+   e.preventDefault();return;
+  }
+ }
+
+ drag={m:'pan',sx:e.clientX,sy:e.clientY,vx:view.x,vy:view.y};
+};
+
+S.onpointermove=e=>{
+ if(drag&&drag.m==='pan'){
+  view.x=drag.vx+e.clientX-drag.sx;view.y=drag.vy+e.clientY-drag.sy;
+  render();
+ }
+};
+S.onpointerup=()=>{drag=null;S.style.cursor='default'};
+
+function zoomAt(f,cx,cy){
+ const k2=Math.max(.2,Math.min(5,view.k*f));
+ view.x=cx-(cx-view.x)*k2/view.k;view.y=cy-(cy-view.y)*k2/view.k;
+ view.k=k2;render();
+}
+const zc=()=>{const r=S.getBoundingClientRect();return[r.width/2,r.height/2]};
+$('zi').onclick=()=>zoomAt(1.25,...zc());
+$('zo').onclick=()=>zoomAt(0.8,...zc());
+function fitView(){
+ const r=S.getBoundingClientRect(),b=getBounds();
+ if(b.w>0&&b.h>0){
+  const k=Math.max(.3,Math.min(2,Math.min(r.width/b.w,r.height/b.h)*0.88));
+  view={k,x:(r.width-b.w*k)/2-b.x*k,y:(r.height-b.h*k)/2-b.y*k};
+  render();
+ }
+}
+$('zf').onclick=fitView;
+S.addEventListener('wheel',e=>{
+ e.preventDefault();const r=S.getBoundingClientRect();
+ if(e.ctrlKey||e.metaKey)zoomAt(Math.exp(-e.deltaY*.002),e.clientX-r.left,e.clientY-r.top);
+ else{view.x-=e.shiftKey?e.deltaY:e.deltaX;view.y-=e.shiftKey?0:e.deltaY;render()}
+},{passive:false});
+
+addEventListener('keydown',e=>{
+ if(e.target.tagName==='INPUT')return;
+ if(e.key===' '){spaceDown=true;e.preventDefault();return}
+ if((e.ctrlKey||e.metaKey)&&e.key==='z'){e.preventDefault();undo()}
+ else if((e.ctrlKey||e.metaKey)&&e.key==='y'){e.preventDefault();redo()}
+});
+addEventListener('keyup',e=>{if(e.key===' ')spaceDown=false});
+addEventListener('resize',render);
+
+// Copy & Export Events
+$('cp').onclick=copyAll;
+$('ps').onclick=()=>{if(navigator.clipboard&&navigator.clipboard.readText)navigator.clipboard.readText().then(pasteData).catch(()=>toast('Paste failed'))};
+document.addEventListener('copy',e=>{if(e.target.tagName==='INPUT')return;e.preventDefault();copyAll()});
+document.addEventListener('paste',e=>{if(e.target.tagName==='INPUT')return;e.preventDefault();pasteData(e.clipboardData.getData('text/plain'))});
+
+function saveFile(url,name){const a=document.createElement('a');a.href=url;a.download=name;a.click()}
+$('exsvg').onclick=()=>saveFile(URL.createObjectURL(new Blob([exportSVG(false)],{type:'image/svg+xml'})),'venn-diagram.svg');
+$('expng').onclick=async()=>{try{saveFile(URL.createObjectURL(await pngBlob()),'venn-diagram.png')}catch(_){toast('PNG export failed')}};
+
+$('undo').onclick=undo;
+$('redo').onclick=redo;
+
+syncControls();
+snapshot();
+fitView();
+</script>
+</body>
+</html>

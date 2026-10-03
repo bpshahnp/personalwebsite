@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Geometry Studio</title>
+<title>Geometry Studio | Draw, Measure &amp; Export Geometric Figures</title>
+<meta name="description" content="Free online geometry drawing tool for math exams and teachers. Draw triangles, circles, polygons with exact measurements, angle arcs, dashed lines, and high-resolution transparent PNG/SVG export.">
 <style>
 :root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
 --bg:#f4f5f7;--panel:#fff;--ink:#1c2230;--mute:#667085;--line:#d9dde5;--accent:#3b5bdb;--accentbg:#e7ecff}
@@ -15,6 +16,10 @@ html,body{height:100%;margin:0}
 body{background:var(--bg);color:var(--ink);font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;flex-direction:column}
 header{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--panel);border-bottom:1px solid var(--line);flex-wrap:wrap}
 h1{font-size:16px;margin:0 8px 0 0}
+.nav-tabs{display:flex;gap:4px;background:var(--bg);padding:3px;border-radius:8px;border:1px solid var(--line)}
+.nav-tab{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none;color:var(--mute);transition:all .15s}
+.nav-tab:hover{color:var(--ink)}
+.nav-tab.active{background:var(--panel);color:var(--accent);box-shadow:0 1px 3px rgba(0,0,0,0.08)}
 .tools{display:flex;gap:4px;flex-wrap:wrap}
 button,select,input{font:inherit;color:inherit}
 button{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer}
@@ -54,6 +59,11 @@ details>.body{padding:10px 12px;display:grid;gap:8px}
 <body>
 <header>
 <h1>📐 Geometry Studio</h1>
+<nav class="nav-tabs">
+<a href="index.html" class="nav-tab active">📐 Geometry</a>
+<a href="venn.html" class="nav-tab">⭕ Venn</a>
+<a href="/mcqmaker" class="nav-tab">📝 MCQ Maker</a>
+</nav>
 <div class="tools" id="tools"></div>
 <span class="sp"></span>
 <button id="undo" title="Ctrl+Z">↶ Undo</button>
@@ -118,7 +128,7 @@ details>.body{padding:10px 12px;display:grid;gap:8px}
 <label>Colour <input type="color" id="acol" value="#0b7285"></label>
 <b>Angle labels</b>
 <div id="angs" style="display:grid;gap:6px"></div>
-<span class="hint">Type a number (0–180) to reshape the angle, or text like x or θ to change the label. You can also double-click any angle directly on the figure.</span>
+<span class="hint">Type a number (0–180, or up to 359 on a reflex corner) to reshape the angle, or text like x or θ to change the label. You can also double-click any angle directly on the figure.</span>
 </div></details>
 
 <details><summary>Parallel &amp; perpendicular marks</summary><div class="body">
@@ -546,10 +556,10 @@ $('ungrp').onclick=()=>{const tg=msel.filter(i=>shapes[i].g);if(!tg.length)retur
 $('clear').onclick=()=>{if(shapes.length){snapshot();shapes=[];alabels={};pick([]);render()}};
 addEventListener('keyup',e=>{if(e.key===' ')spaceDown=false});
 addEventListener('blur',()=>{spaceDown=false});
-addEventListener('resize',render);
+addEventListener('resize',()=>activeTab==='geo'?render():vRender());
 const typing=t=>!!t&&(t.tagName==='SELECT'||t.tagName==='TEXTAREA'||(t.tagName==='INPUT'&&!['checkbox','color','button'].includes(t.type)));
 addEventListener('keydown',e=>{
- if(typing(e.target))return;
+ if(activeTab!=='geo'||typing(e.target))return;
  const k=String(e.key||'').toLowerCase(),mod=e.ctrlKey||e.metaKey;
  if(e.key===' '){if(e.target.tagName==='INPUT')return;spaceDown=true;e.preventDefault();return}
  if(mod&&k==='a'){e.preventDefault();$('selall').click();return}
@@ -606,9 +616,9 @@ function pasteData(txt){
  setTool('select');pick(shapes.map((_,i)=>i).slice(st));render();toast('Pasted')}
 $('cp').onclick=()=>copyAll();
 $('ps').onclick=()=>{if(navigator.clipboard&&navigator.clipboard.readText)navigator.clipboard.readText().then(pasteData).catch(()=>pasteData(''));else pasteData('')};
-document.addEventListener('copy',e=>{if(e.target.tagName==='INPUT'||String(getSelection()))return;
+document.addEventListener('copy',e=>{if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||String(getSelection()))return;
  e.preventDefault();copyAll()});
-document.addEventListener('paste',e=>{if(e.target.tagName==='INPUT')return;e.preventDefault();pasteData(e.clipboardData.getData('text/plain'))});
+document.addEventListener('paste',e=>{if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;e.preventDefault();pasteData(e.clipboardData.getData('text/plain'))});
 function bounds(list=shapes){if(!list.length){const r=S.getBoundingClientRect();return{x:0,y:0,w:r.width,h:r.height}}
  const bx=list.map(s=>{const q=sbox(s).slice();if(s.type==='ellipse'&&$('meas').checked)q[2]+=10+msz()*6;return q}),x0=Math.min(...bx.map(b=>b[0])),y0=Math.min(...bx.map(b=>b[1])),x1=Math.max(...bx.map(b=>b[2])),y1=Math.max(...bx.map(b=>b[3])),m=45;
  return{x:x0-m,y:y0-m,w:x1-x0+2*m,h:y1-y0+2*m}}
@@ -647,6 +657,7 @@ S.addEventListener('wheel',e=>{e.preventDefault();const r=S.getBoundingClientRec
  if(e.ctrlKey||e.metaKey)zoomAt(Math.exp(-e.deltaY*.002),e.clientX-r.left,e.clientY-r.top);
  else{view.x-=e.shiftKey?e.deltaY:e.deltaX;view.y-=e.shiftKey?0:e.deltaY;render()}},{passive:false});
 setTool('select');
+render();
 </script>
 </body>
 </html>

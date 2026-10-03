@@ -72,7 +72,7 @@ function renderResources() {
         </div>
         ${r.description ? `<p class="resource-desc">${escapeHtml(r.description)}</p>` : ""}
       </div>
-      <a href="${escapeAttr(r.driveUrl || "#")}" target="_blank" rel="noopener" class="btn btn-secondary resource-download">Click here</a>
+      <a href="${escapeAttr(r.driveUrl || "#")}" target="_blank" rel="noopener" class="btn btn-secondary resource-download">Download</a>
     `;
     resourceList.appendChild(card);
   });
