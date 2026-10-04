@@ -253,6 +253,7 @@ function renderList() {
           <div style="display:flex;gap:4px">
             <label class="btn btn-sm">📷 Image<input type="file" accept="image/*" data-img="${i}" hidden></label>
             <button class="btn btn-sm" data-plot="${i}">📈 Plot</button>
+            <button class="btn btn-sm" data-shape="${i}">📐 Shapes</button>
           </div>
         </div>
 
@@ -381,6 +382,8 @@ $("list").addEventListener("click", e => {
     plotQ = +d.plot;
     $("pd").showModal();
     drawPlot();
+  } else if (d.shape !== undefined) {
+    openShapesModal(+d.shape);
   }
 });
 
@@ -1960,6 +1963,80 @@ $("puse").onclick = () => {
   preview();
   showToast("Plot attached to Question " + (plotQ + 1));
 };
+
+/* Shapes / Diagrams Studio Integration */
+let shapeQ = 0;
+
+function openShapesModal(qIndex) {
+  shapeQ = qIndex;
+  const title = $("shapes-modal-title");
+  if (title) title.textContent = `📐 Insert Diagram into Question ${shapeQ + 1}`;
+  $("modal-shapes").showModal();
+}
+
+if ($("btn-close-shapes")) $("btn-close-shapes").onclick = () => $("modal-shapes").close();
+
+function setShapesTab(toolId, src) {
+  ["tab-shapes-geo", "tab-shapes-venn", "tab-shapes-optics"].forEach(id => {
+    const btn = $(id);
+    if (!btn) return;
+    if (id === toolId) {
+      btn.style.background = "#ffffff";
+      btn.style.boxShadow = "0 1px 2px rgba(0,0,0,0.06)";
+      btn.style.border = "1px solid var(--line-strong, #cbd5e1)";
+      $("shapes-frame").src = src;
+    } else {
+      btn.style.background = "transparent";
+      btn.style.boxShadow = "none";
+      btn.style.border = "none";
+    }
+  });
+}
+
+if ($("tab-shapes-geo")) $("tab-shapes-geo").onclick = () => setShapesTab("tab-shapes-geo", "../shapes/index.html");
+if ($("tab-shapes-venn")) $("tab-shapes-venn").onclick = () => setShapesTab("tab-shapes-venn", "../shapes/venn.html");
+if ($("tab-shapes-optics")) $("tab-shapes-optics").onclick = () => setShapesTab("tab-shapes-optics", "../shapes/optics.html");
+
+if ($("btn-insert-shapes")) {
+  $("btn-insert-shapes").onclick = () => {
+    const frame = $("shapes-frame");
+    if (frame && frame.contentWindow) {
+      frame.contentWindow.postMessage({ action: "exportForMCQ" }, "*");
+    }
+  };
+}
+
+window.addEventListener("message", e => {
+  if (e.data && e.data.type === "mcqDiagramData") {
+    const { dataUrl, w, h } = e.data;
+    const im = new Image();
+    im.onload = () => {
+      const cv = document.createElement("canvas");
+      cv.width = im.naturalWidth;
+      cv.height = im.naturalHeight;
+      const ctx = cv.getContext("2d");
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, cv.width, cv.height);
+      ctx.drawImage(im, 0, 0);
+
+      qs[shapeQ].img = {
+        src: cv.toDataURL("image/png"),
+        wmm: Math.max(35, Math.min(85, Math.round(im.naturalWidth * 25.4 / 96 * 0.45))),
+        nw: cv.width,
+        nh: cv.height
+      };
+      const m = $("modal-shapes");
+      if (m && m.open) m.close();
+      renderList();
+      debouncedPreview();
+      showToast(`Diagram attached to Question ${shapeQ + 1}!`);
+    };
+    im.src = dataUrl;
+  } else if (e.data && e.data.type === "mcqDiagramError") {
+    alert(e.data.message || "Could not export diagram.");
+  }
+});
+
 
 /* =========================================================================
    Storage & Project Save / Restore (Paper Library System)

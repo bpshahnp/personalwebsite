@@ -76,6 +76,7 @@ input[type=range]{flex:1;accent-color:var(--accent)}
  <button id="btnUndo" title="Ctrl+Z">↶ Undo</button>
  <button id="btnRedo" title="Ctrl+Y">↷ Redo</button>
  <button id="btnCopyImg" title="Copy diagram as image">🖼 Copy image</button>
+ <button id="btnInsertMCQ" style="display:none;background:var(--accent);color:#fff;font-weight:700;border-color:var(--accent)" title="Insert diagram directly into question">📥 Insert into Exam</button>
 </header>
 <main>
  <div id="wrap">
@@ -846,6 +847,18 @@ buildSymPalette();
 applyView();
 $('mode-bar').textContent='Select tool from palette →';
 C.style.cursor='default';
+if(window.self!==window.top){
+ const b=$('btnInsertMCQ');
+ if(b){b.style.display='inline-flex';b.onclick=()=>doMCQExport();}
+}
+async function doMCQExport(){
+ if(!items.length){alert('Please draw or place at least one optics element first!');return}
+ try{
+  const cv=await exportPNG(4);
+  window.parent.postMessage({type:'mcqDiagramData',dataUrl:cv.toDataURL('image/png'),w:cv.width,h:cv.height},'*');
+ }catch(err){window.parent.postMessage({type:'mcqDiagramError',message:err.message},'*')}
+}
+window.addEventListener('message',e=>{if(e.data&&e.data.action==='exportForMCQ')doMCQExport()});
 </script>
 </body>
 </html>

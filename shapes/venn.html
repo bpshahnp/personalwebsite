@@ -75,6 +75,7 @@ details>.body{padding:10px 12px;display:grid;gap:8px}
 <button id="cp" title="Ctrl+C: Copy high-resolution diagram image & data">⧉ Copy</button>
 <button id="ps" title="Ctrl+V">Paste</button>
 <button id="cpi" title="Copy the diagram as a picture">🖼 Copy image</button>
+<button id="btnInsertMCQ" style="display:none;background:var(--accent);color:#fff;font-weight:700;border-color:var(--accent)" title="Insert diagram directly into question">📥 Insert into Exam</button>
 </header>
 <main>
 <div id="wrap">
@@ -729,6 +730,18 @@ $('redo').onclick=redo;
 syncControls();
 snapshot();
 fitView();
+if(window.self!==window.top){
+ const b=$('btnInsertMCQ');
+ if(b){b.style.display='inline-flex';b.onclick=()=>doMCQExport();}
+}
+async function doMCQExport(){
+ try{
+  const b=getBounds(),blob=await pngBlob(),r=new FileReader();
+  r.onload=()=>{window.parent.postMessage({type:'mcqDiagramData',dataUrl:r.result,w:b.w,h:b.h},'*')};
+  r.readAsDataURL(blob);
+ }catch(err){window.parent.postMessage({type:'mcqDiagramError',message:err.message},'*')}
+}
+window.addEventListener('message',e=>{if(e.data&&e.data.action==='exportForMCQ')doMCQExport()});
 </script>
 </body>
 </html>

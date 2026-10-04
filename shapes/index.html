@@ -71,6 +71,7 @@ details>.body{padding:10px 12px;display:grid;gap:8px}
 <button id="cp" title="Ctrl+C: selected shape, or whole diagram if none selected">⧉ Copy</button>
 <button id="ps" title="Ctrl+V">Paste</button>
 <button id="cpi" title="Copy the diagram as a picture">🖼 Copy image</button>
+<button id="btnInsertMCQ" style="display:none;background:var(--accent);color:#fff;font-weight:700;border-color:var(--accent)" title="Insert diagram directly into question">📥 Insert into Exam</button>
 </header>
 <main>
 <div id="wrap"><div id="toast"></div><div class="zoom"><button id="zo" title="Zoom out">−</button><span id="zl">100%</span><button id="zi" title="Zoom in">+</button><button id="zf" title="Fit the whole diagram in view">Fit</button></div><svg id="c"></svg><div id="status"></div></div>
@@ -557,16 +558,20 @@ $('ungrp').onclick=()=>{const tg=msel.filter(i=>shapes[i].g);if(!tg.length)retur
 $('clear').onclick=()=>{if(shapes.length){snapshot();shapes=[];alabels={};pick([]);render()}};
 addEventListener('keyup',e=>{if(e.key===' ')spaceDown=false});
 addEventListener('blur',()=>{spaceDown=false});
-addEventListener('resize',()=>activeTab==='geo'?render():vRender());
+addEventListener('resize',()=>render());
 const typing=t=>!!t&&(t.tagName==='SELECT'||t.tagName==='TEXTAREA'||(t.tagName==='INPUT'&&!['checkbox','color','button'].includes(t.type)));
 addEventListener('keydown',e=>{
- if(activeTab!=='geo'||typing(e.target))return;
+ if(typing(e.target))return;
  const k=String(e.key||'').toLowerCase(),mod=e.ctrlKey||e.metaKey;
  if(e.key===' '){if(e.target.tagName==='INPUT')return;spaceDown=true;e.preventDefault();return}
  if(mod&&k==='a'){e.preventDefault();$('selall').click();return}
  if(mod&&k==='z'){e.preventDefault();e.shiftKey?redo():undo()}
  else if(mod&&k==='y'){e.preventDefault();redo()}
- else if(e.key==='Delete'||e.key==='Backspace'){if(pend.length){pend.pop();render();e.preventDefault()}else $('del').click()}
+ else if(e.key==='Delete'||e.key==='Backspace'){
+  e.preventDefault();
+  if(pend.length){pend.pop();render()}
+  else $('del').click();
+ }
  else if(e.key==='Enter'&&pend.length)finishPoly();
  else if(e.key==='Escape'){pend=[];draft=null;pick([]);render()}});
 function exportSVG(transparent,scale=1,list=shapes){
@@ -659,6 +664,19 @@ S.addEventListener('wheel',e=>{e.preventDefault();const r=S.getBoundingClientRec
  else{view.x-=e.shiftKey?e.deltaY:e.deltaX;view.y-=e.shiftKey?0:e.deltaY;render()}},{passive:false});
 setTool('select');
 render();
+if(window.self!==window.top){
+ const b=$('btnInsertMCQ');
+ if(b){b.style.display='inline-flex';b.onclick=()=>doMCQExport();}
+}
+async function doMCQExport(){
+ if(!shapes.length){alert('Please draw at least one shape first!');return}
+ try{
+  const b=bounds(),blob=await pngBlob(),r=new FileReader();
+  r.onload=()=>{window.parent.postMessage({type:'mcqDiagramData',dataUrl:r.result,w:b.w,h:b.h},'*')};
+  r.readAsDataURL(blob);
+ }catch(err){window.parent.postMessage({type:'mcqDiagramError',message:err.message},'*')}
+}
+window.addEventListener('message',e=>{if(e.data&&e.data.action==='exportForMCQ')doMCQExport()});
 </script>
 </body>
 </html>
