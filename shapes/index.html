@@ -62,6 +62,7 @@ details>.body{padding:10px 12px;display:grid;gap:8px}
 <nav class="nav-tabs">
 <a href="index.html" class="nav-tab active">📐 Geometry</a>
 <a href="venn.html" class="nav-tab">⭕ Venn</a>
+<a href="optics.html" class="nav-tab">🔭 Optics</a>
 </nav>
 <div class="tools" id="tools"></div>
 <span class="sp"></span>
@@ -113,6 +114,7 @@ details>.body{padding:10px 12px;display:grid;gap:8px}
 <details><summary>Vertex names</summary><div class="body">
 <label>Show vertex names <input type="checkbox" id="vn_on" checked></label>
 <label>Name size (px) <input type="number" id="vsz" min="8" max="48" value="15"></label>
+<label>Vertex colour <input type="color" id="vcol" value="#3b5bdb"></label>
 <label>Rename selected <input type="text" id="vn" placeholder="A B C" disabled></label>
 <span class="hint">You can also double-click any vertex name directly on the figure to rename it.</span>
 </div></details>
@@ -308,7 +310,7 @@ function assignNames(){const placed=[],used=new Set();PL=placed;
 function nameSVG(s){const fs=Math.max(8,Math.min(48,+$('vsz').value||15)),P=npts(s),c=P.reduce((t,p)=>({x:t.x+p.x/P.length,y:t.y+p.y/P.length}),{x:0,y:0});
  return P.map((p,i)=>{if(s._dup&&s._dup[i])return'';let dx=p.x-c.x,dy=p.y-c.y,l=Math.hypot(dx,dy);if(l<1){dx=1;dy=-1;l=Math.SQRT2}
   const ex=(!exporting)?` data-vtx="${esc(s.names[i])}" style="cursor:pointer" pointer-events="all" title="Double-click to rename"`:' pointer-events="none"';
-  return `<circle cx="${p.x}" cy="${p.y}" r="3" fill="#3b5bdb" pointer-events="none"/><text x="${p.x+dx/l*(fs+1)}" y="${p.y+dy/l*(fs+1)+fs/3}" font-size="${fs}" font-weight="700" text-anchor="middle" fill="#3b5bdb" stroke="#fff" stroke-width="3" paint-order="stroke"${ex}>${esc(s.names[i])}</text>`}).join('')}
+  return `<circle cx="${p.x}" cy="${p.y}" r="3" fill="${$('vcol').value||'#3b5bdb'}" pointer-events="none"/><text x="${p.x+dx/l*(fs+1)}" y="${p.y+dy/l*(fs+1)+fs/3}" font-size="${fs}" font-weight="700" text-anchor="middle" fill="${$('vcol').value||'#3b5bdb'}" stroke="#fff" stroke-width="3" paint-order="stroke"${ex}>${esc(s.names[i])}</text>`}).join('')}
 function info(){
  $('nrow').style.display=(tool==='reg'||(shapes[sel]&&shapes[sel].type==='reg'))?'flex':'none';
  const el=$('info'),s=shapes[sel],vn=$('vn');
@@ -539,7 +541,7 @@ $('angs').onchange=e=>{const k=e.target.dataset.k;if(k===undefined)return;const 
  snapshot();delete alabels[k];setAngle(a,+v);
  if(!$('arc').checked&&!$('alab').checked)$('alab').checked=true;
  e.target.value='';e.target.blur();render()};
-['msz','vsz','aw','arcr','asz','acol'].forEach(id=>$(id).oninput=render);
+['msz','vsz','vcol','aw','arcr','asz','acol'].forEach(id=>$(id).oninput=render);
 $('vn').onchange=()=>{const s=shapes[sel];if(!s)return;snapshot();const old=s.names.slice();s.names=$('vn').value.split(/[\s,]+/).map(x=>x.replace(/[<>&"|]/g,'').slice(0,12)).filter(Boolean);
  const mp={};old.forEach((o,i)=>{if(s.names[i]&&s.names[i]!==o)mp[o]=s.names[i]});migrate(mp);
  const P=npts(s);shapes.forEach(o=>{if(o===s)return;npts(o).forEach((q,j)=>P.forEach((p,i)=>{if(s.names[i]&&Math.abs(p.x-q.x)<1.5&&Math.abs(p.y-q.y)<1.5)o.names[j]=s.names[i]}))});render()};

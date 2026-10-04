@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Optics Studio | Ray Diagram Drawing Tool</title>
+<meta name="description" content="Free online optics ray diagram tool. Draw convex/concave lenses and mirrors, trace light rays, label focal points and images — export as transparent PNG or SVG.">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f4f5f7;--panel:#fff;--ink:#1c2230;--mute:#667085;--line:#d9dde5;--accent:#3b5bdb;--accentbg:#e7ecff;--ray:#e67e22;--green:#2ecc71}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#13161d;--panel:#1c212b;--ink:#e8ebf2;--mute:#9aa3b5;--line:#313949;--accent:#8ea2ff;--accentbg:#2a3354}}
+:root[data-theme="dark"]{--bg:#13161d;--panel:#1c212b;--ink:#e8ebf2;--mute:#9aa3b5;--line:#313949;--accent:#8ea2ff;--accentbg:#2a3354}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--panel);border-bottom:1px solid var(--line);flex-wrap:wrap}
+h1{font-size:16px;margin:0 8px 0 0;white-space:nowrap}
+.nav-tabs{display:flex;gap:4px;background:var(--bg);padding:3px;border-radius:8px;border:1px solid var(--line)}
+.nav-tab{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none;color:var(--mute);transition:all .15s}
+.nav-tab:hover{color:var(--ink)}
+.nav-tab.active{background:var(--panel);color:var(--accent);box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+.sp{flex:1}
+button,select,input{font:inherit;color:inherit}
+button{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer;white-space:nowrap}
+button:hover{border-color:var(--accent)}
+button.on{background:var(--accentbg);border-color:var(--accent);color:var(--accent);font-weight:600}
+main{flex:1;min-height:0;display:flex;flex-direction:column}
+@media(min-width:800px){main{flex-direction:row}}
+#wrap{flex:1;min-height:260px;position:relative;overflow:hidden}
+svg#c{width:100%;height:100%;display:block;background:#fff;touch-action:none}
+aside{background:var(--panel);border-top:1px solid var(--line);padding:0;overflow-y:auto;display:flex;flex-direction:column;flex:0 0 auto;max-height:48vh}
+@media(min-width:800px){aside{width:280px;max-height:none;flex:0 0 280px;border-top:0;border-left:1px solid var(--line)}}
+details{border-bottom:1px solid var(--line)}
+summary{cursor:pointer;padding:9px 14px;font-weight:600;font-size:13px;list-style:none;display:flex;justify-content:space-between;align-items:center;user-select:none}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"▸";color:var(--mute);transition:transform .15s}
+details[open]>summary::after{transform:rotate(90deg)}
+details>.body{padding:10px 12px;display:grid;gap:8px}
+label{display:flex;align-items:center;gap:8px;justify-content:space-between;font-size:13px}
+input[type=number],input[type=text],select{padding:4px 6px;border:1px solid var(--line);border-radius:6px;background:var(--bg);font:inherit;color:inherit}
+input[type=number]{width:68px}input[type=text]{width:120px}
+input[type=color]{width:38px;height:26px;padding:0;border:1px solid var(--line);border-radius:6px;cursor:pointer;background:none}
+input[type=range]{flex:1;accent-color:var(--accent)}
+.hint{font-size:11px;color:var(--mute);line-height:1.4}
+.row{display:flex;gap:6px;flex-wrap:wrap}
+.row button{flex:1;font-size:12px;padding:5px 6px}
+#toast{position:absolute;left:50%;top:10px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:6px 14px;border-radius:8px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:10}
+#toast.on{opacity:1}
+.zoom{position:absolute;right:8px;bottom:8px;display:flex;align-items:center;gap:4px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:3px;z-index:2}
+.zoom button{padding:3px 9px}.zoom span{min-width:42px;text-align:center;font-size:12px}
+/* Symbol palette */
+.palette{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:0}
+.sym-btn{display:flex;flex-direction:column;align-items:center;gap:4px;padding:7px 4px;border:1px solid var(--line);border-radius:8px;cursor:pointer;font-size:10px;text-align:center;background:var(--bg);transition:all .12s;line-height:1.2}
+.sym-btn:hover{border-color:var(--accent);background:var(--accentbg);color:var(--accent)}
+.sym-btn.active-tool{border-color:var(--accent);background:var(--accentbg);color:var(--accent);font-weight:600}
+.sym-btn svg{width:44px;height:30px;overflow:visible}
+/* Selection handles */
+.handle{fill:#fff;stroke:var(--accent);stroke-width:1.5;cursor:pointer}
+.rot-handle{fill:var(--accent);stroke:#fff;stroke-width:1.5;cursor:grab}
+/* Mode indicator */
+#mode-bar{position:absolute;left:8px;top:8px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:4px 10px;font-size:12px;color:var(--mute);z-index:2;pointer-events:none}
+/* Prop editor */
+.prop-row{display:flex;align-items:center;gap:6px;font-size:12px}
+.prop-row label{flex:1;justify-content:space-between}
+</style>
+</head>
+<body>
+<header>
+ <h1>🔭 Optics Studio</h1>
+ <nav class="nav-tabs">
+  <a href="index.html" class="nav-tab">📐 Geometry</a>
+  <a href="venn.html" class="nav-tab">⭕ Venn</a>
+  <a href="optics.html" class="nav-tab active">🔭 Optics</a>
+ </nav>
+ <div class="sp"></div>
+ <button id="btnUndo" title="Ctrl+Z">↶ Undo</button>
+ <button id="btnRedo" title="Ctrl+Y">↷ Redo</button>
+ <button id="btnCopyImg" title="Copy diagram as image">🖼 Copy image</button>
+</header>
+<main>
+ <div id="wrap">
+  <div id="toast"></div>
+  <div id="mode-bar">Select tool from palette →</div>
+  <div class="zoom">
+   <button id="zo">−</button>
+   <span id="zl">100%</span>
+   <button id="zi">+</button>
+   <button id="zf">Fit</button>
+  </div>
+  <svg id="c">
+   <defs>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+     <path d="M0,0 L0,6 L8,3 z" fill="#e67e22"/>
+    </marker>
+    <marker id="arr-blk" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+     <path d="M0,0 L0,6 L8,3 z" fill="#1c2230"/>
+    </marker>
+    <marker id="arr-dash" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+     <path d="M0,0 L0,6 L8,3 z" fill="#3b5bdb"/>
+    </marker>
+   </defs>
+   <g id="grid-g"></g>
+   <g id="axis-g"></g>
+   <g id="shapes-g"></g>
+   <g id="sel-g"></g>
+   <g id="draw-g"></g>
+  </svg>
+ </div>
+ <aside>
+  <!-- TOOLS -->
+  <details open>
+   <summary>Drawing Tools</summary>
+   <div class="body">
+    <div class="palette" id="tool-palette">
+     <!-- filled by JS -->
+    </div>
+   </div>
+  </details>
+
+  <!-- SYMBOL PALETTE -->
+  <details open>
+   <summary>Optics Symbols</summary>
+   <div class="body">
+    <div class="palette" id="sym-palette"></div>
+   </div>
+  </details>
+
+  <!-- CANVAS -->
+  <details open>
+   <summary>Canvas</summary>
+   <div class="body">
+    <label>Show Grid <input type="checkbox" id="showGrid"></label>
+    <label>Show Axis <input type="checkbox" id="showAxis" checked></label>
+    <label>Grid Size <input type="number" id="gridSize" min="10" max="100" value="40"></label>
+   </div>
+  </details>
+
+  <!-- SELECTED PROPERTIES -->
+  <details open id="propPanel">
+   <summary>Selection Properties</summary>
+   <div class="body" id="propBody">
+    <span class="hint">Select an element to edit its properties.</span>
+   </div>
+  </details>
+
+  <!-- EXPORT -->
+  <details>
+   <summary>Export</summary>
+   <div class="body">
+    <div class="row">
+     <button id="btnCopyImgSide" style="flex:1;background:var(--accentbg);border-color:var(--accent);color:var(--accent);font-weight:600">📋 Copy Image</button>
+     <button id="btnPng" style="flex:1">🖼 PNG</button>
+     <button id="btnSvg" style="flex:1">📄 SVG</button>
+    </div>
+    <span class="hint">PNG is high-resolution (4×) with transparent background.</span>
+   </div>
+  </details>
+ </aside>
+</main>
+<script>
+// ── Globals ──────────────────────────────────────────────────────────────────
+const SVG_NS='http://www.w3.org/2000/svg';
+const C=document.getElementById('c');
+const shapesG=document.getElementById('shapes-g');
+const selG=document.getElementById('sel-g');
+const drawG=document.getElementById('draw-g');
+const gridG=document.getElementById('grid-g');
+const axisG=document.getElementById('axis-g');
+const $=id=>document.getElementById(id);
+function el(tag,attrs={},ns=SVG_NS){const e=ns?document.createElementNS(ns,tag):document.createElement(tag);for(const[k,v]of Object.entries(attrs))e.setAttribute(k,v);return e;}
+
+let view={x:0,y:0,k:1};
+let activeTool='select'; // 'select'|'ray'|'dashed-ray'|'axis'|'arrow'|'text'|'place'
+let placeSymbol=null;    // symbol key to place
+let items=[];            // all placed items
+let selId=null;          // selected item id
+let hist=[],fut=[];
+let drag=null;           // {type:'move'|'handle'|'rotate'|'draw'|'pan', ...}
+let drawStart=null;
+let toastTimer=null;
+let nextId=1;
+let spaceDown=false;
+
+// ── Coordinate helpers ────────────────────────────────────────────────────────
+function svgPt(e){
+ const r=C.getBoundingClientRect();
+ const cx=(e.clientX-r.left),cy=(e.clientY-r.top);
+ return {x:(cx-view.x)/view.k, y:(cy-view.y)/view.k};
+}
+function snap(v,g){return g>0?Math.round(v/g)*g:v;}
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+function toast(msg){
+ const t=$('toast');t.textContent=msg;t.classList.add('on');
+ clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('on'),1800);
+}
+
+// ── History ───────────────────────────────────────────────────────────────────
+function snapshot(){hist.push(JSON.stringify(items));fut=[];if(hist.length>80)hist.shift();}
+function undo(){if(!hist.length)return;fut.push(JSON.stringify(items));items=JSON.parse(hist.pop());selId=null;render();}
+function redo(){if(!fut.length)return;hist.push(JSON.stringify(items));items=JSON.parse(fut.pop());selId=null;render();}
+
+// ── Symbol definitions ────────────────────────────────────────────────────────
+// Each symbol: {label, icon(svg path/shapes as string), defaultW, defaultH, draw(item)->svgString}
+const SYMS={
+ convexLens:{
+  label:'Convex Lens',icon:'<ellipse cx="22" cy="15" rx="5" ry="12" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="7" y1="15" x2="37" y2="15" stroke="currentColor" stroke-width="1" stroke-dasharray="3 2"/>',
+  w:20,h:120,
+  draw(it){
+   const {x,y,w,h,stroke='#1c2230',sw=2}=it;
+   const rx=w/2,ry=h/2,cx=x,cy=y;
+   return `<g transform="rotate(${it.angle||0},${cx},${cy})">
+    <path d="M ${cx} ${cy-ry} Q ${cx+rx*2} ${cy} ${cx} ${cy+ry} Q ${cx-rx*2} ${cy} ${cx} ${cy-ry} Z"
+      fill="rgba(173,216,255,0.35)" stroke="${stroke}" stroke-width="${sw}"/>
+   </g>`;
+  }
+ },
+ concaveLens:{
+  label:'Concave Lens',icon:'<path d="M15,3 Q22,15 15,27 M29,3 Q22,15 29,27" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="7" y1="15" x2="37" y2="15" stroke="currentColor" stroke-width="1" stroke-dasharray="3 2"/>',
+  w:20,h:120,
+  draw(it){
+   const {x,y,w,h,stroke='#1c2230',sw=2}=it;
+   const rx=w/2,ry=h/2,cx=x,cy=y;
+   const cx1=cx-rx,cx2=cx+rx;
+   return `<g transform="rotate(${it.angle||0},${cx},${cy})">
+    <path d="M ${cx1} ${cy-ry} Q ${cx} ${cy} ${cx1} ${cy+ry}" fill="none" stroke="${stroke}" stroke-width="${sw}"/>
+    <path d="M ${cx2} ${cy-ry} Q ${cx} ${cy} ${cx2} ${cy+ry}" fill="none" stroke="${stroke}" stroke-width="${sw}"/>
+    <line x1="${cx1}" y1="${cy-ry}" x2="${cx2}" y2="${cy-ry}" stroke="${stroke}" stroke-width="${sw}"/>
+    <line x1="${cx1}" y1="${cy+ry}" x2="${cx2}" y2="${cy+ry}" stroke="${stroke}" stroke-width="${sw}"/>
+   </g>`;
+  }
+ },
+ planeMirror:{
+  label:'Plane Mirror',icon:'<rect x="19" y="3" width="5" height="24" rx="1" fill="#aac" stroke="currentColor" stroke-width="1"/><line x1="16" y1="3" x2="12" y2="8" stroke="#aac"/><line x1="16" y1="9" x2="12" y2="14" stroke="#aac"/><line x1="16" y1="15" x2="12" y2="20" stroke="#aac"/><line x1="16" y1="21" x2="12" y2="26" stroke="#aac"/>',
+  w:12,h:120,
+  draw(it){
+   const {x,y,w,h,stroke='#445',sw=2}=it;
+   const ry=h/2,cx=x,cy=y;
+   const hw=Math.max(w/2,6);
+   const hatchLines=[];
+   const step=12;
+   for(let oy=-ry;oy<=ry;oy+=step){
+    hatchLines.push(`<line x1="${cx-hw}" y1="${cy+oy}" x2="${cx-hw-10}" y2="${cy+oy+10}" stroke="${stroke}" stroke-width="1" opacity="0.5"/>`);
+   }
+   return `<g transform="rotate(${it.angle||0},${cx},${cy})">
+    ${hatchLines.join('')}
+    <rect x="${cx-hw}" y="${cy-ry}" width="${hw*2}" height="${ry*2}" fill="rgba(180,190,210,0.5)" stroke="${stroke}" stroke-width="${sw}" rx="2"/>
+   </g>`;
+  }
+ },
+ concaveMirror:{
+  label:'Concave Mirror',icon:'<path d="M28,3 Q16,15 28,27" fill="none" stroke="currentColor" stroke-width="2"/><path d="M29,3 Q21,15 29,27" fill="rgba(180,190,210,0.5)" stroke="currentColor" stroke-width="1"/>',
+  w:16,h:100,
+  draw(it){
+   const {x,y,w,h,stroke='#445',sw=2}=it;
+   const ry=h/2,cx=x,cy=y;
+   const rx=Math.max(w,20);
+   return `<g transform="rotate(${it.angle||0},${cx},${cy})">
+    <path d="M ${cx+rx*0.3} ${cy-ry} Q ${cx-rx} ${cy} ${cx+rx*0.3} ${cy+ry}" fill="rgba(180,190,210,0.4)" stroke="${stroke}" stroke-width="${sw}"/>
+    <path d="M ${cx+rx*0.3+6} ${cy-ry} Q ${cx-rx+6} ${cy} ${cx+rx*0.3+6} ${cy+ry}" fill="none" stroke="${stroke}" stroke-width="1" opacity="0.4"/>
+   </g>`;
+  }
+ },
+ convexMirror:{
+  label:'Convex Mirror',icon:'<path d="M16,3 Q28,15 16,27" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15,3 Q23,15 15,27" fill="rgba(180,190,210,0.5)" stroke="currentColor" stroke-width="1"/>',
+  w:16,h:100,
+  draw(it){
+   const {x,y,w,h,stroke='#445',sw=2}=it;
+   const ry=h/2,cx=x,cy=y;
+   const rx=Math.max(w,20);
+   return `<g transform="rotate(${it.angle||0},${cx},${cy})">
+    <path d="M ${cx-rx*0.3} ${cy-ry} Q ${cx+rx} ${cy} ${cx-rx*0.3} ${cy+ry}" fill="rgba(180,190,210,0.4)" stroke="${stroke}" stroke-width="${sw}"/>
+    <path d="M ${cx-rx*0.3-6} ${cy-ry} Q ${cx+rx-6} ${cy} ${cx-rx*0.3-6} ${cy+ry}" fill="none" stroke="${stroke}" stroke-width="1" opacity="0.4"/>
+   </g>`;
+  }
+ },
+ prism:{
+  label:'Prism',icon:'<polygon points="22,3 38,27 6,27" fill="rgba(173,216,255,0.4)" stroke="currentColor" stroke-width="1.5"/>',
+  w:100,h:80,
+  draw(it){
+   const {x,y,w,h,stroke='#1c2230',sw=2}=it;
+   const hw=w/2,hh=h/2;
+   return `<g transform="rotate(${it.angle||0},${x},${y})">
+    <polygon points="${x},${y-hh} ${x+hw},${y+hh} ${x-hw},${y+hh}"
+     fill="rgba(173,216,255,0.35)" stroke="${stroke}" stroke-width="${sw}"/>
+   </g>`;
+  }
+ },
+ object:{
+  label:'Object Arrow',icon:'<line x1="22" y1="26" x2="22" y2="6" stroke="currentColor" stroke-width="2" marker-end="url(#arr-blk)"/><line x1="10" y1="26" x2="34" y2="26" stroke="currentColor" stroke-width="1"/>',
+  w:8,h:80,
+  draw(it){
+   const {x,y,w,h,stroke='#1c2230',sw=2,label='Object'}=it;
+   const ry=h/2;
+   return `<g transform="rotate(${it.angle||0},${x},${y})">
+    <defs><marker id="arr-o${it.id}" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="${stroke}"/></marker></defs>
+    <line x1="${x}" y1="${y+ry}" x2="${x}" y2="${y-ry+8}" stroke="${stroke}" stroke-width="${sw}" marker-end="url(#arr-o${it.id})"/>
+    <line x1="${x-16}" y1="${y+ry}" x2="${x+16}" y2="${y+ry}" stroke="${stroke}" stroke-width="1" opacity="0.5"/>
+    <text x="${x+6}" y="${y+ry-4}" fill="${stroke}" font-size="12" font-style="italic">${label}</text>
+   </g>`;
+  }
+ },
+ image:{
+  label:'Image Arrow',icon:'<line x1="22" y1="26" x2="22" y2="6" stroke="#3b5bdb" stroke-width="2" stroke-dasharray="4 2" marker-end="url(#arr-dash)"/><line x1="10" y1="26" x2="34" y2="26" stroke="#3b5bdb" stroke-width="1"/>',
+  w:8,h:80,
+  draw(it){
+   const {x,y,w,h,stroke='#3b5bdb',sw=2,label="Image"}=it;
+   const ry=h/2;
+   return `<g transform="rotate(${it.angle||0},${x},${y})">
+    <defs><marker id="arr-i${it.id}" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="${stroke}"/></marker></defs>
+    <line x1="${x}" y1="${y+ry}" x2="${x}" y2="${y-ry+8}" stroke="${stroke}" stroke-width="${sw}" stroke-dasharray="6 3" marker-end="url(#arr-i${it.id})"/>
+    <line x1="${x-16}" y1="${y+ry}" x2="${x+16}" y2="${y+ry}" stroke="${stroke}" stroke-width="1" opacity="0.5"/>
+    <text x="${x+6}" y="${y+ry-4}" fill="${stroke}" font-size="12" font-style="italic">${label}</text>
+   </g>`;
+  }
+ },
+ focalPoint:{
+  label:'Focal Point',icon:'<circle cx="22" cy="15" r="4" fill="currentColor"/><text x="28" y="19" font-size="10" fill="currentColor">F</text>',
+  w:0,h:0,
+  draw(it){
+   const {x,y,stroke='#cc3300',label='F'}=it;
+   return `<g>
+    <circle cx="${x}" cy="${y}" r="5" fill="${stroke}"/>
+    <text x="${x+8}" y="${y+5}" fill="${stroke}" font-size="13" font-weight="bold" font-style="italic">${label}</text>
+   </g>`;
+  }
+ },
+ centerCurv:{
+  label:'Center C',icon:'<circle cx="22" cy="15" r="4" fill="none" stroke="currentColor" stroke-width="1.5"/><text x="28" y="19" font-size="10" fill="currentColor">C</text>',
+  w:0,h:0,
+  draw(it){
+   const {x,y,stroke='#226622',label='C'}=it;
+   return `<g>
+    <circle cx="${x}" cy="${y}" r="5" fill="none" stroke="${stroke}" stroke-width="2"/>
+    <text x="${x+8}" y="${y+5}" fill="${stroke}" font-size="13" font-weight="bold" font-style="italic">${label}</text>
+   </g>`;
+  }
+ },
+ opticalCenter:{
+  label:'Optical Center O',icon:'<circle cx="22" cy="15" r="4" fill="none" stroke="currentColor" stroke-width="1.5"/><text x="28" y="19" font-size="10" fill="currentColor">O</text>',
+  w:0,h:0,
+  draw(it){
+   const {x,y,stroke='#555',label='O'}=it;
+   return `<g>
+    <circle cx="${x}" cy="${y}" r="5" fill="none" stroke="${stroke}" stroke-width="2"/>
+    <text x="${x+8}" y="${y+5}" fill="${stroke}" font-size="13" font-weight="bold">${label}</text>
+   </g>`;
+  }
+ },
+ textLabel:{
+  label:'Text Label',icon:'<text x="8" y="20" font-size="13" fill="currentColor" font-weight="600">Abc</text>',
+  w:0,h:0,
+  draw(it){
+   const {x,y,label='Label',fontSize=14,stroke='#1c2230',bold=false}=it;
+   return `<text x="${x}" y="${y}" fill="${stroke}" font-size="${fontSize}" font-weight="${bold?'bold':'normal'}" font-style="${it.italic?'italic':'normal'}">${label}</text>`;
+  }
+ }
+};
+
+// Ray / line types (drawn interactively)
+const RAY_TYPES={
+ ray:{label:'Light Ray →',color:'#e67e22',dash:'',arrow:true},
+ dashedRay:{label:'Virtual Ray',color:'#3b5bdb',dash:'6 3',arrow:true},
+ axis:{label:'Principal Axis',color:'#555',dash:'8 4',arrow:false},
+ normalLine:{label:'Normal Line',color:'#888',dash:'4 3',arrow:false},
+ line:{label:'Line / Arrow',color:'#1c2230',dash:'',arrow:true},
+};
+
+// ── Render grid & axis ────────────────────────────────────────────────────────
+function renderGrid(){
+ gridG.innerHTML='';
+ if(!$('showGrid').checked)return;
+ const gs=parseInt($('gridSize').value)||40;
+ const W=C.clientWidth,H=C.clientHeight;
+ const x0=(-view.x/view.k),y0=(-view.y/view.k);
+ const x1=x0+W/view.k,y1=y0+H/view.k;
+ const sx=Math.floor(x0/gs)*gs,sy=Math.floor(y0/gs)*gs;
+ const g=el('g');g.setAttribute('stroke','#e0e4ec');g.setAttribute('stroke-width','0.5');
+ for(let x=sx;x<x1;x+=gs)g.appendChild(el('line',{x1:x,y1:y0,x2:x,y2:y1}));
+ for(let y=sy;y<y1;y+=gs)g.appendChild(el('line',{x1:x0,y1:y,x2:x1,y2:y}));
+ gridG.appendChild(g);
+}
+
+function renderAxis(){
+ axisG.innerHTML='';
+ if(!$('showAxis').checked)return;
+ const W=C.clientWidth,H=C.clientHeight;
+ const x0=-view.x/view.k, x1=x0+W/view.k;
+ const cy=C.clientHeight/2;
+ const ay=(-view.y/view.k)+(cy/view.k);
+ const ln=el('line',{x1:x0,y1:ay,x2:x1,y2:ay,stroke:'#aab',strokeWidth:'1','stroke-dasharray':'12 5','stroke-width':'1'});
+ axisG.appendChild(ln);
+}
+
+// ── Apply view transform ──────────────────────────────────────────────────────
+function applyView(){
+ const t=`translate(${view.x},${view.y}) scale(${view.k})`;
+ shapesG.setAttribute('transform',t);
+ selG.setAttribute('transform',t);
+ drawG.setAttribute('transform',t);
+ gridG.setAttribute('transform',t);
+ axisG.setAttribute('transform',t);
+ $('zl').textContent=Math.round(view.k*100)+'%';
+ renderGrid();renderAxis();
+}
+
+// ── Render all items ──────────────────────────────────────────────────────────
+function render(){
+ shapesG.innerHTML='';
+ for(const it of items){
+  const g=el('g');g.dataset.id=it.id;
+  if(it.type==='ray'||it.type==='dashedRay'||it.type==='axis'||it.type==='normalLine'||it.type==='line'){
+   g.innerHTML=renderRay(it);
+  } else {
+   const sym=SYMS[it.type];
+   if(sym)g.innerHTML=sym.draw(it);
+  }
+  shapesG.appendChild(g);
+ }
+ renderSelection();
+ updatePropPanel();
+}
+
+function renderRay(it){
+ const rt=RAY_TYPES[it.type]||RAY_TYPES.ray;
+ const color=it.color||rt.color;
+ const dash=it.dash!==undefined?it.dash:rt.dash;
+ const sw=it.sw||2;
+ const mid=`url(#arrm-${it.id})`;
+ let markerDef='';
+ if(rt.arrow||it.arrow){
+  markerDef=`<defs><marker id="arrm-${it.id}" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="${color}"/></marker></defs>`;
+ }
+ const dx=it.x2-it.x1,dy=it.y2-it.y1,len=Math.sqrt(dx*dx+dy*dy);
+ const ex=len>12?it.x2-dx/len*7:it.x2,ey=len>12?it.y2-dy/len*7:it.y2;
+ const mend=(rt.arrow||it.arrow)?`marker-end="${mid}"`:'';
+ return `${markerDef}<line x1="${it.x1}" y1="${it.y1}" x2="${ex}" y2="${ey}" stroke="${color}" stroke-width="${sw}" ${dash?`stroke-dasharray="${dash}"`:''}  ${mend}/>`;
+}
+
+// ── Selection handles ─────────────────────────────────────────────────────────
+function renderSelection(){
+ selG.innerHTML='';
+ if(!selId)return;
+ const it=items.find(i=>i.id===selId);
+ if(!it)return;
+ if(it.type==='ray'||it.type==='dashedRay'||it.type==='axis'||it.type==='normalLine'||it.type==='line'){
+  // Endpoint handles
+  drawHandle(it.x1,it.y1,'ep1');
+  drawHandle(it.x2,it.y2,'ep2');
+  return;
+ }
+ if(it.type==='focalPoint'||it.type==='centerCurv'||it.type==='opticalCenter'||it.type==='textLabel'){
+  drawHandle(it.x,it.y,'move');return;
+ }
+ // Bounding box handles
+ const hw=it.w/2,hh=it.h/2;
+ const cx=it.x,cy=it.y;
+ const ang=(it.angle||0)*Math.PI/180;
+ const corners=[[-hw,-hh],[hw,-hh],[hw,hh],[-hw,hh]];
+ const rot=(px,py)=>({x:cx+px*Math.cos(ang)-py*Math.sin(ang),y:cy+px*Math.sin(ang)+py*Math.cos(ang)});
+ corners.forEach(([px,py],i)=>{const p=rot(px,py);drawHandle(p.x,p.y,'corner-'+i);});
+ // Rotation handle (above top-center)
+ const tr=rot(0,-hh-24);
+ const rc=el('circle',{cx:tr.x,cy:tr.y,r:6,class:'rot-handle','data-htype':'rot'});
+ selG.appendChild(rc);
+ // Center
+ drawHandle(cx,cy,'move');
+}
+function drawHandle(x,y,htype){
+ const r=el('rect',{x:x-5,y:y-5,width:10,height:10,rx:2,class:'handle','data-htype':htype});
+ selG.appendChild(r);
+}
+
+// ── Property panel ────────────────────────────────────────────────────────────
+function updatePropPanel(){
+ const body=$('propBody');
+ const it=items.find(i=>i.id===selId);
+ if(!it){body.innerHTML='<span class="hint">Select an element to edit its properties.</span>';return;}
+ const isRay=['ray','dashedRay','axis','normalLine','line'].includes(it.type);
+ const isPoint=['focalPoint','centerCurv','opticalCenter'].includes(it.type);
+ const isText=it.type==='textLabel';
+ let html='';
+ if(!isRay&&!isPoint&&!isText){
+  html+=`<label>Width <input type="number" class="pp" data-key="w" value="${it.w}" min="4" max="400" style="width:68px"></label>`;
+  html+=`<label>Height <input type="number" class="pp" data-key="h" value="${it.h}" min="10" max="600" style="width:68px"></label>`;
+  html+=`<label>Rotation° <input type="number" class="pp" data-key="angle" value="${it.angle||0}" min="-180" max="180" style="width:68px"></label>`;
+ }
+ if(isPoint||isText){
+  html+=`<label>Label <input type="text" class="pp" data-key="label" value="${it.label||''}" style="width:110px"></label>`;
+ }
+ if(isText){
+  html+=`<label>Font size <input type="number" class="pp" data-key="fontSize" value="${it.fontSize||14}" min="8" max="48" style="width:68px"></label>`;
+  html+=`<label>Bold <input type="checkbox" class="pp-chk" data-key="bold" ${it.bold?'checked':''}></label>`;
+  html+=`<label>Italic <input type="checkbox" class="pp-chk" data-key="italic" ${it.italic?'checked':''}></label>`;
+ }
+ if(isRay){
+  html+=`<label>Color <input type="color" class="pp" data-key="color" value="${it.color||RAY_TYPES[it.type].color}"></label>`;
+  html+=`<label>Width <input type="number" class="pp" data-key="sw" value="${it.sw||2}" min="1" max="8" style="width:68px"></label>`;
+  html+=`<label>Dashed <input type="checkbox" class="pp-chk" data-key="dashed" ${it.dash?'checked':''}></label>`;
+ }
+ if(isPoint){
+  html+=`<label>Color <input type="color" class="pp" data-key="stroke" value="${it.stroke||'#cc3300'}"></label>`;
+ }
+ if(!isRay&&!isPoint&&!isText){
+  html+=`<label>Stroke <input type="color" class="pp" data-key="stroke" value="${it.stroke||'#1c2230'}"></label>`;
+  html+=`<label>Stroke W <input type="number" class="pp" data-key="sw" value="${it.sw||2}" min="1" max="8" style="width:68px"></label>`;
+ }
+ html+=`<div class="row"><button id="ppDel" style="flex:1;color:#c33;border-color:#c33">🗑 Delete</button></div>`;
+ body.innerHTML=html;
+ body.querySelectorAll('.pp').forEach(inp=>{
+  inp.addEventListener('change',()=>{
+   const key=inp.dataset.key;
+   let val=inp.type==='number'?+inp.value:inp.value;
+   snapshot();
+   const idx=items.findIndex(i=>i.id===selId);
+   if(idx>=0){
+    if(key==='dashed')return; // handled by checkbox
+    items[idx][key]=val;
+    if(key==='dashed')items[idx].dash=val?'6 3':'';
+    render();
+   }
+  });
+ });
+ body.querySelectorAll('.pp-chk').forEach(inp=>{
+  inp.addEventListener('change',()=>{
+   const key=inp.dataset.key;
+   snapshot();
+   const idx=items.findIndex(i=>i.id===selId);
+   if(idx>=0){
+    if(key==='dashed'){items[idx].dash=inp.checked?'6 3':'';}
+    else items[idx][key]=inp.checked;
+    render();
+   }
+  });
+ });
+ const delBtn=$('ppDel');
+ if(delBtn)delBtn.addEventListener('click',()=>{
+  snapshot();items=items.filter(i=>i.id!==selId);selId=null;render();
+ });
+}
+
+// ── Tool palette ──────────────────────────────────────────────────────────────
+const TOOLS=[
+ {id:'select',label:'Select / Move',icon:'<path d="M8,6 L8,24 L13,20 L16,26 L19,25 L16,19 L22,19 Z" fill="currentColor"/>'},
+ {id:'ray',label:'Light Ray',icon:'<line x1="4" y1="22" x2="36" y2="8" stroke="#e67e22" stroke-width="2" marker-end="url(#arr)"/>'},
+ {id:'dashedRay',label:'Virtual Ray',icon:'<line x1="4" y1="22" x2="36" y2="8" stroke="#3b5bdb" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arr-dash)"/>'},
+ {id:'axis',label:'Principal Axis',icon:'<line x1="4" y1="15" x2="40" y2="15" stroke="#777" stroke-width="1.5" stroke-dasharray="8 4"/>'},
+ {id:'normalLine',label:'Normal Line',icon:'<line x1="22" y1="4" x2="22" y2="26" stroke="#999" stroke-width="1.5" stroke-dasharray="4 3"/>'},
+ {id:'line',label:'Line / Arrow',icon:'<line x1="4" y1="22" x2="36" y2="8" stroke="#1c2230" stroke-width="2" marker-end="url(#arr-blk)"/>'},
+];
+
+function buildToolPalette(){
+ const pal=$('tool-palette');pal.innerHTML='';
+ for(const t of TOOLS){
+  const b=document.createElement('button');
+  b.className='sym-btn'+(activeTool===t.id?' active-tool':'');
+  b.innerHTML=`<svg viewBox="0 0 44 30">${t.icon}</svg><span>${t.label}</span>`;
+  b.title=t.label;
+  b.addEventListener('click',()=>{
+   activeTool=t.id;placeSymbol=null;
+   C.style.cursor=t.id==='select'?'default':'crosshair';
+   buildToolPalette();buildSymPalette();
+   $('mode-bar').textContent=t.id==='select'?'Click to select, drag to move':`Drawing: ${t.label}`;
+  });
+  pal.appendChild(b);
+ }
+}
+
+function buildSymPalette(){
+ const pal=$('sym-palette');pal.innerHTML='';
+ for(const [key,sym] of Object.entries(SYMS)){
+  const b=document.createElement('button');
+  b.className='sym-btn'+(placeSymbol===key?' active-tool':'');
+  b.innerHTML=`<svg viewBox="0 0 44 30">${sym.icon}</svg><span>${sym.label}</span>`;
+  b.title=sym.label;
+  b.addEventListener('click',()=>{
+   activeTool='place';placeSymbol=key;
+   C.style.cursor='copy';
+   buildToolPalette();buildSymPalette();
+   $('mode-bar').textContent=`Click canvas to place: ${sym.label}`;
+  });
+  pal.appendChild(b);
+ }
+}
+
+// ── Hit testing ───────────────────────────────────────────────────────────────
+function hitItem(px,py){
+ // Reverse order (top-most first)
+ for(let i=items.length-1;i>=0;i--){
+  const it=items[i];
+  if(hitTest(it,px,py))return it;
+ }
+ return null;
+}
+function hitTest(it,px,py){
+ const isRay=['ray','dashedRay','axis','normalLine','line'].includes(it.type);
+ if(isRay){
+  // Line segment distance
+  const dx=it.x2-it.x1,dy=it.y2-it.y1,len2=dx*dx+dy*dy;
+  if(len2===0)return false;
+  let t=((px-it.x1)*dx+(py-it.y1)*dy)/len2;
+  t=Math.max(0,Math.min(1,t));
+  const cx=it.x1+t*dx,cy=it.y1+t*dy;
+  return (px-cx)**2+(py-cy)**2<100;
+ }
+ if(it.type==='focalPoint'||it.type==='centerCurv'||it.type==='opticalCenter'||it.type==='textLabel'){
+  return (px-it.x)**2+(py-it.y)**2<200;
+ }
+ // Axis-aligned bounding box (approximate — ignores rotation)
+ const hw=Math.max(it.w/2,10),hh=Math.max(it.h/2,10);
+ return px>=it.x-hw&&px<=it.x+hw&&py>=it.y-hh&&py<=it.y+hh;
+}
+
+// ── Handle hit test ───────────────────────────────────────────────────────────
+function hitHandle(px,py){
+ for(const h of selG.children){
+  const htype=h.dataset.htype;
+  if(!htype)continue;
+  const hx=+h.getAttribute('cx')||+h.getAttribute('x')+5;
+  const hy=+h.getAttribute('cy')||+h.getAttribute('y')+5;
+  if((px-hx)**2+(py-hy)**2<64||
+     (Math.abs(px-hx)<8&&Math.abs(py-hy)<8))
+   return htype;
+ }
+ return null;
+}
+
+// ── Pointer events ────────────────────────────────────────────────────────────
+let drawPreview=null;
+C.addEventListener('pointerdown',e=>{
+ if(e.button!==0)return;
+ C.setPointerCapture(e.pointerId);
+ const p=svgPt(e);
+
+ // Pan with space or middle-button
+ if(spaceDown||e.button===1){drag={type:'pan',ox:view.x,oy:view.y,sx:e.clientX,sy:e.clientY};return;}
+
+ if(activeTool==='place'&&placeSymbol){
+  snapshot();
+  const sym=SYMS[placeSymbol];
+  const it={id:nextId++,type:placeSymbol,x:p.x,y:p.y,w:sym.w,h:sym.h,angle:0,
+   label:placeSymbol==='focalPoint'?'F':placeSymbol==='centerCurv'?'C':placeSymbol==='opticalCenter'?'O':placeSymbol==='textLabel'?'Label':'',
+   stroke:placeSymbol==='focalPoint'?'#cc3300':placeSymbol==='centerCurv'?'#226622':'#1c2230',
+   sw:2,fontSize:14,bold:false,italic:false};
+  items.push(it);selId=it.id;render();return;
+ }
+
+ if(['ray','dashedRay','axis','normalLine','line'].includes(activeTool)){
+  drawStart={x:p.x,y:p.y};
+  drag={type:'draw'};
+  drawPreview=el('line',{x1:p.x,y1:p.y,x2:p.x,y2:p.y,stroke:RAY_TYPES[activeTool].color,
+   'stroke-width':'2','stroke-dasharray':RAY_TYPES[activeTool].dash,opacity:'0.7'});
+  drawG.appendChild(drawPreview);
+  return;
+ }
+
+ if(activeTool==='select'){
+  // Check handles first
+  const it=items.find(i=>i.id===selId);
+  if(it){
+   const htype=hitHandle(p.x,p.y);
+   if(htype){
+    if(htype==='rot'){drag={type:'rotate',item:it,ox:it.x,oy:it.y,sx:e.clientX,sy:e.clientY,startAngle:it.angle||0};return;}
+    if(htype==='move'){drag={type:'move',item:it,ox:it.x,oy:it.y,sx:p.x,sy:p.y};return;}
+    if(htype==='ep1'){drag={type:'ep',item:it,ep:'1',sx:p.x,sy:p.y};return;}
+    if(htype==='ep2'){drag={type:'ep',item:it,ep:'2',sx:p.x,sy:p.y};return;}
+    if(htype.startsWith('corner')){drag={type:'resize',item:it,sx:p.x,sy:p.y,sw:it.w,sh:it.h,ox:it.x,oy:it.y};return;}
+   }
+  }
+  const hit=hitItem(p.x,p.y);
+  if(hit){selId=hit.id;render();drag={type:'move',item:hit,ox:hit.x||hit.x1,oy:hit.y||hit.y1,sx:p.x,sy:p.y};}
+  else{selId=null;render();}
+ }
+});
+
+C.addEventListener('pointermove',e=>{
+ const p=svgPt(e);
+ if(!drag)return;
+ if(drag.type==='pan'){
+  view.x=drag.ox+(e.clientX-drag.sx);view.y=drag.oy+(e.clientY-drag.sy);applyView();return;
+ }
+ if(drag.type==='draw'&&drawPreview){
+  drawPreview.setAttribute('x2',p.x);drawPreview.setAttribute('y2',p.y);return;
+ }
+ if(drag.type==='move'){
+  const dx=p.x-drag.sx,dy=p.y-drag.sy;
+  const it=drag.item;
+  const isRay=['ray','dashedRay','axis','normalLine','line'].includes(it.type);
+  if(isRay){it.x1=drag.ox+dx; /* need originals */}
+  else if(it.x!==undefined){it.x=drag.ox+dx;it.y=drag.oy+dy;}
+  render();return;
+ }
+ if(drag.type==='ep'){
+  const it=drag.item;
+  if(drag.ep==='1'){it.x1=p.x;it.y1=p.y;}else{it.x2=p.x;it.y2=p.y;}
+  render();return;
+ }
+ if(drag.type==='resize'){
+  const it=drag.item;
+  const ddx=p.x-drag.sx,ddy=p.y-drag.sy;
+  it.w=Math.max(10,drag.sw+Math.abs(ddx)*2);
+  it.h=Math.max(10,drag.sh+Math.abs(ddy)*2);
+  render();return;
+ }
+ if(drag.type==='rotate'){
+  const it=drag.item;
+  const dx=e.clientX-drag.sx;
+  it.angle=(drag.startAngle+dx)%360;
+  render();return;
+ }
+});
+
+// Fix move drag for rays (need original endpoints)
+C.addEventListener('pointerdown',e=>{},true); // ensure capture
+
+C.addEventListener('pointerup',e=>{
+ if(drag?.type==='draw'&&drawStart){
+  const p=svgPt(e);
+  drawG.innerHTML='';
+  const dx=p.x-drawStart.x,dy=p.y-drawStart.y;
+  if(Math.sqrt(dx*dx+dy*dy)>5){
+   snapshot();
+   const rt=RAY_TYPES[activeTool];
+   const it={id:nextId++,type:activeTool,x1:drawStart.x,y1:drawStart.y,x2:p.x,y2:p.y,
+    color:rt.color,dash:rt.dash,sw:2,arrow:rt.arrow};
+   items.push(it);selId=it.id;render();
+  }
+  drawStart=null;drawPreview=null;
+ }
+ if(drag?.type==='move'||drag?.type==='ep'||drag?.type==='resize'||drag?.type==='rotate')snapshot();
+ drag=null;
+});
+
+// Make move work correctly for rays (store start endpoints)
+// Patch pointerdown to capture initial ray positions
+C.addEventListener('pointerdown',e=>{
+ if(drag?.type==='move'){
+  const it=drag.item;
+  if(['ray','dashedRay','axis','normalLine','line'].includes(it.type)){
+   drag.ox1=it.x1;drag.oy1=it.y1;drag.ox2=it.x2;drag.oy2=it.y2;
+  }
+ }
+},true);
+
+// Fix move for rays in pointermove
+C.addEventListener('pointermove',e=>{
+ if(drag?.type==='move'){
+  const it=drag.item;
+  const p=svgPt(e);
+  const dx=p.x-drag.sx,dy=p.y-drag.sy;
+  if(['ray','dashedRay','axis','normalLine','line'].includes(it.type)){
+   if(drag.ox1!==undefined){
+    it.x1=drag.ox1+dx;it.y1=drag.oy1+dy;
+    it.x2=drag.ox2+dx;it.y2=drag.oy2+dy;
+    render();
+   }
+  }
+ }
+},true);
+
+// Wheel zoom
+C.addEventListener('wheel',e=>{
+ e.preventDefault();
+ const r=C.getBoundingClientRect();
+ const mx=e.clientX-r.left,my=e.clientY-r.top;
+ const factor=e.deltaY<0?1.1:1/1.1;
+ view.x=mx-(mx-view.x)*factor;view.y=my-(my-view.y)*factor;view.k*=factor;
+ applyView();
+},{passive:false});
+
+// Keyboard
+window.addEventListener('keydown',e=>{
+ if(e.code==='Space'&&e.target.tagName!=='INPUT'){e.preventDefault();spaceDown=true;C.style.cursor='grab';}
+ if((e.ctrlKey||e.metaKey)&&e.key==='z'){e.preventDefault();undo();}
+ if((e.ctrlKey||e.metaKey)&&(e.key==='y'||e.key==='Z')){e.preventDefault();redo();}
+ if((e.key==='Delete'||e.key==='Backspace')&&selId&&e.target.tagName!=='INPUT'){
+  snapshot();items=items.filter(i=>i.id!==selId);selId=null;render();
+ }
+});
+window.addEventListener('keyup',e=>{if(e.code==='Space'){spaceDown=false;C.style.cursor=activeTool==='select'?'default':'crosshair';}});
+
+// Zoom buttons
+$('zo').addEventListener('click',()=>{const cx=C.clientWidth/2,cy=C.clientHeight/2;view.x=cx-(cx-view.x)/1.2;view.y=cy-(cy-view.y)/1.2;view.k/=1.2;applyView();});
+$('zi').addEventListener('click',()=>{const cx=C.clientWidth/2,cy=C.clientHeight/2;view.x=cx-(cx-view.x)*1.2;view.y=cy-(cy-view.y)*1.2;view.k*=1.2;applyView();});
+$('zf').addEventListener('click',()=>{view={x:0,y:0,k:1};applyView();});
+
+// Undo/Redo buttons
+$('btnUndo').addEventListener('click',undo);
+$('btnRedo').addEventListener('click',redo);
+
+// Grid/Axis toggles
+$('showGrid').addEventListener('change',()=>{renderGrid();});
+$('showAxis').addEventListener('change',()=>{renderAxis();});
+$('gridSize').addEventListener('change',()=>{renderGrid();});
+
+// ── Export / Copy ─────────────────────────────────────────────────────────────
+async function exportPNG(scale=4){
+ // Build a standalone SVG
+ const W=C.clientWidth,H=C.clientHeight;
+ const svgSrc=`<svg xmlns="http://www.w3.org/2000/svg" width="${W*scale}" height="${H*scale}" viewBox="0 0 ${W} ${H}">
+  <rect width="${W}" height="${H}" fill="white"/>
+  ${C.innerHTML}
+ </svg>`;
+ const blob=new Blob([svgSrc],{type:'image/svg+xml'});
+ const url=URL.createObjectURL(blob);
+ return new Promise(res=>{
+  const img=new Image();img.onload=()=>{
+   const cv=document.createElement('canvas');cv.width=W*scale;cv.height=H*scale;
+   const ctx=cv.getContext('2d');ctx.drawImage(img,0,0,W*scale,H*scale);
+   URL.revokeObjectURL(url);res(cv);
+  };img.src=url;
+ });
+}
+
+async function copyImage(){
+ try{
+  const cv=await exportPNG(4);
+  cv.toBlob(async blob=>{
+   await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);
+   toast('Image copied to clipboard!');
+  },'image/png');
+ }catch(e){toast('Copy failed: '+e.message);}
+}
+
+$('btnCopyImg').addEventListener('click',copyImage);
+$('btnCopyImgSide').addEventListener('click',copyImage);
+
+$('btnPng').addEventListener('click',async()=>{
+ const cv=await exportPNG(4);
+ cv.toBlob(blob=>{
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='optics-diagram.png';a.click();
+ },'image/png');
+ toast('PNG exported!');
+});
+
+$('btnSvg').addEventListener('click',()=>{
+ const W=C.clientWidth,H=C.clientHeight;
+ const src=`<?xml version="1.0" encoding="utf-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">\n<rect width="${W}" height="${H}" fill="white"/>\n${C.innerHTML}\n</svg>`;
+ const a=document.createElement('a');a.href='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(src);a.download='optics-diagram.svg';a.click();
+ toast('SVG exported!');
+});
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+buildToolPalette();
+buildSymPalette();
+applyView();
+$('mode-bar').textContent='Select tool from palette →';
+C.style.cursor='default';
+</script>
+</body>
+</html>
