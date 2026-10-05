@@ -1348,9 +1348,79 @@ $("key-mode").addEventListener("change", () => {
 
 window.addEventListener("resize", debouncedPreview);
 
+/* =========================================================================
+   PDF Auto-Download (html2pdf.js)
+   ========================================================================= */
+
+async function downloadPDF() {
+  preview();
+  const s = S();
+
+  // Determine paper size in mm
+  const sizeMap = {
+    A4: [210, 297], A3: [297, 420], A5: [148, 210],
+    Letter: [215.9, 279.4], Legal: [215.9, 355.6]
+  };
+  const [w, h] = sizeMap[s.size] || [210, 297];
+  const isLandscape = s.or === "l";
+  const pdfW = isLandscape ? h : w;
+  const pdfH = isLandscape ? w : h;
+
+  // Auto-generate filename from exam title and mode
+  const safeTitle = (s.title || "Exam").replace(/[^a-zA-Z0-9\s\-_]/g, "").trim().replace(/\s+/g, "_") || "Exam";
+  const modeLabel = s.mode === "teacher" ? "AnswerKey" : "StudentCopy";
+  const filename = safeTitle + "_" + modeLabel + ".pdf";
+
+  // Show loading state on buttons
+  const fab = $("btn-top-print");
+  const bpdfBtn = $("bpdf");
+  if (fab) { fab.style.opacity = "0.45"; fab.style.pointerEvents = "none"; }
+  if (bpdfBtn) { bpdfBtn.disabled = true; bpdfBtn.textContent = "\u23f3 Generating\u2026"; }
+
+  try {
+    if (typeof html2pdf === "undefined") throw new Error("html2pdf not loaded");
+
+    const wrap = $("wrap");
+
+    // Reset zoom scale temporarily so html2pdf captures at real document size
+    const scaleEl = wrap.firstElementChild;
+    const prevTransform = scaleEl ? scaleEl.style.transform : null;
+    if (scaleEl && prevTransform) scaleEl.style.transform = "none";
+
+    const opt = {
+      margin: 0,
+      filename: filename,
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        windowWidth: Math.round(pdfW * 3.7795)
+      },
+      jsPDF: {
+        unit: "mm",
+        format: [pdfW, pdfH],
+        orientation: isLandscape ? "landscape" : "portrait"
+      },
+      pagebreak: { mode: ["css", "legacy"], before: ".sheet" }
+    };
+
+    await html2pdf().set(opt).from(wrap).save();
+
+    // Restore zoom
+    if (scaleEl && prevTransform !== null) scaleEl.style.transform = prevTransform;
+  } catch (err) {
+    console.error("PDF generation failed:", err);
+    window.print(); // Fallback to browser print dialog
+  } finally {
+    if (fab) { fab.style.opacity = ""; fab.style.pointerEvents = ""; }
+    if (bpdfBtn) { bpdfBtn.disabled = false; bpdfBtn.textContent = "\ud83d\udcbe Save as PDF"; }
+  }
+}
+
 $("bprint").onclick = () => { preview(); window.print(); };
-$("bpdf").onclick = () => { preview(); window.print(); };
-$("btn-top-print").onclick = () => { preview(); window.print(); };
+$("bpdf").onclick = () => downloadPDF();
+$("btn-top-print").onclick = () => downloadPDF();
 
 /* =========================================================================
    DOCX Export
