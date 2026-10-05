@@ -980,7 +980,9 @@ function preview() {
     tag.style.background = isTeacher ? "var(--success)" : "rgba(255,255,255,0.1)";
   }
   if ($("btn-quick-toggle")) {
-    $("btn-quick-toggle").textContent = isTeacher ? "🎓 Student View" : "👨‍🏫 Teacher View";
+    $("btn-quick-toggle").innerHTML = isTeacher
+      ? `<span class="mode-dot teacher"></span><span>👨‍🏫 Teacher View</span>`
+      : `<span class="mode-dot student"></span><span>🎓 Student View</span>`;
   }
 
   // Compute Full Marks display
@@ -1162,8 +1164,18 @@ function preview() {
         position: relative;
         box-sizing: border-box !important;
       }
-      .cut-v, .cut-h, .cut-label {
+      .cut-v, .cut-h, .cut-label,
+      .preview-mode-fab,
+      .preview-print-fab,
+      .zoom-fab,
+      .pl,
+      .preview-toolbar,
+      .status-bar,
+      .noprint,
+      aside {
         display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
       }
     }
   `;
@@ -1199,10 +1211,12 @@ function applyZoom(sheets, w, h) {
       $("wrap").insertBefore(sw, sh);
       sw.appendChild(sh);
 
-      const pl = document.createElement("div");
-      pl.className = "pl noprint";
-      pl.textContent = `Page ${i + 1} of ${sheets.length}`;
-      sw.insertBefore(pl, sh);
+      if (sheets.length > 1) {
+        const pl = document.createElement("div");
+        pl.className = "pl noprint";
+        pl.textContent = `Page ${i + 1} of ${sheets.length}`;
+        sw.insertBefore(pl, sh);
+      }
     }
     sw.style.width = `${w * z}mm`;
     sw.style.height = `${h * z}mm`;

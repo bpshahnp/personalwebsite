@@ -671,28 +671,44 @@ main {
   z-index: 50;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  background: #1e293b;
-  background: rgba(30, 41, 59, 0.92);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  gap: 7px;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 9999px;
   padding: 6px 14px;
-  color: #f1f5f9;
-  font-size: 12.5px;
+  color: #f8fafc;
+  font-size: 12px;
   font-weight: 600;
+  letter-spacing: 0.2px;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
-  transition: all 0.15s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   user-select: none;
   white-space: nowrap;
 }
 .preview-mode-fab:hover {
-  background: rgba(51, 65, 85, 0.95);
-  border-color: rgba(255, 255, 255, 0.25);
+  background: rgba(30, 41, 59, 0.95);
+  border-color: rgba(255, 255, 255, 0.28);
   color: #ffffff;
   transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+}
+.preview-mode-fab:active {
+  transform: scale(0.97);
+}
+.preview-mode-fab .mode-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #38bdf8;
+  box-shadow: 0 0 6px #38bdf8;
+  display: inline-block;
+}
+.preview-mode-fab .mode-dot.teacher {
+  background: #4ade80;
+  box-shadow: 0 0 6px #4ade80;
 }
 
 /* Floating Print Button in Printer Icon Format (Top-Right) */
@@ -701,25 +717,31 @@ main {
   top: 16px;
   right: 20px;
   z-index: 50;
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
-  background: #2563eb;
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #e2e8f0;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
-  transition: all 0.15s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 0;
 }
 .preview-print-fab:hover {
-  background: #1d4ed8;
-  transform: scale(1.08);
+  background: #2563eb;
+  border-color: #3b82f6;
+  color: #ffffff;
+  transform: scale(1.08) translateY(-1px);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.45);
 }
 .preview-print-fab:active {
-  transform: scale(0.95);
+  transform: scale(0.94);
 }
 
 /* Floating Zoom FAB */
@@ -1503,9 +1525,16 @@ dialog::backdrop {
   }
   aside,
   .noprint,
+  .preview-mode-fab,
+  .preview-print-fab,
+  .zoom-fab,
+  .pl,
   .preview-toolbar,
+  .status-bar,
   .toast-container {
     display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
   }
   main {
     padding: 0 !important;
