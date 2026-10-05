@@ -1374,65 +1374,75 @@ async function downloadPDF() {
   if (fab) { fab.style.opacity = "0.45"; fab.style.pointerEvents = "none"; }
   if (bpdfBtn) { bpdfBtn.disabled = true; bpdfBtn.textContent = "\u23f3 Generating\u2026"; }
 
+  let stage = null;
   try {
     if (typeof html2pdf === "undefined") throw new Error("html2pdf not loaded");
 
     const sheets = Array.from($("wrap").querySelectorAll(".sheet"));
     if (!sheets.length) throw new Error("No sheets to export");
 
-    // Step 1: Save transforms and wrapper sizes, then reset to 1:1
-    const savedSh = sheets.map(sh => sh.style.transform);
-    const wrappers = sheets.map(sh => sh.closest(".sw") || sh.parentElement);
-    const savedSw = wrappers.map(sw => ({ w: sw.style.width, h: sw.style.height, ov: sw.style.overflow }));
+    // Render from clones in an off-screen stage attached to <body>.
+    // Capturing the live sheets fails (blank output) because they sit inside a
+    // scrolling/overflow-clipped preview pane and are scaled by CSS transform.
+    const pxW = Math.round(pdfW * 96 / 25.4);
+    const pxH = Math.round(pdfH * 96 / 25.4);
 
-    const pxW = Math.round(pdfW * 3.7795);
-    const pxH = Math.round(pdfH * 3.7795);
+    stage = document.createElement("div");
+    stage.style.cssText = "position:absolute;left:0;top:0;z-index:-1;background:#fff;pointer-events:none;" +
+      "width:" + pdfW + "mm;";
+    document.body.appendChild(stage);
 
-    sheets.forEach(sh => { sh.style.transform = "scale(1)"; sh.style.transformOrigin = "top left"; });
-    wrappers.forEach(sw => {
-      sw.style.width = pdfW + "mm";
-      sw.style.height = pdfH + "mm";
-      sw.style.overflow = "visible";
+    const clones = sheets.map(sh => {
+      const c = sh.cloneNode(true);
+      c.style.transform = "none";
+      c.style.boxShadow = "none";
+      c.style.margin = "0";
+      c.style.width = pdfW + "mm";
+      c.style.height = pdfH + "mm";
+      c.style.overflow = "hidden";
+      c.style.background = "#ffffff";
+      stage.appendChild(c);
+      return c;
     });
 
-    // Step 2: Wait for layout to apply
+    // Let layout, fonts and SVG settle
+    if (document.fonts && document.fonts.ready) { try { await document.fonts.ready; } catch (e) {} }
     await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
 
-    // Step 3: Capture each sheet with html2canvas
-    const h2c = window.html2canvas || (typeof html2canvas !== "undefined" ? html2canvas : null);
-    if (!h2c) throw new Error("html2canvas not available");
+    const h2cOpts = {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: "#ffffff",
+      logging: false,
+      scrollX: 0,
+      scrollY: 0,
+      windowWidth: Math.max(pxW, document.documentElement.clientWidth),
+      windowHeight: Math.max(pxH, document.documentElement.clientHeight)
+    };
 
+    // Use html2pdf's bundled html2canvas + jsPDF (they are not exposed as globals)
+    const orient = isLandscape ? "landscape" : "portrait";
     const canvases = [];
-    for (const sh of sheets) {
-      const c = await h2c(sh, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-        width: pxW,
-        height: pxH,
-        scrollX: 0,
-        scrollY: 0
-      });
-      canvases.push(c);
+    for (const c of clones) {
+      canvases.push(await html2pdf().set({ html2canvas: h2cOpts }).from(c).toCanvas().get("canvas"));
     }
 
-    // Step 4: Restore original transforms and wrapper sizes
-    sheets.forEach((sh, i) => { sh.style.transform = savedSh[i]; });
-    wrappers.forEach((sw, i) => { sw.style.width = savedSw[i].w; sw.style.height = savedSw[i].h; sw.style.overflow = savedSw[i].ov; });
+    // Page 1 via html2pdf (gives us the jsPDF instance), remaining pages added manually
+    const pdf = await html2pdf()
+      .set({
+        margin: 0,
+        jsPDF: { unit: "mm", format: [pdfW, pdfH], orientation: orient },
+        image: { type: "jpeg", quality: 0.98 }
+      })
+      .from(canvases[0], "canvas")
+      .toPdf()
+      .get("pdf");
+    while (pdf.internal.getNumberOfPages() > 1) pdf.deletePage(pdf.internal.getNumberOfPages());
 
-    // Step 5: Build PDF using jsPDF
-    const jsPDFCtor = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
-    if (!jsPDFCtor) throw new Error("jsPDF not available");
-
-    const orient = isLandscape ? "landscape" : "portrait";
-    const pdf = new jsPDFCtor({ unit: "mm", format: [pdfW, pdfH], orientation: orient });
-
-    canvases.forEach((canvas, i) => {
-      if (i > 0) pdf.addPage([pdfW, pdfH], orient);
-      const imgData = canvas.toDataURL("image/jpeg", 0.98);
-      pdf.addImage(imgData, "JPEG", 0, 0, pdfW, pdfH);
-    });
+    for (let i = 1; i < canvases.length; i++) {
+      pdf.addPage([pdfW, pdfH], orient);
+      pdf.addImage(canvases[i].toDataURL("image/jpeg", 0.98), "JPEG", 0, 0, pdfW, pdfH);
+    }
 
     pdf.save(filename);
 
@@ -1441,6 +1451,7 @@ async function downloadPDF() {
     alert("PDF auto-download failed: " + err.message + "\nOpening print dialog instead.");
     window.print();
   } finally {
+    if (stage && stage.parentNode) stage.parentNode.removeChild(stage);
     if (fab) { fab.style.opacity = ""; fab.style.pointerEvents = ""; }
     if (bpdfBtn) { bpdfBtn.disabled = false; bpdfBtn.textContent = "\ud83d\udcbe Save as PDF"; }
   }
