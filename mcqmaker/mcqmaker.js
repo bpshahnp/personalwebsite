@@ -162,8 +162,15 @@ function formatMarkdown(str) {
     .replace(/~([^~]+?)~/g, '<sub>$1</sub>')
     .replace(/\^([^\^]+?)\^/g, '<sup>$1</sup>')
     .replace(/`([^`]+)`/g, '<code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:0.9em">$1</code>')
+    // nth root: ⁿ√(...) — must come before cube and square root
+    .replace(/ⁿ√\(([^)]*)\)/g, '<span class="math-root nrt"><span class="root-index">n</span><span class="root-radical">&#x221A;</span><span class="root-body">$1</span></span>')
+    // cube root: ∛(...)
+    .replace(/∛\(([^)]*)\)/g, '<span class="math-root cbrt"><span class="root-index">3</span><span class="root-radical">&#x221A;</span><span class="root-body">$1</span></span>')
+    // square root: √(...)
+    .replace(/√\(([^)]*)\)/g, '<span class="math-root sqrt"><span class="root-radical">&#x221A;</span><span class="root-body">$1</span></span>')
     .replace(/\n/g, '<br>');
 }
+
 
 function rich(t, inl) {
   return segs(t || "").map(g => {
@@ -496,7 +503,7 @@ const PALETTES = {
     ["xⁿ", "^^", "^{n}", 1], ["xˣ", "^^", "^{x}", 1], ["x⁺", "^^", "^{+}", 1], ["x⁻", "^^", "^{-}", 1],
     ["x₀", "₀", "_{0}"], ["x₁", "₁", "_{1}"], ["x₂", "₂", "_{2}"], ["x₃", "₃", "_{3}"],
     ["xₙ", "~~", "_{n}", 1], ["xᵢ", "~~", "_{i}", 1],
-    ["√x", "√", "\\sqrt{x}"], ["∛x", "∛", "\\sqrt[3]{x}"], ["ⁿ√x", "ⁿ√", "\\sqrt[n]{x}"],
+    ["√x", "√()", "\\sqrt{x}", 2], ["∛x", "∛()", "\\sqrt[3]{x}", 2], ["ⁿ√x", "ⁿ√()", "\\sqrt[n]{x}", 3],
     ["|x|", "|x|", "\\left|x\\right|"],
     ["( )", "( )", "\\left( \\right)"], ["[ ]", "[ ]", "\\left[ \\right]"], ["{ }", "{ }", "\\left\\{ \\right\\}"],
     ["x̄", "x̄", "\\bar{x}"], ["x̂", "x̂", "\\hat{x}"]
