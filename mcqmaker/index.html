@@ -97,11 +97,11 @@ if (!window.docx) {
 </script>
 
 <script src="html2pdf.bundle.min.js"></script>
+<script src="https://unpkg.com/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js" onerror=""></script>
 <script>
+// Ensure html2pdf is loaded — try cdnjs if still missing
 if (typeof html2pdf === "undefined") {
-  var _h2p = document.createElement("script");
-  _h2p.src = "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js";
-  document.head.appendChild(_h2p);
+  document.write('<scr'+'ipt src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"><\/scr'+'ipt>');
 }
 </script>
 

@@ -1364,6 +1364,8 @@ async function downloadPDF() {
   const isLandscape = s.or === "l";
   const pdfW = isLandscape ? h : w;
   const pdfH = isLandscape ? w : h;
+  const pxW = Math.round(pdfW * 3.7795);
+  const pxH = Math.round(pdfH * 3.7795);
 
   const safeTitle = (s.title || "Exam").replace(/[^a-zA-Z0-9\s\-_]/g, "").trim().replace(/\s+/g, "_") || "Exam";
   const modeLabel = s.mode === "teacher" ? "AnswerKey" : "StudentCopy";
@@ -1374,84 +1376,86 @@ async function downloadPDF() {
   if (fab) { fab.style.opacity = "0.45"; fab.style.pointerEvents = "none"; }
   if (bpdfBtn) { bpdfBtn.disabled = true; bpdfBtn.textContent = "\u23f3 Generating\u2026"; }
 
-  let stage = null;
   try {
-    if (typeof html2pdf === "undefined") throw new Error("html2pdf not loaded");
+    // Wait for html2pdf to be available (CDN may still be loading)
+    let attempts = 0;
+    while (typeof html2pdf === "undefined" && attempts < 30) {
+      await new Promise(r => setTimeout(r, 200));
+      attempts++;
+    }
+    if (typeof html2pdf === "undefined") throw new Error("html2pdf library not loaded. Check network connection.");
 
     const sheets = Array.from($("wrap").querySelectorAll(".sheet"));
-    if (!sheets.length) throw new Error("No sheets to export");
+    if (!sheets.length) throw new Error("No sheets to export. Please generate a preview first.");
 
-    // Render from clones in an off-screen stage attached to <body>.
-    // Capturing the live sheets fails (blank output) because they sit inside a
-    // scrolling/overflow-clipped preview pane and are scaled by CSS transform.
-    const pxW = Math.round(pdfW * 96 / 25.4);
-    const pxH = Math.round(pdfH * 96 / 25.4);
+    // Save current transforms, then set all sheets to scale(1)
+    const savedTransforms = sheets.map(sh => sh.style.transform);
+    const wrappers = sheets.map(sh => sh.closest(".sw") || sh.parentElement);
+    const savedWrappers = wrappers.map(sw => ({
+      w: sw.style.width, h: sw.style.height, ov: sw.style.overflow
+    }));
 
-    stage = document.createElement("div");
-    stage.style.cssText = "position:absolute;left:0;top:0;z-index:-1;background:#fff;pointer-events:none;" +
-      "width:" + pdfW + "mm;";
-    document.body.appendChild(stage);
-
-    const clones = sheets.map(sh => {
-      const c = sh.cloneNode(true);
-      c.style.transform = "none";
-      c.style.boxShadow = "none";
-      c.style.margin = "0";
-      c.style.width = pdfW + "mm";
-      c.style.height = pdfH + "mm";
-      c.style.overflow = "hidden";
-      c.style.background = "#ffffff";
-      stage.appendChild(c);
-      return c;
+    sheets.forEach(sh => {
+      sh.style.transform = "scale(1)";
+      sh.style.transformOrigin = "top left";
+    });
+    wrappers.forEach(sw => {
+      sw.style.width = pdfW + "mm";
+      sw.style.height = pdfH + "mm";
+      sw.style.overflow = "visible";
     });
 
-    // Let layout, fonts and SVG settle
-    if (document.fonts && document.fonts.ready) { try { await document.fonts.ready; } catch (e) {} }
+    // Wait 2 frames for styles to apply
     await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
 
-    const h2cOpts = {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: "#ffffff",
-      logging: false,
-      scrollX: 0,
-      scrollY: 0,
-      windowWidth: Math.max(pxW, document.documentElement.clientWidth),
-      windowHeight: Math.max(pxH, document.documentElement.clientHeight)
-    };
+    // Capture each sheet individually with html2canvas
+    const h2c = window.html2canvas;
+    if (!h2c) throw new Error("html2canvas not available inside html2pdf bundle.");
 
-    // Use html2pdf's bundled html2canvas + jsPDF (they are not exposed as globals)
-    const orient = isLandscape ? "landscape" : "portrait";
     const canvases = [];
-    for (const c of clones) {
-      canvases.push(await html2pdf().set({ html2canvas: h2cOpts }).from(c).toCanvas().get("canvas"));
+    for (const sh of sheets) {
+      const c = await h2c(sh, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+        width: pxW,
+        height: pxH,
+        scrollX: 0,
+        scrollY: 0,
+        backgroundColor: "#ffffff"
+      });
+      canvases.push(c);
     }
 
-    // Page 1 via html2pdf (gives us the jsPDF instance), remaining pages added manually
-    const pdf = await html2pdf()
-      .set({
-        margin: 0,
-        jsPDF: { unit: "mm", format: [pdfW, pdfH], orientation: orient },
-        image: { type: "jpeg", quality: 0.98 }
-      })
-      .from(canvases[0], "canvas")
-      .toPdf()
-      .get("pdf");
-    while (pdf.internal.getNumberOfPages() > 1) pdf.deletePage(pdf.internal.getNumberOfPages());
+    // Restore original transforms and wrapper sizes immediately
+    sheets.forEach((sh, i) => { sh.style.transform = savedTransforms[i]; });
+    wrappers.forEach((sw, i) => {
+      sw.style.width = savedWrappers[i].w;
+      sw.style.height = savedWrappers[i].h;
+      sw.style.overflow = savedWrappers[i].ov;
+    });
 
-    for (let i = 1; i < canvases.length; i++) {
-      pdf.addPage([pdfW, pdfH], orient);
-      pdf.addImage(canvases[i].toDataURL("image/jpeg", 0.98), "JPEG", 0, 0, pdfW, pdfH);
-    }
+    // Build PDF using jsPDF (bundled inside html2pdf)
+    const jsPDFCtor = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
+    if (!jsPDFCtor) throw new Error("jsPDF constructor not found.");
+
+    const orient = isLandscape ? "landscape" : "portrait";
+    const pdf = new jsPDFCtor({ unit: "mm", format: [pdfW, pdfH], orientation: orient });
+
+    canvases.forEach((canvas, i) => {
+      if (i > 0) pdf.addPage([pdfW, pdfH], orient);
+      const imgData = canvas.toDataURL("image/jpeg", 0.97);
+      pdf.addImage(imgData, "JPEG", 0, 0, pdfW, pdfH);
+    });
 
     pdf.save(filename);
 
   } catch (err) {
     console.error("PDF generation failed:", err);
-    alert("PDF auto-download failed: " + err.message + "\nOpening print dialog instead.");
+    alert("PDF download failed: " + err.message + "\n\nOpening browser print dialog instead.");
     window.print();
   } finally {
-    if (stage && stage.parentNode) stage.parentNode.removeChild(stage);
     if (fab) { fab.style.opacity = ""; fab.style.pointerEvents = ""; }
     if (bpdfBtn) { bpdfBtn.disabled = false; bpdfBtn.textContent = "\ud83d\udcbe Save as PDF"; }
   }
