@@ -492,43 +492,100 @@ document.addEventListener("paste", e => {
 
 const PALETTES = {
   alg: [
-    ["x²", "^{2}"], ["xⁿ", "^{n}"], ["xₙ", "_{n}"], ["a/b", "\\frac{a}{b}"],
-    ["√x", "\\sqrt{x}"], ["ⁿ√x", "\\sqrt[n]{x}"], ["|x|", "\\left|x\\right|"],
-    ["( )", "\\left( \\right)"], ["[ ]", "\\left[ \\right]"], ["{ }", "\\left\\{ \\right\\}"],
-    ["x̄", "\\bar{x}"], ["x̂", "\\hat{x}"]
+    ["x²", "²", "^{2}"], ["x³", "³", "^{3}"], ["x⁴", "⁴", "^{4}"], ["xⁿ", "ⁿ", "^{n}"],
+    ["xˣ", "ˣ", "^{x}"], ["x⁺", "⁺", "^{+}"], ["x⁻", "⁻", "^{-}"],
+    ["x₀", "₀", "_{0}"], ["x₁", "₁", "_{1}"], ["x₂", "₂", "_{2}"], ["x₃", "₃", "_{3}"],
+    ["xₙ", "ₙ", "_{n}"], ["xᵢ", "ᵢ", "_{i}"],
+    ["√x", "√", "\\sqrt{x}"], ["∛x", "∛", "\\sqrt[3]{x}"], ["ⁿ√x", "ⁿ√", "\\sqrt[n]{x}"],
+    ["|x|", "|x|", "\\left|x\\right|"],
+    ["( )", "( )", "\\left( \\right)"], ["[ ]", "[ ]", "\\left[ \\right]"], ["{ }", "{ }", "\\left\\{ \\right\\}"],
+    ["x̄", "x̄", "\\bar{x}"], ["x̂", "x̂", "\\hat{x}"]
   ],
   sym: [
-    ["±", "\\pm"], ["×", "\\times"], ["÷", "\\div"], ["·", "\\cdot"],
-    ["≠", "\\neq"], ["≤", "\\leq"], ["≥", "\\geq"], ["≈", "\\approx"],
-    ["≡", "\\equiv"], ["∝", "\\propto"], ["°", "^\\circ"], ["∞", "\\infty"],
-    ["∠", "\\angle"], ["△", "\\triangle"], ["⊥", "\\perp"], ["∥", "\\parallel"]
+    ["±", "±", "\\pm"], ["∓", "∓", "\\mp"], ["×", "×", "\\times"], ["÷", "÷", "\\div"],
+    ["·", "·", "\\cdot"], ["=", "=", "="], ["≠", "≠", "\\neq"], ["≈", "≈", "\\approx"],
+    ["<", "<", "<"], [">", ">", ">"], ["≤", "≤", "\\leq"], ["≥", "≥", "\\geq"],
+    ["≡", "≡", "\\equiv"], ["∝", "∝", "\\propto"], ["∞", "∞", "\\infty"],
+    ["%", "%", "\\%"], ["‰", "‰", "\\permil"], ["∗", "∗", "\\ast"]
   ],
-  calc: [
-    ["∫", "\\int_{a}^{b} x\\,dx"], ["∬", "\\iint"], ["∮", "\\oint"],
-    ["∑", "\\sum_{i=1}^{n}"], ["∏", "\\prod_{i=1}^{n}"], ["lim", "\\lim_{x\\to 0}"],
-    ["dy/dx", "\\frac{dy}{dx}"], ["∂f/∂x", "\\frac{\\partial f}{\\partial x}"],
-    ["∈", "\\in"], ["∉", "\\notin"], ["⊂", "\\subset"], ["∪", "\\cup"], ["∩", "\\cap"]
+  frac: [
+    ["½", "½", "\\frac{1}{2}"], ["⅓", "⅓", "\\frac{1}{3}"], ["⅔", "⅔", "\\frac{2}{3}"],
+    ["¼", "¼", "\\frac{1}{4}"], ["¾", "¾", "\\frac{3}{4}"], ["⅕", "⅕", "\\frac{1}{5}"],
+    ["⅖", "⅖", "\\frac{2}{5}"], ["⅗", "⅗", "\\frac{3}{5}"], ["⅘", "⅘", "\\frac{4}{5}"],
+    ["⅙", "⅙", "\\frac{1}{6}"], ["⅚", "⅚", "\\frac{5}{6}"],
+    ["⅛", "⅛", "\\frac{1}{8}"], ["⅜", "⅜", "\\frac{3}{8}"], ["⅝", "⅝", "\\frac{5}{8}"], ["⅞", "⅞", "\\frac{7}{8}"],
+    ["a/b", "a/b", "\\frac{a}{b}"], ["a:b", "a:b", "a:b"]
+  ],
+  geo: [
+    ["°", "°", "^\\circ"], ["′", "′", "'"], ["″", "″", "''"],
+    ["∠", "∠", "\\angle"], ["△", "△", "\\triangle"], ["⊥", "⊥", "\\perp"],
+    ["∥", "∥", "\\parallel"], ["≅", "≅", "\\cong"], ["∼", "∼", "\\sim"],
+    ["π", "π", "\\pi"], ["⌒", "⌒", "\\frown"], ["⊙", "⊙", "\\odot"],
+    ["cm²", "cm²", "\\text{ cm}^2"], ["m²", "m²", "\\text{ m}^2"], ["m³", "m³", "\\text{ m}^3"],
+    ["m/s", "m/s", "\\text{ m/s}"], ["m/s²", "m/s²", "\\text{ m/s}^2"], ["km/h", "km/h", "\\text{ km/h}"],
+    ["℃", "℃", "^\\circ\\text{C}"], ["℉", "℉", "^\\circ\\text{F}"]
   ],
   greek: [
-    ["α", "\\alpha"], ["β", "\\beta"], ["γ", "\\gamma"], ["θ", "\\theta"],
-    ["λ", "\\lambda"], ["μ", "\\mu"], ["π", "\\pi"], ["σ", "\\sigma"],
-    ["φ", "\\phi"], ["ω", "\\omega"], ["Δ", "\\Delta"], ["Ω", "\\Omega"]
+    ["α", "α", "\\alpha"], ["β", "β", "\\beta"], ["γ", "γ", "\\gamma"], ["δ", "δ", "\\delta"],
+    ["ε", "ε", "\\epsilon"], ["θ", "θ", "\\theta"], ["λ", "λ", "\\lambda"], ["μ", "μ", "\\mu"],
+    ["π", "π", "\\pi"], ["ρ", "ρ", "\\rho"], ["σ", "σ", "\\sigma"], ["τ", "τ", "\\tau"],
+    ["φ", "φ", "\\phi"], ["ω", "ω", "\\omega"],
+    ["Δ", "Δ", "\\Delta"], ["Θ", "Θ", "\\Theta"], ["Λ", "Λ", "\\Lambda"],
+    ["Σ", "Σ", "\\Sigma"], ["Φ", "Φ", "\\Phi"], ["Ω", "Ω", "\\Omega"]
+  ],
+  sets: [
+    ["∈", "∈", "\\in"], ["∉", "∉", "\\notin"], ["⊂", "⊂", "\\subset"], ["⊃", "⊃", "\\supset"],
+    ["⊆", "⊆", "\\subseteq"], ["⊇", "⊇", "\\supseteq"],
+    ["∪", "∪", "\\cup"], ["∩", "∩", "\\cap"], ["∅", "∅", "\\emptyset"], ["U", "U", "U"],
+    ["∀", "∀", "\\forall"], ["∃", "∃", "\\exists"], ["∴", "∴", "\\therefore"], ["∵", "∵", "\\because"],
+    ["⇒", "⇒", "\\Rightarrow"], ["⇔", "⇔", "\\Leftrightarrow"]
+  ],
+  calc: [
+    ["∫", "∫", "\\int"], ["∬", "∬", "\\iint"], ["∮", "∮", "\\oint"],
+    ["∑", "∑", "\\sum"], ["∏", "∏", "\\prod"],
+    ["∂", "∂", "\\partial"], ["∇", "∇", "\\nabla"],
+    ["lim", "lim", "\\lim_{x\\to 0}"], ["dy/dx", "dy/dx", "\\frac{dy}{dx}"],
+    ["dx", "dx", "dx"], ["dt", "dt", "dt"],
+    ["f(x)", "f(x)", "f(x)"], ["f'(x)", "f'(x)", "f'(x)"]
   ],
   sci: [
-    ["v⃗", "\\vec{v}"], ["→", "\\to"], ["⇌", "\\rightleftharpoons"],
-    ["↑", "\\uparrow"], ["↓", "\\downarrow"], ["ΔH", "\\Delta H"],
-    ["mol", "\\text{ mol}"], ["m/s²", "\\text{ m/s}^2"], ["Hz", "\\text{ Hz}"]
+    ["→", "→", "\\to"], ["←", "←", "\\leftarrow"], ["⇌", "⇌", "\\rightleftharpoons"],
+    ["↑", "↑", "\\uparrow"], ["↓", "↓", "\\downarrow"], ["⇄", "⇄", "\\leftrightarrow"],
+    ["v⃗", "v⃗", "\\vec{v}"], ["F⃗", "F⃗", "\\vec{F}"], ["a⃗", "a⃗", "\\vec{a}"],
+    ["ΔH", "ΔH", "\\Delta H"], ["mol", "mol", "\\text{ mol}"], ["Hz", "Hz", "\\text{ Hz}"],
+    ["Ω", "Ω", "\\Omega"], ["Å", "Å", "\\text{Å}"], ["μm", "μm", "\\mu\\text{m}"]
   ]
 };
 
 let activePalette = "alg";
+let paletteMode = "word"; // 'word' (Word-style natural symbols) | 'latex' ($...$)
+
 function renderPalette() {
   const syms = PALETTES[activePalette] || [];
-  $("tb").innerHTML = syms.map(([lbl, val]) => `
-    <button class="math-sym-btn" data-val="${esc(val)}" title="${esc(val)}">${lbl}</button>
-  `).join("");
+  $("tb").innerHTML = syms.map(([lbl, wordVal, texVal]) => {
+    const val = paletteMode === "word" ? wordVal : (texVal || wordVal);
+    const title = paletteMode === "word" ? `Insert symbol: ${wordVal}` : `Insert LaTeX: ${texVal || wordVal}`;
+    return `<button class="math-sym-btn" data-val="${esc(val)}" title="${esc(title)}">${lbl}</button>`;
+  }).join("");
 }
 renderPalette();
+
+if ($("btn-mode-word")) {
+  $("btn-mode-word").onclick = () => {
+    paletteMode = "word";
+    $("btn-mode-word").classList.add("active");
+    if ($("btn-mode-latex")) $("btn-mode-latex").classList.remove("active");
+    renderPalette();
+  };
+}
+if ($("btn-mode-latex")) {
+  $("btn-mode-latex").onclick = () => {
+    paletteMode = "latex";
+    $("btn-mode-latex").classList.add("active");
+    if ($("btn-mode-word")) $("btn-mode-word").classList.remove("active");
+    renderPalette();
+  };
+}
 
 document.querySelectorAll(".math-cat-btn").forEach(btn => {
   btn.onclick = () => {
@@ -556,8 +613,11 @@ $("tb").addEventListener("click", e => {
   const p2 = f.selectionEnd;
   const v = f.value;
 
-  const insideMath = (v.slice(0, p1).match(/\$/g) || []).length % 2 === 1;
-  const insertText = insideMath ? sn : `$${sn}$`;
+  let insertText = sn;
+  if (paletteMode === "latex") {
+    const insideMath = (v.slice(0, p1).match(/\$/g) || []).length % 2 === 1;
+    insertText = insideMath ? sn : `$${sn}$`;
+  }
 
   f.value = v.slice(0, p1) + insertText + v.slice(p2);
   f.focus();

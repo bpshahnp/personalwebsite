@@ -330,14 +330,23 @@ if (!window.docx) {
         <button class="btn btn-sm" id="btn-expand-all" title="Expand or Collapse All">Toggle All</button>
       </div>
 
-      <!-- Math Toolbar -->
+      <!-- Math & Equations Toolbar -->
       <div class="math-toolbar">
-        <div style="font-size:11px;font-weight:700;color:var(--mute);margin-bottom:4px">LaTeX &amp; Symbols Palette (Click to insert):</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:4px">
+          <span style="font-size:11px;font-weight:700;color:var(--mute)">Equations &amp; Symbols Palette:</span>
+          <div class="palette-mode-toggle">
+            <button type="button" id="btn-mode-word" class="mode-toggle-btn active" title="Insert real Word-style symbols (clean, natural, no code)">📝 Word Symbols</button>
+            <button type="button" id="btn-mode-latex" class="mode-toggle-btn" title="Insert LaTeX syntax ($...$) for complex formulas">⚡ LaTeX</button>
+          </div>
+        </div>
         <div class="math-category-tabs">
           <button class="math-cat-btn active" data-cat="alg">Algebra</button>
-          <button class="math-cat-btn" data-cat="sym">Symbols</button>
-          <button class="math-cat-btn" data-cat="calc">Calculus</button>
+          <button class="math-cat-btn" data-cat="sym">Operators</button>
+          <button class="math-cat-btn" data-cat="frac">Fractions</button>
+          <button class="math-cat-btn" data-cat="geo">Geometry</button>
           <button class="math-cat-btn" data-cat="greek">Greek</button>
+          <button class="math-cat-btn" data-cat="sets">Sets</button>
+          <button class="math-cat-btn" data-cat="calc">Calculus</button>
           <button class="math-cat-btn" data-cat="sci">Science</button>
         </div>
         <div class="math-symbols" id="tb"></div>

@@ -333,22 +333,48 @@ textarea {
   color: var(--success);
 }
 
-/* Math Toolbar */
+/* Math & Equations Toolbar */
 .math-toolbar {
   background: #f8fafc;
   border: 1px solid var(--line);
   border-radius: 6px;
-  padding: 8px;
+  padding: 8px 10px;
   margin-bottom: 12px;
+}
+.palette-mode-toggle {
+  display: inline-flex;
+  background: #e2e8f0;
+  padding: 2px;
+  border-radius: 6px;
+  gap: 2px;
+}
+.mode-toggle-btn {
+  padding: 2px 7px;
+  font-size: 10px;
+  font-weight: 600;
+  border-radius: 4px;
+  background: transparent;
+  border: none;
+  color: var(--mute);
+  cursor: pointer;
+  transition: all 0.12s ease;
+  white-space: nowrap;
+}
+.mode-toggle-btn.active {
+  background: #ffffff;
+  color: var(--primary);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 .math-category-tabs {
   display: flex;
-  gap: 4px;
+  gap: 3px;
   margin-bottom: 6px;
   overflow-x: auto;
+  scrollbar-width: thin;
+  padding-bottom: 2px;
 }
 .math-cat-btn {
-  padding: 3px 8px;
+  padding: 2px 7px;
   font-size: 11px;
   border-radius: 4px;
   background: transparent;
@@ -356,18 +382,26 @@ textarea {
   color: var(--mute);
   cursor: pointer;
   font-weight: 600;
+  white-space: nowrap;
+}
+.math-cat-btn:hover {
+  color: var(--ink);
+  background: #edf2f7;
 }
 .math-cat-btn.active {
   background: #ffffff;
   border-color: var(--line-strong);
-  color: var(--ink);
+  color: var(--primary);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 .math-symbols {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
-  max-height: 80px;
+  max-height: 85px;
   overflow-y: auto;
+  scrollbar-width: thin;
+  padding: 2px 0;
 }
 .math-sym-btn {
   padding: 4px 8px;
