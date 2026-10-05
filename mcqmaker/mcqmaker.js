@@ -693,32 +693,94 @@ function qHTML(q, i, s) {
 
 function keyCompactHTML() {
   if (!qs.length) return "";
-  const pairs = qs.map((q, i) => `<b>${i + 1}.</b> ${L[q.a]}`).join("&nbsp;&nbsp;&nbsp; ");
+  const items = qs.map((q, i) => `
+    <span class="key-compact-item"><b>${i + 1}.</b> (${L[q.a]})</span>
+  `).join("");
   return `
     <div class="key-box">
       <div class="key-box-title">ANSWER KEY:</div>
-      <div>${pairs}</div>
+      <div class="key-compact-items">${items}</div>
     </div>
   `;
 }
 
-function keyTableHTML(includeExpl) {
+function keyTableHTML(s) {
   if (!qs.length) return "";
-  let rows = "";
-  for (let i = 0; i < qs.length; i += 5) {
-    const chunk = qs.slice(i, i + 5);
-    rows += `<tr>${chunk.map((q, idx) => `<th>Q${i + idx + 1}</th>`).join("")}</tr>`;
-    rows += `<tr>${chunk.map(q => `<td><b>${L[q.a]}</b></td>`).join("")}</tr>`;
+  s = s && typeof s === "object" ? s : S();
+  const calculatedMarks = totalMarksCalc();
+  const fullMarksText = s.marks && s.marks.toLowerCase() !== "auto" ? s.marks : calculatedMarks + " Marks";
+
+  // Quick Answer Matrix: 10 questions per row
+  const CHUNK_SIZE = 10;
+  let matrixRows = "";
+  for (let i = 0; i < qs.length; i += CHUNK_SIZE) {
+    const chunk = qs.slice(i, i + CHUNK_SIZE);
+    matrixRows += `
+      <table class="ak-matrix-table">
+        <tr>${chunk.map((q, idx) => `<th>Q${i + idx + 1}</th>`).join("")}</tr>
+        <tr class="ak-ans-row">${chunk.map(q => `<td><b>${L[q.a]}</b></td>`).join("")}</tr>
+      </table>
+    `;
   }
-  const expls = includeExpl
-    ? qs.map((q, i) => q.exp ? `<div><b>Q${i + 1}:</b> ${rich(q.exp)}</div>` : "").filter(Boolean).join("")
-    : "";
+
+  // Detailed Solutions and Explanations
+  let solHtml = "";
+  if (s.keyExpl) {
+    const cards = qs.map((q, i) => {
+      const correctText = q.o && q.o[q.a] ? rich(q.o[q.a], 1) : "";
+      const expl = q.exp ? rich(q.exp) : "";
+      const marksVal = Number(q.marks) || 1;
+      return `
+        <div class="ak-sol-card">
+          <div class="ak-sol-header">
+            <span><b>${i + 1}.</b> ${rich(q.q)}</span>
+            <span class="ak-sol-marks">[${marksVal} Mark${marksVal > 1 ? 's' : ''}]</span>
+          </div>
+          <div class="ak-sol-correct">
+            <span>✓ Correct Answer:</span> <b>Option (${L[q.a]})</b> ${correctText ? `— ${correctText}` : ""}
+          </div>
+          ${expl ? `<div class="ak-sol-expl"><b>Solution / Explanation:</b><br>${expl}</div>` : ""}
+        </div>
+      `;
+    }).join("");
+
+    if (cards) {
+      solHtml = `
+        <div class="ak-section-title">Detailed Solutions &amp; Explanations</div>
+        <div class="ak-solutions-list">${cards}</div>
+      `;
+    }
+  }
 
   return `
-    <div class="key-box" style="margin-top:20px">
-      <h2 style="text-align:center;font-size:1.3em;margin-bottom:8px">EXAMINATION ANSWER KEY &amp; SOLUTIONS</h2>
-      <table class="key-grid-table">${rows}</table>
-      ${expls ? `<div style="margin-top:14px;font-size:0.9em"><b>Explanations / Solutions:</b>${expls}</div>` : ""}
+    <div class="ak-container">
+      <div class="ak-header">
+        ${s.inst ? `<div class="ak-inst">${esc(s.inst)}</div>` : ""}
+        <div class="ak-title">${esc(s.title || "Examination")}</div>
+        <div class="ak-badge-row">
+          <span class="ak-badge">OFFICIAL ANSWER KEY &amp; SOLUTIONS</span>
+        </div>
+        <div class="ak-meta-grid">
+          ${s.subject ? `<span><b>Subject:</b> ${esc(s.subject)}</span>` : ""}
+          ${s.grade ? `<span><b>Class/Grade:</b> ${esc(s.grade)}</span>` : ""}
+          ${s.time ? `<span><b>Time:</b> ${esc(s.time)}</span>` : ""}
+          <span><b>Total Questions:</b> ${qs.length}</span>
+          <span><b>Full Marks:</b> ${esc(fullMarksText)}</span>
+        </div>
+      </div>
+
+      <div class="ak-section-title">Quick Answer Key Matrix</div>
+      <div class="ak-matrix-wrapper">
+        ${matrixRows}
+      </div>
+
+      ${solHtml}
+
+      <div class="ak-footer">
+        <span><b>Evaluator Signature:</b> _________________________</span>
+        <span><b>Date of Verification:</b> _________________</span>
+        <span><b>Total Evaluated:</b> ${qs.length} Questions</span>
+      </div>
     </div>
   `;
 }
@@ -980,9 +1042,16 @@ function preview() {
     tag.style.background = isTeacher ? "var(--success)" : "rgba(255,255,255,0.1)";
   }
   if ($("btn-quick-toggle")) {
-    $("btn-quick-toggle").innerHTML = isTeacher
-      ? `<span class="mode-dot teacher"></span><span>👨‍🏫 Teacher View</span>`
-      : `<span class="mode-dot student"></span><span>🎓 Student View</span>`;
+    const iconEl = $("mode-fab-icon");
+    const labelEl = $("mode-fab-label");
+    if (iconEl && labelEl) {
+      iconEl.textContent = isTeacher ? "👨‍🏫" : "🎓";
+      labelEl.textContent = isTeacher ? "Teacher View" : "Student View";
+    } else {
+      $("btn-quick-toggle").innerHTML = isTeacher
+        ? `<span class="mode-fab-icon" id="mode-fab-icon">👨‍🏫</span><span class="mode-fab-label" id="mode-fab-label">Teacher View</span>`
+        : `<span class="mode-fab-icon" id="mode-fab-icon">🎓</span><span class="mode-fab-label" id="mode-fab-label">Student View</span>`;
+    }
   }
 
   // Compute Full Marks display
@@ -1119,12 +1188,11 @@ function preview() {
   if (s.keyMode === "separate" && qs.length) {
     const sh = document.createElement("div");
     sh.className = "sheet";
-    // Multi-copy: tiles handle all padding internally; outer sheet gets no padding (border shown instead)
-    const sheetPad = isMultiCopy
-      ? `0mm`
-      : `${mg.top}mm ${mg.side}mm ${mg.bot}mm`;
-    sh.style.cssText = `width:${w}mm;height:${h}mm;padding:${sheetPad};font-family:${s.font};font-size:${s.fs}pt`;
-    sh.innerHTML = keyTableHTML(s.keyExpl);
+    const padTop = Math.max(12, mg.top);
+    const padSide = Math.max(14, mg.side);
+    const padBot = Math.max(12, mg.bot);
+    sh.style.cssText = `width:${w}mm;height:${h}mm;padding:${padTop}mm ${padSide}mm ${padBot}mm;font-family:${s.font};font-size:${s.fs}pt;box-sizing:border-box`;
+    sh.innerHTML = keyTableHTML(s);
     wrap.appendChild(sh);
     sheets.push(sh);
   }

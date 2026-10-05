@@ -96,7 +96,7 @@ if (!window.docx) {
 }
 </script>
 
-<link rel="stylesheet" href="mcqmaker.css?v=1.6">
+<link rel="stylesheet" href="mcqmaker.css?v=1.7">
 <style>
 /* Remove the static bar above the MCQ page completely */
 .preview-toolbar {
@@ -115,46 +115,62 @@ if (!window.docx) {
   user-select: none !important;
 }
 
-/* Floating Mode Toggle (Top-Left) */
+/* Floating Mode Toggle (Top-Left: Collapsed icon by default, expands on hover) */
 .preview-mode-fab {
   position: absolute !important;
   top: 16px !important;
   left: 20px !important;
   z-index: 50 !important;
-  display: inline-flex !important;
+  height: 38px !important;
+  width: 38px !important;
+  border-radius: 50% !important;
+  padding: 0 !important;
+  display: flex !important;
   align-items: center !important;
-  gap: 7px !important;
-  border-radius: 9999px !important;
-  padding: 6px 14px !important;
-  color: #f8fafc !important;
-  font-size: 12px !important;
-  font-weight: 600 !important;
-  letter-spacing: 0.2px !important;
+  justify-content: flex-start !important;
   cursor: pointer !important;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  overflow: hidden !important;
+  transition: width 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              border-radius 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              padding 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              background 0.2s ease,
+              box-shadow 0.2s ease !important;
   white-space: nowrap !important;
 }
-.preview-mode-fab:hover {
+.preview-mode-fab:hover,
+.preview-mode-fab:focus-within {
+  width: 140px !important;
+  border-radius: 9999px !important;
   background: rgba(30, 41, 59, 0.95) !important;
   border-color: rgba(255, 255, 255, 0.28) !important;
-  color: #ffffff !important;
-  transform: translateY(-1px) !important;
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45) !important;
 }
-.preview-mode-fab:active {
-  transform: scale(0.97) !important;
+.preview-mode-fab .mode-fab-icon {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 38px !important;
+  height: 38px !important;
+  min-width: 38px !important;
+  flex-shrink: 0 !important;
+  font-size: 16px !important;
+  line-height: 1 !important;
 }
-.preview-mode-fab .mode-dot {
-  width: 7px !important;
-  height: 7px !important;
-  border-radius: 50% !important;
-  background: #38bdf8 !important;
-  box-shadow: 0 0 6px #38bdf8 !important;
-  display: inline-block !important;
+.preview-mode-fab .mode-fab-label {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: #f8fafc !important;
+  letter-spacing: 0.2px !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition: opacity 0.2s ease 0.05s !important;
+  white-space: nowrap !important;
+  padding-right: 14px !important;
 }
-.preview-mode-fab .mode-dot.teacher {
-  background: #4ade80 !important;
-  box-shadow: 0 0 6px #4ade80 !important;
+.preview-mode-fab:hover .mode-fab-label,
+.preview-mode-fab:focus-within .mode-fab-label {
+  opacity: 1 !important;
+  pointer-events: auto !important;
 }
 
 /* Floating Print Button in Printer Icon Format (Top-Right) */
@@ -653,9 +669,10 @@ if (!window.docx) {
   <span id="page-count-badge" style="display:none">Pages: 1</span>
   <select id="top-key-mode" style="display:none"><option value="none" selected></option></select>
 
-  <!-- Floating Mode Toggle (Top-Left) -->
+  <!-- Floating Mode Toggle (Top-Left: Collapsed icon by default, expands on hover) -->
   <button class="preview-mode-fab noprint" id="btn-quick-toggle" title="Switch Student / Teacher View">
-    👨‍🏫 Teacher View
+    <span class="mode-fab-icon" id="mode-fab-icon">🎓</span>
+    <span class="mode-fab-label" id="mode-fab-label">Student View</span>
   </button>
 
   <!-- Floating Print Button (Top-Right in classic printer icon format) -->
