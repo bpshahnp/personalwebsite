@@ -660,13 +660,13 @@ main {
 }
 
 .preview-toolbar {
-  padding: 8px 16px;
+  padding: 5px 14px;
   background: #1e293b;
   color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
   flex-shrink: 0;
   box-shadow: 0 2px 8px rgba(0,0,0,0.25);
   z-index: 5;
@@ -674,22 +674,61 @@ main {
 .preview-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
-}
-.preview-zoom {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: #cbd5e1;
-  font-size: 12px;
+  gap: 7px;
 }
 .preview-badge {
   background: rgba(255,255,255,0.1);
-  padding: 3px 8px;
+  padding: 2px 7px;
   border-radius: 4px;
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 600;
   color: #e2e8f0;
+}
+
+/* Floating Zoom FAB */
+.zoom-fab {
+  position: absolute;
+  bottom: 18px;
+  right: 18px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: #1e293b;
+  border-radius: 999px;
+  padding: 4px 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+  z-index: 20;
+  user-select: none;
+}
+.zoom-fab-btn {
+  background: transparent;
+  border: none;
+  color: #e2e8f0;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 3px 8px;
+  cursor: pointer;
+  border-radius: 999px;
+  line-height: 1;
+  transition: background 0.15s;
+  min-width: 28px;
+  text-align: center;
+}
+.zoom-fab-btn:hover {
+  background: rgba(255,255,255,0.15);
+}
+.zoom-fab-val {
+  min-width: 36px;
+  text-align: center;
+  font-size: 11.5px;
+  color: #94a3b8;
+  font-weight: 600;
+}
+.zoom-fab-sep {
+  width: 1px;
+  height: 16px;
+  background: rgba(255,255,255,0.2);
+  margin: 0 3px;
 }
 
 .preview-scroll {

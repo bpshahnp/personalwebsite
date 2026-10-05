@@ -452,14 +452,6 @@ if (!window.docx) {
       <span class="preview-badge" id="page-count-badge">Pages: 1</span>
     </div>
 
-    <div class="preview-zoom">
-      <button class="btn btn-sm" id="z-out" title="Zoom Out">🔍 -</button>
-      <span id="z-val" style="min-width:44px;text-align:center">Fit</span>
-      <button class="btn btn-sm" id="z-in" title="Zoom In">🔍 +</button>
-      <button class="btn btn-sm" id="z-fit">Fit</button>
-      <button class="btn btn-sm" id="z-100">100%</button>
-    </div>
-
     <div class="preview-actions">
       <select id="top-key-mode" style="padding:4px 8px;font-size:11.5px;background:#334155;color:#fff;border:1px solid #475569;border-radius:4px;cursor:pointer" title="Answer Key Display on Paper">
         <option value="none" selected>Key: Hidden (Off)</option>
@@ -473,6 +465,16 @@ if (!window.docx) {
 
   <div class="preview-scroll">
     <div id="wrap"></div>
+  </div>
+
+  <!-- Floating Zoom Controls -->
+  <div class="zoom-fab">
+    <button class="zoom-fab-btn" id="z-out" title="Zoom Out">−</button>
+    <span id="z-val" class="zoom-fab-val">Fit</span>
+    <button class="zoom-fab-btn" id="z-in" title="Zoom In">+</button>
+    <div class="zoom-fab-sep"></div>
+    <button class="zoom-fab-btn" id="z-fit" title="Fit to screen">Fit</button>
+    <button class="zoom-fab-btn" id="z-100" title="100% zoom">100%</button>
   </div>
 </main>
 </div>
