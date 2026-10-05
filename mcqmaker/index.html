@@ -96,18 +96,77 @@ if (!window.docx) {
 }
 </script>
 
-<link rel="stylesheet" href="mcqmaker.css?v=1.3">
+<link rel="stylesheet" href="mcqmaker.css?v=1.4">
 <style>
 /* Remove the bar above the MCQ page completely */
 .preview-toolbar {
   display: none !important;
 }
 
-/* Floating Action & Zoom FAB */
+/* Floating Mode Toggle (Top-Left) */
+.preview-mode-fab {
+  position: absolute !important;
+  top: 16px !important;
+  left: 20px !important;
+  z-index: 50 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  background: #1e293b !important;
+  background: rgba(30, 41, 59, 0.92) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 9999px !important;
+  padding: 6px 14px !important;
+  color: #f1f5f9 !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35) !important;
+  transition: all 0.15s ease !important;
+  user-select: none !important;
+  white-space: nowrap !important;
+}
+.preview-mode-fab:hover {
+  background: rgba(51, 65, 85, 0.95) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  color: #ffffff !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Floating Print Button in Printer Icon Format (Top-Right) */
+.preview-print-fab {
+  position: absolute !important;
+  top: 16px !important;
+  right: 20px !important;
+  z-index: 50 !important;
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50% !important;
+  background: #2563eb !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4) !important;
+  transition: all 0.15s ease !important;
+}
+.preview-print-fab:hover {
+  background: #1d4ed8 !important;
+  transform: scale(1.08) !important;
+}
+.preview-print-fab:active {
+  transform: scale(0.95) !important;
+}
+
+/* Floating Zoom FAB (Bottom-Right) */
 .zoom-fab {
   position: absolute !important;
   bottom: 20px !important;
-  right: 22px !important;
+  right: 20px !important;
   display: flex !important;
   align-items: center !important;
   gap: 3px !important;
@@ -140,15 +199,6 @@ if (!window.docx) {
 .zoom-fab-btn:hover {
   background: rgba(255, 255, 255, 0.18) !important;
   color: #ffffff !important;
-}
-.zoom-fab-primary {
-  background: #2563eb !important;
-  color: #ffffff !important;
-  font-weight: 700 !important;
-  padding: 5px 12px !important;
-}
-.zoom-fab-primary:hover {
-  background: #1d4ed8 !important;
 }
 .zoom-fab-val {
   min-width: 36px !important;
@@ -516,18 +566,29 @@ if (!window.docx) {
 <main>
   <!-- Hidden references to maintain backwards-compatibility with JS event listeners -->
   <span id="preview-mode-tag" style="display:none">🎓 Student Copy</span>
+  <span id="page-count-badge" style="display:none">Pages: 1</span>
   <select id="top-key-mode" style="display:none"><option value="none" selected></option></select>
+
+  <!-- Floating Mode Toggle (Top-Left) -->
+  <button class="preview-mode-fab noprint" id="btn-quick-toggle" title="Switch Student / Teacher View">
+    👨‍🏫 Teacher View
+  </button>
+
+  <!-- Floating Print Button (Top-Right in printer icon format) -->
+  <button class="preview-print-fab noprint" id="btn-top-print" title="Print Paper or Save as PDF">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="6 9 6 2 18 2 18 9"></polyline>
+      <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+      <rect x="6" y="14" width="12" height="8"></rect>
+    </svg>
+  </button>
 
   <div class="preview-scroll">
     <div id="wrap"></div>
   </div>
 
-  <!-- Floating Action & Zoom Controls (Bottom-Right) -->
+  <!-- Floating Zoom Controls (Bottom-Right) -->
   <div class="zoom-fab noprint">
-    <button class="zoom-fab-btn" id="btn-quick-toggle" title="Switch Student / Teacher View">👨‍🏫 Teacher View</button>
-    <button class="zoom-fab-btn zoom-fab-primary" id="btn-top-print" title="Print Paper or Save as PDF">🖨️ Print / PDF</button>
-    <span class="zoom-fab-val" id="page-count-badge" style="color:#cbd5e1;font-size:11px;min-width:auto;padding:0 4px">Pages: 1</span>
-    <div class="zoom-fab-sep"></div>
     <button class="zoom-fab-btn" id="z-out" title="Zoom Out">−</button>
     <span id="z-val" class="zoom-fab-val">Fit</span>
     <button class="zoom-fab-btn" id="z-in" title="Zoom In">+</button>

@@ -1232,7 +1232,6 @@ $("z-100").onclick = () => {
 $("btn-quick-toggle").onclick = () => {
   const newMode = $("mode").value === "student" ? "teacher" : "student";
   $("mode").value = newMode;
-  $("btn-quick-toggle").textContent = newMode === "teacher" ? "Student View" : "Teacher View";
   preview();
 };
 

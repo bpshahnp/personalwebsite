@@ -662,14 +662,64 @@ main {
 .preview-toolbar {
   display: none !important;
 }
-.zoom-fab-primary {
-  background: var(--primary, #2563eb) !important;
-  color: #ffffff !important;
-  font-weight: 700 !important;
-  padding: 5px 12px !important;
+
+/* Floating Mode Toggle (Top-Left) */
+.preview-mode-fab {
+  position: absolute;
+  top: 16px;
+  left: 20px;
+  z-index: 50;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #1e293b;
+  background: rgba(30, 41, 59, 0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 9999px;
+  padding: 6px 14px;
+  color: #f1f5f9;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  transition: all 0.15s ease;
+  user-select: none;
+  white-space: nowrap;
 }
-.zoom-fab-primary:hover {
-  background: var(--primary-hover, #1d4ed8) !important;
+.preview-mode-fab:hover {
+  background: rgba(51, 65, 85, 0.95);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+/* Floating Print Button in Printer Icon Format (Top-Right) */
+.preview-print-fab {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  z-index: 50;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #2563eb;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
+  transition: all 0.15s ease;
+}
+.preview-print-fab:hover {
+  background: #1d4ed8;
+  transform: scale(1.08);
+}
+.preview-print-fab:active {
+  transform: scale(0.95);
 }
 
 /* Floating Zoom FAB */
