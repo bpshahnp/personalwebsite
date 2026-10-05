@@ -1365,6 +1365,7 @@ async function downloadPDF() {
   const isLandscape = s.or === "l";
   const pdfW = isLandscape ? h : w;
   const pdfH = isLandscape ? w : h;
+  const pxW = Math.round(pdfW * 3.7795); // mm to px at 96dpi
 
   // Auto-generate filename from exam title and mode
   const safeTitle = (s.title || "Exam").replace(/[^a-zA-Z0-9\s\-_]/g, "").trim().replace(/\s+/g, "_") || "Exam";
@@ -1377,15 +1378,34 @@ async function downloadPDF() {
   if (fab) { fab.style.opacity = "0.45"; fab.style.pointerEvents = "none"; }
   if (bpdfBtn) { bpdfBtn.disabled = true; bpdfBtn.textContent = "\u23f3 Generating\u2026"; }
 
+  // Create a clean off-screen container with each sheet at 1:1 scale (no zoom transforms)
+  const ghost = document.createElement("div");
+  ghost.style.cssText = "position:fixed;left:-9999px;top:0;z-index:-1;background:#fff;";
+
   try {
     if (typeof html2pdf === "undefined") throw new Error("html2pdf not loaded");
 
-    const wrap = $("wrap");
+    // Collect all .sheet elements and clone them without zoom transform
+    const sheets = Array.from($("wrap").querySelectorAll(".sheet"));
+    if (!sheets.length) throw new Error("No sheets to export");
 
-    // Reset zoom scale temporarily so html2pdf captures at real document size
-    const scaleEl = wrap.firstElementChild;
-    const prevTransform = scaleEl ? scaleEl.style.transform : null;
-    if (scaleEl && prevTransform) scaleEl.style.transform = "none";
+    sheets.forEach((sh, i) => {
+      const clone = sh.cloneNode(true);
+      clone.style.transform = "none";           // remove scale()
+      clone.style.transformOrigin = "top left";
+      clone.style.width = pdfW + "mm";
+      clone.style.height = pdfH + "mm";
+      clone.style.margin = "0";
+      clone.style.padding = sh.style.padding;   // preserve original padding
+      clone.style.boxSizing = "border-box";
+      clone.style.pageBreakAfter = "always";
+      clone.style.breakAfter = "page";
+      clone.style.overflow = "hidden";
+      clone.style.position = "relative";
+      ghost.appendChild(clone);
+    });
+
+    document.body.appendChild(ghost);
 
     const opt = {
       margin: 0,
@@ -1395,24 +1415,24 @@ async function downloadPDF() {
         scale: 2,
         useCORS: true,
         logging: false,
-        windowWidth: Math.round(pdfW * 3.7795)
+        windowWidth: pxW,
+        width: pxW
       },
       jsPDF: {
         unit: "mm",
         format: [pdfW, pdfH],
         orientation: isLandscape ? "landscape" : "portrait"
       },
-      pagebreak: { mode: ["css", "legacy"], before: ".sheet" }
+      pagebreak: { mode: ["css", "legacy"] }
     };
 
-    await html2pdf().set(opt).from(wrap).save();
+    await html2pdf().set(opt).from(ghost).save();
 
-    // Restore zoom
-    if (scaleEl && prevTransform !== null) scaleEl.style.transform = prevTransform;
   } catch (err) {
     console.error("PDF generation failed:", err);
     window.print(); // Fallback to browser print dialog
   } finally {
+    if (ghost.parentNode) ghost.parentNode.removeChild(ghost);
     if (fab) { fab.style.opacity = ""; fab.style.pointerEvents = ""; }
     if (bpdfBtn) { bpdfBtn.disabled = false; bpdfBtn.textContent = "\ud83d\udcbe Save as PDF"; }
   }
