@@ -96,13 +96,18 @@ if (!window.docx) {
 }
 </script>
 
-<link rel="stylesheet" href="mcqmaker.css?v=1.2">
+<link rel="stylesheet" href="mcqmaker.css?v=1.3">
 <style>
-/* Floating Zoom FAB guarantee */
+/* Remove the bar above the MCQ page completely */
+.preview-toolbar {
+  display: none !important;
+}
+
+/* Floating Action & Zoom FAB */
 .zoom-fab {
   position: absolute !important;
-  bottom: 22px !important;
-  right: 24px !important;
+  bottom: 20px !important;
+  right: 22px !important;
   display: flex !important;
   align-items: center !important;
   gap: 3px !important;
@@ -113,7 +118,7 @@ if (!window.docx) {
   border: 1px solid rgba(255, 255, 255, 0.15) !important;
   border-radius: 9999px !important;
   padding: 4px 8px !important;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45) !important;
   z-index: 50 !important;
   user-select: none !important;
   white-space: nowrap !important;
@@ -122,19 +127,28 @@ if (!window.docx) {
   background: transparent !important;
   border: none !important;
   color: #f1f5f9 !important;
-  font-size: 13px !important;
+  font-size: 12.5px !important;
   font-weight: 600 !important;
   padding: 4px 9px !important;
   cursor: pointer !important;
   border-radius: 9999px !important;
-  line-height: 1 !important;
+  line-height: 1.2 !important;
   min-width: 28px !important;
   text-align: center !important;
-  transition: background 0.15s ease !important;
+  transition: all 0.15s ease !important;
 }
 .zoom-fab-btn:hover {
   background: rgba(255, 255, 255, 0.18) !important;
   color: #ffffff !important;
+}
+.zoom-fab-primary {
+  background: #2563eb !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  padding: 5px 12px !important;
+}
+.zoom-fab-primary:hover {
+  background: #1d4ed8 !important;
 }
 .zoom-fab-val {
   min-width: 36px !important;
@@ -500,29 +514,20 @@ if (!window.docx) {
 
 <!-- Main Preview Area -->
 <main>
-  <div class="preview-toolbar">
-    <div class="preview-actions">
-      <span class="preview-badge" id="preview-mode-tag">🎓 Student Copy</span>
-      <span class="preview-badge" id="page-count-badge">Pages: 1</span>
-    </div>
-
-    <div class="preview-actions">
-      <select id="top-key-mode" style="padding:4px 8px;font-size:11.5px;background:#334155;color:#fff;border:1px solid #475569;border-radius:4px;cursor:pointer" title="Answer Key Display on Paper">
-        <option value="none" selected>Key: Hidden (Off)</option>
-        <option value="end">Key: Show at End</option>
-        <option value="separate">Key: Separate Page</option>
-      </select>
-      <button class="btn btn-sm" id="btn-quick-toggle" title="Switch Student / Teacher View">Teacher View</button>
-      <button class="btn btn-sm btn-primary" id="btn-top-print">🖨️ Print / PDF</button>
-    </div>
-  </div>
+  <!-- Hidden references to maintain backwards-compatibility with JS event listeners -->
+  <span id="preview-mode-tag" style="display:none">🎓 Student Copy</span>
+  <select id="top-key-mode" style="display:none"><option value="none" selected></option></select>
 
   <div class="preview-scroll">
     <div id="wrap"></div>
   </div>
 
-  <!-- Floating Zoom Controls -->
+  <!-- Floating Action & Zoom Controls (Bottom-Right) -->
   <div class="zoom-fab noprint">
+    <button class="zoom-fab-btn" id="btn-quick-toggle" title="Switch Student / Teacher View">👨‍🏫 Teacher View</button>
+    <button class="zoom-fab-btn zoom-fab-primary" id="btn-top-print" title="Print Paper or Save as PDF">🖨️ Print / PDF</button>
+    <span class="zoom-fab-val" id="page-count-badge" style="color:#cbd5e1;font-size:11px;min-width:auto;padding:0 4px">Pages: 1</span>
+    <div class="zoom-fab-sep"></div>
     <button class="zoom-fab-btn" id="z-out" title="Zoom Out">−</button>
     <span id="z-val" class="zoom-fab-val">Fit</span>
     <button class="zoom-fab-btn" id="z-in" title="Zoom In">+</button>

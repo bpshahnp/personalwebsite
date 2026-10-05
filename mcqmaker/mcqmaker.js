@@ -975,8 +975,13 @@ function preview() {
   // Update mode tags
   const isTeacher = s.mode === "teacher";
   const tag = $("preview-mode-tag");
-  tag.textContent = isTeacher ? "👨‍🏫 Teacher Master Copy" : "🎓 Student Copy";
-  tag.style.background = isTeacher ? "var(--success)" : "rgba(255,255,255,0.1)";
+  if (tag) {
+    tag.textContent = isTeacher ? "👨‍🏫 Teacher Master Copy" : "🎓 Student Copy";
+    tag.style.background = isTeacher ? "var(--success)" : "rgba(255,255,255,0.1)";
+  }
+  if ($("btn-quick-toggle")) {
+    $("btn-quick-toggle").textContent = isTeacher ? "🎓 Student View" : "👨‍🏫 Teacher View";
+  }
 
   // Compute Full Marks display
   const calculatedMarks = totalMarksCalc();
@@ -1163,17 +1168,23 @@ function preview() {
     }
   `;
 
-  $("page-count-badge").textContent = `Pages: ${sheets.length}`;
+  if ($("page-count-badge")) {
+    $("page-count-badge").textContent = `${sheets.length} Page${sheets.length > 1 ? 's' : ''}`;
+  }
   queueSave();
 }
 
 function applyZoom(sheets, w, h) {
-  const containerW = $("wrap").parentElement.clientWidth - 48;
-  const baseScale = containerW / (w * 3.7795);
+  const scrollEl = $("wrap") ? $("wrap").parentElement : null;
+  const containerW = (scrollEl ? scrollEl.clientWidth : window.innerWidth) - 32;
+  const containerH = (scrollEl ? scrollEl.clientHeight : window.innerHeight) - 40;
+  const scaleW = containerW / (w * 3.7795);
+  const scaleH = containerH / (h * 3.7795);
+  const baseScale = Math.min(scaleW, scaleH);
 
   let z = 1;
   if (currentZoom === "fit") {
-    z = Math.min(1.15, Math.max(0.4, baseScale));
+    z = Math.min(1.25, Math.max(0.35, baseScale));
     $("z-val").textContent = "Fit";
   } else {
     z = Number(currentZoom) || 1;
