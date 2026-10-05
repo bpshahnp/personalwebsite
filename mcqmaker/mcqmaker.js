@@ -159,8 +159,8 @@ function formatMarkdown(str) {
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.*?)\*/g, '<em>$1</em>')
     .replace(/__(.*?)__/g, '<u>$1</u>')
-    .replace(/~([a-zA-Z0-9+\-_=]+)~/g, '<sub>$1</sub>')
-    .replace(/\^([a-zA-Z0-9+\-_=]+)\^/g, '<sup>$1</sup>')
+    .replace(/~([^~]+?)~/g, '<sub>$1</sub>')
+    .replace(/\^([^\^]+?)\^/g, '<sup>$1</sup>')
     .replace(/`([^`]+)`/g, '<code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:0.9em">$1</code>')
     .replace(/\n/g, '<br>');
 }
@@ -492,10 +492,10 @@ document.addEventListener("paste", e => {
 
 const PALETTES = {
   alg: [
-    ["x²", "²", "^{2}"], ["x³", "³", "^{3}"], ["x⁴", "⁴", "^{4}"], ["xⁿ", "ⁿ", "^{n}"],
-    ["xˣ", "ˣ", "^{x}"], ["x⁺", "⁺", "^{+}"], ["x⁻", "⁻", "^{-}"],
+    ["x²", "²", "^{2}"], ["x³", "³", "^{3}"], ["x⁴", "⁴", "^{4}"],
+    ["xⁿ", "^^", "^{n}", 1], ["xˣ", "^^", "^{x}", 1], ["x⁺", "^^", "^{+}", 1], ["x⁻", "^^", "^{-}", 1],
     ["x₀", "₀", "_{0}"], ["x₁", "₁", "_{1}"], ["x₂", "₂", "_{2}"], ["x₃", "₃", "_{3}"],
-    ["xₙ", "ₙ", "_{n}"], ["xᵢ", "ᵢ", "_{i}"],
+    ["xₙ", "~~", "_{n}", 1], ["xᵢ", "~~", "_{i}", 1],
     ["√x", "√", "\\sqrt{x}"], ["∛x", "∛", "\\sqrt[3]{x}"], ["ⁿ√x", "ⁿ√", "\\sqrt[n]{x}"],
     ["|x|", "|x|", "\\left|x\\right|"],
     ["( )", "( )", "\\left( \\right)"], ["[ ]", "[ ]", "\\left[ \\right]"], ["{ }", "{ }", "\\left\\{ \\right\\}"],
@@ -562,10 +562,11 @@ let paletteMode = "word"; // 'word' (Word-style natural symbols) | 'latex' ($...
 
 function renderPalette() {
   const syms = PALETTES[activePalette] || [];
-  $("tb").innerHTML = syms.map(([lbl, wordVal, texVal]) => {
+  $("tb").innerHTML = syms.map(([lbl, wordVal, texVal, cursorOffset]) => {
     const val = paletteMode === "word" ? wordVal : (texVal || wordVal);
     const title = paletteMode === "word" ? `Insert symbol: ${wordVal}` : `Insert LaTeX: ${texVal || wordVal}`;
-    return `<button class="math-sym-btn" data-val="${esc(val)}" title="${esc(title)}">${lbl}</button>`;
+    const cur = (paletteMode === "word" && cursorOffset) ? ` data-cursor="${cursorOffset}"` : "";
+    return `<button class="math-sym-btn" data-val="${esc(val)}"${cur} title="${esc(title)}">${lbl}</button>`;
   }).join("");
 }
 renderPalette();
@@ -608,6 +609,7 @@ $("tb").addEventListener("click", e => {
   const btn = e.target.closest("button");
   if (!btn || !lastFocusedField) return;
   const sn = btn.dataset.val;
+  const cursor = +btn.dataset.cursor || 0;
   const f = lastFocusedField;
   const p1 = f.selectionStart;
   const p2 = f.selectionEnd;
@@ -621,7 +623,7 @@ $("tb").addEventListener("click", e => {
 
   f.value = v.slice(0, p1) + insertText + v.slice(p2);
   f.focus();
-  const newPos = p1 + insertText.length;
+  const newPos = cursor ? p1 + cursor : p1 + insertText.length;
   f.setSelectionRange(newPos, newPos);
   f.dispatchEvent(new Event("input", { bubbles: true }));
 });
