@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rubrics Admin</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700&display=swap">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f6f7f9;--card:#fff;--tx:#1d2330;--mu:#667085;--bd:#d9dde5;--ac:#2f5fd0;--acx:#fff;--bad:#c62828}
+@media (prefers-color-scheme:dark){:root{--bg:#14171d;--card:#1d222b;--tx:#e8ebf1;--mu:#98a2b3;--bd:#333a47;--ac:#6b93f5;--acx:#0b1220;--bad:#ff8a80}}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:1200px;margin:0 auto;padding:16px}
+h1{font-size:22px;margin:0}h2{font-size:16px;margin:0 0 10px}
+.top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.top>div{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+section{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:14px;margin-bottom:14px}
+.split{display:grid;grid-template-columns:minmax(200px,270px) minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:800px){.split{grid-template-columns:1fr}}
+label{display:block;font-size:12px;color:var(--mu);margin-bottom:3px}
+input,textarea{width:100%;padding:7px 9px;border:1px solid var(--bd);border-radius:6px;background:var(--bg);color:var(--tx);font:inherit}
+textarea{min-height:90px}
+button{padding:7px 12px;border:1px solid var(--bd);border-radius:6px;background:var(--card);color:var(--tx);font:inherit;cursor:pointer}
+button.p,button.on{background:var(--ac);color:var(--acx);border-color:var(--ac)}button.x{color:var(--bad)}
+a{color:var(--ac)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin-top:10px}.row>div{flex:1 1 140px}.row>.fit{flex:0 0 auto}
+.cls{display:flex;flex-direction:column;align-items:flex-start;width:100%;margin-bottom:6px}.cls small{opacity:.75}
+.wrap{overflow:auto;max-height:55vh;border:1px solid var(--bd);border-radius:8px;margin-top:10px}
+table{border-collapse:collapse;width:100%;min-width:560px}
+th,td{border-bottom:1px solid var(--bd);padding:3px 5px;text-align:left;font-size:13px}
+th{background:var(--bg);position:sticky;top:0}
+td input{padding:4px 6px}td input.bad{border-color:var(--bad);color:var(--bad)}.dv{font-family:"Noto Sans Devanagari",Mukta,Mangal,"Nirmala UI",sans-serif}
+.hint{color:var(--mu);font-size:12px;margin:6px 0 0}
+.tag{display:inline-block;background:var(--bg);border:1px solid var(--bd);border-radius:20px;padding:1px 9px;font-size:12px;color:var(--mu);margin:2px}
+</style></head><body><main>
+<div class="top"><h1>Rubrics · Admin</h1><div><span id="who" class="hint" style="margin:0"></span>
+<button id="inB" class="p" onclick="signIn()" hidden>Sign in with Google</button><button id="outB" onclick="signOutX()" hidden>Sign out</button><a href="index.html">← Rubrics dashboard</a></div></div>
+<p id="msg" class="hint">Loading…</p>
+
+<div id="app" hidden>
+<div class="split">
+<section><h2>Classes</h2><p class="hint" id="stats" style="margin:0 0 8px"></p><div id="clist"></div><button class="p" onclick="newClass()">+ New class</button></section>
+
+<section id="ed" hidden><h2>Student roster <span class="tag" id="cnt"></span></h2>
+<div class="row" style="margin-top:0"><div style="flex:0 0 110px"><label>Class</label><input id="cls" placeholder="VIII" oninput="setF('cls',this.value)"></div>
+<div style="flex:0 0 140px"><label>Section</label><input id="sec" placeholder="LAKHAN" oninput="setF('sec',this.value)"></div>
+<div><label>Search in list</label><input id="q" placeholder="Name or Reg. No." oninput="rTbl()"></div></div>
+<div class="wrap"><table><thead><tr><th>#</th><th>Reg. No.</th><th>Name (English)</th><th>Name (Nepali, optional)</th><th></th></tr></thead><tbody id="tb"></tbody></table></div>
+<div class="row"><button class="fit" onclick="addRow()">+ Add student</button><button class="fit" onclick="sortReg()">Sort by Reg. No.</button></div>
+<details style="margin-top:10px"><summary class="hint" style="cursor:pointer">Paste or import many students</summary>
+<p class="hint">One per line: Reg. No., Name, Nepali name (optional). Tab or comma separated; columns copied from Excel can be pasted directly.</p>
+<textarea id="bulk" placeholder="282, SIDDHARTHA GURUNG, सिद्धार्थ गुरुङ"></textarea>
+<div class="row"><div class="fit"><input type="file" accept=".csv,.txt,.tsv" onchange="rosFile(this)"></div><button class="fit" onclick="bulk(true)">Add to list</button><button class="fit" onclick="bulk(false)">Replace list</button></div></details>
+<div class="row"><button class="fit p" onclick="saveC()">Save roster</button><button class="fit x" onclick="delC()">Delete class</button><span id="sv" class="hint" style="align-self:center"></span></div>
+</section></div>
+
+<section><h2>Admins</h2><div id="admList"></div>
+<div class="row"><div><label>Add another admin (their Google email)</label><input id="admMail" type="email" placeholder="teacher@gmail.com"></div><button class="fit p" onclick="addAdmin()">+ Add admin</button></div></section>
+</div></main>
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getAuth,GoogleAuthProvider,signInWithPopup,signOut,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {getFirestore,collection,doc,getDocs,getDoc,setDoc,deleteDoc,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+const firebaseConfig={
+  apiKey:"AIzaSyAsZOPvkJ0SK4OHE328XvQ-kIs_6RVsAz4",
+  authDomain:"osarubrics.firebaseapp.com",
+  projectId:"osarubrics",
+  storageBucket:"osarubrics.firebasestorage.app",
+  messagingSenderId:"1090591979367",
+  appId:"1:1090591979367:web:0722c311c9e38f416da1c2",
+  measurementId:"G-QFCELV93HZ"
+};
+const $=id=>document.getElementById(id),msg=t=>$("msg").textContent=t;
+const h=x=>String(x??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
+let user=null,R=[],CUR=null,DIRTY=false;
+window.setDirty=d=>{DIRTY=d;$("sv").textContent=d?"Unsaved changes":""};
+window.onbeforeunload=()=>DIRTY?"Unsaved changes":undefined;
+window.signIn=()=>signInWithPopup(auth,new GoogleAuthProvider()).catch(e=>msg("Sign-in failed: "+e.code));
+window.signOutX=()=>signOut(auth);
+const ask=()=>!DIRTY||confirm("Discard unsaved changes?");
+async function loadR(){R=(await getDocs(collection(db,"rosters"))).docs.map(d=>({id:d.id,...d.data()}));R.sort((a,b)=>(a.cls+a.sec).localeCompare(b.cls+b.sec,undefined,{numeric:true}));rList()}
+function rList(){$("clist").innerHTML=R.map(r=>`<button class="cls ${CUR&&CUR.id==r.id?"on":""}" onclick="openC('${r.id}')"><b>${h(r.cls+" "+r.sec)}</b><small>${r.count||0} students</small></button>`).join("")||'<p class="hint">No classes yet.</p>';
+ $("stats").textContent=R.length+" classes · "+R.reduce((a,r)=>a+(r.count||0),0)+" students"}
+function show(){$("ed").hidden=false;$("cls").value=CUR.cls;$("sec").value=CUR.sec;$("q").value="";setDirty(false);rTbl();rList()}
+window.openC=id=>{if(!ask())return;const r=R.find(x=>x.id==id);CUR={id,cls:r.cls,sec:r.sec,list:JSON.parse(r.data||"[]")};show()};
+window.newClass=()=>{if(!ask())return;CUR={id:null,cls:"",sec:"",list:[]};show();$("cls").focus()};
+window.rTbl=()=>{const q=$("q").value.toLowerCase(),c={};CUR.list.forEach(s=>c[s.reg]=(c[s.reg]||0)+1);
+ $("tb").innerHTML=CUR.list.map((s,i)=>q&&!(s.reg+" "+s.name+" "+(s.nn||"")).toLowerCase().includes(q)?"":`<tr><td>${i+1}</td><td><input class="${c[s.reg]>1?"bad":""}" value="${h(s.reg)}" oninput="up(${i},'reg',this.value)"></td><td><input value="${h(s.name)}" oninput="up(${i},'name',this.value)"></td><td><input class="dv" value="${h(s.nn)}" oninput="up(${i},'nn',this.value)"></td><td><button class="x" onclick="rm(${i})">✕</button></td></tr>`).join("");
+ $("cnt").textContent=CUR.list.length+" students"};
+window.setF=(k,v)=>{CUR[k]=v;setDirty(true)};
+window.up=(i,k,v)=>{CUR.list[i][k]=v;setDirty(true)};
+window.rm=i=>{CUR.list.splice(i,1);setDirty(true);rTbl()};
+window.addRow=()=>{CUR.list.push({reg:"",name:"",nn:""});setDirty(true);$("q").value="";rTbl();const t=document.querySelector("#tb tr:last-child input");if(t)t.focus()};
+window.sortReg=()=>{CUR.list.sort((a,b)=>String(a.reg).localeCompare(String(b.reg),undefined,{numeric:true}));setDirty(true);rTbl()};
+const parse=t=>t.split("\n").map(l=>l.trim()).filter(Boolean).map(l=>{const p=(l.includes("\t")?l.split("\t"):l.split(",")).map(x=>x.trim());return {reg:p[0],name:p[1]||"",nn:p[2]||""}}).filter(x=>x.reg&&x.name);
+window.bulk=add=>{const l=parse($("bulk").value);if(!l.length){alert("No valid lines found. Use: Reg. No., Name, Nepali name (optional)");return}CUR.list=add?CUR.list.concat(l):l;$("bulk").value="";setDirty(true);rTbl()};
+window.rosFile=i=>{const f=i.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{$("bulk").value=r.result};r.readAsText(f)};
+window.saveC=async()=>{CUR.cls=$("cls").value.trim();CUR.sec=$("sec").value.trim();if(!CUR.cls){alert("Enter the class");return}
+ const list=CUR.list.map(s=>({reg:String(s.reg).trim(),name:String(s.name).trim().toUpperCase(),nn:(s.nn||"").trim()})).filter(s=>s.reg&&s.name);
+ if(!list.length){alert("Add at least one student with Reg. No. and Name");return}
+ const regs=list.map(s=>s.reg),dup=[...new Set(regs.filter((r,i)=>regs.indexOf(r)!=i))];if(dup.length&&!confirm("Duplicate Reg. No.: "+dup.join(", ")+". Save anyway?"))return;
+ const id=(CUR.cls+"-"+CUR.sec).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")||"class";
+ if(id!=CUR.id&&R.some(r=>r.id==id)&&!confirm("A roster for "+CUR.cls+" "+CUR.sec+" already exists. Replace it?"))return;
+ try{await setDoc(doc(db,"rosters",id),{cls:CUR.cls,sec:CUR.sec,data:JSON.stringify(list),count:list.length,by:user.email,updated:serverTimestamp()});
+  if(CUR.id&&CUR.id!=id)await deleteDoc(doc(db,"rosters",CUR.id));CUR.id=id;CUR.list=list;await loadR();show();$("sv").textContent="✔ Saved "+list.length+" students"}catch(e){msg("Save failed: "+e.code)}};
+window.delC=async()=>{if(!CUR.id){CUR=null;$("ed").hidden=true;setDirty(false);return}if(!confirm("Delete the roster of "+CUR.cls+" "+CUR.sec+"? Teachers' own sections are not affected."))return;
+ try{await deleteDoc(doc(db,"rosters",CUR.id));CUR=null;$("ed").hidden=true;setDirty(false);await loadR()}catch(e){msg("Delete failed: "+e.code)}};
+async function admList(){const q=await getDocs(collection(db,"admins"));$("admList").innerHTML=q.docs.map(d=>`<span class="tag">${h(d.id)} ${d.id==user.email.toLowerCase()?"(you)":`<a href="#" onclick="rmAdmin('${d.id}');return false">remove</a>`}</span>`).join("")}
+window.addAdmin=async()=>{const e=$("admMail").value.trim().toLowerCase();if(!/^\S+@\S+\.\S+$/.test(e)){alert("Enter a valid email");return}try{await setDoc(doc(db,"admins",e),{by:user.email,at:serverTimestamp()});$("admMail").value="";admList()}catch(x){msg("Failed: "+x.code)}};
+window.rmAdmin=async e=>{if(confirm("Remove admin "+e+"?")){try{await deleteDoc(doc(db,"admins",e));admList()}catch(x){msg("Failed: "+x.code)}}};
+onAuthStateChanged(auth,async u=>{user=u;$("inB").hidden=!!u;$("outB").hidden=!u;$("app").hidden=true;$("who").textContent=u?u.email:"";
+ if(!u){msg("Sign in with an admin Google account.");return}
+ let ok=false;try{ok=(await getDoc(doc(db,"admins",(u.email||"").toLowerCase()))).exists()}catch(e){}
+ if(!ok){msg("This account ("+u.email+") is not an admin. Ask an existing admin to add this email (or create the first admin in the Firebase console: collection 'admins', document ID = the email).");return}
+ msg("");$("app").hidden=false;try{await loadR();await admList()}catch(e){msg("Could not load: "+e.code)}});
+</script></body></html>
