@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rubrics Dashboard</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f6f7f9;--card:#fff;--tx:#1d2330;--mu:#667085;--bd:#d9dde5;--ac:#2f5fd0;--acx:#fff;--bad:#c62828;--ok:#e8f5e9}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14171d;--card:#1d222b;--tx:#e8ebf1;--mu:#98a2b3;--bd:#333a47;--ac:#6b93f5;--acx:#0b1220;--bad:#ff8a80;--ok:#1f3a27}}
+:root[data-theme="dark"]{--bg:#14171d;--card:#1d222b;--tx:#e8ebf1;--mu:#98a2b3;--bd:#333a47;--ac:#6b93f5;--acx:#0b1220;--bad:#ff8a80;--ok:#1f3a27}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:1100px;margin:0 auto;padding:16px}
+h1{font-size:22px;margin:4px 0 14px}h2{font-size:16px;margin:0 0 10px}
+section{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:14px;margin-bottom:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+label{display:block;font-size:12px;color:var(--mu);margin-bottom:3px}
+input,select,textarea{width:100%;padding:7px 9px;border:1px solid var(--bd);border-radius:6px;background:var(--bg);color:var(--tx);font:inherit}
+textarea{min-height:70px}
+button{padding:7px 12px;border:1px solid var(--bd);border-radius:6px;background:var(--card);color:var(--tx);font:inherit;cursor:pointer}
+button.p,button.on{background:var(--ac);color:var(--acx);border-color:var(--ac)}
+button.x{color:var(--bad)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin-top:10px}
+.row>div{flex:1 1 140px}.row>.fit{flex:0 0 auto}
+.cols{display:flex;flex-direction:column;gap:6px}
+.col{display:grid;grid-template-columns:24px 1fr 70px 100px auto;gap:6px;align-items:center}
+.col small{color:var(--mu);text-align:center}
+.wrap{overflow-x:auto;border:1px solid var(--bd);border-radius:8px}
+table.e{border-collapse:collapse;width:100%;min-width:600px}
+.e th,.e td{border-bottom:1px solid var(--bd);padding:4px 6px;text-align:center;font-size:13px}
+.e th{background:var(--bg);white-space:nowrap}
+.e td.n{text-align:left;white-space:nowrap}
+.e td input{width:62px;text-align:center;padding:4px}
+.e td input.bad{border-color:var(--bad);color:var(--bad)}
+.e td.t{font-weight:600;background:var(--ok)}
+.hint{color:var(--mu);font-size:12px;margin:6px 0 0}
+.tag{display:inline-block;background:var(--bg);border:1px solid var(--bd);border-radius:20px;padding:1px 9px;font-size:12px;color:var(--mu)}
+[hidden]{display:none!important}
+/* ---- A4 sheets (always light, like paper) ---- */
+.paper{background:#fff;color:#000;width:210mm;min-height:297mm;padding:6mm;margin:0 auto 14px;box-shadow:0 1px 8px rgba(0,0,0,.3);font:10pt "Times New Roman",serif}
+.paper.agg{width:297mm;min-height:210mm;page:agg}
+@media screen{.paper{zoom:var(--z,1)}}
+.bar{background:#375623;color:#fff;text-align:center;font-size:14pt;padding:1mm;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.hd{display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:2mm;padding:1.5mm 0;align-items:center;font-size:9pt}
+.hd .c{text-align:center;font-size:12pt}.hd .r{text-align:right}
+.sub{border:1px solid #000;border-bottom:0;text-align:center;font-weight:bold;font-size:11pt;padding:.5mm}
+table.st{border-collapse:collapse;width:100%;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.st th,.st td{border:1px solid #000;padding:0 1.5px;text-align:center;font:9.5pt/5.1mm Arial,Helvetica,sans-serif}
+.st th{background:#c6e0b4;line-height:1.15;font-size:8.5pt}
+.st th.mcq{background:#f4b183}.st th.ct{background:#9dc3e6}.st th.in,.st td.in{background:#a9d08e;font-weight:bold}
+.st td.n{text-align:left;white-space:nowrap;padding-left:2px}
+.agg .st th,.agg .st td{font-size:7.5pt;line-height:4.6mm}
+.st tr{break-inside:avoid}.st thead{display:table-header-group}
+.sig{display:flex;justify-content:space-around;margin-top:12mm;font-size:9pt}
+.sig span{border-top:1px solid #000;padding-top:1mm;min-width:45mm;text-align:center}
+@page{size:A4 portrait;margin:5mm}
+@page agg{size:A4 landscape;margin:5mm}
+@media print{
+.noprint{display:none!important}
+body{background:#fff}main{padding:0;max-width:none}
+section.pv{border:0;padding:0;margin:0;background:none}
+.paper{width:auto!important;min-height:0!important;padding:0!important;margin:0!important;box-shadow:none!important;zoom:1!important}
+.paper+.paper{break-before:page}
+body[data-only] .paper{display:none}
+body[data-only="1"] .p1,body[data-only="2"] .p2,body[data-only="3"] .p3{display:block}}
+</style></head><body><main>
+<h1 class="noprint">Rubrics Dashboard</h1>
+
+<section class="noprint"><div class="row" style="margin:0;align-items:center">
+<span id="cstat" class="hint" style="margin:0;flex:1 1 220px">Loading…</span>
+<button id="inB" class="fit p" onclick="fbSignIn()" hidden>Sign in with Google</button>
+<span id="secBox" hidden style="display:flex;gap:6px;flex-wrap:wrap;flex:1 1 300px"><select id="secSel" style="flex:1 1 160px;width:auto" onchange="fbOpen(this.value)"></select>
+<button class="fit" onclick="fbNew()">+ New section</button><button class="fit" onclick="fbRename()">Rename</button><button class="fit x" onclick="fbDel()">Delete</button></span>
+<button id="outB" class="fit" onclick="fbSignOut()" hidden>Sign out</button></div>
+<p class="hint">Each section (e.g. VIII LAKHAN) has its own heading details, columns, students and marks. "+ New section" copies the current heading details and columns, with no students.</p></section>
+
+<section class="noprint"><h2>1. Heading details</h2><div class="grid" id="meta"></div></section>
+
+<section class="noprint"><h2>2. Rubric columns <span class="tag" id="sumTag"></span></h2>
+<div class="row" style="margin:0 0 10px"><span class="hint" style="margin:0 8px 0 0;align-self:center">Presets:</span>
+<button class="fit" onclick="preset(8)">Class 8 (25)</button><button class="fit" onclick="preset(9)">Class 9/10 (46)</button></div>
+<div class="cols" id="cols"></div>
+<div class="row">
+<div><label>New column name (e.g. Python Topic Test)</label><input id="nn" placeholder="Column / topic name"></div>
+<div class="fit" style="width:90px"><label>Max marks</label><input id="nm" type="number" min="0" step="0.5" value="5"></div>
+<div><label>Insert position</label><select id="np"></select></div>
+<div class="fit"><button class="p" onclick="addCol()">+ Insert column</button></div></div>
+<p class="hint">Columns apply to both rubrics. "Agg: avg" averages the two rubrics in the Aggregate; "Agg: 2nd" uses the second rubric only (as for Class Test).</p></section>
+
+<section class="noprint"><h2>3. Students <span class="tag" id="cnt"></span></h2>
+<div class="row" style="margin-top:0">
+<div style="flex:0 0 110px"><label>Reg. No.</label><input id="sr"></div>
+<div><label>Student's name</label><input id="sn" placeholder="Full name"></div>
+<div class="fit"><button class="p" onclick="addStu()">+ Add student</button></div></div>
+<details style="margin-top:10px"><summary class="hint" style="cursor:pointer">Paste many students (one per line: Reg. No. [tab or comma] Name)</summary>
+<textarea id="bulk" placeholder="295, BISHAL SAPKOTA&#10;342, OZASHWI GURUNG"></textarea>
+<div class="row"><button class="fit" onclick="bulkAdd()">Add pasted list</button></div></details></section>
+
+<section class="noprint"><h2>4. Marks entry</h2>
+<div class="row" style="margin:0 0 10px" id="tabs"></div>
+<div class="wrap"><table class="e" id="tbl"></table></div>
+<p class="hint">Number within the column maximum, or <b>abs</b> for absent. Invalid entries turn red and are ignored. Auto-saved in this browser.</p>
+<div class="row"><button class="fit x" onclick="resetAll()">Clear everything</button></div></section>
+
+<section class="pv"><div class="noprint"><h2>5. A4 print preview</h2>
+<div class="row" style="margin:0 0 12px"><button class="fit p" onclick="pr()">Print all 3</button><button class="fit" onclick="pr(1)">First Rubrics</button><button class="fit" onclick="pr(2)">Second Rubrics</button><button class="fit" onclick="pr(3)">Aggregate (landscape)</button></div>
+<p class="hint" style="margin:0 0 10px">In the print dialog choose paper A4, enable "Background graphics". If a button does nothing, press Ctrl+P (⌘P) — the page prints only the sheets.</p></div>
+<div id="papers"></div></section>
+</main>
+<script>
+const MF=[["school","School","OM SHANTI ACADEMY"],["term","Term","Second Term"],["year","Year","2083"],["cls","Class","Eight"],["sec","Section",""],["subj","Subject","Computer Science"],["teacher","Teacher's name",""],["theoryMax","Theory full marks","25","number"],["f1","First Rubrics: from",""],["t1","First Rubrics: to",""],["p1","First Rubrics: periods","","number"],["c1","First Rubrics: chapters",""],["f2","Second Rubrics: from",""],["t2","Second Rubrics: to",""],["p2","Second Rubrics: periods","","number"],["c2","Second Rubrics: chapters",""],["fa","Aggregate: from",""],["ta","Aggregate: to",""]];
+const P8=[["Participation",2],["Regularity",2],["Assignment",3],["Use of ICT/Lab work",6],["Viva",2],["MCQ",5],["Class Test",5]];
+const P9=[["Participation",4],["Regularity",4],["Behaviour",2],["Assignment",8],["Use of ICT/Lab work",8],["Viva",4],["MCQ",10],["Class Test",10]];
+let S={meta:{},cols:[],stu:[]},uid=1,TAB="m",PT;
+const $=id=>document.getElementById(id),esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const dam=n=>/test/i.test(n)?"2":"a";
+function save(){try{localStorage.setItem("rubrics-dash",JSON.stringify(S))}catch(e){}if(window.cloudSave)cloudSave()}
+function applyState(d){S=d&&d.cols?d:{meta:{},cols:[],stu:[]};MF.forEach(f=>{if(S.meta[f[0]]==null)S.meta[f[0]]=f[2]});if(!S.cols.length)mk(P8);uid=Math.max(1,...S.cols.map(c=>c.id+1));rMeta();render()}
+function load(){try{const d=JSON.parse(localStorage.getItem("rubrics-dash")||"null");if(d&&d.cols)S=d}catch(e){}
+ MF.forEach(f=>{if(S.meta[f[0]]==null)S.meta[f[0]]=f[2]});if(!S.cols.length)mk(P8);uid=Math.max(1,...S.cols.map(c=>c.id+1))}
+function mk(p){S.cols=p.map(x=>({id:uid++,name:x[0],max:x[1],am:dam(x[0])}))}
+function preset(n){if(S.stu.some(s=>Object.keys(s.m||{}).length||Object.keys(s.n||{}).length)&&!confirm("Replace columns? Entered marks will be lost."))return;mk(n==8?P8:P9);S.meta.cls=n==8?"Eight":"Nine";rMeta();render()}
+function rMeta(){$("meta").innerHTML=MF.map(f=>`<div><label>${f[1]}</label><input type="${f[3]||"text"}" value="${esc(S.meta[f[0]])}" oninput="S.meta['${f[0]}']=this.value;save();prev()"></div>`).join("")}
+function rCols(){
+ $("cols").innerHTML=S.cols.map((c,i)=>{const am=c.am||dam(c.name);return `<div class="col"><small>${i+1}</small><input value="${esc(c.name)}" onchange="S.cols[${i}].name=this.value;render()"><input type="number" min="0" step="0.5" value="${c.max}" onchange="S.cols[${i}].max=+this.value||0;render()"><select onchange="S.cols[${i}].am=this.value;render()"><option value="a" ${am=="a"?"selected":""}>Agg: avg</option><option value="2" ${am=="2"?"selected":""}>Agg: 2nd</option></select><span><button onclick="mv(${i},-1)">▲</button> <button onclick="mv(${i},1)">▼</button> <button class="x" onclick="delCol(${i})">✕</button></span></div>`}).join("");
+ $("np").innerHTML=`<option value="0">At the start</option>`+S.cols.map((c,i)=>`<option value="${i+1}" ${i==S.cols.length-1?"selected":""}>After ${esc(c.name)}</option>`).join("");
+ $("sumTag").textContent="Total F.M. = "+S.cols.reduce((a,c)=>a+c.max,0)}
+function addCol(){const n=$("nn").value.trim();if(!n){$("nn").focus();return}S.cols.splice(+$("np").value,0,{id:uid++,name:n,max:+$("nm").value||0,am:dam(n)});$("nn").value="";render()}
+function mv(i,d){const j=i+d;if(j<0||j>=S.cols.length)return;[S.cols[i],S.cols[j]]=[S.cols[j],S.cols[i]];render()}
+function delCol(i){if(!confirm("Remove column '"+S.cols[i].name+"'?"))return;const id=S.cols[i].id;S.cols.splice(i,1);S.stu.forEach(s=>{delete (s.m||{})[id];delete (s.n||{})[id]});render()}
+const ns=(reg,name)=>({reg,name:name.toUpperCase(),m:{},n:{},t:{}});
+function addStu(){const n=$("sn").value.trim();if(!n){$("sn").focus();return}S.stu.push(ns($("sr").value.trim(),n));$("sr").value=$("sn").value="";render();$("sr").focus()}
+function bulkAdd(){$("bulk").value.split("\n").forEach(l=>{l=l.trim();if(!l)return;const p=l.split(/\t|,/).map(x=>x.trim()).filter(Boolean);
+ if(p.length>1&&/^\d+$/.test(p[0]))S.stu.push(ns(p[0],p.slice(1).join(" ")));else S.stu.push(ns("",p.join(" ")))});$("bulk").value="";render()}
+function delStu(i){if(confirm("Remove "+S.stu[i].name+"?")){S.stu.splice(i,1);render()}}
+function chk(v,max){v=String(v??"").trim();if(v===""||/^abs$/i.test(v))return true;const n=+v;return !isNaN(n)&&n>=0&&n<=max}
+const val=(x,max)=>{const n=parseFloat(x);return isNaN(n)||!chk(x,max)?null:n};
+const tot=(o,cs)=>cs.reduce((a,c)=>a+(val((o||{})[c.id],c.max)||0),0);
+const cl=()=>TAB=="t"?[{id:"th",name:"Theory",max:+S.meta.theoryMax||0}]:S.cols;
+function rTabs(){$("tabs").innerHTML=[["m","First Rubrics"],["n","Second Rubrics"],["t","Theory"]].map(t=>`<button class="fit ${TAB==t[0]?"on":""}" onclick="TAB='${t[0]}';rTabs();rTbl()">${t[1]}</button>`).join("")}
+function rTbl(){const cs=cl(),F=cs.reduce((a,c)=>a+c.max,0),sh=TAB!="t";
+ let h=`<tr><th>SN</th><th>Reg. No.</th><th>Name</th>${cs.map(c=>`<th>${esc(c.name)} (${c.max})</th>`).join("")}${sh?`<th>Internal (${F})</th>`:""}<th></th></tr>`;
+ h+=S.stu.map((s,i)=>{const o=s[TAB]=s[TAB]||{};return `<tr><td>${i+1}</td><td>${esc(s.reg)}</td><td class="n">${esc(s.name)}</td>${cs.map(c=>`<td><input value="${esc(o[c.id])}" class="${chk(o[c.id],c.max)?"":"bad"}" oninput="setM(${i},'${c.id}',this)"></td>`).join("")}${sh?`<td class="t" id="t${i}">${+tot(o,cs).toFixed(2)}</td>`:""}<td><button class="x" onclick="delStu(${i})">✕</button></td></tr>`}).join("");
+ if(!S.stu.length)h+=`<tr><td colspan="${cs.length+5}" class="hint">No students yet — add them above.</td></tr>`;
+ $("tbl").innerHTML=h;$("cnt").textContent=S.stu.length+" students"}
+function setM(i,id,el){const cs=cl(),c=cs.find(x=>x.id==id),o=S.stu[i][TAB];o[id]=el.value;el.classList.toggle("bad",!chk(el.value,c.max));if(TAB!="t")$("t"+i).textContent=+tot(o,cs).toFixed(2);save();prev()}
+function sheet(k){const m=S.meta,cs=S.cols,F=cs.reduce((a,c)=>a+c.max,0),th=+m.theoryMax||0,e=esc,n=cs.length;
+ const T=["","First Rubrics","Second Rubrics","Aggregate"][k],key=k==1?"m":"n",f=x=>x==null?"abs":+x.toFixed(2);
+ const per=k==3?(+m.p1||0)+(+m.p2||0):m["p"+k],fr=k==3?m.fa:m["f"+k],to=k==3?m.ta:m["t"+k],ch=k==3?(m.c1+" "+m.c2).trim():m["c"+k];
+ const cc=c=>/mcq/i.test(c.name)?"mcq":/test/i.test(c.name)?"ct":"";
+ let h=`<div class="paper p${k}${k==3?" agg":""}"><div class="bar">${e(m.term)} - ${e(m.year)} (${T})</div><div class="hd"><div class="l">Total Periods: ${e(per)}<br>Teacher's Name: ${e(m.teacher)}</div><div class="c"><b>${e(m.school)}</b><br><b>Internal Assessment</b><br>Class: ${e(m.cls)} '${e(m.sec)}'</div><div class="r">Date: From ${e(fr)} To ${e(to)}<br>Chapters: ${e(ch)}</div></div><div class="sub">Subject : ${e(m.subj)} (F.M.: ${F})</div><table class="st"><thead>`;
+ if(k<3){h+=`<tr><th rowspan="2">SN</th><th rowspan="2">Reg. No.</th><th rowspan="2">Name</th><th colspan="${n+1}">RUBRICS (${F})</th></tr><tr>${cs.map(c=>`<th class="${cc(c)}">${e(c.name)} (${c.max})</th>`).join("")}<th class="in">Internal (${F})</th></tr></thead><tbody>`;
+  h+=S.stu.map((s,i)=>{const o=s[key]||{};return `<tr><td>${i+1}</td><td>${e(s.reg)}</td><td class="n">${e(s.name)}</td>${cs.map(c=>`<td>${e(o[c.id])}</td>`).join("")}<td class="in">${+tot(o,cs).toFixed(2)}</td></tr>`}).join("")}
+ else{h+=`<tr><th rowspan="3">SN</th><th rowspan="3">Reg. No.</th><th rowspan="3">Name</th><th colspan="${n*3+1}">RUBRICS (${F})</th><th rowspan="3">Theory (${th})</th><th rowspan="3">Total (${F+th})</th></tr><tr>${cs.map(c=>`<th colspan="3" class="${cc(c)}">${e(c.name)} (${c.max})</th>`).join("")}<th rowspan="2" class="in">Internal (${F})</th></tr><tr>${cs.map(()=>"<th>1</th><th>2</th><th>Avg</th>").join("")}</tr></thead><tbody>`;
+  h+=S.stu.map((s,i)=>{let sum=0;const cells=cs.map(c=>{const a=val((s.m||{})[c.id],c.max),b=val((s.n||{})[c.id],c.max),md=c.am||dam(c.name),v=md=="2"?(b??a):(a!=null&&b!=null?(a+b)/2:a??b);sum+=v||0;return `<td>${e((s.m||{})[c.id])}</td><td>${e((s.n||{})[c.id])}</td><td>${f(v)}</td>`}).join("");
+   const t=val((s.t||{}).th,th);return `<tr><td>${i+1}</td><td>${e(s.reg)}</td><td class="n">${e(s.name)}</td>${cells}<td class="in">${+sum.toFixed(2)}</td><td>${e((s.t||{}).th)}</td><td class="in">${+(sum+(t||0)).toFixed(2)}</td></tr>`}).join("")}
+ return h+`</tbody></table><div class="sig"><span>Subject Teacher</span><span>Level Head</span><span>Principal</span></div></div>`}
+function rPrev(){$("papers").innerHTML=[1,2,3].map(sheet).join("");fit()}
+function prev(){clearTimeout(PT);PT=setTimeout(rPrev,250)}
+function fit(){const w=$("papers").clientWidth;document.querySelectorAll(".paper").forEach(p=>p.style.setProperty("--z",Math.min(1,(w-2)/(p.classList.contains("agg")?1123:794))))}
+function pr(n){rPrev();if(n)document.body.dataset.only=n;else delete document.body.dataset.only;try{window.print()}catch(e){}}
+window.onafterprint=()=>{delete document.body.dataset.only};window.onresize=fit;
+function render(){rCols();rTbl();rTabs();save();prev()}
+function resetAll(){if(!confirm("Delete all students, columns and details?"))return;try{localStorage.removeItem("rubrics-dash")}catch(e){}S={meta:{},cols:[],stu:[]};load();rMeta();render()}
+load();rMeta();render();rPrev();
+</script><script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getAuth,GoogleAuthProvider,signInWithPopup,signOut,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {getFirestore,collection,doc,getDocs,setDoc,deleteDoc,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+/* ====== PASTE YOUR FIREBASE WEB-APP CONFIG HERE (Firebase console > Project settings > Your apps) ====== */
+const firebaseConfig={
+  apiKey:"AIzaSyAsZOPvkJ0SK4OHE328XvQ-kIs_6RVsAz4",
+  authDomain:"osarubrics.firebaseapp.com",
+  projectId:"osarubrics",
+  storageBucket:"osarubrics.firebasestorage.app",
+  messagingSenderId:"1090591979367",
+  appId:"1:1090591979367:web:0722c311c9e38f416da1c2",
+  measurementId:"G-QFCELV93HZ"
+};
+/* ================================================================================================== */
+
+const $=id=>document.getElementById(id),st=t=>$("cstat").textContent=t;
+const h=x=>String(x).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+if(firebaseConfig.apiKey.startsWith("YOUR")){st("Offline mode: Firebase config not set, so data is saved in this browser only.")}
+else{
+ const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
+ let user=null,cur=null,secs=[],T;
+ const ref=id=>doc(db,"users",user.uid,"sections",id);
+ const put=(id,name,data)=>setDoc(ref(id),{name,data,updated:serverTimestamp()});
+ const fill=()=>{$("secSel").innerHTML=secs.map(s=>`<option value="${s.id}" ${s.id==cur?"selected":""}>${h(s.name)}</option>`).join("")};
+ const open=id=>{cur=id;const s=secs.find(x=>x.id==id);window.noCloud=true;applyState(JSON.parse(s.data||"null"));window.noCloud=false;fill();st("☁ "+user.email+" · section loaded")};
+ const add=async(name,data)=>{const id="s"+Date.now(),r={id,name,data};await put(id,name,data);secs.push(r);return id};
+ window.fbSignIn=()=>signInWithPopup(auth,new GoogleAuthProvider()).catch(e=>st("Sign-in failed: "+e.code));
+ window.fbSignOut=()=>signOut(auth);
+ window.fbOpen=id=>open(id);
+ window.fbNew=async()=>{const n=prompt("New section name (e.g. VIII DASHRATH):");if(!n)return;const d=JSON.parse(JSON.stringify(S));d.stu=[];d.meta.sec="";try{open(await add(n.trim(),JSON.stringify(d)))}catch(e){st("Failed: "+e.code)}};
+ window.fbRename=async()=>{const s=secs.find(x=>x.id==cur),n=prompt("Rename section:",s.name);if(!n)return;s.name=n.trim();fill();try{await put(cur,s.name,JSON.stringify(S))}catch(e){st("Failed: "+e.code)}};
+ window.fbDel=async()=>{const s=secs.find(x=>x.id==cur);if(!confirm("Delete section '"+s.name+"' and all its marks?"))return;try{await deleteDoc(ref(cur));secs=secs.filter(x=>x.id!=cur);if(!secs.length)await add("New section",JSON.stringify({meta:{},cols:[],stu:[]}));open(secs[0].id)}catch(e){st("Failed: "+e.code)}};
+ window.cloudSave=()=>{if(!user||!cur||window.noCloud)return;const id=cur,name=secs.find(x=>x.id==id).name,data=JSON.stringify(S);clearTimeout(T);st("Saving…");
+  T=setTimeout(async()=>{try{await put(id,name,data);secs.find(x=>x.id==id).data=data;st("☁ Saved · "+user.email)}catch(e){st("Save failed: "+e.code)}},800)};
+ onAuthStateChanged(auth,async u=>{user=u;$("inB").hidden=!!u;$("outB").hidden=!u;$("secBox").hidden=!u;
+  if(!u){cur=null;st("Not signed in: data is saved in this browser only.");return}
+  st("Loading your sections…");
+  try{secs=(await getDocs(collection(db,"users",u.uid,"sections"))).docs.map(d=>({id:d.id,...d.data()}));
+   if(!secs.length){cur=await add(((S.meta.cls||"")+" "+(S.meta.sec||"")).trim()||"Section 1",JSON.stringify(S))}
+   open(cur&&secs.some(x=>x.id==cur)?cur:secs[0].id)}
+  catch(e){st("Could not load: "+e.code+" (check Firestore rules and that Firestore is created)")}});
+}
+</script>
+</body></html>
