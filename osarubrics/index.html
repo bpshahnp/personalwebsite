@@ -39,21 +39,22 @@ table.e{border-collapse:collapse;width:100%;min-width:600px}
 .split section.pv{position:sticky;top:8px;max-height:calc(100vh - 16px);overflow:auto;margin-bottom:0}
 @media (max-width:1000px){.split{grid-template-columns:1fr}.split section.pv{position:static;max-height:none}}
 /* ---- A4 sheets (always light, like paper) ---- */
-.paper{background:#fff;color:#000;width:210mm;min-height:297mm;padding:6mm;margin:0 auto 14px;box-shadow:0 1px 8px rgba(0,0,0,.3);font:10pt "Times New Roman",serif}
-.paper.agg{width:297mm;min-height:210mm;page:agg}
+.paper{background:#fff;color:#000;width:210mm;height:297mm;padding:5mm;margin:0 auto 14px;box-shadow:0 1px 8px rgba(0,0,0,.3);font:10pt "Times New Roman",serif;display:flex;flex-direction:column;overflow:hidden}.paper>*{flex:none}
+.paper.agg{width:297mm;height:210mm;page:agg}
 @media screen{.paper{zoom:var(--z,1)}}
 .bar{background:#375623;color:#fff;text-align:center;font-size:14pt;padding:1mm;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .hd{display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:2mm;padding:1.5mm 0;align-items:center;font-size:9pt}
 .hd .c{text-align:center;font-size:12pt}.hd .r{text-align:right}
 .sub{border:1px solid #000;border-bottom:0;text-align:center;font-weight:bold;font-size:11pt;padding:.5mm}
 table.st{border-collapse:collapse;width:100%;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-.st th,.st td{border:1px solid #000;padding:0 1.5px;text-align:center;font:9.5pt/5.1mm Arial,Helvetica,sans-serif}
+.st th,.st td{border:1px solid #000;padding:0 1.5px;text-align:center;font-family:Arial,Helvetica,sans-serif;line-height:1.1}
+.st tbody tr{height:var(--rh,20px)}.st tbody td{font-size:min(9.5pt,calc(var(--rh,20px)*.62))}
 .st th{background:#c6e0b4;line-height:1.15;font-size:8.5pt}
 .st th.mcq{background:#f4b183}.st th.ct{background:#9dc3e6}.st th.in,.st td.in{background:#a9d08e;font-weight:bold}
 .st td.n{text-align:left;white-space:nowrap;padding-left:2px}
-.agg .st th,.agg .st td{font-size:7.5pt;line-height:4.6mm}
+.agg .st th{font-size:7.5pt}.agg .st tbody td{font-size:min(7.5pt,calc(var(--rh,20px)*.62))}
 .st tr{break-inside:avoid}.st thead{display:table-header-group}
-.sig{display:flex;justify-content:space-around;margin-top:12mm;font-size:9pt}
+.sig{display:flex;justify-content:space-around;margin-top:auto;padding-top:8mm;font-size:9pt}
 .sig span{border-top:1px solid #000;padding-top:1mm;min-width:45mm;text-align:center}
 @page{size:A4 portrait;margin:5mm}
 @page agg{size:A4 landscape;margin:5mm}
@@ -61,7 +62,8 @@ table.st{border-collapse:collapse;width:100%;-webkit-print-color-adjust:exact;pr
 .noprint{display:none!important}
 body{background:#fff}main{padding:0;max-width:none}
 section.pv{border:0;padding:0;margin:0;background:none;position:static!important;max-height:none!important;overflow:visible!important}.split{display:block}
-.paper{width:auto!important;min-height:0!important;padding:0!important;margin:0!important;box-shadow:none!important;zoom:1!important}
+.paper{width:200mm!important;height:286mm!important;padding:0!important;margin:0!important;box-shadow:none!important;zoom:1!important}
+.paper.agg{width:287mm!important;height:199mm!important}
 .paper+.paper{break-before:page}
 body[data-only] .paper{display:none}
 body[data-only="1"] .p1,body[data-only="2"] .p2,body[data-only="3"] .p3{display:block}}
@@ -159,14 +161,22 @@ function sheet(k){const m=S.meta,cs=S.cols,F=cs.reduce((a,c)=>a+c.max,0),th=+m.t
   h+=S.stu.map((s,i)=>{let sum=0;const cells=cs.map(c=>{const a=val((s.m||{})[c.id],c.max),b=val((s.n||{})[c.id],c.max),md=c.am||dam(c.name),v=md=="2"?(b??a):(a!=null&&b!=null?(a+b)/2:a??b);sum+=v||0;return `<td>${e((s.m||{})[c.id])}</td><td>${e((s.n||{})[c.id])}</td><td>${f(v)}</td>`}).join("");
    const t=val((s.t||{}).th,th);return `<tr><td>${i+1}</td><td>${e(s.reg)}</td><td class="n">${e(s.name)}</td>${cells}<td class="in">${+sum.toFixed(2)}</td><td>${e((s.t||{}).th)}</td><td class="in">${+(sum+(t||0)).toFixed(2)}</td></tr>`}).join("")}
  return h+`</tbody></table><div class="sig"><span>Subject Teacher</span><span>Level Head</span><span>Principal</span></div></div>`}
-function rPrev(){$("papers").innerHTML=[1,2,3].map(sheet).join("");fit()}
+function layout(){document.querySelectorAll(".paper").forEach(p=>{const t=p.querySelector(".st"),n=t.tBodies[0].rows.length;if(!n)return;const cs=getComputedStyle(p),ch=p.clientHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom)-8;let rh=6;
+ for(let i=0;i<3;i++){p.style.setProperty("--rh",rh+"px");const tot=[...p.children].reduce((a,c)=>a+c.offsetHeight,0);rh=Math.max(3,rh+(ch-tot)/n)}
+ p.style.setProperty("--rh",rh+"px")})}
+function rPrev(){$("papers").innerHTML=[1,2,3].map(sheet).join("");layout();fit()}
 function prev(){clearTimeout(PT);PT=setTimeout(rPrev,250)}
 function fit(){const w=$("papers").clientWidth;document.querySelectorAll(".paper").forEach(p=>p.style.setProperty("--z",Math.min(1,(w-2)/(p.classList.contains("agg")?1123:794))))}
 function pr(n){rPrev();if(n)document.body.dataset.only=n;else delete document.body.dataset.only;try{window.print()}catch(e){}}
 window.onafterprint=()=>{delete document.body.dataset.only};window.onresize=fit;
 function render(){rCols();rTbl();rTabs();save();prev()}
 function resetAll(){if(!confirm("Delete all students, columns and details?"))return;try{localStorage.removeItem("rubrics-dash")}catch(e){}S={meta:{},cols:[],stu:[]};load();rMeta();render()}
-load();rMeta();render();rPrev();
+$("tbl").addEventListener("keydown",e=>{const t=e.target;if(t.tagName!="INPUT"||!["Enter","ArrowDown","ArrowUp"].includes(e.key))return;e.preventDefault();
+ const td=t.closest("td"),tr=td.parentElement,tb=tr.parentElement,ci=td.cellIndex,up=e.key=="ArrowUp"||(e.key=="Enter"&&e.shiftKey);
+ const go=(r,i)=>{const n=r&&r.cells[i]&&r.cells[i].querySelector("input");if(n){n.focus();n.select()}return !!n};
+ if(go(up?tr.previousElementSibling:tr.nextElementSibling,ci))return;
+ if(e.key=="Enter"&&!up&&tb.rows.length>1)go(tb.rows[1],ci+1)});
+load();rMeta();render();rPrev();if(document.fonts)document.fonts.ready.then(rPrev);
 </script><script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {getAuth,GoogleAuthProvider,signInWithPopup,signOut,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
