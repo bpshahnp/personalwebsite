@@ -111,7 +111,7 @@ if (typeof window.jspdf === "undefined") {
 }
 </script>
 
-<link rel="stylesheet" href="mcqmaker.css?v=1.8">
+<link rel="stylesheet" href="mcqmaker.css?v=1.9">
 <style>
 /* Remove the static bar above the MCQ page completely */
 .preview-toolbar {
@@ -119,7 +119,6 @@ if (typeof window.jspdf === "undefined") {
 }
 
 /* Unified Frosted Glass Design System */
-.preview-mode-fab,
 .preview-print-fab,
 .zoom-fab {
   background: rgba(15, 23, 42, 0.85) !important;
@@ -128,64 +127,6 @@ if (typeof window.jspdf === "undefined") {
   border: 1px solid rgba(255, 255, 255, 0.14) !important;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35) !important;
   user-select: none !important;
-}
-
-/* Floating Mode Toggle (Top-Left: Collapsed icon by default, expands on hover) */
-.preview-mode-fab {
-  position: absolute !important;
-  top: 16px !important;
-  left: 20px !important;
-  z-index: 50 !important;
-  height: 38px !important;
-  width: 38px !important;
-  border-radius: 50% !important;
-  padding: 0 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: flex-start !important;
-  cursor: pointer !important;
-  overflow: hidden !important;
-  transition: width 0.28s cubic-bezier(0.16, 1, 0.3, 1),
-              border-radius 0.28s cubic-bezier(0.16, 1, 0.3, 1),
-              padding 0.28s cubic-bezier(0.16, 1, 0.3, 1),
-              background 0.2s ease,
-              box-shadow 0.2s ease !important;
-  white-space: nowrap !important;
-}
-.preview-mode-fab:hover,
-.preview-mode-fab:focus-within {
-  width: 140px !important;
-  border-radius: 9999px !important;
-  background: rgba(30, 41, 59, 0.95) !important;
-  border-color: rgba(255, 255, 255, 0.28) !important;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45) !important;
-}
-.preview-mode-fab .mode-fab-icon {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  width: 38px !important;
-  height: 38px !important;
-  min-width: 38px !important;
-  flex-shrink: 0 !important;
-  font-size: 16px !important;
-  line-height: 1 !important;
-}
-.preview-mode-fab .mode-fab-label {
-  font-size: 12px !important;
-  font-weight: 600 !important;
-  color: #f8fafc !important;
-  letter-spacing: 0.2px !important;
-  opacity: 0 !important;
-  pointer-events: none !important;
-  transition: opacity 0.2s ease 0.05s !important;
-  white-space: nowrap !important;
-  padding-right: 14px !important;
-}
-.preview-mode-fab:hover .mode-fab-label,
-.preview-mode-fab:focus-within .mode-fab-label {
-  opacity: 1 !important;
-  pointer-events: auto !important;
 }
 
 /* Floating Print Button in Printer Icon Format (Top-Right) */
@@ -369,6 +310,20 @@ if (typeof window.jspdf === "undefined") {
     <div style="display:flex;align-items:center;gap:6px">
       <button class="btn btn-sm" id="btn-quick-library" title="Open Saved Papers Library">📁 Library</button>
       <div class="brand-badge">Pro Suite</div>
+    </div>
+  </div>
+
+  <!-- Paper View Mode Switcher (Student / Teacher View) -->
+  <div class="sidebar-mode-container">
+    <div class="sidebar-mode-toggle" role="group" aria-label="Paper View Mode">
+      <button type="button" class="sidebar-mode-btn active" id="btn-mode-student" data-mode="student" title="Student Question Paper (blank answers for exam)">
+        <span class="sidebar-mode-icon">🎓</span>
+        <span class="sidebar-mode-text">Student View</span>
+      </button>
+      <button type="button" class="sidebar-mode-btn" id="btn-mode-teacher" data-mode="teacher" title="Teacher Master Copy (answers highlighted with green ticks)">
+        <span class="sidebar-mode-icon">👨‍🏫</span>
+        <span class="sidebar-mode-text">Teacher View</span>
+      </button>
     </div>
   </div>
 
@@ -683,12 +638,6 @@ if (typeof window.jspdf === "undefined") {
   <span id="preview-mode-tag" style="display:none">🎓 Student Copy</span>
   <span id="page-count-badge" style="display:none">Pages: 1</span>
   <select id="top-key-mode" style="display:none"><option value="none" selected></option></select>
-
-  <!-- Floating Mode Toggle (Top-Left: Collapsed icon by default, expands on hover) -->
-  <button class="preview-mode-fab noprint" id="btn-quick-toggle" title="Switch Student / Teacher View">
-    <span class="mode-fab-icon" id="mode-fab-icon">🎓</span>
-    <span class="mode-fab-label" id="mode-fab-label">Student View</span>
-  </button>
 
   <!-- Floating Print Button (Top-Right in classic printer icon format) -->
   <button class="preview-print-fab noprint" id="btn-top-print" title="Print Paper or Save as PDF (Ctrl + P)">

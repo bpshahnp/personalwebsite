@@ -1034,12 +1034,18 @@ function preview() {
 
   $("cols").disabled = isMultiCopy;
 
-  // Update mode tags
+  // Update mode tags and sidebar buttons
   const isTeacher = s.mode === "teacher";
   const tag = $("preview-mode-tag");
   if (tag) {
     tag.textContent = isTeacher ? "👨‍🏫 Teacher Master Copy" : "🎓 Student Copy";
     tag.style.background = isTeacher ? "var(--success)" : "rgba(255,255,255,0.1)";
+  }
+  const btnStudent = $("btn-mode-student");
+  const btnTeacher = $("btn-mode-teacher");
+  if (btnStudent && btnTeacher) {
+    btnStudent.classList.toggle("active", !isTeacher);
+    btnTeacher.classList.toggle("active", isTeacher);
   }
   if ($("btn-quick-toggle")) {
     const iconEl = $("mode-fab-icon");
@@ -1047,10 +1053,6 @@ function preview() {
     if (iconEl && labelEl) {
       iconEl.textContent = isTeacher ? "👨‍🏫" : "🎓";
       labelEl.textContent = isTeacher ? "Teacher View" : "Student View";
-    } else {
-      $("btn-quick-toggle").innerHTML = isTeacher
-        ? `<span class="mode-fab-icon" id="mode-fab-icon">👨‍🏫</span><span class="mode-fab-label" id="mode-fab-label">Teacher View</span>`
-        : `<span class="mode-fab-icon" id="mode-fab-icon">🎓</span><span class="mode-fab-label" id="mode-fab-label">Student View</span>`;
     }
   }
 
@@ -1311,11 +1313,25 @@ $("z-100").onclick = () => {
   currentZoom = 1;
   preview();
 };
-$("btn-quick-toggle").onclick = () => {
-  const newMode = $("mode").value === "student" ? "teacher" : "student";
-  $("mode").value = newMode;
-  preview();
-};
+if ($("btn-mode-student")) {
+  $("btn-mode-student").onclick = () => {
+    $("mode").value = "student";
+    preview();
+  };
+}
+if ($("btn-mode-teacher")) {
+  $("btn-mode-teacher").onclick = () => {
+    $("mode").value = "teacher";
+    preview();
+  };
+}
+if ($("btn-quick-toggle")) {
+  $("btn-quick-toggle").onclick = () => {
+    const newMode = $("mode").value === "student" ? "teacher" : "student";
+    $("mode").value = newMode;
+    preview();
+  };
+}
 
 // Listen to all setup input changes
 [
