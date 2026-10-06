@@ -100,12 +100,13 @@ body[data-only="1"] .p1,body[data-only="2"] .p2,body[data-only="3"] .p3{display:
 <div style="flex:0 0 110px"><label>Reg. No.</label><input id="sr"></div>
 <div><label>Student's name</label><input id="sn" placeholder="Full name"></div>
 <div class="fit"><button class="p" onclick="addStu()">+ Add student</button></div></div>
-<div class="row"><div><label>Fetch students from a class roster (uploaded by admin)</label><select id="rsSel" onchange="loadRoster(this.value);this.value=''"></select></div></div>
+<div class="row"><div><label>Select a class (each class gets its own section, so marks of other classes are kept)</label><select id="rsSel" onchange="loadRoster(this.value);this.value=''"></select></div></div>
 <details style="margin-top:10px"><summary class="hint" style="cursor:pointer">Paste many students (one per line: Reg. No. [tab or comma] Name)</summary>
 <textarea id="bulk" placeholder="295, BISHAL SAPKOTA&#10;342, OZASHWI GURUNG"></textarea>
 <div class="row"><button class="fit" onclick="bulkAdd()">Add pasted list</button></div></details></section>
 
-<section class="noprint"><h2>4. Marks entry</h2>
+<section class="noprint"><h2>4. Marks entry <span class="tag" id="curSec"></span></h2>
+<div class="row" style="margin:0 0 10px"><button class="fit p" onclick="saveNow()">💾 Save now</button><span id="svs" class="hint" style="align-self:center">Changes also save automatically when signed in.</span></div>
 <div class="row" style="margin:0 0 10px" id="tabs"></div>
 <div class="wrap"><table class="e" id="tbl"></table></div>
 <p class="hint">Number within the column maximum, or <b>abs</b> for absent. Invalid entries turn red and are ignored. Auto-saved in this browser.</p>
@@ -145,10 +146,12 @@ function addStu(){const n=$("sn").value.trim();if(!n){$("sn").focus();return}S.s
 function bulkAdd(){$("bulk").value.split("\n").forEach(l=>{l=l.trim();if(!l)return;const p=l.split(/\t|,/).map(x=>x.trim()).filter(Boolean);
  if(p.length>1&&/^\d+$/.test(p[0]))S.stu.push(ns(p[0],p.slice(1).join(" ")));else S.stu.push(ns("",p.join(" ")))});$("bulk").value="";render()}
 function fillRosters(){const R=window.ROSTERS||[];$("rsSel").innerHTML=R.length?'<option value="">Select class to load its students…</option>'+R.map(r=>`<option value="${r.id}">${esc(r.cls+" "+r.sec)} (${r.count||""})</option>`).join(""):'<option value="">No class rosters available (sign in; admin must upload)</option>'}
-function loadRoster(id){const r=(window.ROSTERS||[]).find(x=>x.id==id);if(!r)return;const l=JSON.parse(r.data||"[]");
- if(S.stu.length&&!confirm("Replace the student list with "+r.cls+" "+r.sec+" ("+l.length+" students)? Marks of students with the same Reg. No. are kept."))return;
- const old={};S.stu.forEach(x=>old[x.reg]=x);S.stu=l.map(x=>{const o=old[x.reg]||ns(x.reg,x.name);o.name=String(x.name).toUpperCase();o.nn=x.nn||"";return o});
- S.meta.cls=r.cls;S.meta.sec=r.sec;rMeta();render()}
+function rStu(r,keep){const old={};(keep||[]).forEach(x=>old[x.reg]=x);return JSON.parse(r.data||"[]").map(x=>{const o=old[x.reg]||ns(x.reg,x.name);o.name=String(x.name).toUpperCase();o.nn=x.nn||"";return o})}
+function useRoster(r,keep){S.stu=rStu(r,keep);S.rid=r.id;S.meta.cls=r.cls;S.meta.sec=r.sec;rMeta();render()}
+async function loadRoster(id){const r=(window.ROSTERS||[]).find(x=>x.id==id);if(!r)return;
+ if(window.fbPickRoster&&await fbPickRoster(id))return;
+ if(S.stu.length&&!confirm("Replace the student list with "+r.cls+" "+r.sec+"? Marks of students with the same Reg. No. are kept."))return;useRoster(r,S.stu)}
+function saveNow(){save();if(window.cloudSaveNow)cloudSaveNow();else $("svs").textContent="Saved in this browser only. Sign in to save online."}
 function delStu(i){if(confirm("Remove "+S.stu[i].name+"?")){S.stu.splice(i,1);render()}}
 function chk(v,max){v=String(v??"").trim();if(v===""||/^abs$/i.test(v))return true;const n=+v;return !isNaN(n)&&n>=0&&n<=max}
 const val=(x,max)=>{const n=parseFloat(x);return isNaN(n)||!chk(x,max)?null:n};
@@ -213,18 +216,27 @@ else{
  let user=null,cur=null,secs=[],T;
  const ref=id=>doc(db,"users",user.uid,"sections",id);
  const put=(id,name,data)=>setDoc(ref(id),{name,data,updated:serverTimestamp()});
- const fill=()=>{$("secSel").innerHTML=secs.map(s=>`<option value="${s.id}" ${s.id==cur?"selected":""}>${h(s.name)}</option>`).join("")};
+ const ss=t=>{st(t);const e=$("svs");if(e)e.textContent=t};
+ const fill=()=>{const c=secs.find(x=>x.id==cur);$("curSec").textContent=c?c.name:"";$("secSel").innerHTML=secs.map(s=>`<option value="${s.id}" ${s.id==cur?"selected":""}>${h(s.name)}</option>`).join("")};
  const open=id=>{cur=id;const s=secs.find(x=>x.id==id);window.noCloud=true;applyState(JSON.parse(s.data||"null"));window.noCloud=false;fill();st("☁ "+user.email+" · section loaded")};
  const add=async(name,data)=>{const id="s"+Date.now(),r={id,name,data};await put(id,name,data);secs.push(r);return id};
  window.fbSignIn=()=>signInWithPopup(auth,new GoogleAuthProvider()).catch(e=>st("Sign-in failed: "+e.code));
  window.fbSignOut=()=>signOut(auth);
  window.fbOpen=id=>open(id);
- window.fbNew=async()=>{const n=prompt("New section name (e.g. VIII DASHRATH):");if(!n)return;const d=JSON.parse(JSON.stringify(S));d.stu=[];d.meta.sec="";try{open(await add(n.trim(),JSON.stringify(d)))}catch(e){st("Failed: "+e.code)}};
+ window.fbNew=async()=>{const n=prompt("New section name (e.g. VIII DASHRATH):");if(!n)return;const d=JSON.parse(JSON.stringify(S));d.stu=[];delete d.rid;d.meta.sec="";try{open(await add(n.trim(),JSON.stringify(d)))}catch(e){st("Failed: "+e.code)}};
  window.fbRename=async()=>{const s=secs.find(x=>x.id==cur),n=prompt("Rename section:",s.name);if(!n)return;s.name=n.trim();fill();try{await put(cur,s.name,JSON.stringify(S))}catch(e){st("Failed: "+e.code)}};
  window.fbDel=async()=>{const s=secs.find(x=>x.id==cur);if(!confirm("Delete section '"+s.name+"' and all its marks?"))return;try{await deleteDoc(ref(cur));secs=secs.filter(x=>x.id!=cur);if(!secs.length)await add("New section",JSON.stringify({meta:{},cols:[],stu:[]}));open(secs[0].id)}catch(e){st("Failed: "+e.code)}};
- window.cloudSave=()=>{if(!user||!cur||window.noCloud)return;const id=cur,name=secs.find(x=>x.id==id).name,data=JSON.stringify(S);clearTimeout(T);st("Saving…");
-  T=setTimeout(async()=>{try{await put(id,name,data);secs.find(x=>x.id==id).data=data;st("☁ Saved · "+user.email)}catch(e){st("Save failed: "+e.code)}},800)};
-
+ window.cloudSave=now=>{if(!user||!cur||window.noCloud)return;const id=cur,c=secs.find(x=>x.id==id),name=c.name,data=JSON.stringify(S);c.data=data;window.pend=true;clearTimeout(T);ss("● Saving…");
+  T=setTimeout(async()=>{try{await put(id,name,data);window.pend=false;ss("✔ Saved to cloud at "+new Date().toLocaleTimeString()+" · "+user.email)}catch(e){ss("✖ Save failed: "+e.code+" (check internet / Firestore rules)")}},now?0:700)};
+ window.cloudSaveNow=()=>{if(!user){ss("Sign in to save online (saved in this browser only)");return}window.noCloud=false;cloudSave(true)};
+ window.onbeforeunload=()=>window.pend?"Changes are still being saved.":undefined;
+ window.fbPickRoster=async id=>{if(!user)return false;const r=rosters.find(x=>x.id==id);if(!r)return false;
+  const has=x=>{try{return JSON.parse(x.data||"{}").rid==id}catch(e){return false}},ex=secs.find(has),c=secs.find(x=>x.id==cur),name=(r.cls+" "+r.sec).trim();
+  if(ex&&ex.id!=cur){open(ex.id);return true}
+  if(ex){if(confirm("Update the student list of "+ex.name+" from the roster? Existing marks are kept."))useRoster(r,S.stu);return true}
+  if(!S.stu.length&&!S.rid){c.name=name;useRoster(r,[]);fill();return true}
+  const d=JSON.parse(JSON.stringify(S));d.rid=id;d.meta.cls=r.cls;d.meta.sec=r.sec;d.stu=rStu(r,[]);
+  try{open(await add(name,JSON.stringify(d)));st("✔ New section "+name+" created. Your previous section is kept.")}catch(e){st("Failed: "+e.code)}return true};
  let rosters=[];
  const ro=()=>{window.ROSTERS=rosters;if(window.fillRosters)fillRosters()};
  const loadRosters=async()=>{rosters=(await getDocs(collection(db,"rosters"))).docs.map(d=>({id:d.id,...d.data()}));rosters.sort((a,b)=>(a.cls+a.sec).localeCompare(b.cls+b.sec,undefined,{numeric:true}));ro()};
