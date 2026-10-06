@@ -1534,6 +1534,15 @@ $("bdoc").onclick = async () => {
     const sz = s.fs * 2;
     const fpx = (s.fs * 96) / 72;
 
+    // Resolve font name for Microsoft Word
+    let fontName = "Times New Roman";
+    if (s.font.includes("Arial")) fontName = "Arial";
+    else if (s.font.includes("Calibri")) fontName = "Calibri";
+    else if (s.font.includes("Georgia")) fontName = "Georgia";
+    else if (s.font.includes("Cambria")) fontName = "Cambria";
+    else if (s.font.includes("Garamond")) fontName = "Garamond";
+    else if (s.font.includes("Courier")) fontName = "Courier New";
+
     const nb = { style: D.BorderStyle.NONE, size: 0, color: "FFFFFF" };
     const nob = { top: nb, bottom: nb, left: nb, right: nb, insideHorizontal: nb, insideVertical: nb };
     const dims = s.size === "A4" ? [11906, 16838] : [12240, 15840];
@@ -1552,8 +1561,12 @@ $("bdoc").onclick = async () => {
     const avail = (inner / 15) * 0.95;
     const DXA = D.WidthType.DXA;
 
+    // Full Marks display logic
+    const calculatedMarks = totalMarksCalc();
+    const fullMarksText = s.marks && s.marks.toLowerCase() !== "auto" ? s.marks : calculatedMarks + " Marks";
+
     const P = (t, o = {}) => new D.Paragraph({
-      children: [new D.TextRun({ text: t, size: sz, bold: !!o.b, italics: !!o.it })],
+      children: [new D.TextRun({ text: t, size: sz, bold: !!o.b, italics: !!o.it, font: fontName })],
       spacing: { before: o.before || 0, after: o.after ?? 40 },
       alignment: o.al || D.AlignmentType.LEFT
     });
@@ -1563,36 +1576,71 @@ $("bdoc").onclick = async () => {
       if (s.inst) {
         hList.push(new D.Paragraph({
           alignment: D.AlignmentType.CENTER,
-          children: [new D.TextRun({ text: s.inst.toUpperCase(), bold: true, size: sz + 8 })],
-          spacing: { after: 40 }
+          children: [new D.TextRun({ text: s.inst.toUpperCase(), bold: true, size: sz + 6, font: fontName })],
+          spacing: { before: 0, after: 20 }
         }));
       }
       hList.push(new D.Paragraph({
         alignment: D.AlignmentType.CENTER,
-        children: [new D.TextRun({ text: s.title, bold: true, size: sz + 4 })],
-        spacing: { after: 60 }
+        children: [new D.TextRun({ text: s.title || "Examination Paper", bold: true, size: sz + 2, font: fontName })],
+        spacing: { before: 0, after: 30 }
       }));
 
-      const metaLine = [
-        s.subject ? `Subject: ${s.subject}` : "",
-        s.grade ? `Class: ${s.grade}` : "",
-        s.time ? `Time: ${s.time}` : "",
-        `Full Marks: ${s.marks || totalMarksCalc()}`
-      ].filter(Boolean).join("    |    ");
+      // Meta Row: Subject | Class | Time | Full Marks
+      const metaParts = [];
+      if (s.subject) metaParts.push(`Subject: ${s.subject}`);
+      if (s.grade) metaParts.push(`Class: ${s.grade}`);
+      if (s.time) metaParts.push(`Time: ${s.time}`);
+      metaParts.push(`Full Marks: ${fullMarksText}`);
 
-      hList.push(P(metaLine, { b: true, al: D.AlignmentType.CENTER, after: 80 }));
+      hList.push(new D.Paragraph({
+        alignment: D.AlignmentType.CENTER,
+        children: [new D.TextRun({ text: metaParts.join("    |    "), bold: true, size: sz - 2, font: fontName })],
+        spacing: { before: 0, after: 50 },
+        border: {
+          bottom: { style: D.BorderStyle.SINGLE, size: 8, color: "000000", space: 4 }
+        }
+      }));
 
       if (s.instructions) {
-        hList.push(P(`Instructions: ${s.instructions}`, { it: true, after: 80 }));
+        hList.push(new D.Paragraph({
+          children: [new D.TextRun({ text: `Instructions: ${s.instructions}`, italics: true, size: sz - 2, font: fontName })],
+          spacing: { before: 40, after: 60 }
+        }));
       }
 
-      const stFields = [];
-      if (s.showName) stFields.push("Name: ______________________");
-      if (s.showRoll) stFields.push("Roll No: _______");
-      if (s.showSec) stFields.push("Section: _____");
-      if (s.showDate) stFields.push("Date: _________");
-      if (stFields.length) {
-        hList.push(P(stFields.join("    "), { after: 120 }));
+      // Student info row: formatted cleanly to never wrap awkwardly
+      const hasStudent = s.showName || s.showRoll || s.showSec || s.showDate;
+      if (hasStudent) {
+        if (s.copies === 1) {
+          const parts = [];
+          if (s.showName) parts.push("Name: _______________________________");
+          if (s.showRoll) parts.push("Roll No: _________");
+          if (s.showSec) parts.push("Sec: _______");
+          if (s.showDate) parts.push("Date: _________");
+          hList.push(new D.Paragraph({
+            children: [new D.TextRun({ text: parts.join("    "), size: sz - 2, font: fontName })],
+            spacing: { before: 30, after: 90 }
+          }));
+        } else {
+          // Compact 2-line layout for half-sheet / multi-copy mode
+          if (s.showName) {
+            hList.push(new D.Paragraph({
+              children: [new D.TextRun({ text: "Name: _______________________________________", size: sz - 2, font: fontName })],
+              spacing: { before: 20, after: 20 }
+            }));
+          }
+          const subParts = [];
+          if (s.showRoll) subParts.push("Roll No: ________");
+          if (s.showSec) subParts.push("Sec: ______");
+          if (s.showDate) subParts.push("Date: ________");
+          if (subParts.length) {
+            hList.push(new D.Paragraph({
+              children: [new D.TextRun({ text: subParts.join("     "), size: sz - 2, font: fontName })],
+              spacing: { before: 0, after: 80 }
+            }));
+          }
+        }
       }
       return hList;
     };
@@ -1600,11 +1648,11 @@ $("bdoc").onclick = async () => {
     const rp = async (t, o = {}) => {
       const out = [];
       let first = true;
-      let runs = o.pre ? [new D.TextRun({ text: o.pre, bold: !!o.bp, size: sz })] : [];
+      let runs = o.pre ? [new D.TextRun({ text: o.pre, bold: !!o.bp, font: fontName, size: sz })] : [];
 
       const flush = al => {
         out.push(new D.Paragraph({
-          children: runs.length ? runs : [new D.TextRun({ text: "", size: sz })],
+          children: runs.length ? runs : [new D.TextRun({ text: "", font: fontName, size: sz })],
           alignment: al,
           spacing: { before: first ? (o.before || 0) : 0, after: o.after ?? 40 },
           keepNext: !!o.kn
@@ -1615,7 +1663,29 @@ $("bdoc").onclick = async () => {
 
       for (const g of segs(t || "")) {
         if (g.t !== undefined) {
-          g.t.split("\n").forEach((ln, i) => runs.push(new D.TextRun({ text: ln, size: sz, break: i ? 1 : 0 })));
+          // Markdown bold **text** and italic *text* parsing for Word
+          const mdParts = g.t.split(/(\*\*.*?\*\*|\*.*?\*)/g);
+          for (const part of mdParts) {
+            if (!part) continue;
+            let isB = false, isIt = false, clean = part;
+            if (part.startsWith("**") && part.endsWith("**") && part.length >= 4) {
+              isB = true;
+              clean = part.slice(2, -2);
+            } else if (part.startsWith("*") && part.endsWith("*") && part.length >= 2) {
+              isIt = true;
+              clean = part.slice(1, -1);
+            }
+            clean.split("\n").forEach((ln, i) => {
+              runs.push(new D.TextRun({
+                text: ln,
+                bold: isB,
+                italics: isIt,
+                font: fontName,
+                size: sz,
+                break: i ? 1 : 0
+              }));
+            });
+          }
           continue;
         }
         let m = null;
@@ -1623,7 +1693,7 @@ $("bdoc").onclick = async () => {
           try { m = await mathPNG(g.m, g.d && !o.inl, fpx); } catch (e) {}
         }
         if (!m) {
-          runs.push(new D.TextRun({ text: "$" + g.m + "$", size: sz }));
+          runs.push(new D.TextRun({ text: "$" + g.m + "$", font: fontName, size: sz }));
           continue;
         }
         const im = new D.ImageRun({
@@ -1661,38 +1731,69 @@ $("bdoc").onclick = async () => {
       const isTeacher = s.mode === "teacher";
 
       for (const [i, q] of qs.entries()) {
-        const marksTxt = (Number(q.marks) || 1) !== 1 ? `  [${q.marks} marks]` : '';
-        out.push(...await rp(q.q + marksTxt, { pre: `${i + 1}. `, bp: 1, before: 100, kn: 1, after: 60 }));
+        const marksVal = Number(q.marks) || 1;
+        const marksTxt = marksVal !== 1 ? `  [${marksVal} marks]` : '';
+        out.push(...await rp((q.q || "") + marksTxt, {
+          pre: `${i + 1}. `,
+          bp: 1,
+          before: 80,
+          kn: 1,
+          after: 35
+        }));
         out.push(...qImg(q));
 
         const ly = lay(q, s);
-        const optCount = q.o.length;
+        const optCount = q.o ? q.o.length : 0;
 
         if (ly === "col") {
           for (let j = 0; j < optCount; j++) {
-            const mark = isTeacher && q.a === j ? " [✓]" : "";
-            out.push(...await rp(q.o[j] + mark, { pre: `(${L[j]}) `, inl: 1, after: 30 }));
+            const isAns = isTeacher && q.a === j;
+            const mark = isAns ? " [✓]" : "";
+            out.push(...await rp((q.o[j] || "") + mark, {
+              pre: `(${L[j]}) `,
+              bp: isAns,
+              inl: 1,
+              after: 20
+            }));
           }
         } else {
-          const n = ly.includes("row") ? optCount : 2;
+          const n = ly.includes("row") ? Math.max(1, optCount) : 2;
           const rows = [];
-          const cw = Math.floor(inner / n);
+          const colWidth = Math.floor(inner / n);
 
           for (let k = 0; k < optCount; k += n) {
             const cells = [];
-            for (let j = k; j < Math.min(k + n, optCount); j++) {
-              const mark = isTeacher && q.a === j ? " [✓]" : "";
-              cells.push(new D.TableCell({
-                width: { size: cw, type: DXA },
-                borders: nob,
-                children: await rp(q.o[j] + mark, { pre: `(${L[j]}) `, inl: 1, after: 20 })
-              }));
+            for (let j = k; j < k + n; j++) {
+              if (j < optCount) {
+                const isAns = isTeacher && q.a === j;
+                const mark = isAns ? " [✓]" : "";
+                cells.push(new D.TableCell({
+                  width: { size: colWidth, type: DXA },
+                  borders: nob,
+                  margins: { top: 30, bottom: 30, left: 40, right: 40 },
+                  children: await rp((q.o[j] || "") + mark, {
+                    pre: `(${L[j]}) `,
+                    bp: isAns,
+                    inl: 1,
+                    after: 0
+                  })
+                }));
+              } else {
+                // Empty padding cell to keep table columns strictly balanced in Microsoft Word
+                cells.push(new D.TableCell({
+                  width: { size: colWidth, type: DXA },
+                  borders: nob,
+                  margins: { top: 0, bottom: 0, left: 0, right: 0 },
+                  children: [new D.Paragraph({ spacing: { before: 0, after: 0 }, children: [] })]
+                }));
+              }
             }
             rows.push(new D.TableRow({ cantSplit: true, children: cells }));
           }
+
           out.push(new D.Table({
-            width: { size: cw * n, type: DXA },
-            columnWidths: Array(n).fill(cw),
+            width: { size: colWidth * n, type: DXA },
+            columnWidths: Array(n).fill(colWidth),
             layout: D.TableLayoutType.FIXED,
             borders: nob,
             rows
@@ -1700,10 +1801,44 @@ $("bdoc").onclick = async () => {
         }
       }
 
+      // Professional Answer Key Box at end of paper
       if (s.keyMode !== "none" && qs.length) {
-        const keyTxt = qs.map((q, i) => `${i + 1}-${L[q.a]}`).join(",  ");
-        out.push(P("ANSWER KEY: " + keyTxt, { b: true, before: 200 }));
+        const keyItems = qs.map((q, i) => `${i + 1}. (${L[q.a]})`).join("    ");
+        const keyBoxBorder = { style: D.BorderStyle.SINGLE, size: 8, color: "334155" };
+        const keyTable = new D.Table({
+          width: { size: inner, type: DXA },
+          columnWidths: [inner],
+          layout: D.TableLayoutType.FIXED,
+          borders: {
+            top: keyBoxBorder, bottom: keyBoxBorder, left: keyBoxBorder, right: keyBoxBorder,
+            insideHorizontal: nb, insideVertical: nb
+          },
+          rows: [
+            new D.TableRow({
+              children: [
+                new D.TableCell({
+                  width: { size: inner, type: DXA },
+                  shading: { fill: "F8FAFC", type: D.ShadingType.SOLID, color: "auto" },
+                  margins: { top: 80, bottom: 80, left: 100, right: 100 },
+                  children: [
+                    new D.Paragraph({
+                      children: [new D.TextRun({ text: "ANSWER KEY", bold: true, size: sz - 2, font: fontName, color: "0F172A" })],
+                      spacing: { before: 0, after: 40 }
+                    }),
+                    new D.Paragraph({
+                      children: [new D.TextRun({ text: keyItems, bold: true, size: sz - 2, font: fontName, color: "1E293B" })],
+                      spacing: { before: 0, after: 0 }
+                    })
+                  ]
+                })
+              ]
+            })
+          ]
+        });
+        out.push(new D.Paragraph({ spacing: { before: 120, after: 0 }, children: [] }));
+        out.push(keyTable);
       }
+
       return out;
     };
 
@@ -1716,12 +1851,22 @@ $("bdoc").onclick = async () => {
     } else {
       const rows = [];
       const cw = Math.floor(U / tc);
+      const cutBorder = { style: D.BorderStyle.DASHED, size: 6, color: "94A3B8" };
+
       for (let r = 0; r < s.copies / tc; r++) {
         const cells = [];
         for (let c = 0; c < tc; c++) {
+          const isRightCol = c < tc - 1;
+          const cellBorders = {
+            top: nb, bottom: nb, left: nb,
+            right: isRightCol ? cutBorder : nb,
+            insideHorizontal: nb, insideVertical: nb
+          };
+
           cells.push(new D.TableCell({
             width: { size: cw, type: DXA },
-            margins: { top: 100, bottom: 100, left: 140, right: 140 },
+            borders: cellBorders,
+            margins: { top: 60, bottom: 60, left: 100, right: 100 },
             children: [...head(), ...await body()]
           }));
         }
@@ -1743,7 +1888,22 @@ $("bdoc").onclick = async () => {
       ];
     }
 
-    const blob = await D.Packer.toBlob(new D.Document({ sections }));
+    const doc = new D.Document({
+      styles: {
+        default: {
+          document: {
+            run: {
+              font: fontName,
+              size: sz,
+              color: "000000"
+            }
+          }
+        }
+      },
+      sections
+    });
+
+    const blob = await D.Packer.toBlob(doc);
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = (s.title || "mcq_exam").replace(/[^\w-]+/g, "_") + ".docx";
