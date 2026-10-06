@@ -2,6 +2,7 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Rubrics Dashboard</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700&display=swap">
 <style>
 :root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f6f7f9;--card:#fff;--tx:#1d2330;--mu:#667085;--bd:#d9dde5;--ac:#2f5fd0;--acx:#fff;--bad:#c62828;--ok:#e8f5e9}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14171d;--card:#1d222b;--tx:#e8ebf1;--mu:#98a2b3;--bd:#333a47;--ac:#6b93f5;--acx:#0b1220;--bad:#ff8a80;--ok:#1f3a27}}
@@ -35,6 +36,8 @@ table.e{border-collapse:collapse;width:100%;min-width:600px}
 .hint{color:var(--mu);font-size:12px;margin:6px 0 0}
 .tag{display:inline-block;background:var(--bg);border:1px solid var(--bd);border-radius:20px;padding:1px 9px;font-size:12px;color:var(--mu)}
 [hidden]{display:none!important}
+h3{font-size:14px;margin:14px 0 6px}
+.paper.dev,.paper.dev *{font-family:"Noto Sans Devanagari",Mukta,Mangal,"Nirmala UI",Arial,sans-serif!important}.paper.dev .st td{line-height:1.25}
 .split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
 .split section.pv{position:sticky;top:8px;max-height:calc(100vh - 16px);overflow:auto;margin-bottom:0}
 @media (max-width:1000px){.split{grid-template-columns:1fr}.split section.pv{position:static;max-height:none}}
@@ -76,7 +79,7 @@ body[data-only="1"] .p1,body[data-only="2"] .p2,body[data-only="3"] .p3{display:
 <button id="inB" class="fit p" onclick="fbSignIn()" hidden>Sign in with Google</button>
 <span id="secBox" hidden style="display:flex;gap:6px;flex-wrap:wrap;flex:1 1 300px"><select id="secSel" style="flex:1 1 160px;width:auto" onchange="fbOpen(this.value)"></select>
 <button class="fit" onclick="fbNew()">+ New section</button><button class="fit" onclick="fbRename()">Rename</button><button class="fit x" onclick="fbDel()">Delete</button></span>
-<button id="outB" class="fit" onclick="fbSignOut()" hidden>Sign out</button></div>
+<button id="outB" class="fit" onclick="fbSignOut()" hidden>Sign out</button><a id="admLink" href="admin.html" hidden>Admin dashboard →</a></div>
 <p class="hint">Each section (e.g. VIII LAKHAN) has its own heading details, columns, students and marks. "+ New section" copies the current heading details and columns, with no students.</p></section>
 
 <section class="noprint"><h2>1. Heading details</h2><div class="grid" id="meta"></div></section>
@@ -97,6 +100,7 @@ body[data-only="1"] .p1,body[data-only="2"] .p2,body[data-only="3"] .p3{display:
 <div style="flex:0 0 110px"><label>Reg. No.</label><input id="sr"></div>
 <div><label>Student's name</label><input id="sn" placeholder="Full name"></div>
 <div class="fit"><button class="p" onclick="addStu()">+ Add student</button></div></div>
+<div class="row"><div><label>Fetch students from a class roster (uploaded by admin)</label><select id="rsSel" onchange="loadRoster(this.value);this.value=''"></select></div></div>
 <details style="margin-top:10px"><summary class="hint" style="cursor:pointer">Paste many students (one per line: Reg. No. [tab or comma] Name)</summary>
 <textarea id="bulk" placeholder="295, BISHAL SAPKOTA&#10;342, OZASHWI GURUNG"></textarea>
 <div class="row"><button class="fit" onclick="bulkAdd()">Add pasted list</button></div></details></section>
@@ -114,7 +118,7 @@ body[data-only="1"] .p1,body[data-only="2"] .p2,body[data-only="3"] .p3{display:
 <div id="papers"></div></section>
 </div></main>
 <script>
-const MF=[["school","School","OM SHANTI ACADEMY"],["term","Term","Second Term"],["year","Year","2083"],["cls","Class","Eight"],["sec","Section",""],["subj","Subject","Computer Science"],["teacher","Teacher's name",""],["theoryMax","Theory full marks","25","number"],["f1","First Rubrics: from",""],["t1","First Rubrics: to",""],["p1","First Rubrics: periods","","number"],["c1","First Rubrics: chapters",""],["f2","Second Rubrics: from",""],["t2","Second Rubrics: to",""],["p2","Second Rubrics: periods","","number"],["c2","Second Rubrics: chapters",""],["fa","Aggregate: from",""],["ta","Aggregate: to",""]];
+const MF=[["school","School","OM SHANTI ACADEMY"],["term","Term","Second Term"],["year","Year","2083"],["cls","Class","Eight"],["sec","Section",""],["subj","Subject","Computer Science"],["fontm","Sheet font","auto","sel",[["auto","Auto (Devanagari for Nepali / Social / LC)"],["dev","Devanagari"],["lat","Latin"]]],["teacher","Teacher's name",""],["theoryMax","Theory full marks","25","number"],["f1","First Rubrics: from",""],["t1","First Rubrics: to",""],["p1","First Rubrics: periods","","number"],["c1","First Rubrics: chapters",""],["f2","Second Rubrics: from",""],["t2","Second Rubrics: to",""],["p2","Second Rubrics: periods","","number"],["c2","Second Rubrics: chapters",""],["fa","Aggregate: from",""],["ta","Aggregate: to",""]];
 const P8=[["Participation",2],["Regularity",2],["Assignment",3],["Use of ICT/Lab work",6],["Viva",2],["MCQ",5],["Class Test",5]];
 const P9=[["Participation",4],["Regularity",4],["Behaviour",2],["Assignment",8],["Use of ICT/Lab work",8],["Viva",4],["MCQ",10],["Class Test",10]];
 let S={meta:{},cols:[],stu:[]},uid=1,TAB="m",PT;
@@ -126,7 +130,9 @@ function load(){try{const d=JSON.parse(localStorage.getItem("rubrics-dash")||"nu
  MF.forEach(f=>{if(S.meta[f[0]]==null)S.meta[f[0]]=f[2]});if(!S.cols.length)mk(P8);uid=Math.max(1,...S.cols.map(c=>c.id+1))}
 function mk(p){S.cols=p.map(x=>({id:uid++,name:x[0],max:x[1],am:dam(x[0])}))}
 function preset(n){if(S.stu.some(s=>Object.keys(s.m||{}).length||Object.keys(s.n||{}).length)&&!confirm("Replace columns? Entered marks will be lost."))return;mk(n==8?P8:P9);S.meta.cls=n==8?"Eight":"Nine";rMeta();render()}
-function rMeta(){$("meta").innerHTML=MF.map(f=>`<div><label>${f[1]}</label><input type="${f[3]||"text"}" value="${esc(S.meta[f[0]])}" oninput="S.meta['${f[0]}']=this.value;save();prev()"></div>`).join("")}
+const SELH=f=>`<div><label>${f[1]}</label><select onchange="S.meta['${f[0]}']=this.value;save();prev()">${f[4].map(o=>`<option value="${o[0]}" ${S.meta[f[0]]==o[0]?"selected":""}>${o[1]}</option>`).join("")}</select></div>`;
+const isDev=()=>S.meta.fontm=='dev'||(S.meta.fontm!='lat'&&/nepali|नेपाली|social|सामाजिक|\blc\b|local|स्थानीय/i.test(S.meta.subj||''));
+function rMeta(){$("meta").innerHTML=MF.map(f=>f[3]=="sel"?SELH(f):`<div><label>${f[1]}</label><input type="${f[3]||"text"}" value="${esc(S.meta[f[0]])}" oninput="S.meta['${f[0]}']=this.value;save();prev()"></div>`).join("")}
 function rCols(){
  $("cols").innerHTML=S.cols.map((c,i)=>{const am=c.am||dam(c.name);return `<div class="col"><small>${i+1}</small><input value="${esc(c.name)}" onchange="S.cols[${i}].name=this.value;render()"><input type="number" min="0" step="0.5" value="${c.max}" onchange="S.cols[${i}].max=+this.value||0;render()"><select onchange="S.cols[${i}].am=this.value;render()"><option value="a" ${am=="a"?"selected":""}>Agg: avg</option><option value="2" ${am=="2"?"selected":""}>Agg: 2nd</option></select><span><button onclick="mv(${i},-1)">▲</button> <button onclick="mv(${i},1)">▼</button> <button class="x" onclick="delCol(${i})">✕</button></span></div>`}).join("");
  $("np").innerHTML=`<option value="0">At the start</option>`+S.cols.map((c,i)=>`<option value="${i+1}" ${i==S.cols.length-1?"selected":""}>After ${esc(c.name)}</option>`).join("");
@@ -138,6 +144,11 @@ const ns=(reg,name)=>({reg,name:name.toUpperCase(),m:{},n:{},t:{}});
 function addStu(){const n=$("sn").value.trim();if(!n){$("sn").focus();return}S.stu.push(ns($("sr").value.trim(),n));$("sr").value=$("sn").value="";render();$("sr").focus()}
 function bulkAdd(){$("bulk").value.split("\n").forEach(l=>{l=l.trim();if(!l)return;const p=l.split(/\t|,/).map(x=>x.trim()).filter(Boolean);
  if(p.length>1&&/^\d+$/.test(p[0]))S.stu.push(ns(p[0],p.slice(1).join(" ")));else S.stu.push(ns("",p.join(" ")))});$("bulk").value="";render()}
+function fillRosters(){const R=window.ROSTERS||[];$("rsSel").innerHTML=R.length?'<option value="">Select class to load its students…</option>'+R.map(r=>`<option value="${r.id}">${esc(r.cls+" "+r.sec)} (${r.count||""})</option>`).join(""):'<option value="">No class rosters available (sign in; admin must upload)</option>'}
+function loadRoster(id){const r=(window.ROSTERS||[]).find(x=>x.id==id);if(!r)return;const l=JSON.parse(r.data||"[]");
+ if(S.stu.length&&!confirm("Replace the student list with "+r.cls+" "+r.sec+" ("+l.length+" students)? Marks of students with the same Reg. No. are kept."))return;
+ const old={};S.stu.forEach(x=>old[x.reg]=x);S.stu=l.map(x=>{const o=old[x.reg]||ns(x.reg,x.name);o.name=String(x.name).toUpperCase();o.nn=x.nn||"";return o});
+ S.meta.cls=r.cls;S.meta.sec=r.sec;rMeta();render()}
 function delStu(i){if(confirm("Remove "+S.stu[i].name+"?")){S.stu.splice(i,1);render()}}
 function chk(v,max){v=String(v??"").trim();if(v===""||/^abs$/i.test(v))return true;const n=+v;return !isNaN(n)&&n>=0&&n<=max}
 const val=(x,max)=>{const n=parseFloat(x);return isNaN(n)||!chk(x,max)?null:n};
@@ -150,16 +161,16 @@ function rTbl(){const cs=cl(),F=cs.reduce((a,c)=>a+c.max,0),sh=TAB!="t";
  if(!S.stu.length)h+=`<tr><td colspan="${cs.length+5}" class="hint">No students yet — add them above.</td></tr>`;
  $("tbl").innerHTML=h;$("cnt").textContent=S.stu.length+" students"}
 function setM(i,id,el){const cs=cl(),c=cs.find(x=>x.id==id),o=S.stu[i][TAB];o[id]=el.value;el.classList.toggle("bad",!chk(el.value,c.max));if(TAB!="t")$("t"+i).textContent=+tot(o,cs).toFixed(2);save();prev()}
-function sheet(k){const m=S.meta,cs=S.cols,F=cs.reduce((a,c)=>a+c.max,0),th=+m.theoryMax||0,e=esc,n=cs.length;
+function sheet(k){const m=S.meta,cs=S.cols,F=cs.reduce((a,c)=>a+c.max,0),th=+m.theoryMax||0,e=esc,n=cs.length,dv=isDev();
  const T=["","First Rubrics","Second Rubrics","Aggregate"][k],key=k==1?"m":"n",f=x=>x==null?"abs":+x.toFixed(2);
  const per=k==3?(+m.p1||0)+(+m.p2||0):m["p"+k],fr=k==3?m.fa:m["f"+k],to=k==3?m.ta:m["t"+k],ch=k==3?(m.c1+" "+m.c2).trim():m["c"+k];
  const cc=c=>/mcq/i.test(c.name)?"mcq":/test/i.test(c.name)?"ct":"";
- let h=`<div class="paper p${k}${k==3?" agg":""}"><div class="bar">${e(m.term)} - ${e(m.year)} (${T})</div><div class="hd"><div class="l">Total Periods: ${e(per)}<br>Teacher's Name: ${e(m.teacher)}</div><div class="c"><b>${e(m.school)}</b><br><b>Internal Assessment</b><br>Class: ${e(m.cls)} '${e(m.sec)}'</div><div class="r">Date: From ${e(fr)} To ${e(to)}<br>Chapters: ${e(ch)}</div></div><div class="sub">Subject : ${e(m.subj)} (F.M.: ${F})</div><table class="st"><thead>`;
+ let h=`<div class="paper p${k}${k==3?" agg":""}${dv?" dev":""}"><div class="bar">${e(m.term)} - ${e(m.year)} (${T})</div><div class="hd"><div class="l">Total Periods: ${e(per)}<br>Teacher's Name: ${e(m.teacher)}</div><div class="c"><b>${e(m.school)}</b><br><b>Internal Assessment</b><br>Class: ${e(m.cls)} '${e(m.sec)}'</div><div class="r">Date: From ${e(fr)} To ${e(to)}<br>Chapters: ${e(ch)}</div></div><div class="sub">Subject : ${e(m.subj)} (F.M.: ${F})</div><table class="st"><thead>`;
  if(k<3){h+=`<tr><th rowspan="2">SN</th><th rowspan="2">Reg. No.</th><th rowspan="2">Name</th><th colspan="${n+1}">RUBRICS (${F})</th></tr><tr>${cs.map(c=>`<th class="${cc(c)}">${e(c.name)} (${c.max})</th>`).join("")}<th class="in">Internal (${F})</th></tr></thead><tbody>`;
-  h+=S.stu.map((s,i)=>{const o=s[key]||{};return `<tr><td>${i+1}</td><td>${e(s.reg)}</td><td class="n">${e(s.name)}</td>${cs.map(c=>`<td>${e(o[c.id])}</td>`).join("")}<td class="in">${+tot(o,cs).toFixed(2)}</td></tr>`}).join("")}
+  h+=S.stu.map((s,i)=>{const o=s[key]||{};return `<tr><td>${i+1}</td><td>${e(s.reg)}</td><td class="n">${e(dv?(s.nn||s.name):s.name)}</td>${cs.map(c=>`<td>${e(o[c.id])}</td>`).join("")}<td class="in">${+tot(o,cs).toFixed(2)}</td></tr>`}).join("")}
  else{h+=`<tr><th rowspan="3">SN</th><th rowspan="3">Reg. No.</th><th rowspan="3">Name</th><th colspan="${n*3+1}">RUBRICS (${F})</th><th rowspan="3">Theory (${th})</th><th rowspan="3">Total (${F+th})</th></tr><tr>${cs.map(c=>`<th colspan="3" class="${cc(c)}">${e(c.name)} (${c.max})</th>`).join("")}<th rowspan="2" class="in">Internal (${F})</th></tr><tr>${cs.map(()=>"<th>1</th><th>2</th><th>Avg</th>").join("")}</tr></thead><tbody>`;
   h+=S.stu.map((s,i)=>{let sum=0;const cells=cs.map(c=>{const a=val((s.m||{})[c.id],c.max),b=val((s.n||{})[c.id],c.max),md=c.am||dam(c.name),v=md=="2"?(b??a):(a!=null&&b!=null?(a+b)/2:a??b);sum+=v||0;return `<td>${e((s.m||{})[c.id])}</td><td>${e((s.n||{})[c.id])}</td><td>${f(v)}</td>`}).join("");
-   const t=val((s.t||{}).th,th);return `<tr><td>${i+1}</td><td>${e(s.reg)}</td><td class="n">${e(s.name)}</td>${cells}<td class="in">${+sum.toFixed(2)}</td><td>${e((s.t||{}).th)}</td><td class="in">${+(sum+(t||0)).toFixed(2)}</td></tr>`}).join("")}
+   const t=val((s.t||{}).th,th);return `<tr><td>${i+1}</td><td>${e(s.reg)}</td><td class="n">${e(dv?(s.nn||s.name):s.name)}</td>${cells}<td class="in">${+sum.toFixed(2)}</td><td>${e((s.t||{}).th)}</td><td class="in">${+(sum+(t||0)).toFixed(2)}</td></tr>`}).join("")}
  return h+`</tbody></table><div class="sig"><span>Subject Teacher</span><span>Level Head</span><span>Principal</span></div></div>`}
 function layout(){document.querySelectorAll(".paper").forEach(p=>{const t=p.querySelector(".st"),n=t.tBodies[0].rows.length;if(!n)return;const cs=getComputedStyle(p),ch=p.clientHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom)-8;let rh=6;
  for(let i=0;i<3;i++){p.style.setProperty("--rh",rh+"px");const tot=[...p.children].reduce((a,c)=>a+c.offsetHeight,0);rh=Math.max(3,rh+(ch-tot)/n)}
@@ -176,11 +187,11 @@ $("tbl").addEventListener("keydown",e=>{const t=e.target;if(t.tagName!="INPUT"||
  const go=(r,i)=>{const n=r&&r.cells[i]&&r.cells[i].querySelector("input");if(n){n.focus();n.select()}return !!n};
  if(go(up?tr.previousElementSibling:tr.nextElementSibling,ci))return;
  if(e.key=="Enter"&&!up&&tb.rows.length>1)go(tb.rows[1],ci+1)});
-load();rMeta();render();rPrev();if(document.fonts)document.fonts.ready.then(rPrev);
+load();rMeta();fillRosters();render();rPrev();if(document.fonts){document.fonts.ready.then(rPrev);document.fonts.addEventListener('loadingdone',rPrev)}
 </script><script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {getAuth,GoogleAuthProvider,signInWithPopup,signOut,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {getFirestore,collection,doc,getDocs,setDoc,deleteDoc,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {getFirestore,collection,doc,getDocs,getDoc,setDoc,deleteDoc,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 /* ====== PASTE YOUR FIREBASE WEB-APP CONFIG HERE (Firebase console > Project settings > Your apps) ====== */
 const firebaseConfig={
@@ -213,12 +224,19 @@ else{
  window.fbDel=async()=>{const s=secs.find(x=>x.id==cur);if(!confirm("Delete section '"+s.name+"' and all its marks?"))return;try{await deleteDoc(ref(cur));secs=secs.filter(x=>x.id!=cur);if(!secs.length)await add("New section",JSON.stringify({meta:{},cols:[],stu:[]}));open(secs[0].id)}catch(e){st("Failed: "+e.code)}};
  window.cloudSave=()=>{if(!user||!cur||window.noCloud)return;const id=cur,name=secs.find(x=>x.id==id).name,data=JSON.stringify(S);clearTimeout(T);st("Saving…");
   T=setTimeout(async()=>{try{await put(id,name,data);secs.find(x=>x.id==id).data=data;st("☁ Saved · "+user.email)}catch(e){st("Save failed: "+e.code)}},800)};
+
+ let rosters=[];
+ const ro=()=>{window.ROSTERS=rosters;if(window.fillRosters)fillRosters()};
+ const loadRosters=async()=>{rosters=(await getDocs(collection(db,"rosters"))).docs.map(d=>({id:d.id,...d.data()}));rosters.sort((a,b)=>(a.cls+a.sec).localeCompare(b.cls+b.sec,undefined,{numeric:true}));ro()};
  onAuthStateChanged(auth,async u=>{user=u;$("inB").hidden=!!u;$("outB").hidden=!u;$("secBox").hidden=!u;
-  if(!u){cur=null;st("Not signed in: data is saved in this browser only.");return}
+  if(!u){cur=null;$("admLink").hidden=true;rosters=[];ro();st("Not signed in: data is saved in this browser only.");return}
   st("Loading your sections…");
   try{secs=(await getDocs(collection(db,"users",u.uid,"sections"))).docs.map(d=>({id:d.id,...d.data()}));
    if(!secs.length){cur=await add(((S.meta.cls||"")+" "+(S.meta.sec||"")).trim()||"Section 1",JSON.stringify(S))}
-   open(cur&&secs.some(x=>x.id==cur)?cur:secs[0].id)}
+   open(cur&&secs.some(x=>x.id==cur)?cur:secs[0].id);
+   let adm=false;try{adm=(await getDoc(doc(db,"admins",(u.email||"").toLowerCase()))).exists()}catch(e){}
+   $("admLink").hidden=!adm;
+   loadRosters().catch(e=>st("Could not load class rosters: "+e.code))}
   catch(e){st("Could not load: "+e.code+" (check Firestore rules and that Firestore is created)")}});
 }
 </script>
