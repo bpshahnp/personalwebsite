@@ -1377,18 +1377,19 @@ async function downloadPDF() {
   if (bpdfBtn) { bpdfBtn.disabled = true; bpdfBtn.textContent = "\u23f3 Generating\u2026"; }
 
   try {
-    // Wait for html2pdf to be available (CDN may still be loading)
+    // Wait for libraries to be available (CDN may still be loading)
     let attempts = 0;
-    while (typeof html2pdf === "undefined" && attempts < 30) {
+    while ((typeof html2canvas === "undefined" || typeof window.jspdf === "undefined") && attempts < 40) {
       await new Promise(r => setTimeout(r, 200));
       attempts++;
     }
-    if (typeof html2pdf === "undefined") throw new Error("html2pdf library not loaded. Check network connection.");
+    if (typeof html2canvas === "undefined") throw new Error("html2canvas library not loaded.");
+    if (!window.jspdf || !window.jspdf.jsPDF) throw new Error("jsPDF library not loaded.");
 
     const sheets = Array.from($("wrap").querySelectorAll(".sheet"));
-    if (!sheets.length) throw new Error("No sheets to export. Please generate a preview first.");
+    if (!sheets.length) throw new Error("No sheets found. Please generate a preview first.");
 
-    // Save current transforms, then set all sheets to scale(1)
+    // Save and reset transforms to 1:1
     const savedTransforms = sheets.map(sh => sh.style.transform);
     const wrappers = sheets.map(sh => sh.closest(".sw") || sh.parentElement);
     const savedWrappers = wrappers.map(sw => ({
@@ -1405,16 +1406,13 @@ async function downloadPDF() {
       sw.style.overflow = "visible";
     });
 
-    // Wait 2 frames for styles to apply
+    // Wait 2 frames for layout to settle
     await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
 
-    // Capture each sheet individually with html2canvas
-    const h2c = window.html2canvas;
-    if (!h2c) throw new Error("html2canvas not available inside html2pdf bundle.");
-
+    // Capture each sheet with html2canvas
     const canvases = [];
     for (const sh of sheets) {
-      const c = await h2c(sh, {
+      const c = await html2canvas(sh, {
         scale: 2,
         useCORS: true,
         allowTaint: true,
@@ -1428,7 +1426,7 @@ async function downloadPDF() {
       canvases.push(c);
     }
 
-    // Restore original transforms and wrapper sizes immediately
+    // Restore transforms and wrapper sizes
     sheets.forEach((sh, i) => { sh.style.transform = savedTransforms[i]; });
     wrappers.forEach((sw, i) => {
       sw.style.width = savedWrappers[i].w;
@@ -1436,17 +1434,14 @@ async function downloadPDF() {
       sw.style.overflow = savedWrappers[i].ov;
     });
 
-    // Build PDF using jsPDF (bundled inside html2pdf)
-    const jsPDFCtor = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
-    if (!jsPDFCtor) throw new Error("jsPDF constructor not found.");
-
+    // Build PDF page by page
+    const { jsPDF } = window.jspdf;
     const orient = isLandscape ? "landscape" : "portrait";
-    const pdf = new jsPDFCtor({ unit: "mm", format: [pdfW, pdfH], orientation: orient });
+    const pdf = new jsPDF({ unit: "mm", format: [pdfW, pdfH], orientation: orient });
 
     canvases.forEach((canvas, i) => {
       if (i > 0) pdf.addPage([pdfW, pdfH], orient);
-      const imgData = canvas.toDataURL("image/jpeg", 0.97);
-      pdf.addImage(imgData, "JPEG", 0, 0, pdfW, pdfH);
+      pdf.addImage(canvas.toDataURL("image/jpeg", 0.97), "JPEG", 0, 0, pdfW, pdfH);
     });
 
     pdf.save(filename);
