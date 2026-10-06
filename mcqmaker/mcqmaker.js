@@ -1159,9 +1159,9 @@ function preview() {
     sh.appendChild(tl);
     wrap.appendChild(sh);
     sheets.push(sh);
-
     const b0 = bodies[0];
-    const tile0 = b0.closest ? (b0.closest(".tile") || b0.parentElement) : b0.parentElement;
+    if (!b0) break;
+    const tile0 = b0.closest ? (b0.closest(".tile") || b0.parentElement) : (b0.parentElement || null);
     let k = 0;
     while (idx + k < its.length) {
       b0.insertAdjacentHTML("beforeend", its[idx + k]);
@@ -2339,15 +2339,52 @@ const Storage = {
   async open() {
     if (this.db) return this.db;
     return new Promise((ok, no) => {
-      const r = indexedDB.open("mcq-maker-pro", 3);
-      r.onupgradeneeded = () => {
-        const db = r.result;
-        if (!db.objectStoreNames.contains("s")) db.createObjectStore("s");
-        if (!db.objectStoreNames.contains("papers")) db.createObjectStore("papers", { keyPath: "id" });
-        if (!db.objectStoreNames.contains("meta")) db.createObjectStore("meta");
-      };
-      r.onsuccess = () => { this.db = r.result; ok(this.db); };
-      r.onerror = () => no(r.error);
+      if (typeof indexedDB === "undefined" || !indexedDB) return no(new Error("IndexedDB not available"));
+      let settled = false;
+      const timer = setTimeout(() => {
+        if (!settled) {
+          settled = true;
+          no(new Error("IndexedDB connection timeout"));
+        }
+      }, 1500);
+
+      try {
+        const r = indexedDB.open("mcq-maker-pro", 3);
+        r.onblocked = () => {
+          if (!settled) {
+            settled = true;
+            clearTimeout(timer);
+            no(new Error("IndexedDB blocked by another tab"));
+          }
+        };
+        r.onupgradeneeded = () => {
+          const db = r.result;
+          if (!db.objectStoreNames.contains("s")) db.createObjectStore("s");
+          if (!db.objectStoreNames.contains("papers")) db.createObjectStore("papers", { keyPath: "id" });
+          if (!db.objectStoreNames.contains("meta")) db.createObjectStore("meta");
+        };
+        r.onsuccess = () => {
+          if (!settled) {
+            settled = true;
+            clearTimeout(timer);
+            this.db = r.result;
+            ok(this.db);
+          }
+        };
+        r.onerror = () => {
+          if (!settled) {
+            settled = true;
+            clearTimeout(timer);
+            no(r.error);
+          }
+        };
+      } catch (err) {
+        if (!settled) {
+          settled = true;
+          clearTimeout(timer);
+          no(err);
+        }
+      }
     });
   },
 
@@ -2841,14 +2878,24 @@ document.addEventListener("keydown", e => {
   }
 });
 
-// App Initialization
+// App Initialization:
+// 1. Render questions and paper sheet IMMEDIATELY so the user never sees an empty screen!
+ready = true;
+try {
+  renderList();
+  preview();
+} catch (err) {
+  console.error("Initial preview error:", err);
+}
+
+// 2. Asynchronously connect to Storage in background without blocking UI
 (async () => {
   try {
     await Storage.open();
     let allPapers = await Storage.getAllPapers();
     let activeId = await Storage.getActiveId();
 
-    if (!allPapers.length) {
+    if (!allPapers || !allPapers.length) {
       const initialRecord = {
         id: "paper_" + Date.now(),
         title: $("title").value || "Sample Exam Paper",
@@ -2864,19 +2911,26 @@ document.addEventListener("keydown", e => {
       activeId = initialRecord.id;
     }
 
-    const activePaper = allPapers.find(p => p.id === activeId) || allPapers[0];
-    await Storage.setActiveId(activePaper.id);
-    if (activePaper.data) {
-      applyState(activePaper.data);
-      $("sv").textContent = `Loaded "${activePaper.title}".`;
+    const activePaper = (allPapers && allPapers.find(p => p.id === activeId)) || (allPapers && allPapers[0]);
+    if (activePaper) {
+      await Storage.setActiveId(activePaper.id);
+      if (activePaper.data) {
+        applyState(activePaper.data);
+        $("sv").textContent = `Loaded "${activePaper.title}".`;
+        renderList();
+        preview();
+      }
     }
   } catch (e) {
+    console.warn("Storage ready with fallback:", e);
     $("sv").textContent = "Storage ready.";
   }
-  ready = true;
-  renderList();
-  preview();
-  renderLibrary();
+  try {
+    renderLibrary();
+  } catch (err) {
+    console.error("renderLibrary error:", err);
+  }
+})();
 
   // If MathJax takes longer to load, re-render preview when ready
   if (window.MathJax && MathJax.startup && MathJax.startup.promise) {
@@ -2904,4 +2958,3 @@ document.addEventListener("keydown", e => {
       setMeta('meta[name="twitter:image"]', 'content', imgUrl);
     }
   } catch (err) {}
-})();

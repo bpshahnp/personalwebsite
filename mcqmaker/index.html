@@ -96,22 +96,11 @@ if (!window.docx) {
 }
 </script>
 
-<!-- html2canvas: captures DOM elements as canvas images -->
-<script src="html2canvas.min.js"></script>
-<script>
-if (typeof html2canvas === "undefined") {
-  document.write('<scr'+'ipt src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"><\/scr'+'ipt>');
-}
-</script>
-<!-- jsPDF: builds and downloads PDF files -->
-<script src="jspdf.umd.min.js"></script>
-<script>
-if (typeof window.jspdf === "undefined") {
-  document.write('<scr'+'ipt src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"><\/scr'+'ipt>');
-}
-</script>
+<!-- html2canvas & jsPDF for high-res PDF generation and auto-download -->
+<script src="html2canvas.min.js" onerror="this.onerror=null;var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';document.head.appendChild(s);"></script>
+<script src="jspdf.umd.min.js" onerror="this.onerror=null;var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';document.head.appendChild(s);"></script>
 
-<link rel="stylesheet" href="mcqmaker.css?v=1.9">
+<link rel="stylesheet" href="mcqmaker.css?v=2.0">
 <style>
 /* Remove the static bar above the MCQ page completely */
 .preview-toolbar {
