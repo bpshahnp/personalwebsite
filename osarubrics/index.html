@@ -52,7 +52,6 @@ h3{font-size:14px;margin:14px 0 6px}
 @media (max-width:1000px){.split{grid-template-columns:1fr}.split section.pv{position:static;max-height:none}}
 /* ---- A4 sheets (always light, like paper) ---- */
 .paper{background:#fff;color:#000;width:210mm;height:297mm;padding:5mm;margin:0 auto 14px;box-shadow:0 1px 8px rgba(0,0,0,.3);font:10pt "Times New Roman",serif;display:flex;flex-direction:column;overflow:hidden}.paper>*{flex:none}
-.paper.agg{width:297mm;height:210mm;page:agg}
 @media screen{.paper{zoom:var(--z,1)}}
 .bar{background:#375623;color:#fff;text-align:center;font-size:14pt;padding:1mm;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .hd{display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:2mm;padding:1.5mm 0;align-items:center;font-size:9pt}
@@ -64,19 +63,17 @@ table.st{border-collapse:collapse;width:100%;-webkit-print-color-adjust:exact;pr
 .st th{background:#c6e0b4;line-height:1.15;font-size:8.5pt}
 .st th.mcq{background:#f4b183}.st th.ct{background:#9dc3e6}.st th.in,.st td.in{background:#a9d08e;font-weight:bold}
 .st td.n{text-align:left;white-space:nowrap;padding-left:2px}
-.agg .st th{font-size:7.5pt}.agg .st tbody td{font-size:min(7.5pt,calc(var(--rh,20px)*.62))}
+.agg .st th,.agg .st td{padding:0 1px}.agg .st th{font-size:6pt}.agg .st tbody td{font-size:min(6.5pt,calc(var(--rh,20px)*.62))}.agg .st td.n{white-space:normal;max-width:30mm}
 .st tr{break-inside:avoid}.st thead{display:table-header-group}
 .sig{display:flex;justify-content:space-around;margin-top:auto;padding-top:8mm;font-size:9pt}
 .sig span{border-top:1px solid #000;padding-top:1mm;min-width:45mm;text-align:center}
 @page{size:A4 portrait;margin:5mm}
-@page agg{size:A4 landscape;margin:5mm}
 @media print{
 .noprint{display:none!important}
 body{background:#fff}main{padding:0;max-width:none}
 section.pv{border:0;padding:0;margin:0;background:none;position:static!important;max-height:none!important;overflow:visible!important}.split{display:block}
 .paper{width:200mm!important;height:286mm!important;padding:0!important;margin:0!important;box-shadow:none!important;zoom:1!important}
-.paper.agg{width:287mm!important;height:199mm!important}
-.paper+.paper{break-before:page}
+body:not([data-only]) .paper+.paper{break-before:page}
 body[data-only] .paper{display:none}
 body[data-only="1"] .p1,body[data-only="2"] .p2,body[data-only="3"] .p3{display:block}}
 </style></head><body><main>
@@ -126,7 +123,7 @@ body[data-only="1"] .p1,body[data-only="2"] .p2,body[data-only="3"] .p3{display:
 
 </div>
 <section class="pv"><div class="noprint"><h2>5. A4 print preview</h2>
-<div class="row" style="margin:0 0 12px"><button class="fit p" onclick="pr()">Print all 3</button><button class="fit" onclick="pr(1)">First Rubrics</button><button class="fit" onclick="pr(2)">Second Rubrics</button><button class="fit" onclick="pr(3)">Aggregate (landscape)</button></div>
+<div class="row" style="margin:0 0 12px"><button class="fit p" onclick="pr()">Print all 3</button><button class="fit" onclick="pr(1)">First Rubrics</button><button class="fit" onclick="pr(2)">Second Rubrics</button><button class="fit" onclick="pr(3)">Aggregate</button></div>
 <p class="hint" style="margin:0 0 10px">In the print dialog choose paper A4, enable "Background graphics". If a button does nothing, press Ctrl+P (⌘P) — the page prints only the sheets.</p></div>
 <div id="papers"></div></section>
 </div></main>
@@ -192,7 +189,7 @@ function layout(){document.querySelectorAll(".paper").forEach(p=>{const t=p.quer
  p.style.setProperty("--rh",rh+"px")})}
 function rPrev(){$("papers").innerHTML=[1,2,3].map(sheet).join("");layout();fit()}
 function prev(){clearTimeout(PT);PT=setTimeout(rPrev,250)}
-function fit(){const w=$("papers").clientWidth;document.querySelectorAll(".paper").forEach(p=>p.style.setProperty("--z",Math.min(1,(w-2)/(p.classList.contains("agg")?1123:794))))}
+function fit(){const w=$("papers").clientWidth;document.querySelectorAll(".paper").forEach(p=>p.style.setProperty("--z",Math.min(1,(w-2)/(794))))}
 function pr(n){rPrev();if(n)document.body.dataset.only=n;else delete document.body.dataset.only;try{window.print()}catch(e){}}
 window.onafterprint=()=>{delete document.body.dataset.only};window.onresize=fit;
 function render(){rCols();rTbl();rTabs();save();prev()}
