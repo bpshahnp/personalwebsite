@@ -42,6 +42,7 @@ tfoot td{font-weight:700;border-top:2px solid var(--head)}
   <div class="grid">
     <div><label for="total">Total Amount</label><input id="total" type="number" inputmode="decimal" min="0" value="500000"></div>
     <div><label for="inst">Principal per installment</label><input id="inst" type="number" inputmode="decimal" min="0" value="10000"></div>
+    <div><label for="years">Years to pay</label><input id="years" type="number" inputmode="decimal" min="0" step="0.01" value=""></div>
     <div><label for="rate">Interest rate (% per year)</label><input id="rate" type="number" inputmode="decimal" min="0" step="0.01" value="12"></div>
   </div>
   <div class="err" id="err"></div>
@@ -66,19 +67,34 @@ tfoot td{font-weight:700;border-top:2px solid var(--head)}
   var fmt=new Intl.NumberFormat('en-IN',{maximumFractionDigits:2});
   var data=[];
   function r2(x){return Math.round(x*100)/100}
+  function yearsText(m){
+    var y=Math.floor(m/12),r=m%12,p=[];
+    if(y)p.push(y+(y===1?' yr':' yrs'));
+    if(r)p.push(r+(r===1?' mth':' mths'));
+    return (m/12).toFixed(2)+' ('+p.join(' ')+')';
+  }
+  var mode='inst';
   function calc(){
-    var total=parseFloat($('total').value),inst=parseFloat($('inst').value),rate=parseFloat($('rate').value);
+    var total=parseFloat($('total').value),rate=parseFloat($('rate').value);
+    var inst=parseFloat($('inst').value),yrs=parseFloat($('years').value);
     $('err').textContent='';data=[];
-    if(!(total>0)||!(inst>0)||!(rate>=0)){
-      $('err').textContent='Enter a positive total amount and installment, and a non-negative rate.';
-      render(rate);return;
+    var months;
+    if(mode==='years'){
+      if(!(yrs>0)||!(total>0)||!(rate>=0)){$('err').textContent='Enter a positive total amount and years, and a non-negative rate.';render(rate);return}
+      months=Math.max(1,Math.round(yrs*12));
+      inst=r2(total/months);
+      $('inst').value=inst;
+    }else{
+      if(!(total>0)||!(inst>0)||!(rate>=0)){$('err').textContent='Enter a positive total amount and installment, and a non-negative rate.';$('years').value='';render(rate);return}
+      months=Math.ceil(total/inst-1e-9);
+      $('years').value=r2(months/12);
     }
-    if(Math.ceil(total/inst)>1200){$('err').textContent='That would be over 1,200 installments. Increase the installment amount.';render(rate);return}
+    if(months>1200){$('err').textContent='That would be over 1,200 installments. Shorten the period.';render(rate);return}
     var bal=total;
-    while(bal>0.004){
+    for(var i=1;i<=months&&bal>0.004;i++){
       var interest=r2(bal*rate/100/12);
-      var principal=Math.min(inst,bal);
-      data.push({n:data.length+1,bal:bal,interest:interest,principal:principal,pay:r2(interest+principal)});
+      var principal=(i===months||inst>bal)?bal:inst;
+      data.push({n:i,bal:bal,interest:interest,principal:principal,pay:r2(interest+principal)});
       bal=r2(bal-principal);
     }
     render(rate);
@@ -94,6 +110,7 @@ tfoot td{font-weight:700;border-top:2px solid var(--head)}
     $('foot').innerHTML=data.length?'<tr><td></td><td></td><td>Total</td><td>'+fmt.format(ti)+'</td><td>'+fmt.format(tp)+'</td><td>'+fmt.format(r2(ti+tp))+'</td></tr>':'';
     $('stats').innerHTML=data.length?
       '<div class="stat"><small>Installments</small><b>'+data.length+'</b></div>'+
+      '<div class="stat"><small>Years to pay</small><b>'+yearsText(data.length)+'</b></div>'+
       '<div class="stat"><small>Total interest</small><b>'+fmt.format(ti)+'</b></div>'+
       '<div class="stat"><small>Total paid</small><b>'+fmt.format(r2(ti+tp))+'</b></div>'+
       '<div class="stat"><small>First payment</small><b>'+fmt.format(data[0].pay)+'</b></div>'+
@@ -110,7 +127,9 @@ tfoot td{font-weight:700;border-top:2px solid var(--head)}
       try{var ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);done('Copied!')}catch(e){done('Copy failed')}
     }
   });
-  ['total','inst','rate'].forEach(function(id){$(id).addEventListener('input',calc)});
+  ['total','rate'].forEach(function(id){$(id).addEventListener('input',calc)});
+  $('inst').addEventListener('input',function(){mode='inst';calc()});
+  $('years').addEventListener('input',function(){mode='years';calc()});
   calc();
 })();
 </script>
