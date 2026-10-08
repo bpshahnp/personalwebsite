@@ -36,6 +36,15 @@ table.e{border-collapse:collapse;width:100%;min-width:600px}
 .hint{color:var(--mu);font-size:12px;margin:6px 0 0}
 .tag{display:inline-block;background:var(--bg);border:1px solid var(--bd);border-radius:20px;padding:1px 9px;font-size:12px;color:var(--mu)}
 [hidden]{display:none!important}
+.wel{background:linear-gradient(135deg,var(--ac),#1b2a4e);color:#fff;border:0;display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between}
+.wl{display:flex;gap:12px;align-items:center}
+.av{width:54px;height:54px;border-radius:50%;object-fit:cover;background:rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;flex:none}
+.hi{font-size:21px;font-weight:700;line-height:1.2}.wel .hint{color:rgba(255,255,255,.82);margin:2px 0 0}
+.kp{display:flex;gap:8px;flex-wrap:wrap}.kp div{background:rgba(255,255,255,.16);border-radius:10px;padding:6px 14px;text-align:center}.kp b{display:block;font-size:18px}.kp span{font-size:11px;opacity:.85}
+.sw{display:flex;gap:6px;align-items:center;font-size:11px;width:100%;opacity:.95}.sw button{width:20px;height:20px;padding:0;border-radius:50%;border:2px solid rgba(255,255,255,.55)}.sw button.on{border-color:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.4)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.cd{text-align:left;padding:10px;border-radius:10px;width:100%}.cd.on{background:var(--card);color:var(--tx);border-color:var(--ac);box-shadow:0 0 0 2px var(--ac) inset}.cd small{display:block;color:var(--mu);font-size:11px}
+.pb{height:5px;background:var(--bd);border-radius:3px;margin:6px 0 3px;overflow:hidden}.pb i{display:block;height:100%;background:var(--ac)}
 h3{font-size:14px;margin:14px 0 6px}
 .paper.dev,.paper.dev *{font-family:"Noto Sans Devanagari",Mukta,Mangal,"Nirmala UI",Arial,sans-serif!important}.paper.dev .st td{line-height:1.25}
 .split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
@@ -72,7 +81,10 @@ body[data-only] .paper{display:none}
 body[data-only="1"] .p1,body[data-only="2"] .p2,body[data-only="3"] .p3{display:block}}
 </style></head><body><main>
 <h1 class="noprint">Rubrics Dashboard</h1>
+<section class="noprint wel" id="wel" hidden><div class="wl"><img id="avi" class="av" alt="" referrerpolicy="no-referrer" hidden><div id="avf" class="av"></div><div><div class="hi" id="hi"></div><p class="hint" id="wsub"></p></div></div>
+<div class="kp" id="kp"></div><div class="sw" id="sw"></div></section>
 <div class="split"><div class="left">
+<section class="noprint" id="cardsec" hidden><h2>My sections</h2><div class="cards" id="cards"></div></section>
 
 <section class="noprint"><div class="row" style="margin:0;align-items:center">
 <span id="cstat" class="hint" style="margin:0;flex:1 1 220px">Loading…</span>
@@ -218,34 +230,51 @@ else{
  const put=(id,name,data)=>setDoc(ref(id),{name,data,updated:serverTimestamp()});
  const ss=t=>{st(t);const e=$("svs");if(e)e.textContent=t};
  const fill=()=>{const c=secs.find(x=>x.id==cur);$("curSec").textContent=c?c.name:"";$("secSel").innerHTML=secs.map(s=>`<option value="${s.id}" ${s.id==cur?"selected":""}>${h(s.name)}</option>`).join("")};
- const open=id=>{cur=id;const s=secs.find(x=>x.id==id);window.noCloud=true;applyState(JSON.parse(s.data||"null"));window.noCloud=false;fill();st("☁ "+user.email+" · section loaded")};
+const SW=["#2f5fd0","#0f8f6e","#c2410c","#9333ea","#be123c","#0e7490"];
+ const applyAcc=c=>{if(!c)return;document.documentElement.style.setProperty("--ac",c);document.documentElement.style.setProperty("--acx","#fff");try{localStorage.setItem("rubrics-acc",c)}catch(e){}};
+ try{applyAcc(localStorage.getItem("rubrics-acc"))}catch(e){}
+ window.setAcc=async c=>{applyAcc(c);paint();try{await setDoc(doc(db,"users",user.uid,"profile","prefs"),{accent:c})}catch(e){}};
+ const ago=t=>{if(!t)return"";const m=Math.round((Date.now()-t)/6e4);return m<1?"just now":m<60?m+" min ago":m<1440?Math.round(m/60)+" h ago":Math.round(m/1440)+" d ago"};
+ const info=c=>{try{const d=JSON.parse(c.data||"{}"),cs=d.cols||[],st=d.stu||[];let f=0;st.forEach(x=>cs.forEach(k=>{if(String((x.m||{})[k.id]??"").trim()!=="")f++;if(String((x.n||{})[k.id]??"").trim()!=="")f++}));const tot=st.length*cs.length*2;return{n:st.length,f,tot,pct:tot?Math.round(100*f/tot):0}}catch(e){return{n:0,f:0,tot:0,pct:0}}};
+ const when=c=>c.upd||(c.updated&&c.updated.toDate?+c.updated.toDate():0);
+ const paint=()=>{if(!user)return;const nm=(user.displayName||(user.email||"").split("@")[0]||"").trim(),first=nm.split(/[ .]/)[0]||"there",hr=new Date().getHours();
+  const I=secs.map(info),tn=I.reduce((a,x)=>a+x.n,0),tf=I.reduce((a,x)=>a+x.f,0),tt=I.reduce((a,x)=>a+x.tot,0),c=secs.find(x=>x.id==cur);
+  $("hi").textContent="नमस्ते, "+first+" 👋";
+  $("wsub").textContent=(hr<12?"Good morning":hr<17?"Good afternoon":"Good evening")+" · "+new Date().toLocaleDateString(undefined,{weekday:"long",day:"numeric",month:"long"})+(c?" · working on "+c.name+(when(c)?" ("+ago(when(c))+")":""):"");
+  const im=$("avi"),af=$("avf");af.textContent=(nm[0]||"?").toUpperCase();if(user.photoURL){im.src=user.photoURL;im.hidden=false;af.hidden=true}else{im.hidden=true;af.hidden=false}
+  $("kp").innerHTML=`<div><b>${secs.length}</b><span>sections</span></div><div><b>${tn}</b><span>students</span></div><div><b>${tt?Math.round(100*tf/tt):0}%</b><span>marks entered</span></div>`;
+  const cur_=getComputedStyle(document.documentElement).getPropertyValue("--ac").trim().toLowerCase();
+  $("sw").innerHTML="Theme "+SW.map(x=>`<button class="${cur_==x?"on":""}" style="background:${x}" onclick="setAcc('${x}')" title="${x}"></button>`).join("");
+  $("cards").innerHTML=secs.map((x,i)=>`<button class="cd ${x.id==cur?"on":""}" onclick="fbOpen('${x.id}')"><b>${h(x.name)}</b><small>${I[i].n} students</small><div class="pb"><i style="width:${I[i].pct}%"></i></div><small>${I[i].pct}% marks entered${when(x)?" · "+ago(when(x)):""}</small></button>`).join("")};
+ const open=id=>{cur=id;const s=secs.find(x=>x.id==id);window.noCloud=true;applyState(JSON.parse(s.data||"null"));if(!S.meta.teacher&&user.displayName){S.meta.teacher=user.displayName;rMeta()}window.noCloud=false;fill();paint();st("☁ "+user.email+" · section loaded")};
  const add=async(name,data)=>{const id="s"+Date.now(),r={id,name,data};await put(id,name,data);secs.push(r);return id};
  window.fbSignIn=()=>signInWithPopup(auth,new GoogleAuthProvider()).catch(e=>st("Sign-in failed: "+e.code));
  window.fbSignOut=()=>signOut(auth);
  window.fbOpen=id=>open(id);
  window.fbNew=async()=>{const n=prompt("New section name (e.g. VIII DASHRATH):");if(!n)return;const d=JSON.parse(JSON.stringify(S));d.stu=[];delete d.rid;d.meta.sec="";try{open(await add(n.trim(),JSON.stringify(d)))}catch(e){st("Failed: "+e.code)}};
- window.fbRename=async()=>{const s=secs.find(x=>x.id==cur),n=prompt("Rename section:",s.name);if(!n)return;s.name=n.trim();fill();try{await put(cur,s.name,JSON.stringify(S))}catch(e){st("Failed: "+e.code)}};
+ window.fbRename=async()=>{const s=secs.find(x=>x.id==cur),n=prompt("Rename section:",s.name);if(!n)return;s.name=n.trim();fill();paint();try{await put(cur,s.name,JSON.stringify(S))}catch(e){st("Failed: "+e.code)}};
  window.fbDel=async()=>{const s=secs.find(x=>x.id==cur);if(!confirm("Delete section '"+s.name+"' and all its marks?"))return;try{await deleteDoc(ref(cur));secs=secs.filter(x=>x.id!=cur);if(!secs.length)await add("New section",JSON.stringify({meta:{},cols:[],stu:[]}));open(secs[0].id)}catch(e){st("Failed: "+e.code)}};
  window.cloudSave=now=>{if(!user||!cur||window.noCloud)return;const id=cur,c=secs.find(x=>x.id==id),name=c.name,data=JSON.stringify(S);c.data=data;window.pend=true;clearTimeout(T);ss("● Saving…");
-  T=setTimeout(async()=>{try{await put(id,name,data);window.pend=false;ss("✔ Saved to cloud at "+new Date().toLocaleTimeString()+" · "+user.email)}catch(e){ss("✖ Save failed: "+e.code+" (check internet / Firestore rules)")}},now?0:700)};
+  T=setTimeout(async()=>{try{await put(id,name,data);window.pend=false;c.upd=Date.now();paint();ss("✔ Saved to cloud at "+new Date().toLocaleTimeString()+" · "+user.email)}catch(e){ss("✖ Save failed: "+e.code+" (check internet / Firestore rules)")}},now?0:700)};
  window.cloudSaveNow=()=>{if(!user){ss("Sign in to save online (saved in this browser only)");return}window.noCloud=false;cloudSave(true)};
  window.onbeforeunload=()=>window.pend?"Changes are still being saved.":undefined;
  window.fbPickRoster=async id=>{if(!user)return false;const r=rosters.find(x=>x.id==id);if(!r)return false;
   const has=x=>{try{return JSON.parse(x.data||"{}").rid==id}catch(e){return false}},ex=secs.find(has),c=secs.find(x=>x.id==cur),name=(r.cls+" "+r.sec).trim();
   if(ex&&ex.id!=cur){open(ex.id);return true}
   if(ex){if(confirm("Update the student list of "+ex.name+" from the roster? Existing marks are kept."))useRoster(r,S.stu);return true}
-  if(!S.stu.length&&!S.rid){c.name=name;useRoster(r,[]);fill();return true}
+  if(!S.stu.length&&!S.rid){c.name=name;useRoster(r,[]);fill();paint();return true}
   const d=JSON.parse(JSON.stringify(S));d.rid=id;d.meta.cls=r.cls;d.meta.sec=r.sec;d.stu=rStu(r,[]);
   try{open(await add(name,JSON.stringify(d)));st("✔ New section "+name+" created. Your previous section is kept.")}catch(e){st("Failed: "+e.code)}return true};
  let rosters=[];
  const ro=()=>{window.ROSTERS=rosters;if(window.fillRosters)fillRosters()};
  const loadRosters=async()=>{rosters=(await getDocs(collection(db,"rosters"))).docs.map(d=>({id:d.id,...d.data()}));rosters.sort((a,b)=>(a.cls+a.sec).localeCompare(b.cls+b.sec,undefined,{numeric:true}));ro()};
  onAuthStateChanged(auth,async u=>{user=u;$("inB").hidden=!!u;$("outB").hidden=!u;$("secBox").hidden=!u;
-  if(!u){cur=null;$("admLink").hidden=true;rosters=[];ro();st("Not signed in: data is saved in this browser only.");return}
-  st("Loading your sections…");
+  if(!u){cur=null;$("wel").hidden=true;$("cardsec").hidden=true;$("admLink").hidden=true;rosters=[];ro();st("Not signed in: data is saved in this browser only.");return}
+  st("Loading your sections…");$("wel").hidden=false;$("cardsec").hidden=false;
   try{secs=(await getDocs(collection(db,"users",u.uid,"sections"))).docs.map(d=>({id:d.id,...d.data()}));
    if(!secs.length){cur=await add(((S.meta.cls||"")+" "+(S.meta.sec||"")).trim()||"Section 1",JSON.stringify(S))}
    open(cur&&secs.some(x=>x.id==cur)?cur:secs[0].id);
+   try{const pf=await getDoc(doc(db,"users",u.uid,"profile","prefs"));const pd=pf.exists()&&pf.data&&pf.data();if(pd&&pd.accent){applyAcc(pd.accent);paint()}}catch(e){}
    let adm=false;try{adm=(await getDoc(doc(db,"admins",(u.email||"").toLowerCase()))).exists()}catch(e){}
    $("admLink").hidden=!adm;
    loadRosters().catch(e=>st("Could not load class rosters: "+e.code))}
