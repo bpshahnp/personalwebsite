@@ -233,7 +233,9 @@ $("reset").addEventListener("click",()=>{ if(!confirm("Clear all your answers an
 
 // ---- Gemini ----
 const KEY_STORE="tuGeminiKey", MODEL="gemini-3.8-flash";
-const getKey=()=>{ try{return localStorage.getItem(KEY_STORE)||"";}catch(e){return "";} };
+let cloudKey="";   // loaded from Firestore: config/gemini -> field "key"
+firebase.firestore().collection("config").doc("gemini").onSnapshot(d=>{ cloudKey=(d.exists && d.data().key)||""; }, err=>console.warn("Gemini key not readable:",err.message));
+const getKey=()=>{ let l=""; try{l=localStorage.getItem(KEY_STORE)||"";}catch(e){} return l||cloudKey; };
 $("keyBtn").addEventListener("click",()=>{
   const k=prompt("Paste your Gemini API key (kept only in this browser's localStorage):", getKey());
   if(k!==null){ try{localStorage.setItem(KEY_STORE,k.trim());}catch(e){} }
@@ -243,7 +245,7 @@ const SYS="You are a concise, friendly business finance tutor helping a student 
 
 async function callGemini(hist){
   const key=getKey();
-  if(!key) throw new Error("No API key yet. Click “🔑 Gemini” at the top and paste your key.");
+  if(!key) throw new Error("No API key found. Add it in Firestore (config/gemini, field "key") or paste one with the “🔑 Gemini” button.");
   const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+MODEL+":generateContent",{
     method:"POST",
     headers:{"Content-Type":"application/json","x-goog-api-key":key},
