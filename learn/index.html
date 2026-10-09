@@ -249,7 +249,7 @@ const SYS="You are a concise, friendly business finance tutor helping a student 
 
 async function callGemini(hist){
   const key=getKey();
-  if(!key) throw new Error("No API key found. Add it in Firestore (config/gemini, field "key") or paste one with the “🔑 Gemini” button.");
+  if(!key) throw new Error("No API key found. Add it in Firestore (config/gemini, field 'key') or paste one with the “🔑 Gemini” button.");
   const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+MODEL+":generateContent",{
     method:"POST",
     headers:{"Content-Type":"application/json","x-goog-api-key":key},
