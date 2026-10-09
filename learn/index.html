@@ -307,7 +307,10 @@ const SETS = [
 
 const $ = id => document.getElementById(id);
 const list = $("list"), sel = $("setSel");
+const PROG_KEY = "tuQuizProgress";
 let state = {};   // key -> true/false chosen
+try{ state = JSON.parse(localStorage.getItem(PROG_KEY)||"{}") || {}; }catch(e){ state = {}; }
+function saveState(){ try{ localStorage.setItem(PROG_KEY, JSON.stringify(state)); }catch(e){} }
 let questions = []; // current visible questions
 let shuffled = false;
 
@@ -364,7 +367,7 @@ function build(){
       const d=document.createElement("button"); d.className="del"; d.textContent="Delete";
       d.addEventListener("click",()=>{
         if(!confirm("Delete this question?")) return;
-        Object.keys(state).forEach(k=>{ if(k.startsWith(CUSTOM_IDX+"-")) delete state[k]; });
+        Object.keys(state).forEach(k=>{ if(k.startsWith(CUSTOM_IDX+"-")) delete state[k]; }); saveState();
         if(db){ db.doc(customIds[it.qi]).delete().catch(err=>alert("Delete failed: "+err.message)); }
         else { custom.splice(it.qi,1); saveCustom(); fillSel(custom.length? sel.value : "all"); build(); }
       });
@@ -377,7 +380,7 @@ function build(){
   stats();
 }
 
-function answer(key,it,val){ if(key in state) return; state[key]=val; paint(key,it); stats(); }
+function answer(key,it,val){ if(key in state) return; state[key]=val; saveState(); paint(key,it); stats(); }
 
 function paint(key,it){
   const c = $("c"+key), chosen = state[key], correct = it.q[1], ok = chosen===correct;
@@ -408,7 +411,7 @@ function stats(){
 
 sel.addEventListener("change",()=>{ build(); window.scrollTo(0,0); });
 $("shuf").addEventListener("click",()=>{ shuffled=!shuffled; $("shuf").textContent=shuffled?"Unshuffle":"Shuffle"; build(); });
-$("reset").addEventListener("click",()=>{ state={}; build(); window.scrollTo(0,0); });
+$("reset").addEventListener("click",()=>{ if(!confirm("Clear all your answers and start over?")) return; state={}; saveState(); build(); window.scrollTo(0,0); });
 const dlg = $("dlg");
 $("addBtn").addEventListener("click",()=>{ $("addForm").reset(); $("fErr").textContent=""; dlg.showModal(); $("fStmt").focus(); });
 $("fCancel").addEventListener("click",()=>dlg.close());
