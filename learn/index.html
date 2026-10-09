@@ -62,7 +62,13 @@ dialog textarea{resize:vertical}
 .result.show{display:block}
 .result .big{font-size:2rem;font-weight:800;color:var(--accent)}
 
-.gem-row{margin-top:10px}
+.gem-row{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
+.mynote{display:none;margin-top:10px}
+.mynote.show{display:block}
+.mynote textarea{width:100%;min-height:70px;resize:vertical;font:inherit;font-size:.92rem;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--notebg);color:var(--text)}
+.mynote small{display:block;color:var(--muted);font-size:.75rem;margin-top:2px}
+button.notebtn{font-size:.85rem;padding:5px 10px}
+button.notebtn.has{border-color:var(--note);color:var(--note)}
 button.ask{font-size:.85rem;padding:5px 10px;color:var(--accent)}
 .gem{display:none;margin-top:10px;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--bg)}
 .gem.show{display:block}
@@ -140,6 +146,10 @@ const list = $("list"), sel = $("setSel");
 const PROG_KEY = "tuQuizProgressV2";
 let state = {};
 try{ state = JSON.parse(localStorage.getItem(PROG_KEY)||"{}") || {}; }catch(e){ state = {}; }
+const NOTE_KEY = "tuQuizNotesV1";
+let notes = {};
+try{ notes = JSON.parse(localStorage.getItem(NOTE_KEY)||"{}") || {}; }catch(e){ notes = {}; }
+function saveNotes(){ try{ localStorage.setItem(NOTE_KEY, JSON.stringify(notes)); }catch(e){} }
 function saveState(){ try{ localStorage.setItem(PROG_KEY, JSON.stringify(state)); }catch(e){} }
 
 let loaded=false;
@@ -186,16 +196,25 @@ function build(){
     c.innerHTML='<div class="qn"><span class="qlabel"></span><button class="del">Delete</button></div>'+
       '<p class="q"></p><div class="opts"><button class="opt" data-v="1">True</button><button class="opt" data-v="0">False</button></div>'+
       '<div class="exp"><div class="verdict"></div><div class="body"></div></div>'+
-      '<div class="gem-row"><button class="tool ask">✨ Ask Gemini</button></div><div class="gem"></div>';
+      '<div class="gem-row"><button class="tool ask">✨ Ask Gemini</button><button class="tool notebtn">📝 Note</button></div>'+
+      '<div class="mynote"><textarea placeholder="Write your own notes for this question…"></textarea><small>Saved automatically on this device.</small></div><div class="gem"></div>';
     c.querySelector(".qlabel").textContent=(shuffled? q.g+" · ":"")+"Q"+n;
     c.querySelector(".q").textContent=q.s;
     c.querySelector(".del").addEventListener("click",()=>{
       if(!confirm("Delete this question for everyone?")) return;
-      delete state[q.id]; saveState();
+      delete state[q.id]; saveState(); delete notes[q.id]; saveNotes();
       col.doc(q.id).delete().catch(err=>alert("Delete failed: "+err.message));
     });
     c.querySelectorAll(".opt").forEach(b=>b.addEventListener("click",()=>answer(q,b.dataset.v==="1")));
     c.querySelector(".ask").addEventListener("click",()=>toggleGem(q,c));
+    (function(){
+      const nb=c.querySelector(".notebtn"), box=c.querySelector(".mynote"), ta=box.querySelector("textarea");
+      ta.value=notes[q.id]||"";
+      const mark=()=>{ nb.classList.toggle("has", !!ta.value.trim()); nb.textContent = ta.value.trim() ? "📝 Note •" : "📝 Note"; };
+      mark(); if(ta.value.trim()) box.classList.add("show");
+      nb.addEventListener("click",()=>{ box.classList.toggle("show"); if(box.classList.contains("show")) ta.focus(); });
+      let t; ta.addEventListener("input",()=>{ clearTimeout(t); t=setTimeout(()=>{ const v=ta.value.trim(); if(v) notes[q.id]=ta.value; else delete notes[q.id]; saveNotes(); mark(); },300); });
+    })();
     list.appendChild(c);
     if(q.id in state) paint(q);
     if(chats[q.id]) renderGem(q,c,true);
