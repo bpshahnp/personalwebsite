@@ -257,7 +257,7 @@ function md(t){
   return t;
 }
 const chats={};   // questionId -> [{role:'user'|'model', text}]
-const SYS="You are a concise, friendly business finance tutor helping a student with True/False practice questions. Write plain text only: no LaTeX, no $ math notation, no headings; you may use **bold** and simple "- " bullets. Keep answers short (under 150 words unless asked), use plain language, and give a tiny numeric example when it helps.";
+const SYS="You are a concise, friendly business finance tutor helping a student with True/False practice questions. Write plain text only: no LaTeX, no $ math notation, no headings; you may use **bold** and simple dash bullets. Keep answers short (under 150 words unless asked), use plain language, and give a tiny numeric example when it helps.";
 
 async function callGemini(hist){
   const key=getKey();
