@@ -130,7 +130,9 @@ const firebaseConfig = {
   measurementId: "G-FY68W64X1J"
 };
 firebase.initializeApp(firebaseConfig);
+try{ firebase.firestore().settings({experimentalAutoDetectLongPolling:true, merge:true}); }catch(e){ console.warn(e); }
 const col = firebase.firestore().collection("questions");
+setTimeout(()=>{ if(!loaded) list.innerHTML='<div class="msg">Still can\u2019t reach Firestore.<br>Check: internet/ad-blocker, that Firestore Database is created in project <b>osaquiz</b>, and the browser console (F12) for errors.</div>'; }, 10000);
 
 const $ = id => document.getElementById(id);
 const list = $("list"), sel = $("setSel");
@@ -139,6 +141,7 @@ let state = {};
 try{ state = JSON.parse(localStorage.getItem(PROG_KEY)||"{}") || {}; }catch(e){ state = {}; }
 function saveState(){ try{ localStorage.setItem(PROG_KEY, JSON.stringify(state)); }catch(e){} }
 
+let loaded=false;
 let all = [];        // [{id,g,o,s,a,e,n}]
 let groups = [];     // ordered group names
 let visible = [];
@@ -147,6 +150,7 @@ let selectGroupNext = null;
 
 // ---- load from Firestore (live) ----
 col.orderBy("o").onSnapshot(snap=>{
+  loaded=true;
   all = snap.docs.map(d=>({id:d.id, ...d.data()}));
   const seen = new Set(); groups = [];
   all.forEach(q=>{ if(!seen.has(q.g)){ seen.add(q.g); groups.push(q.g); } });
