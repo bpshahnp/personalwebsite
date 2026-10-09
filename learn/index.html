@@ -61,6 +61,18 @@ dialog textarea{resize:vertical}
 .result{display:none;text-align:center;padding:20px;margin:10px 0 40px;background:var(--card);border:1px solid var(--line);border-radius:12px}
 .result.show{display:block}
 .result .big{font-size:2rem;font-weight:800;color:var(--accent)}
+
+.gem-row{margin-top:10px}
+button.ask{font-size:.85rem;padding:5px 10px;color:var(--accent)}
+.gem{display:none;margin-top:10px;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--bg)}
+.gem.show{display:block}
+.gm{white-space:pre-wrap;font-size:.92rem;padding:8px 10px;border-radius:8px;margin-bottom:8px}
+.gm.model{background:var(--card);border:1px solid var(--line)}
+.gm.user{background:var(--notebg);color:var(--note)}
+.gm.err{background:var(--badbg);color:var(--bad)}
+.gm.wait{color:var(--muted)}
+.gin{display:flex;gap:6px}
+.gin input{flex:1;font:inherit;padding:7px 10px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--text)}
 </style>
 </head>
 <body>
@@ -70,6 +82,7 @@ dialog textarea{resize:vertical}
     <select id="setSel" aria-label="Choose question set"><option>Loading…</option></select>
     <button class="tool" id="shuf">Shuffle</button>
     <button class="tool" id="reset">Reset</button>
+    <button class="tool" id="keyBtn" title="Set Gemini API key">🔑 Gemini</button>
     <button class="tool primary" id="addBtn">+ Add question</button>
     <span class="stats">Answered <b id="sAns">0</b>/<b id="sTot">0</b> · Correct <b id="sOk">0</b></span>
   </div>
@@ -167,7 +180,8 @@ function build(){
     const c=document.createElement("div"); c.className="card"; c.id="c"+q.id;
     c.innerHTML='<div class="qn"><span class="qlabel"></span><button class="del">Delete</button></div>'+
       '<p class="q"></p><div class="opts"><button class="opt" data-v="1">True</button><button class="opt" data-v="0">False</button></div>'+
-      '<div class="exp"><div class="verdict"></div><div class="body"></div></div>';
+      '<div class="exp"><div class="verdict"></div><div class="body"></div></div>'+
+      '<div class="gem-row"><button class="tool ask">✨ Ask Gemini</button></div><div class="gem"></div>';
     c.querySelector(".qlabel").textContent=(shuffled? q.g+" · ":"")+"Q"+n;
     c.querySelector(".q").textContent=q.s;
     c.querySelector(".del").addEventListener("click",()=>{
@@ -176,8 +190,10 @@ function build(){
       col.doc(q.id).delete().catch(err=>alert("Delete failed: "+err.message));
     });
     c.querySelectorAll(".opt").forEach(b=>b.addEventListener("click",()=>answer(q,b.dataset.v==="1")));
+    c.querySelector(".ask").addEventListener("click",()=>toggleGem(q,c));
     list.appendChild(c);
     if(q.id in state) paint(q);
+    if(chats[q.id]) renderGem(q,c,true);
   });
   stats();
 }
@@ -214,6 +230,82 @@ function stats(){
 sel.addEventListener("change",()=>{ build(); window.scrollTo(0,0); });
 $("shuf").addEventListener("click",()=>{ shuffled=!shuffled; $("shuf").textContent=shuffled?"Unshuffle":"Shuffle"; build(); });
 $("reset").addEventListener("click",()=>{ if(!confirm("Clear all your answers and start over?")) return; state={}; saveState(); build(); window.scrollTo(0,0); });
+
+// ---- Gemini ----
+const KEY_STORE="tuGeminiKey", MODEL="gemini-3.8-flash";
+const getKey=()=>{ try{return localStorage.getItem(KEY_STORE)||"";}catch(e){return "";} };
+$("keyBtn").addEventListener("click",()=>{
+  const k=prompt("Paste your Gemini API key (kept only in this browser's localStorage):", getKey());
+  if(k!==null){ try{localStorage.setItem(KEY_STORE,k.trim());}catch(e){} }
+});
+const chats={};   // questionId -> [{role:'user'|'model', text}]
+const SYS="You are a concise, friendly business finance tutor helping a student with True/False practice questions. Keep answers short (under 150 words unless asked), use plain language, and give a tiny numeric example when it helps.";
+
+async function callGemini(hist){
+  const key=getKey();
+  if(!key) throw new Error("No API key yet. Click “🔑 Gemini” at the top and paste your key.");
+  const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+MODEL+":generateContent",{
+    method:"POST",
+    headers:{"Content-Type":"application/json","x-goog-api-key":key},
+    body:JSON.stringify({
+      systemInstruction:{parts:[{text:SYS}]},
+      contents:hist.map(m=>({role:m.role,parts:[{text:m.text}]}))
+    })
+  });
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok) throw new Error((j.error&&j.error.message)||("HTTP "+r.status));
+  const t=(((j.candidates||[])[0]||{}).content||{}).parts;
+  return t? t.map(p=>p.text||"").join("") : "(No response – the answer may have been blocked.)";
+}
+
+function firstPrompt(q){
+  const base='Statement: "'+q.s+'"\n';
+  if(q.id in state){
+    const ok=state[q.id]===!!q.a;
+    return base+"Correct answer: "+(q.a?"True":"False")+". The student answered "+(state[q.id]?"True":"False")+" ("+(ok?"correct":"wrong")+")."+
+      (q.e?"\nBook explanation: "+q.e:"")+"\nExplain the concept behind this in simple terms, and why a student might get it wrong.";
+  }
+  return base+"The student hasn't answered yet. Give a short hint about the concept WITHOUT revealing whether it is True or False.";
+}
+
+function toggleGem(q,c){
+  const g=c.querySelector(".gem");
+  if(g.classList.contains("show")){ g.classList.remove("show"); return; }
+  if(!chats[q.id]){ chats[q.id]=[]; renderGem(q,c,true); send(q,c,firstPrompt(q),true); }
+  else renderGem(q,c,true);
+}
+
+function renderGem(q,c,open){
+  const g=c.querySelector(".gem"); g.innerHTML="";
+  const box=document.createElement("div"); g.appendChild(box);
+  chats[q.id].forEach((m,i)=>{
+    if(i===0 && m.role==="user") return;   // hide the auto-generated prompt
+    const d=document.createElement("div"); d.className="gm "+(m.err?"err":m.role); d.textContent=m.text; box.appendChild(d);
+  });
+  const row=document.createElement("div"); row.className="gin";
+  row.innerHTML='<input type="text" placeholder="Ask a follow-up…"><button class="tool primary">Send</button>';
+  const inp=row.querySelector("input"), btn=row.querySelector("button");
+  const go=()=>{ const t=inp.value.trim(); if(t){ inp.value=""; send(q,c,t,false); } };
+  btn.addEventListener("click",go);
+  inp.addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); go(); } });
+  g.appendChild(row);
+  if(open) g.classList.add("show");
+}
+
+async function send(q,c,text,auto){
+  const h=chats[q.id];
+  h.push({role:"user",text});
+  renderGem(q,c,true);
+  const w=document.createElement("div"); w.className="gm wait"; w.textContent="Gemini is thinking…";
+  c.querySelector(".gem > div").appendChild(w);
+  try{
+    const ans=await callGemini(h.filter(m=>!m.err));
+    h.push({role:"model",text:ans});
+  }catch(err){
+    h.push({role:"model",text:"⚠ "+err.message,err:true});
+  }
+  const cc=$("c"+q.id); if(cc) renderGem(q,cc,true);
+}
 
 // ---- add question ----
 const dlg=$("dlg"), fSet=$("fSet");
