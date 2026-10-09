@@ -88,6 +88,14 @@ button.ask{font-size:.85rem;padding:5px 10px;color:var(--accent)}
   <h1>Business Finance – True or False</h1>
   <div class="row">
     <select id="setSel" aria-label="Choose question set"><option>Loading…</option></select>
+    <select id="statusSel" aria-label="Filter by status">
+      <option value="all">All questions</option>
+      <option value="na">Not attempted</option>
+      <option value="att">Attempted</option>
+      <option value="ok">Correct</option>
+      <option value="bad">Incorrect</option>
+      <option value="note">Has my note</option>
+    </select>
     <button class="tool" id="shuf">Shuffle</button>
     <button class="tool" id="reset">Reset</button>
     <button class="tool" id="acctBtn">👤 Sign in</button>
@@ -161,7 +169,8 @@ const col = firebase.firestore().collection("questions");
 setTimeout(()=>{ if(!loaded) list.innerHTML='<div class="msg">Still can\u2019t reach Firestore.<br>Check: internet/ad-blocker, that Firestore Database is created in project <b>osaquiz</b>, and the browser console (F12) for errors.</div>'; }, 10000);
 
 const $ = id => document.getElementById(id);
-const list = $("list"), sel = $("setSel");
+const list = $("list"), sel = $("setSel"), statusSel = $("statusSel");
+let scope = [];
 const PROG_KEY = "tuQuizProgressV2";
 let state = {};
 try{ state = JSON.parse(localStorage.getItem(PROG_KEY)||"{}") || {}; }catch(e){ state = {}; }
@@ -202,11 +211,13 @@ function esc(s){ return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",
 
 function build(){
   const v = sel.value;
-  let items = all.filter(q=> v==="all" || groups[+v]===q.g );
+  scope = all.filter(q=> v==="all" || groups[+v]===q.g );
+  const numOf={}, cnt={}; all.forEach(q=>{ cnt[q.g]=(cnt[q.g]||0)+1; numOf[q.id]=cnt[q.g]; });
+  let items = scope.filter(passes);
   if(shuffled){ for(let i=items.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[items[i],items[j]]=[items[j],items[i]];} }
   visible = items;
   list.innerHTML = "";
-  if(!items.length){ list.innerHTML='<div class="msg">No questions yet. Use “+ Add question”.</div>'; stats(); return; }
+  if(!items.length){ list.innerHTML = scope.length ? '<div class="msg">No questions match this filter.</div>' : '<div class="msg">No questions yet. Use “+ Add question”.</div>'; stats(); return; }
   let last=null, n=0;
   items.forEach(q=>{
     if(!shuffled && q.g!==last){ const h=document.createElement("div"); h.className="setlabel"; h.textContent=q.g; list.appendChild(h); last=q.g; n=0; }
@@ -217,7 +228,7 @@ function build(){
       '<div class="exp"><div class="verdict"></div><div class="body"></div></div>'+
       '<div class="gem-row"><button class="tool ask">✨ Ask Gemini</button><button class="tool notebtn">📝 Note</button></div>'+
       '<div class="mynote"><textarea placeholder="Write your own notes for this question…"></textarea><small>Saved automatically on this device.</small></div><div class="gem"></div>';
-    c.querySelector(".qlabel").textContent=(shuffled? q.g+" · ":"")+"Q"+n;
+    c.querySelector(".qlabel").textContent=(shuffled? q.g+" · ":"")+"Q"+numOf[q.id];
     c.querySelector(".q").textContent=q.s;
     c.querySelector(".del").addEventListener("click",()=>{
       if(!confirm("Delete this question for everyone?")) return;
@@ -232,7 +243,7 @@ function build(){
       const mark=()=>{ nb.classList.toggle("has", !!ta.value.trim()); nb.textContent = ta.value.trim() ? "📝 Note •" : "📝 Note"; };
       mark(); if(ta.value.trim()) box.classList.add("show");
       nb.addEventListener("click",()=>{ box.classList.toggle("show"); if(box.classList.contains("show")) ta.focus(); });
-      let t; ta.addEventListener("input",()=>{ clearTimeout(t); t=setTimeout(()=>{ const v=ta.value.trim(); if(v) notes[q.id]=ta.value; else delete notes[q.id]; saveNotes(); mark(); },300); });
+      let t; ta.addEventListener("input",()=>{ clearTimeout(t); t=setTimeout(()=>{ const v=ta.value.trim(); if(v) notes[q.id]=ta.value; else delete notes[q.id]; saveNotes(); mark(); stats(); },300); });
     })();
     list.appendChild(c);
     if(q.id in state) paint(q);
@@ -256,13 +267,22 @@ function paint(q){
   if(q.n){ const n=document.createElement("div"); n.className="note"; n.textContent="Note: "+q.n; body.appendChild(n); }
 }
 
+function passes(q){
+  const f=statusSel.value, a=q.id in state, ok=a && state[q.id]===!!q.a;
+  return f==="all" || (f==="na"&&!a) || (f==="att"&&a) || (f==="ok"&&ok) || (f==="bad"&&a&&!ok) || (f==="note"&&!!(notes[q.id]||"").trim());
+}
 function stats(){
-  let ans=0, ok=0;
-  visible.forEach(q=>{ if(q.id in state){ ans++; if(state[q.id]===!!q.a) ok++; } });
-  $("sAns").textContent=ans; $("sTot").textContent=visible.length; $("sOk").textContent=ok;
-  $("prog").style.width = visible.length ? (100*ans/visible.length)+"%" : "0";
+  let ans=0, ok=0, bad=0, note=0;
+  scope.forEach(q=>{
+    if(q.id in state){ ans++; if(state[q.id]===!!q.a) ok++; else bad++; }
+    if((notes[q.id]||"").trim()) note++;
+  });
+  $("sAns").textContent=ans; $("sTot").textContent=scope.length; $("sOk").textContent=ok;
+  $("prog").style.width = scope.length ? (100*ans/scope.length)+"%" : "0";
+  const lab={all:["All questions",scope.length],na:["Not attempted",scope.length-ans],att:["Attempted",ans],ok:["Correct",ok],bad:["Incorrect",bad],note:["Has my note",note]};
+  [...statusSel.options].forEach(o=>{ const l=lab[o.value]; if(l) o.textContent=l[0]+" ("+l[1]+")"; });
   const r=$("result");
-  if(visible.length && ans===visible.length){
+  if(scope.length && ans===scope.length){
     const p=Math.round(100*ok/ans);
     $("rScore").textContent=ok+" / "+ans+" ("+p+"%)";
     $("rMsg").textContent = p>=80?"Excellent work!":p>=60?"Good — review the ones you missed.":"Keep practising — read the explanations again.";
@@ -270,6 +290,7 @@ function stats(){
   } else r.classList.remove("show");
 }
 
+statusSel.addEventListener("change",()=>{ build(); window.scrollTo(0,0); });
 sel.addEventListener("change",()=>{ build(); window.scrollTo(0,0); });
 $("shuf").addEventListener("click",()=>{ shuffled=!shuffled; $("shuf").textContent=shuffled?"Unshuffle":"Shuffle"; build(); });
 $("reset").addEventListener("click",()=>{ if(!confirm("Clear all your answers and start over?")) return; state={}; saveState(); build(); window.scrollTo(0,0); });
