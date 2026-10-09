@@ -19,8 +19,9 @@ header{position:sticky;top:0;z-index:5;background:var(--card);border-bottom:1px 
 .wrap{max-width:760px;margin:0 auto}
 h1{font-size:1.15rem;margin:0 0 8px}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-select,button.tool{font:inherit;padding:7px 10px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--text)}
+select,input[type=text],button.tool{font:inherit;padding:7px 10px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--text)}
 button.tool{cursor:pointer}
+button.tool.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
 .stats{margin-left:auto;font-size:.9rem;color:var(--muted)}
 .stats b{color:var(--text)}
 .bar{height:5px;background:var(--line);border-radius:3px;margin-top:10px;overflow:hidden}
@@ -45,16 +46,17 @@ main{padding:16px}
 .exp.right .verdict{color:var(--ok)}
 .exp.wrong .verdict{color:var(--bad)}
 .note{margin-top:8px;padding:8px 10px;border-radius:8px;background:var(--notebg);color:var(--note);font-size:.85rem}
-button.tool.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.del{float:right;background:none;border:none;color:var(--bad);cursor:pointer;font:inherit;font-size:.8rem}
+.msg{text-align:center;color:var(--muted);padding:40px 0}
 dialog{border:1px solid var(--line);border-radius:14px;background:var(--card);color:var(--text);width:min(520px,92vw);padding:18px}
 dialog::backdrop{background:rgba(0,0,0,.5)}
 dialog h2{margin:0 0 12px;font-size:1.05rem}
 dialog label{display:block;font-size:.85rem;color:var(--muted);margin:10px 0 4px}
-dialog textarea{width:100%;font:inherit;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--text);resize:vertical}
+dialog textarea,dialog input[type=text],dialog select{width:100%;font:inherit;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--text)}
+dialog textarea{resize:vertical}
 .radios{display:flex;gap:16px}
 .radios label{display:flex;align-items:center;gap:6px;margin:0;color:var(--text);font-size:1rem}
 .dlgbtns{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
-.del{float:right;background:none;border:none;color:var(--bad);cursor:pointer;font:inherit;font-size:.8rem}
 .err{color:var(--bad);font-size:.85rem;margin-top:8px;min-height:1em}
 .result{display:none;text-align:center;padding:20px;margin:10px 0 40px;background:var(--card);border:1px solid var(--line);border-radius:12px}
 .result.show{display:block}
@@ -65,7 +67,7 @@ dialog textarea{width:100%;font:inherit;padding:8px;border-radius:8px;border:1px
 <header><div class="wrap">
   <h1>Business Finance – True or False</h1>
   <div class="row">
-    <select id="setSel" aria-label="Choose question set"></select>
+    <select id="setSel" aria-label="Choose question set"><option>Loading…</option></select>
     <button class="tool" id="shuf">Shuffle</button>
     <button class="tool" id="reset">Reset</button>
     <button class="tool primary" id="addBtn">+ Add question</button>
@@ -73,14 +75,17 @@ dialog textarea{width:100%;font:inherit;padding:8px;border-radius:8px;border:1px
   </div>
   <div class="bar"><i id="prog"></i></div>
 </div></header>
-<main><div class="wrap" id="list"></div>
-<div class="wrap"><div class="result" id="result"><div class="big" id="rScore"></div><div id="rMsg"></div></div></div></main>
+<main>
+  <div class="wrap" id="list"><div class="msg">Loading questions…</div></div>
+  <div class="wrap"><div class="result" id="result"><div class="big" id="rScore"></div><div id="rMsg"></div></div></div>
+</main>
 
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <dialog id="dlg">
   <form method="dialog" id="addForm">
-    <h2>Add your own question</h2>
+    <h2>Add a question</h2>
+    <label for="fSet">Set</label>
+    <select id="fSet"></select>
+    <input type="text" id="fNewSet" placeholder="New set name" style="display:none;margin-top:6px">
     <label for="fStmt">Statement</label>
     <textarea id="fStmt" rows="3" placeholder="e.g. Higher discount rate results in lower present value."></textarea>
     <label>Correct answer</label>
@@ -93,228 +98,14 @@ dialog textarea{width:100%;font:inherit;padding:8px;border-radius:8px;border:1px
     <div class="err" id="fErr"></div>
     <div class="dlgbtns">
       <button type="button" class="tool" id="fCancel">Cancel</button>
-      <button type="submit" class="tool primary">Save question</button>
+      <button type="submit" class="tool primary" id="fSave">Save question</button>
     </div>
   </form>
 </dialog>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
-// [statement, answerIsTrue, explanation, optionalNote]
-const SETS = [
-{name:"2021 September (Make up)", q:[
-["The financing decision of a firm is concerned with acquiring fixed asset.",false,"Financing decision is primarily concerned with determining the appropriate amount and mix of the different sources of capital required to finance the firm's assets."],
-["Turnover ratios provide the measure for how effectively the firm's assets are being utilized.",true,"Turnover ratios measure the productivity of asset utilization in terms of generating sales with a given amount of investment in assets."],
-["If we deposit Rs. 2,000 today at an annual interest rate of 10 percent, it is compounded to Rs. 2,662 at the end of year 3.",true,"FV₃ = PV(1 + i)³ = Rs 2,000 × (1.10)³ = Rs 2,662."],
-["The risk-free rate is 8 percent, the expected market return is 14%. If stock's beta is 1.5, required rate of return on the stock should be 17 percent.",true,"By CAPM: E(Rᵢ) = R_F + [E(R_M) − R_F]βᵢ = 8% + (14% − 8%)(1.5) = 17%."],
-["Value of a premium bond increases as remaining time to maturity decreases.",false,"A premium bond sells above face value, and its value keeps declining as it approaches maturity (it converges to par). So the value decreases, not increases.","The book marks this True, but its own explanation says the value declines, so the correct answer is False."],
-["Valuation of a common stock is more complex than the valuation of bonds.",true,"Common stock pays no fixed dividend and its valuation is based on investors' expectations about future cash flows."],
-["NPV method considers entire streams of cash flows.",true,"Net present value is the difference between the present value of all future cash flows and the present value of the cost."],
-["A firm purchases 10,000 units annually. Its ordering cost is Rs 100 per order and carrying cost is Rs 2 per unit. Firm's EOQ should be 1,000 units.",true,"EOQ = √(2RO/C) = √(2 × 10,000 × 100 / 2) = √1,000,000 = 1,000 units."],
-["Net working capital can be defined as the difference between total assets and current liabilities.",false,"Net working capital is the difference between current assets and current liabilities, not total assets and current liabilities."],
-["Higher cash conversion cycle is desirable.",false,"A higher cash conversion cycle leads to higher working capital financing requirements for the company."]
-]},
-{name:"2020 (Make up) Jan–Feb", q:[
-["Profit maximization objective considers time value of the benefits.",false,"Under profit maximization, identical amounts of benefits derived over several periods are treated equally irrespective of timing."],
-["Income statement of a firm shows financial position of the firm.",false,"The income statement summarizes revenue generated and expenses incurred over an accounting period. It shows profit and loss, not financial position (that's the balance sheet)."],
-["Higher turnover ratio is always preferred.",true,"A higher turnover ratio indicates better utilization of assets, i.e. better productive power in generating sales with a given investment in assets."],
-["If we deposit Rs. 2,000 today at an annual interest rate of 10 percent, it is compounded to Rs. 2,662 at the end of year 3.",true,"FV₃ = Rs 2,000 (1.10)³ = Rs 2,662."],
-["There is inverse relationship between discount rate and present value.",true,"At a higher discount rate the present value of future cash flows from an asset is lower, and vice versa."],
-["Standard deviation measures total risk in relative term.",false,"Standard deviation is a stand-alone, absolute measure of total risk. It does not consider the level of return (coefficient of variation is the relative measure)."],
-["An investor purchased a share of stock at Rs. 300 and sold for Rs. 400 at the end of the year. The investor received dividend Rs. 50 per share during the year. Investor's rate of return is 40 percent.",false,"R = (P₁ − P₀ + D₁)/P₀ = (400 − 300 + 50)/300 = 0.5 or 50%, not 40%."],
-["Higher cash conversion cycle is desirable.",false,"A higher cash conversion cycle leads to higher working capital financing requirements."],
-["Cash budget is usually prepared at the end of accounting year.",false,"Cash budget is used for short-term cash planning and is usually prepared for monthly periods."],
-["A firm's current asset and fixed assets are Rs. 800,000 and Rs. 1,400,000 respectively. If the firm's current liabilities is Rs. 600,000 amount of net working capital will be Rs. 200,000.",true,"Net WC = Current assets − Current liabilities = Rs 800,000 − Rs 600,000 = Rs 200,000."]
-]},
-{name:"2019 April", q:[
-["The board of directors is responsible for managing day-to-day operations and carrying out the policies established by the chief executive officer.",false,"The board is not responsible for day-to-day operations. Policies are established by the board of directors and executed by the CEO."],
-["Net cash flow differs from firm's net income because of depreciation and other non-cash expenses and income.",true,"Net cash flow is net income plus depreciation and other non-cash expenses and income."],
-["Management attempts to increase total assets turnover.",true,"Total assets turnover measures the efficiency or productivity of assets, so management tries to increase it."],
-["The constant growth dividend model does not hold true when growth rate is greater or equal to investor's required rate.",true,"In Gordon's model, stock price cannot be negative or infinite, so the model fails when growth rate ≥ required rate (P₀ = D₁/(k − g))."],
-["An investor purchased a share of stock at Rs 500 and sold for Rs 530 at the end of the year. The investor received dividend Rs 20 per share during the year. Investor's rate of return is 50 percent.",false,"HPR = (P₁ − P₀ + D)/P₀ = (530 − 500 + 20)/500 = 10%, not 50%."],
-["Stock beta is calculated to measure total risk associated with the security.",false,"Beta measures systematic (market) risk, not total risk. β = Cov(i,m)/σₘ² or r·σⱼ/σₘ."],
-["Value of premium bond decreases gradually as it approaches to maturity.",true,"A premium bond's value gradually decreases toward par as maturity approaches, and a discount bond's value gradually increases."],
-["Bank A offers 12 percent interest and applies quarterly compounding and Bank B offers 13 percent interest but it applies annual compounding. If you want to deposit money for one year, you should choose Bank A.",false,"Effective rate of Bank A = (1 + 0.12/4)⁴ − 1 = 12.55%. Effective rate of Bank B = 13%. Bank B gives the higher return, so you should choose Bank B.","The book marks this True, but its own calculation (12.55% vs 13%) favours Bank B, so the correct answer is False."],
-["Higher day's sales outstanding (DSO) is desirable.",false,"Lower DSO is desirable, because higher DSO shows credit collection is slow and there is a chance of bad debt."],
-["A firm's current asset and fixed assets are Rs 300,000 and Rs 500,000 respectively. If firm's current liabilities is Rs 250,000 amount of net working capital will be Rs 50,000.",true,"Net working capital = Rs 300,000 − Rs 250,000 = Rs 50,000."]
-]},
-{name:"2019 January (Make up)", q:[
-["Profit maximization objective ignores timing of cash flow streams.",true,"Profit maximization is concerned only with profit and ignores the timing of cash flow streams."],
-["Higher current ratio is preferred as it indicates strong liquidity position of the firm.",true,"A higher current ratio indicates a strong liquidity position."],
-["The risk-free rate and expected market return are 8 percent and 14 respectively. If Star Company's stock has a beta of 1.5 required rate of return should be 17 percent.",true,"CAPM: Rⱼ = R_f + (R_m − R_f)βⱼ = 8 + (14 − 8)(1.5) = 17%."],
-["When required rate of return is greater than the coupon rate, the bond will sell at premium.",false,"If required rate of return (YTM) is greater than the coupon rate, the bond sells at a discount, not premium."],
-["Preferred stock is hybrid security.",true,"It has features of both common stock and bonds."],
-["Initial investment outlay is the total project cost. It includes price of the machine, shipment charges, installation cost but does not include investment in working capital.",false,"Initial investment outlay does include investment in working capital, along with machine price, shipment and installation costs."],
-["Net cash flow differs from net income.",true,"Net cash flow adds back depreciation and other non-cash expenses, while net income does not."],
-["Depreciation and amortization are not shown in cash budget.",true,"A cash budget is a schedule of cash receipts and payments during the plan period; non-cash items like depreciation are excluded."],
-["Coefficient of variation measures systematic risk in relative terms.",false,"Coefficient of variation measures risk per unit of return (total risk in relative terms), not systematic risk."],
-["Net working capital can be defined as the difference between total assets and current liabilities.",false,"It is the difference between current assets and current liabilities."]
-]},
-{name:"TU 2018", q:[
-["The investment decision of a firm is concerned with deciding on which financing sources are to be used to finance an asset.",false,"Investment decision is about which assets should be purchased, not which financing sources to use."],
-["Preferred stockholders have prior claim to debtholders.",false,"Debtholders have prior claim over preferred stockholders."],
-["If we deposit Rs 1,000 today at an annual interest rate of 10 percent, it is compounded to Rs 1,331 at the end of year 3.",true,"FV = 1,000 (1 + 0.10)³ = Rs 1,331."],
-["The risk-free rate and expected market return are 6 percent and 12 respectively. If Star Company's stock has a beta of 1.5, required rate of return should be 15 percent.",true,"K = R_f + (R_m − R_f)β = 6% + (12 − 6)% × 1.5 = 15%."],
-["When required rate of return is greater than the coupon rate, the bond will sell at premium.",false,"If required rate (K) is greater than coupon rate (I), the bond sells at a discount, not premium."],
-["Standard deviation is used to compare systematic risk associated with the securities.",false,"Standard deviation compares total risk, not systematic risk only."],
-["Increase in the working capital is considered as cash inflow at the beginning.",false,"An increase in working capital is a cash outflow at the beginning."],
-["Net cash flow differs from net income.",true,"Net cash flow is net income plus depreciation and other non-cash expenses and income."],
-["Effective annual rate is always higher than nominal rate when compounding period is less than a year.",true,"More frequent compounding adds interest on interest, so EAR exceeds the nominal rate."],
-["Higher day's sales is outstanding desirable.",false,"Lower DSO is desirable, because higher DSO shows slow credit collection and a chance of bad debt."]
-]},
-{name:"2018 (Make up)", q:[
-["The financing decision of a firm is concerned with deciding on which assets should be purchased.",false,"That is the investment decision. Financing decision is concerned with fund raising."],
-["Net cash flow differs from firm's net income because of depreciation and other noncash expenses and income.",true,"Net cash flow is net income plus depreciation and other non-cash expenses and income."],
-["Higher assets turnover is desirable.",true,"Total assets turnover measures the efficiency or productivity of assets, so management attempts to increase it."],
-["The constant growth dividend model does not hold true when growth rate is greater or equal to investors' required rate.",true,"Gordon's model would give a negative or infinite stock price when g ≥ k, so it is not valid."],
-["An investor purchased a share of stock at Rs 200 and sold for Rs 240 at the end of the year. The investor received dividend Rs 20 per share during the year. Investor's rate of return is 60 percent.",false,"HPR = (240 − 200 + 20)/200 = 30%, not 60%."],
-["If market rate is higher than coupon rate, bond sells at premium.",false,"If market rate (K) is higher than coupon rate (I), the bond sells at a discount, not premium."],
-["Value of Rs 1,000 par, 10-year, zero coupon bond, at 10 percent required rate should be Rs 500.",false,"V₀ = M/(1 + k)ⁿ = 1,000/(1.10)¹⁰ = Rs 385.54, not Rs 500."],
-["If City bank offers 12 percent interest and applies quarterly compounding, the effective interest rate of City bank is 12.55 percent.",true,"Effective rate = (1 + 0.12/4)⁴ − 1 = 12.55%.","The book marks this False and quotes 16.99%, but its own calculation gives 12.55%, so the statement is True."],
-["Higher day's sales outstanding (DSO) is desirable.",false,"Lower DSO is desirable, because higher DSO shows slow credit collection and a chance of bad debt."],
-["A firm's current asset and fixed assets are Rs 400,000 and Rs 600,000 respectively. If firm's current liabilities is Rs 250,000 amount of net working capital will be Rs 150,000.",true,"Net working capital = Rs 400,000 − Rs 250,000 = Rs 150,000."]
-]},
-{name:"TU 2017", q:[
-["Wealth maximization goal is superior to profit maximization.",true,"Wealth maximization considers timing of returns, risk, social responsibility, business ethics, etc."],
-["Present value of Rs 1,000 due in four year, at 10 percent discount rate is Rs 683.",true,"PV = FV/(1 + k)ⁿ = 1,000/(1.10)⁴ = Rs 683."],
-["If the equity multiplier is 2.0, the debt ratio must be 0.4.",false,"EM = 1/(1 − DR) → 2 = 1/(1 − DR) → 2 − 2DR = 1 → DR = 0.50, not 0.40."],
-["Value of short-term bond changes more than the value of long-term bond for a given change in discount rate.",false,"Long-term bonds are more sensitive (greater interest rate risk), so a short-term bond's value changes less."],
-["Return on equity (ROE) is the product of net profit margin and total asset turnover.",false,"ROE is the product of profit margin, total assets turnover and equity multiplier (DuPont)."],
-["Value of Rs 100, 12 percent preferred stock at 10 percent required rate will be Rs 83.33.",false,"P₀ = DPS/k = Rs 12/0.10 = Rs 120, so Rs 83.33 is wrong.","The book's working shows Rs 100, but Rs 12 ÷ 0.10 = Rs 120. Either way, Rs 83.33 is incorrect, so the answer is False."],
-["When IRR equals to cost of capital, NPV equals to zero.",true,"If IRR equals cost of capital, return equals cost, so NPV is zero."],
-["Higher day's sales outstanding (DSO) is desirable.",false,"Lower DSO is desirable, because higher DSO shows slow credit collection and a chance of bad debt."],
-["If we combine positively correlated assets, we can eliminate the significant portion of risk.",false,"Combining positively correlated assets cannot eliminate a significant portion of risk."],
-["A firm's current asset and fixed assets are Rs 100,000 and Rs 200,000 respectively. If firm's current liabilities is Rs 70,000 amount of net working capital will be Rs 30,000.",true,"NWC = Rs 100,000 − Rs 70,000 = Rs 30,000."]
-]},
-{name:"TU 2016", q:[
-["The investment decision of a firm is concerned with deciding on which financing sources are to be used to finance an investment.",false,"Investment decision is about which assets to buy; financing sources are a financing decision."],
-["Net cash flow differs from firm's net income because of depreciation and other non-cash expenses and income.",true,"Net cash flow is net income plus depreciation and other non-cash expenses and income."],
-["There is an inverse relationship between the value of a bond and its required rate of return.",true,"When the required rate rises, bond value falls, and vice versa."],
-["The constant growth dividend model does not hold true when growth rate is greater or equal to investor's required rate.",true,"Gordon's model would give a negative or infinite price when g ≥ k."],
-["If we combine perfectly negatively correlated assets, we can eliminate the risk using minimum variance weight.",true,"Combining perfectly negatively correlated assets with minimum-variance weights can eliminate risk."],
-["Depreciation is non-cash operating expenses. It is deducted only for tax reporting purposes but it is added back to the net income of the project to determine net cash flow.",true,"Depreciation is a non-cash expense; it is added back to net income to find net cash flow."],
-["Presently a firm is selling at the term 3/15, net 45. Its sales will increase if it sells at the term 3/15, net 30.",false,"Shortening the credit period from 45 to 30 days tightens credit, so sales will decrease."],
-["If National bank offers 12 percent interest and applies monthly compounding, the effective interest rate of National bank is 12.68 percent.",true,"EIR = (1 + 0.12/12)¹² − 1 = 12.68%."],
-["Depreciation is a major component of cash budget.",false,"Depreciation is a non-cash expense, so it is not a component of the cash budget."],
-["Net working capital can be defined as the difference between total assets and current liabilities.",false,"It is current assets minus current liabilities."]
-]},
-{name:"TU 2015", q:[
-["Wealth maximization objective of a firm emphasizes the long run profit maximization.",true,"Wealth maximization emphasizes long-run rather than short-run profit maximization."],
-["If the equity multiplier is 2.0, the debt ratio must be 0.50.",true,"EM = 1/(1 − DR) → 2 = 1/(1 − DR) → DR = 0.50."],
-["The effective annual rate is always greater than the simple rate as a result of compounding effects.",true,"Due to compounding, EAR exceeds the nominal (simple) rate."],
-["The CAPM predicts that a security with a beta of 0 will offer a zero expected return.",false,"Such a security should earn at least the risk-free rate, not zero."],
-["The bonds issued by Everest Bank Ltd. have more default risk premium than the bonds issued by Nepal Rastra Bank.",true,"Corporate bonds carry more default risk than government-sector bonds."],
-["The value of perpetual preferred stock is found as the dividend divided by the required rate of return.",true,"Perpetual preferred stock has no fixed maturity, so value = dividend / required rate."],
-["The IRR method can be used in place of the NPV method for all independent projects.",false,"The book's answer: NPV can replace IRR for all independent projects because NPV is the more popular and reliable technique; the reverse is not used for all cases."],
-["Aggressive working capital manager should maintain high level of current assets.",false,"An aggressive manager maintains a low level of current assets."],
-["Depreciation is always shown in a cash flow forecast.",false,"Depreciation is a non-cash expense and is not included in the cash budget."],
-["With terms of 2/10 net 30, the net credit period is 20 days.",false,"The credit period is 30 days, not 20."]
-]},
-{name:"TU 2014", q:[
-["Shareholders' wealth is maximized when a decision generates profit.",false,"Shareholders' wealth is maximized when a decision generates cash flow, not merely profit."],
-["The nominal risk-free rate of interest includes all type of risks.",false,"It includes only the real risk-free rate and inflation risk."],
-["According to the liquidity preference theory, the shape of yield curve depends on the real rate of interest and average expected rate of inflation.",true,"Long-term rates are higher than short-term rates because of more risk, so the yield curve is upward sloping."],
-["Risk on the portfolio is less if the returns of two assets are perfectly positively correlated.",false,"Portfolio risk is high when returns of two assets are perfectly positively correlated."],
-["Perpetuity is a series of payment of fixed amount in equal interval of time for a given number of periods.",false,"A perpetuity continues for an infinite number of periods."],
-["Higher discount rate results into greater present value of future amount.",false,"A higher discount rate results in a lower present value."],
-["A bond is sold at premium when the market rate of return is par with coupon rate of that bond.",false,"A bond sells at par when market rate equals coupon rate."],
-["Intrinsic value of a stock is the price at which it is traded in the market.",false,"Intrinsic value is the present (fair) value of the stock. Market price is set by demand and supply."],
-["When a business enterprise finances its current assets by long-term sources of funds, the enterprise is said to adopt aggressive financing approach.",false,"This is the relaxed (conservative) financing approach, not aggressive."],
-["Trade credit is considered as the cost-free source of short-term financing.",false,"Trade credit is not entirely cost-free (e.g. lost cash discounts)."]
-]},
-{name:"TU 2013", q:[
-["The investment decision of a firm concerned with deciding on which financing sources are to be used to finance an investment.",false,"Investment decision is not concerned with financing sources."],
-["Stock exchange is the market where newly issued securities are traded.",false,"Stock exchange is where securities are re-traded (secondary market). New securities are traded through investment bankers."],
-["Treasury yields are not influenced by inflation.",false,"Treasury yields are influenced by inflation but not by default risk."],
-["Primary market provides liquidity to the investors.",false,"Secondary market provides liquidity, not the primary market."],
-["An investor purchased a share of stock on January 1, 2012 for Rs 1,000, received dividend of Rs 50 at the end of 2012 and sold for Rs 1,350 on January 1, 2013. The investor's percentage return on the stock is 25 percent.",false,"HPR = (1,350 − 1,000 + 50)/1,000 = 40%, not 25%."],
-["The risk of a portfolio is less if the correlation between the returns of two assets included in the portfolio is positive.",false,"Portfolio risk is more if the correlation is positive."],
-["Rs 3,000 today is worth more than Rs 4,000 three years hence with the discount rate of 5 percent semiannually.",false,"As given in the book, Rs 3,000 today is not worth more than Rs 4,000 three years hence at the stated discount rate.","Check the interpretation: if 5% is applied per half-year (6 periods), PV of Rs 4,000 ≈ Rs 2,985, which would make the statement True. The book's key says False."],
-["A bond will sell at discount when the coupon rate is greater than the required rate of return.",false,"It will sell at a premium when coupon rate > required rate."],
-["Intrinsic value of a security is the current price at which the stock is being traded in the market.",false,"Intrinsic value is the present value of future cash flows, not the current market price."],
-["A negative cash conversion cycle occurs when operating cycle is less than payable deferral period (PDP).",true,"CCC = Operating cycle − PDP, so it is negative when the operating cycle is shorter than PDP."]
-]},
-{name:"TU 2012", q:[
-["An investment that promises to pay a return of Rs 100 is said to have equal risk as another investment whose earning ranges from Rs 0 to Rs 500.",false,"The investment with a promised return has lower risk than the one with volatile returns."],
-["Wealth maximization objective of a firm emphasizes the long-run profit maximization.",true,"It emphasizes long-run rather than short-run profit maximization."],
-["Receipt or payment of fixed amount of money in equal interval time for an indefinite period is called an annuity.",false,"An annuity is a series of fixed payments at equal intervals for a definite (identified) period. Indefinite/infinite is a perpetuity.","The book marks this True, but its own explanation says \"identified period\". Correct answer: False."],
-["The term structure of interest rates represents the relationship between interest rates and the value of bonds.",false,"It represents the relationship between interest rates and maturity period."],
-["Sole proprietorship business can raise the funds through the issue of securities.",false,"A sole proprietorship cannot raise funds by issuing securities."],
-["Cash conversion cycle is the length of time between the receipt of input and cash collection from the customers.",false,"CCC is the time between cash payment to suppliers for input and cash collection from customers."],
-["Primary emphasis of modern financial management is on the raising of funds.",false,"Modern financial management emphasizes both raising and utilizing funds."],
-["Short-term finance is often used to acquire fixed assets.",false,"Fixed assets are usually financed with long-term funds."],
-["Dividend yield is dividend divided by stock's par value.",false,"Dividend yield = expected dividend ÷ market price of stock, not par value."],
-["Future value interest factor is used in discounting the value of money.",false,"FVIF is used in compounding, not discounting."]
-]},
-{name:"TU 2011", q:[
-["Finance is related with the acquisition, allocation, management, and efficient utilization of firm's financial resources.",true,"This is the standard scope of finance."],
-["The expectation theory states that the yields on long-term debt is higher than short-term debt because long-term debts are illiquid than short-term debts.",true,"As per the book, long-term debt yields are higher because they are less liquid than short-term debt.","Strictly, the liquidity premium is the liquidity preference theory's explanation, but the book's key is True."],
-["At 10% interest rate, Rs 1000 today is worth more than Rs 1,600 five years from today.",true,"At 10%, Rs 1,000 grows to about Rs 1,610.51 in five years, which is more than Rs 1,600.","The book writes Rs 1,771.56 here, but 1,000 × (1.10)⁵ = Rs 1,610.51. The answer (True) is the same."],
-["The risk of a portfolio consisting of two negatively correlated stocks will be lesser than the portfolio consisting of positively correlated stocks.",true,"Negative correlation offsets movements and lowers portfolio risk."],
-["The interest also called coupon provided on bonds changes over time.",false,"Coupon on a bond is fixed and does not change over time."],
-["The price of bond moves positively with the market interest rate.",false,"Bond price moves negatively (inversely) with market interest rate."],
-["Discounted interest, compensating balance, and commitment fee increase the true or effective cost of loan.",true,"Each reduces usable funds or adds cost, raising the effective cost of the loan."],
-["A firm with a higher cash conversion cycle requires lesser amount of working capital.",false,"A firm with a lower cash conversion cycle requires less working capital."],
-["The returns investors receive from holding common stocks may be in two forms: (a) interest yield and (b) capital gains.",false,"Common stock returns come as dividend yield and capital gains, not interest yield."],
-["The net working capital is the current assets minus current liabilities.",true,"Net working capital = Current assets − Current liabilities."]
-]},
-{name:"TU 2010", q:[
-["Primary emphasis of modern financial management is on the raising of funds.",false,"It is not only raising funds; funds must also be utilized."],
-["Coefficient of variation is the absolute measure of the riskiness of business.",false,"CV is a relative measure of risk, not absolute."],
-["Portfolio return on the investment in two assets is the average return on these assets.",false,"Portfolio return is the weighted combination of the assets' returns, not a simple average."],
-["Two assets whose returns move in the opposite direction and have a negative correlation coefficient are either risk-free assets or low risk assets.",true,"Combining assets with opposite movements results in low risk or risk-free assets."],
-["The loan to be repaid in equal periodic installments is called amortized loan.",true,"That is the definition of an amortized loan."],
-["Perpetuity refers to the receipt of payments of fixed amount of money in an equal interval of time for a definite period.",false,"A perpetuity continues for an infinite period, not a definite period."],
-["The value of a bond decreases when its coupon rate is greater than required rate of return.",false,"When coupon rate exceeds the required rate, the bond's value increases (it sells at a premium)."],
-["Dividend yield is dividend by stock's par value.",false,"Dividend yield is expected dividend divided by market price, not par value."],
-["Short-term finance is often used to acquire fixed assets.",false,"Short-term finance is not often used to acquire fixed assets."],
-["Yield on Treasury bill is exposed to the maturity risk premium.",false,"T-bills are short-term securities, so maturity risk premium is assumed to be absent."]
-]},
-{name:"TU 2009", q:[
-["Financial manager places primary importance on cash flows.",true,"Financial managers focus on cash flows rather than accounting profit."],
-["In lump sum payment today is equal to the present value of three years annuity of Rs 1,000 each year discounted at a given rate of return; we would not be indifferent in choosing either of the alternatives.",true,"This is the book's answer (True).","This statement reads oddly: if the lump sum equals the PV of the annuity, you would normally be indifferent. It's likely a misprint, but the book's key is True."],
-["From the issuer's point of view preferred stock is less risky than bonds.",true,"If the issuer misses preferred dividends there's no forced liquidation, whereas missed bond interest/principal can push the firm into liquidation."],
-["A firm with high interest cost and high preferred stock dividend has high financial risk.",true,"High fixed financial charges increase financial risk."],
-["Factoring is the source of short team financing.",true,"Factoring is a secured short-term source as a part of accounts receivable financing."],
-["Financing with convertibles doesn't dilute earning per share.",false,"Financing with convertibles will dilute earnings per share once converted.","The book labels this True, but its own explanation says convertibles will dilute EPS, so the correct answer is False."],
-["An indenture is a legal agreement which deals the conditions associated with the bond issue.",true,"An indenture is the legal agreement covering the bond issue's conditions."],
-["Break even point is that level of activity where sales equals to variable cost.",false,"Break-even is where there is no profit and no loss (sales = total cost), not sales = variable cost."],
-["Given the monthly periodic rate of 1 percent, an effective annual percentage rate is 12 percent.",false,"EAR = (1.01)¹² − 1 = 12.68%, not 12%."],
-["Compensating balance increases the effective cost of bank loan.",true,"It reduces the usable loan amount while interest is paid on the full amount."]
-]},
-{name:"TU 2008", q:[
-["For a firm wealth maximization goal is preferable to profit maximization goal.",true,"Wealth maximization accounts for timing, risk and cash flows, so it is preferred over profit maximization.","The book marks this False with a garbled explanation, but elsewhere (e.g. TU 2017 Q1) it says wealth maximization is superior. The standard answer is True."],
-["The more frequently interest is compounded at a given rate (nominal rate), the greater the amount of money (FV) accumulated.",true,"More frequent compounding earns interest on interest more often."],
-["If monthly periodic rate of interest is 1.5 percent, the effective annual rate is 18 percent.",false,"EAR = (1 + 0.015)¹² − 1 = 19.56%, not 18%."],
-["Degree of combined leverage is the sum of the degree of operating and financial leverage.",false,"DCL = DOL × DFL, the product, not the sum.","The book marks this True, but combined leverage is the product of operating and financial leverage, so the correct answer is False."],
-["Use of large amount of debt capital increases the business risk of the firm.",false,"Debt increases financial risk, not business risk."],
-["Preferred stock holders have preferential voting rights over common stock holders.",false,"Preferred stockholders generally have no preferential voting rights."],
-["Given the invoice date of 'September 10' and terms of credit as '2/10 net 30 EOM', the payment date without cash discount is October 30.",true,"Under EOM terms, the 30 days count from the end of the month (Sept 30), giving October 30."],
-["Compensating balance increases the effective cost of bank loan.",true,"It reduces usable funds while interest is on the full loan."],
-["The conversion price of bond issued at Rs 1,000 par value with conversion ratio of 25% is Rs 50.",false,"As per the book, the conversion price at a 25% ratio is Rs 250, not Rs 50."],
-["If you have purchased a call option, you can buy the underlying stock at predetermined price at any time in the future.",false,"A call option gives the right to buy at a predetermined price within a specific period, not at any time in the future."]
-]},
-{name:"TU 2007 (Q1–9)", q:[
-["The investment decision of a firm is concerned with deciding on which financing sources are to be used to finance an investment.",false,"Investment decision is about which assets should be purchased, not which financing sources to use."],
-["When a company requires fund it may raise it by selling shares in secondary market.",false,"A company raises funds by selling shares in the primary market."],
-["Maturity risk is assume to be absent in treasury bills.",true,"Treasury bills are short-term securities, so maturity risk is assumed absent."],
-["Other things being constant; increase in fixed cost increases breakeven point.",true,"Higher fixed costs require more sales to break even."],
-["Among common stock, preferred stock and bond, the issue of bond keeps the capital structure of a firm more flexible.",true,"Bonds can be redeemed, which makes the capital structure more flexible."],
-["According to the expectancy theory the yield curve is upward sloping if inflation is expected to increase in the coming several years.",true,"Expected rising inflation raises expected future short rates, producing an upward-sloping curve."],
-["If your investment doubles in ten years, you are approximately 9% return in a year.",false,"Doubling in 10 years means about 7.18% a year (1.0718¹⁰ ≈ 2), not 9%.","The book quotes 8.04%; the precise figure is 7.18%. Either way, 9% is wrong."],
-["The conversion price of a bond issued at Rs 1,000 par value with conversion ratio of 25 is Rs 50.",false,"Conversion price = par value ÷ conversion ratio = 1,000 ÷ 25 = Rs 40, not Rs 50. (The book's key gives Rs 250 reading 25%.)"],
-["A put option is an option to buy a share of stock at predetermined price within a specified period.",false,"A put option is the right to sell, not buy, at a predetermined price within a specified period."]
-]}
-];
-
-const $ = id => document.getElementById(id);
-const list = $("list"), sel = $("setSel");
-const PROG_KEY = "tuQuizProgress";
-let state = {};   // key -> true/false chosen
-try{ state = JSON.parse(localStorage.getItem(PROG_KEY)||"{}") || {}; }catch(e){ state = {}; }
-function saveState(){ try{ localStorage.setItem(PROG_KEY, JSON.stringify(state)); }catch(e){} }
-let questions = []; // current visible questions
-let shuffled = false;
-
-const CUSTOM_IDX = SETS.length, LS_KEY = "tuQuizCustomQuestions";
 const firebaseConfig = {
   apiKey: "AIzaSyBf8Hvh6y-brtQcHRo6DesVj4i2SrgdnMg",
   authDomain: "osaquiz.firebaseapp.com",
@@ -325,85 +116,96 @@ const firebaseConfig = {
   appId: "1:427866798589:web:55b4cab5fcd7f0aacc8194",
   measurementId: "G-FY68W64X1J"
 };
-let custom = [], customIds = [], db = null, selectCustomNext = false;
-try{ firebase.initializeApp(firebaseConfig); db = firebase.firestore().collection("tfQuestions"); }catch(e){ db = null; console.warn("Firebase unavailable, using local storage", e); }
-function saveCustom(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(custom)); }catch(e){} }
-if(db){
-  db.orderBy("t").onSnapshot(snap=>{
-    customIds = snap.docs.map(d=>d.id);
-    custom = snap.docs.map(d=>{ const x=d.data(); return [x.s, !!x.a, x.e||""]; });
-    const keep = selectCustomNext ? String(CUSTOM_IDX) : sel.value;
-    selectCustomNext = false;
-    fillSel(keep); build();
-  }, err=>{ console.error(err); alert("Could not load shared questions from Firebase. Check your database rules."); });
-} else {
-  try{ custom = JSON.parse(localStorage.getItem(LS_KEY)||"[]"); if(!Array.isArray(custom)) custom=[]; }catch(e){ custom=[]; }
-}
-function sets(){ return custom.length ? SETS.concat([{name:"My questions", q:custom}]) : SETS; }
+firebase.initializeApp(firebaseConfig);
+const col = firebase.firestore().collection("questions");
+
+const $ = id => document.getElementById(id);
+const list = $("list"), sel = $("setSel");
+const PROG_KEY = "tuQuizProgressV2";
+let state = {};
+try{ state = JSON.parse(localStorage.getItem(PROG_KEY)||"{}") || {}; }catch(e){ state = {}; }
+function saveState(){ try{ localStorage.setItem(PROG_KEY, JSON.stringify(state)); }catch(e){} }
+
+let all = [];        // [{id,g,o,s,a,e,n}]
+let groups = [];     // ordered group names
+let visible = [];
+let shuffled = false;
+let selectGroupNext = null;
+
+// ---- load from Firestore (live) ----
+col.orderBy("o").onSnapshot(snap=>{
+  all = snap.docs.map(d=>({id:d.id, ...d.data()}));
+  const seen = new Set(); groups = [];
+  all.forEach(q=>{ if(!seen.has(q.g)){ seen.add(q.g); groups.push(q.g); } });
+  const keep = selectGroupNext!==null ? selectGroupNext : sel.value;
+  selectGroupNext = null;
+  fillSel(keep); build();
+}, err=>{
+  console.error(err);
+  list.innerHTML = '<div class="msg">Could not load questions from Firebase.<br>Check that Firestore is created and the rules allow reading the <b>questions</b> collection.</div>';
+});
+
 function fillSel(keep){
-  const all = sets();
-  sel.innerHTML = '<option value="all">All sets ('+all.reduce((a,s)=>a+s.q.length,0)+' questions)</option>' +
-    all.map((s,i)=>'<option value="'+i+'">'+s.name+' ('+s.q.length+')</option>').join("");
-  sel.value = keep!==undefined && [...sel.options].some(o=>o.value===String(keep)) ? String(keep) : "all";
+  sel.innerHTML = '<option value="all">All sets ('+all.length+' questions)</option>' +
+    groups.map((g,i)=>'<option value="'+i+'">'+esc(g)+' ('+all.filter(q=>q.g===g).length+')</option>').join("");
+  const k = typeof keep==="string" && keep.startsWith("g:") ? String(groups.indexOf(keep.slice(2))) : keep;
+  sel.value = k!==undefined && [...sel.options].some(o=>o.value===String(k)) ? String(k) : "all";
 }
-fillSel();
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 
 function build(){
-  let items = [];
   const v = sel.value;
-  sets().forEach((s,si)=>{ if(v==="all"||+v===si) s.q.forEach((q,qi)=>items.push({si,qi,set:s.name,q})); });
+  let items = all.filter(q=> v==="all" || groups[+v]===q.g );
   if(shuffled){ for(let i=items.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[items[i],items[j]]=[items[j],items[i]];} }
-  questions = items;
-  list.innerHTML = ""; let last = null;
-  items.forEach((it,idx)=>{
-    if(!shuffled && it.set!==last){ const h=document.createElement("div"); h.className="setlabel"; h.textContent=it.set; list.appendChild(h); last=it.set; }
-    const key = it.si+"-"+it.qi;
-    const c = document.createElement("div"); c.className="card"; c.id="c"+key;
-    c.innerHTML = '<div class="qn">'+(shuffled? it.set+" · ":"")+'Q'+(it.qi+1)+'</div>'+
+  visible = items;
+  list.innerHTML = "";
+  if(!items.length){ list.innerHTML='<div class="msg">No questions yet. Use “+ Add question”.</div>'; stats(); return; }
+  let last=null, n=0;
+  items.forEach(q=>{
+    if(!shuffled && q.g!==last){ const h=document.createElement("div"); h.className="setlabel"; h.textContent=q.g; list.appendChild(h); last=q.g; n=0; }
+    n++;
+    const c=document.createElement("div"); c.className="card"; c.id="c"+q.id;
+    c.innerHTML='<div class="qn"><span class="qlabel"></span><button class="del">Delete</button></div>'+
       '<p class="q"></p><div class="opts"><button class="opt" data-v="1">True</button><button class="opt" data-v="0">False</button></div>'+
       '<div class="exp"><div class="verdict"></div><div class="body"></div></div>';
-    c.querySelector(".q").textContent = it.q[0];
-    if(it.si===CUSTOM_IDX){
-      const d=document.createElement("button"); d.className="del"; d.textContent="Delete";
-      d.addEventListener("click",()=>{
-        if(!confirm("Delete this question?")) return;
-        Object.keys(state).forEach(k=>{ if(k.startsWith(CUSTOM_IDX+"-")) delete state[k]; }); saveState();
-        if(db){ db.doc(customIds[it.qi]).delete().catch(err=>alert("Delete failed: "+err.message)); }
-        else { custom.splice(it.qi,1); saveCustom(); fillSel(custom.length? sel.value : "all"); build(); }
-      });
-      c.querySelector(".qn").appendChild(d);
-    }
-    c.querySelectorAll(".opt").forEach(b=>b.addEventListener("click",()=>answer(key,it,b.dataset.v==="1")));
+    c.querySelector(".qlabel").textContent=(shuffled? q.g+" · ":"")+"Q"+n;
+    c.querySelector(".q").textContent=q.s;
+    c.querySelector(".del").addEventListener("click",()=>{
+      if(!confirm("Delete this question for everyone?")) return;
+      delete state[q.id]; saveState();
+      col.doc(q.id).delete().catch(err=>alert("Delete failed: "+err.message));
+    });
+    c.querySelectorAll(".opt").forEach(b=>b.addEventListener("click",()=>answer(q,b.dataset.v==="1")));
     list.appendChild(c);
-    if(key in state) paint(key,it);
+    if(q.id in state) paint(q);
   });
   stats();
 }
 
-function answer(key,it,val){ if(key in state) return; state[key]=val; saveState(); paint(key,it); stats(); }
+function answer(q,val){ if(q.id in state) return; state[q.id]=val; saveState(); paint(q); stats(); }
 
-function paint(key,it){
-  const c = $("c"+key), chosen = state[key], correct = it.q[1], ok = chosen===correct;
+function paint(q){
+  const c=$("c"+q.id), chosen=state[q.id], correct=!!q.a, ok=chosen===correct;
   c.querySelectorAll(".opt").forEach(b=>{
-    const v = b.dataset.v==="1"; b.disabled=true;
+    const v=b.dataset.v==="1"; b.disabled=true;
     if(v===chosen) b.classList.add("picked", ok?"right":"wrong");
     if(v===correct && !ok) b.classList.add("answer");
   });
-  const e = c.querySelector(".exp"); e.classList.add("show", ok?"right":"wrong");
-  e.querySelector(".verdict").textContent = ok ? "✓ Correct — the statement is "+(correct?"True":"False") : "✗ Not quite — the statement is "+(correct?"True":"False");
-  const body = e.querySelector(".body"); body.textContent = it.q[2];
-  if(it.q[3]){ const n=document.createElement("div"); n.className="note"; n.textContent="Note: "+it.q[3]; body.appendChild(n); }
+  const e=c.querySelector(".exp"); e.classList.add("show", ok?"right":"wrong");
+  e.querySelector(".verdict").textContent = (ok?"✓ Correct — ":"✗ Not quite — ")+"the statement is "+(correct?"True":"False");
+  const body=e.querySelector(".body"); body.textContent=q.e||"";
+  if(q.n){ const n=document.createElement("div"); n.className="note"; n.textContent="Note: "+q.n; body.appendChild(n); }
 }
 
 function stats(){
   let ans=0, ok=0;
-  questions.forEach(it=>{ const k=it.si+"-"+it.qi; if(k in state){ ans++; if(state[k]===it.q[1]) ok++; } });
-  $("sAns").textContent=ans; $("sTot").textContent=questions.length; $("sOk").textContent=ok;
-  $("prog").style.width = questions.length? (100*ans/questions.length)+"%" : "0";
+  visible.forEach(q=>{ if(q.id in state){ ans++; if(state[q.id]===!!q.a) ok++; } });
+  $("sAns").textContent=ans; $("sTot").textContent=visible.length; $("sOk").textContent=ok;
+  $("prog").style.width = visible.length ? (100*ans/visible.length)+"%" : "0";
   const r=$("result");
-  if(ans===questions.length && ans>0){
+  if(visible.length && ans===visible.length){
     const p=Math.round(100*ok/ans);
-    $("rScore").textContent = ok+" / "+ans+" ("+p+"%)";
+    $("rScore").textContent=ok+" / "+ans+" ("+p+"%)";
     $("rMsg").textContent = p>=80?"Excellent work!":p>=60?"Good — review the ones you missed.":"Keep practising — read the explanations again.";
     r.classList.add("show");
   } else r.classList.remove("show");
@@ -412,23 +214,32 @@ function stats(){
 sel.addEventListener("change",()=>{ build(); window.scrollTo(0,0); });
 $("shuf").addEventListener("click",()=>{ shuffled=!shuffled; $("shuf").textContent=shuffled?"Unshuffle":"Shuffle"; build(); });
 $("reset").addEventListener("click",()=>{ if(!confirm("Clear all your answers and start over?")) return; state={}; saveState(); build(); window.scrollTo(0,0); });
-const dlg = $("dlg");
-$("addBtn").addEventListener("click",()=>{ $("addForm").reset(); $("fErr").textContent=""; dlg.showModal(); $("fStmt").focus(); });
+
+// ---- add question ----
+const dlg=$("dlg"), fSet=$("fSet");
+fSet.addEventListener("change",()=>{ $("fNewSet").style.display = fSet.value==="__new" ? "block":"none"; });
+$("addBtn").addEventListener("click",()=>{
+  $("addForm").reset(); $("fErr").textContent="";
+  fSet.innerHTML = groups.map((g,i)=>'<option value="'+i+'">'+esc(g)+'</option>').join("") + '<option value="__new">+ New set…</option>';
+  const v=sel.value; fSet.value = (v!=="all" && groups[+v]!==undefined) ? v : "__new";
+  $("fNewSet").style.display = fSet.value==="__new" ? "block":"none";
+  dlg.showModal(); $("fStmt").focus();
+});
 $("fCancel").addEventListener("click",()=>dlg.close());
 $("addForm").addEventListener("submit",e=>{
   const stmt=$("fStmt").value.trim();
-  if(!stmt){ e.preventDefault(); $("fErr").textContent="Please enter a statement."; return; }
-  const ans = document.querySelector('input[name="fAns"]:checked').value==="1";
-  const exp = $("fExp").value.trim() || ("The statement is "+(ans?"True":"False")+".");
-  if(db){
-    selectCustomNext = true;
-    db.add({s:stmt,a:ans,e:exp,t:Date.now()}).catch(err=>{ selectCustomNext=false; alert("Save failed: "+err.message+"\nCheck your Firebase database rules."); });
-  } else {
-    custom.push([stmt,ans,exp]); saveCustom(); fillSel(CUSTOM_IDX); build();
-  }
-  setTimeout(()=>window.scrollTo(0,document.body.scrollHeight),300);
+  let g = fSet.value==="__new" ? $("fNewSet").value.trim() : groups[+fSet.value];
+  if(!stmt || !g){ e.preventDefault(); $("fErr").textContent = !g ? "Please enter a set name." : "Please enter a statement."; return; }
+  const a = document.querySelector('input[name="fAns"]:checked').value==="1";
+  const ex = $("fExp").value.trim() || ("The statement is "+(a?"True":"False")+".");
+  // order: place after the last question in that set, or at the end for a new set
+  const inSet = all.filter(q=>q.g===g);
+  const maxAll = all.reduce((m,q)=>Math.max(m,q.o),0);
+  const o = inSet.length ? Math.max(...inSet.map(q=>q.o)) + 0.001*(1) + Math.random()*0.0005 : (Math.floor(maxAll/1000)+1)*1000;
+  selectGroupNext = "g:"+g;
+  col.add({g,o,s:stmt,a,e:ex}).catch(err=>{ selectGroupNext=null; alert("Save failed: "+err.message+"\nCheck your Firestore rules."); });
+  setTimeout(()=>window.scrollTo(0,document.body.scrollHeight),400);
 });
-build();
 </script>
 </body>
 </html>
