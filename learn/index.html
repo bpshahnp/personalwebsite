@@ -68,6 +68,7 @@ button.ask{font-size:.85rem;padding:5px 10px;color:var(--accent)}
 .gem.show{display:block}
 .gm{white-space:pre-wrap;font-size:.92rem;padding:8px 10px;border-radius:8px;margin-bottom:8px}
 .gm.model{background:var(--card);border:1px solid var(--line)}
+.gm code{background:var(--line);padding:1px 4px;border-radius:4px}
 .gm.user{background:var(--notebg);color:var(--note)}
 .gm.err{background:var(--badbg);color:var(--bad)}
 .gm.wait{color:var(--muted)}
@@ -244,8 +245,19 @@ $("keyBtn").addEventListener("click",()=>{
   const k=prompt("Paste your Gemini API key (kept only in this browser's localStorage):", getKey());
   if(k!==null){ try{localStorage.setItem(KEY_STORE,k.trim());}catch(e){} }
 });
+function md(t){
+  const sym={rightarrow:"→",to:"→",leftarrow:"←",times:"×",approx:"≈",neq:"≠",leq:"≤",geq:"≥",cdot:"·",div:"÷",pm:"±"};
+  t=String(t).replace(/\$\\([a-zA-Z]+)\$/g,(m,k)=>sym[k]||m).replace(/\\(rightarrow|times|approx|cdot)\b/g,(m,k)=>sym[k]);
+  t=t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  t=t.replace(/^[ \t]*[*-][ \t]+/gm,"• ")
+     .replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>")
+     .replace(/(^|[^*\w])\*(?!\s)([^*\n]+?)\*(?!\w)/g,"$1<em>$2</em>")
+     .replace(/`([^`\n]+)`/g,"<code>$1</code>")
+     .replace(/^#{1,4}[ \t]+(.+)$/gm,"<strong>$1</strong>");
+  return t;
+}
 const chats={};   // questionId -> [{role:'user'|'model', text}]
-const SYS="You are a concise, friendly business finance tutor helping a student with True/False practice questions. Keep answers short (under 150 words unless asked), use plain language, and give a tiny numeric example when it helps.";
+const SYS="You are a concise, friendly business finance tutor helping a student with True/False practice questions. Write plain text only: no LaTeX, no $ math notation, no headings; you may use **bold** and simple "- " bullets. Keep answers short (under 150 words unless asked), use plain language, and give a tiny numeric example when it helps.";
 
 async function callGemini(hist){
   const key=getKey();
@@ -286,7 +298,7 @@ function renderGem(q,c,open){
   const box=document.createElement("div"); g.appendChild(box);
   chats[q.id].forEach((m,i)=>{
     if(i===0 && m.role==="user") return;   // hide the auto-generated prompt
-    const d=document.createElement("div"); d.className="gm "+(m.err?"err":m.role); d.textContent=m.text; box.appendChild(d);
+    const d=document.createElement("div"); d.className="gm "+(m.err?"err":m.role); if(m.role==="model" && !m.err) d.innerHTML=md(m.text); else d.textContent=m.text; box.appendChild(d);
   });
   const row=document.createElement("div"); row.className="gin";
   row.innerHTML='<input type="text" placeholder="Ask a follow-up…"><button class="tool primary">Send</button>';
