@@ -52,7 +52,7 @@ dialog{border:1px solid var(--line);border-radius:14px;background:var(--card);co
 dialog::backdrop{background:rgba(0,0,0,.5)}
 dialog h2{margin:0 0 12px;font-size:1.05rem}
 dialog label{display:block;font-size:.85rem;color:var(--muted);margin:10px 0 4px}
-dialog textarea,dialog input[type=text],dialog select{width:100%;font:inherit;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--text)}
+dialog textarea,dialog input[type=text],dialog input[type=email],dialog input[type=password],dialog select{width:100%;font:inherit;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--text)}
 dialog textarea{resize:vertical}
 .radios{display:flex;gap:16px}
 .radios label{display:flex;align-items:center;gap:6px;margin:0;color:var(--text);font-size:1rem}
@@ -62,6 +62,7 @@ dialog textarea{resize:vertical}
 .result.show{display:block}
 .result .big{font-size:2rem;font-weight:800;color:var(--accent)}
 
+.acct-note{font-size:.8rem;color:var(--muted);margin:0 0 4px}
 .gem-row{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
 .mynote{display:none;margin-top:10px}
 .mynote.show{display:block}
@@ -89,6 +90,7 @@ button.ask{font-size:.85rem;padding:5px 10px;color:var(--accent)}
     <select id="setSel" aria-label="Choose question set"><option>Loading…</option></select>
     <button class="tool" id="shuf">Shuffle</button>
     <button class="tool" id="reset">Reset</button>
+    <button class="tool" id="acctBtn">👤 Sign in</button>
     <button class="tool" id="keyBtn" title="Set Gemini API key">🔑 Gemini</button>
     <button class="tool primary" id="addBtn">+ Add question</button>
     <span class="stats">Answered <b id="sAns">0</b>/<b id="sTot">0</b> · Correct <b id="sOk">0</b></span>
@@ -123,8 +125,25 @@ button.ask{font-size:.85rem;padding:5px 10px;color:var(--accent)}
   </form>
 </dialog>
 
+<dialog id="authDlg">
+  <h2>Sign in to sync progress</h2>
+  <p class="acct-note">Your answers and notes will follow you to any device.</p>
+  <label for="aEmail">Email</label>
+  <input type="email" id="aEmail" autocomplete="email">
+  <label for="aPass">Password (6+ characters)</label>
+  <input type="password" id="aPass" autocomplete="current-password">
+  <div class="err" id="aErr"></div>
+  <div class="dlgbtns">
+    <button type="button" class="tool" id="aReset">Forgot password</button>
+    <button type="button" class="tool" id="aCancel">Cancel</button>
+    <button type="button" class="tool" id="aCreate">Create account</button>
+    <button type="button" class="tool primary" id="aIn">Sign in</button>
+  </div>
+</dialog>
+
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyBf8Hvh6y-brtQcHRo6DesVj4i2SrgdnMg",
@@ -149,8 +168,8 @@ try{ state = JSON.parse(localStorage.getItem(PROG_KEY)||"{}") || {}; }catch(e){ 
 const NOTE_KEY = "tuQuizNotesV1";
 let notes = {};
 try{ notes = JSON.parse(localStorage.getItem(NOTE_KEY)||"{}") || {}; }catch(e){ notes = {}; }
-function saveNotes(){ try{ localStorage.setItem(NOTE_KEY, JSON.stringify(notes)); }catch(e){} }
-function saveState(){ try{ localStorage.setItem(PROG_KEY, JSON.stringify(state)); }catch(e){} }
+function saveNotes(){ try{ localStorage.setItem(NOTE_KEY, JSON.stringify(notes)); }catch(e){} pushCloud(); }
+function saveState(){ try{ localStorage.setItem(PROG_KEY, JSON.stringify(state)); }catch(e){} pushCloud(); }
 
 let loaded=false;
 let all = [];        // [{id,g,o,s,a,e,n}]
@@ -254,6 +273,64 @@ function stats(){
 sel.addEventListener("change",()=>{ build(); window.scrollTo(0,0); });
 $("shuf").addEventListener("click",()=>{ shuffled=!shuffled; $("shuf").textContent=shuffled?"Unshuffle":"Shuffle"; build(); });
 $("reset").addEventListener("click",()=>{ if(!confirm("Clear all your answers and start over?")) return; state={}; saveState(); build(); window.scrollTo(0,0); });
+
+// ---- Accounts & cross-device sync ----
+let user=null, unsubU=null, pushT=null, firstSync=false;
+const aDlg=$("authDlg"), acctBtn=$("acctBtn");
+function pushCloud(){
+  if(!user) return;
+  clearTimeout(pushT);
+  pushT=setTimeout(()=>{
+    firebase.firestore().collection("users").doc(user.uid)
+      .set({progress:state, notes:notes, updated:Date.now()})
+      .catch(err=>console.warn("Sync failed:",err.message));
+  },600);
+}
+function saveLocalOnly(){
+  try{ localStorage.setItem(PROG_KEY, JSON.stringify(state)); localStorage.setItem(NOTE_KEY, JSON.stringify(notes)); }catch(e){}
+}
+firebase.auth().onAuthStateChanged(u=>{
+  user=u;
+  if(unsubU){ unsubU(); unsubU=null; }
+  acctBtn.textContent = u ? "👤 "+(u.email||"Account").split("@")[0] : "👤 Sign in";
+  if(!u) return;
+  firstSync=true;
+  unsubU=firebase.firestore().collection("users").doc(u.uid).onSnapshot(d=>{
+    if(d.metadata.hasPendingWrites) return;
+    const r=d.exists? d.data() : {}, rp=r.progress||{}, rn=r.notes||{};
+    if(firstSync){
+      firstSync=false;
+      const mp={...state,...rp}, mn={...notes,...rn};
+      const changedRemote = JSON.stringify(mp)!==JSON.stringify(rp) || JSON.stringify(mn)!==JSON.stringify(rn);
+      state=mp; notes=mn; saveLocalOnly();
+      if(changedRemote || !d.exists) pushCloud();
+      if(all.length) build();
+      return;
+    }
+    if(JSON.stringify(rp)===JSON.stringify(state) && JSON.stringify(rn)===JSON.stringify(notes)) return;
+    const typing=document.activeElement && document.activeElement.tagName==="TEXTAREA";
+    state=rp; notes=rn; saveLocalOnly();
+    if(!typing && all.length) build();
+  }, err=>console.warn("Sync read failed:",err.message));
+});
+acctBtn.addEventListener("click",()=>{
+  if(user){
+    if(!confirm("Signed in as "+user.email+".\nSign out? Your progress stays saved in your account; this device's local copy will be cleared.")) return;
+    clearTimeout(pushT);
+    firebase.auth().signOut().then(()=>{ state={}; notes={}; saveLocalOnly(); build(); });
+    return;
+  }
+  $("aErr").textContent=""; aDlg.showModal(); $("aEmail").focus();
+});
+$("aCancel").addEventListener("click",()=>aDlg.close());
+function authErr(e){ $("aErr").textContent=(e.message||String(e)).replace("Firebase: ","").replace(/\s*\(auth\/[^)]+\)\.?/,""); }
+function creds(){ return [$("aEmail").value.trim(), $("aPass").value]; }
+$("aIn").addEventListener("click",()=>{ const [e,p]=creds(); if(!e||!p){ $("aErr").textContent="Enter email and password."; return; }
+  firebase.auth().signInWithEmailAndPassword(e,p).then(()=>aDlg.close()).catch(authErr); });
+$("aCreate").addEventListener("click",()=>{ const [e,p]=creds(); if(!e||!p){ $("aErr").textContent="Enter email and password."; return; }
+  firebase.auth().createUserWithEmailAndPassword(e,p).then(()=>aDlg.close()).catch(authErr); });
+$("aReset").addEventListener("click",()=>{ const [e]=creds(); if(!e){ $("aErr").textContent="Enter your email first."; return; }
+  firebase.auth().sendPasswordResetEmail(e).then(()=>{ $("aErr").textContent="Password reset email sent."; }).catch(authErr); });
 
 // ---- Gemini ----
 const KEY_STORE="tuGeminiKey", MODEL="gemini-3.8-flash";
