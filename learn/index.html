@@ -64,6 +64,13 @@ main{padding:16px}
 .ai-msg h3,.ai-msg h4{margin:.4em 0 .3em;font-size:1rem}
 .ai-ask{display:flex;gap:8px;margin-top:8px}
 .ai-ask input{flex:1;min-width:0}
+body:not(.is-admin) .admin-only{display:none!important}
+.lbrow{display:flex;gap:10px;align-items:center;padding:8px 10px;border-radius:8px}
+.lbrow:nth-child(odd){background:var(--bg)}
+.lbrow.me{outline:2px solid var(--accent)}
+.lbrow .rk{width:2em;font-weight:700;color:var(--muted)}
+.lbrow .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lbrow .sc{font-variant-numeric:tabular-nums}
 .msg{text-align:center;color:var(--muted);padding:40px 0}
 dialog{border:1px solid var(--line);border-radius:14px;background:var(--card);color:var(--text);width:min(520px,92vw);padding:18px}
 dialog::backdrop{background:rgba(0,0,0,.5)}
@@ -88,8 +95,10 @@ dialog textarea{resize:vertical}
     <select id="setSel" aria-label="Choose question set"><option>Loading…</option></select>
     <button class="tool" id="shuf">Shuffle</button>
     <button class="tool" id="reset">Reset</button>
+    <button class="tool" id="lbBtn">🏆 Leaderboard</button>
+    <button class="tool" id="authBtn">Sign in with Google</button>
     <button class="tool" id="keyBtn">🔑 Gemini</button>
-    <button class="tool primary" id="addBtn">+ Add question</button>
+    <button class="tool primary admin-only" id="addBtn">+ Add question</button>
     <span class="stats">Answered <b id="sAns">0</b>/<b id="sTot">0</b> · Correct <b id="sOk">0</b></span>
   </div>
   <div class="bar"><i id="prog"></i></div>
@@ -98,6 +107,12 @@ dialog textarea{resize:vertical}
   <div class="wrap" id="list"><div class="msg">Loading questions…</div></div>
   <div class="wrap"><div class="result" id="result"><div class="big" id="rScore"></div><div id="rMsg"></div></div></div>
 </main>
+
+<dialog id="lbDlg">
+  <h2>🏆 Leaderboard</h2>
+  <div id="lbList">Loading…</div>
+  <div class="dlgbtns"><button type="button" class="tool" onclick="document.getElementById('lbDlg').close()">Close</button></div>
+</dialog>
 
 <dialog id="dlg">
   <form method="dialog" id="addForm">
@@ -127,6 +142,7 @@ dialog textarea{resize:vertical}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyBf8Hvh6y-brtQcHRo6DesVj4i2SrgdnMg",
@@ -161,7 +177,7 @@ col.orderBy("o").onSnapshot(snap=>{
   all.forEach(q=>{ if(!seen.has(q.g)){ seen.add(q.g); groups.push(q.g); } });
   const keep = selectGroupNext!==null ? selectGroupNext : sel.value;
   selectGroupNext = null;
-  fillSel(keep); build();
+  fillSel(keep); build(); scheduleSync();
 }, err=>{
   console.error(err);
   list.innerHTML = '<div class="msg">Could not load questions from Firebase.<br>Check that Firestore is created and the rules allow reading the <b>questions</b> collection.</div>';
@@ -187,7 +203,7 @@ function build(){
     if(!shuffled && q.g!==last){ const h=document.createElement("div"); h.className="setlabel"; h.textContent=q.g; list.appendChild(h); last=q.g; n=0; }
     n++;
     const c=document.createElement("div"); c.className="card"; c.id="c"+q.id;
-    c.innerHTML='<div class="qn"><span class="qlabel"></span><span class="qtools"><button class="ai">✨ Explain</button><button class="edit">Edit</button><button class="del">Delete</button></span></div>'+
+    c.innerHTML='<div class="qn"><span class="qlabel"></span><span class="qtools"><button class="ai">✨ Explain</button><button class="edit admin-only">Edit</button><button class="del admin-only">Delete</button></span></div>'+
       '<p class="q"></p><div class="opts"><button class="opt" data-v="1">True</button><button class="opt" data-v="0">False</button></div>'+
       '<div class="exp"><div class="verdict"></div><div class="body"></div></div>'+
       '<div class="ai-panel"><div class="ai-log"></div><div class="ai-ask"><input type="text" placeholder="Ask a follow-up…"><button class="tool primary">Send</button></div></div>';
@@ -207,7 +223,7 @@ function build(){
   stats();
 }
 
-function answer(q,val){ if(q.id in state) return; state[q.id]=val; saveState(); paint(q); stats(); }
+function answer(q,val){ if(q.id in state) return; state[q.id]=val; saveState(); paint(q); stats(); scheduleSync(); }
 
 function paint(q){
   const c=$("c"+q.id), chosen=state[q.id], correct=!!q.a, ok=chosen===correct;
@@ -238,7 +254,58 @@ function stats(){
 
 sel.addEventListener("change",()=>{ build(); window.scrollTo(0,0); });
 $("shuf").addEventListener("click",()=>{ shuffled=!shuffled; $("shuf").textContent=shuffled?"Unshuffle":"Shuffle"; build(); });
-$("reset").addEventListener("click",()=>{ if(!confirm("Clear all your answers and start over?")) return; state={}; saveState(); build(); window.scrollTo(0,0); });
+$("reset").addEventListener("click",()=>{ if(!confirm("Clear all your answers and start over?")) return; state={}; saveState(); build(); scheduleSync(); window.scrollTo(0,0); });
+
+// ---- Google sign-in, per-user progress, leaderboard, admin ----
+const ADMIN_EMAIL = "YOUR_EMAIL@gmail.com";   // ← only this Google account can add / edit / delete questions
+const auth = firebase.auth(), fsdb = firebase.firestore();
+let user = null, syncTimer = null;
+function isAdmin(){ return !!user && !!user.email && user.emailVerified && user.email.toLowerCase()===ADMIN_EMAIL.toLowerCase(); }
+function applyAuthUI(){
+  document.body.classList.toggle("is-admin", isAdmin());
+  $("authBtn").textContent = user ? "Sign out ("+String(user.displayName||user.email||"you").split(" ")[0]+")" : "Sign in with Google";
+}
+$("authBtn").addEventListener("click",()=>{
+  if(user){ auth.signOut(); return; }
+  auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e=>{
+    if(e.code==="auth/popup-closed-by-user"||e.code==="auth/cancelled-popup-request") return;
+    alert("Sign-in failed: "+e.message+(e.code==="auth/unauthorized-domain"?"\nAdd this website's domain in Firebase → Authentication → Settings → Authorized domains.":""));
+  });
+});
+auth.onAuthStateChanged(async u=>{
+  const was=user; user=u; applyAuthUI();
+  if(!u){ if(was){ state={}; saveState(); build(); } return; }   // signed out: don't leave progress on a shared device
+  try{
+    const s=await fsdb.collection("users").doc(u.uid).get();
+    const remote=(s.exists && s.data().answers) || {};
+    state={...remote,...state}; saveState(); build(); scheduleSync();
+  }catch(e){ console.warn("Could not load saved progress:",e.message); }
+});
+function scheduleSync(){ if(!user) return; clearTimeout(syncTimer); syncTimer=setTimeout(syncNow,700); }
+function syncNow(){
+  if(!user || !all.length) return;
+  let answered=0, correct=0;
+  all.forEach(q=>{ if(q.id in state){ answered++; if(state[q.id]===!!q.a) correct++; } });
+  fsdb.collection("users").doc(user.uid).set({answers:state,updated:Date.now()}).catch(e=>console.warn("Progress not saved:",e.message));
+  fsdb.collection("leaderboard").doc(user.uid).set({name:String(user.displayName||"Student").slice(0,60),answered,correct,t:Date.now()}).catch(e=>console.warn("Leaderboard not updated:",e.message));
+}
+$("lbBtn").addEventListener("click",async()=>{
+  const box=$("lbList"); box.textContent="Loading…"; $("lbDlg").showModal();
+  if(!user){ box.textContent="Sign in with Google to see the leaderboard and appear on it."; return; }
+  try{
+    const s=await fsdb.collection("leaderboard").orderBy("correct","desc").limit(20).get();
+    if(s.empty){ box.textContent="No scores yet — answer some questions!"; return; }
+    box.innerHTML=""; let i=0;
+    s.forEach(d=>{
+      const x=d.data(); i++;
+      const r=document.createElement("div"); r.className="lbrow"+(d.id===user.uid?" me":"");
+      const pct = x.answered ? Math.round(100*x.correct/x.answered) : 0;
+      r.innerHTML='<span class="rk">'+i+'</span><span class="nm"></span><span class="sc">'+x.correct+" / "+x.answered+" ("+pct+"%)</span>";
+      r.querySelector(".nm").textContent=x.name||"Student";
+      box.appendChild(r);
+    });
+  }catch(e){ box.textContent="Could not load the leaderboard: "+e.message; }
+});
 
 // ---- add / edit question ----
 const dlg=$("dlg"), fSet=$("fSet");
@@ -329,7 +396,15 @@ function renderMD(src){
 
 // ---- Gemini explain ----
 const GEMINI_MODEL="gemini-2.5-flash", KEY_STORE="geminiApiKey";
-const getKey=()=>{ try{ return localStorage.getItem(KEY_STORE)||""; }catch(e){ return ""; } };
+// Paste your Gemini API key between the quotes to make AI explanations work for every visitor without asking.
+// NOTE: a key in a public page can be seen by anyone, so restrict it to your website in Google AI Studio / Cloud Console.
+const GEMINI_API_KEY = "";   // optional: you can paste a key here instead, but Firestore (config/gemini → key) is used first
+let fbKey = "";
+const keyReady = firebase.firestore().collection("config").doc("gemini").get()
+  .then(s=>{ if(s.exists && s.data().key){ fbKey=String(s.data().key).trim(); $("keyBtn").style.display="none"; } })
+  .catch(err=>console.warn("Could not read config/gemini (check Firestore rules):", err.message));
+const getKey=()=>{ if(fbKey) return fbKey; if(GEMINI_API_KEY) return GEMINI_API_KEY; try{ return localStorage.getItem(KEY_STORE)||""; }catch(e){ return ""; } };
+if(GEMINI_API_KEY) $("keyBtn").style.display="none";
 $("keyBtn").addEventListener("click",()=>{
   const k=prompt("Paste your Gemini API key (stored only in this browser):", getKey());
   if(k===null) return;
@@ -337,7 +412,7 @@ $("keyBtn").addEventListener("click",()=>{
 });
 const chats={}; // question id -> history
 async function askGemini(q,history){
-  const key=getKey(); if(!key) throw new Error("Add your Gemini API key first (🔑 Gemini button).");
+  await keyReady; const key=getKey(); if(!key) throw new Error("Add your Gemini API key first (🔑 Gemini button).");
   const sys="You are a friendly Business Finance tutor for Nepali TU students. The student is studying a True/False statement. Explain clearly and briefly in simple English, with a tiny example when useful. Use plain Markdown (bold, bullet lists). Write maths in $...$ LaTeX only when needed.";
   const ctx="Statement: "+q.s+"\nCorrect answer: "+(q.a?"True":"False")+"\nBook explanation: "+(q.e||"")+(q.n?"\nNote: "+q.n:"");
   const contents=[{role:"user",parts:[{text:ctx+"\n\nStudent request: "+history[0].text}]}];
