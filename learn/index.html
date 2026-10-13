@@ -47,12 +47,29 @@ main{padding:16px}
 .exp.wrong .verdict{color:var(--bad)}
 .note{margin-top:8px;padding:8px 10px;border-radius:8px;background:var(--notebg);color:var(--note);font-size:.85rem}
 .del{float:right;background:none;border:none;color:var(--bad);cursor:pointer;font:inherit;font-size:.8rem}
+.qtools{float:right;display:flex;gap:10px}
+.qtools button{background:none;border:none;cursor:pointer;font:inherit;font-size:.8rem;padding:0}
+.qtools .edit{color:var(--accent)}
+.qtools .del{float:none;color:var(--bad)}
+.qtools .ai{color:var(--accent);font-weight:600}
+.ai-panel{display:none;margin-top:12px;border-top:1px dashed var(--line);padding-top:12px}
+.ai-panel.show{display:block}
+.ai-log{max-height:340px;overflow:auto;font-size:.95rem}
+.ai-msg{padding:10px 12px;border-radius:10px;margin-bottom:8px;background:var(--bg);overflow-wrap:anywhere}
+.ai-msg.me{background:var(--okbg);text-align:right}
+.ai-msg p{margin:0 0 .6em}.ai-msg p:last-child{margin:0}
+.ai-msg ul,.ai-msg ol{margin:.2em 0 .6em;padding-left:1.3em}
+.ai-msg code{background:var(--line);padding:1px 5px;border-radius:4px;font-size:.9em}
+.ai-msg pre{background:var(--line);padding:8px;border-radius:8px;overflow:auto}
+.ai-msg h3,.ai-msg h4{margin:.4em 0 .3em;font-size:1rem}
+.ai-ask{display:flex;gap:8px;margin-top:8px}
+.ai-ask input{flex:1;min-width:0}
 .msg{text-align:center;color:var(--muted);padding:40px 0}
 dialog{border:1px solid var(--line);border-radius:14px;background:var(--card);color:var(--text);width:min(520px,92vw);padding:18px}
 dialog::backdrop{background:rgba(0,0,0,.5)}
 dialog h2{margin:0 0 12px;font-size:1.05rem}
 dialog label{display:block;font-size:.85rem;color:var(--muted);margin:10px 0 4px}
-dialog textarea,dialog input[type=text],dialog input[type=email],dialog input[type=password],dialog select{width:100%;font:inherit;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--text)}
+dialog textarea,dialog input[type=text],dialog select{width:100%;font:inherit;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--text)}
 dialog textarea{resize:vertical}
 .radios{display:flex;gap:16px}
 .radios label{display:flex;align-items:center;gap:6px;margin:0;color:var(--text);font-size:1rem}
@@ -61,45 +78,17 @@ dialog textarea{resize:vertical}
 .result{display:none;text-align:center;padding:20px;margin:10px 0 40px;background:var(--card);border:1px solid var(--line);border-radius:12px}
 .result.show{display:block}
 .result .big{font-size:2rem;font-weight:800;color:var(--accent)}
-
-.acct-note{font-size:.8rem;color:var(--muted);margin:0 0 4px}
-.gem-row{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
-.mynote{display:none;margin-top:10px}
-.mynote.show{display:block}
-.mynote textarea{width:100%;min-height:200px;resize:vertical;font:inherit;font-size:1rem;line-height:1.5;padding:12px;border-radius:8px;border:1px solid var(--line);background:var(--notebg);color:var(--text)}
-.mynote small{display:block;color:var(--muted);font-size:.75rem;margin-top:2px}
-button.notebtn{font-size:.85rem;padding:5px 10px}
-button.notebtn.has{border-color:var(--note);color:var(--note)}
-button.ask{font-size:.85rem;padding:5px 10px;color:var(--accent)}
-.gem{display:none;margin-top:10px;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--bg)}
-.gem.show{display:block}
-.gm{white-space:pre-wrap;font-size:.92rem;padding:8px 10px;border-radius:8px;margin-bottom:8px}
-.gm.model{background:var(--card);border:1px solid var(--line)}
-.gm code{background:var(--line);padding:1px 4px;border-radius:4px}
-.gm.user{background:var(--notebg);color:var(--note)}
-.gm.err{background:var(--badbg);color:var(--bad)}
-.gm.wait{color:var(--muted)}
-.gin{display:flex;gap:6px}
-.gin input{flex:1;font:inherit;padding:7px 10px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--text)}
 </style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 </head>
 <body>
 <header><div class="wrap">
   <h1>Business Finance – True or False</h1>
   <div class="row">
     <select id="setSel" aria-label="Choose question set"><option>Loading…</option></select>
-    <select id="statusSel" aria-label="Filter by status">
-      <option value="all">All questions</option>
-      <option value="na">Not attempted</option>
-      <option value="att">Attempted</option>
-      <option value="ok">Correct</option>
-      <option value="bad">Incorrect</option>
-      <option value="note">Has my note</option>
-    </select>
     <button class="tool" id="shuf">Shuffle</button>
     <button class="tool" id="reset">Reset</button>
-    <button class="tool" id="acctBtn">👤 Sign in</button>
-    <button class="tool" id="keyBtn" title="Set Gemini API key">🔑 Gemini</button>
+    <button class="tool" id="keyBtn">🔑 Gemini</button>
     <button class="tool primary" id="addBtn">+ Add question</button>
     <span class="stats">Answered <b id="sAns">0</b>/<b id="sTot">0</b> · Correct <b id="sOk">0</b></span>
   </div>
@@ -112,7 +101,7 @@ button.ask{font-size:.85rem;padding:5px 10px;color:var(--accent)}
 
 <dialog id="dlg">
   <form method="dialog" id="addForm">
-    <h2>Add a question</h2>
+    <h2 id="dTitle">Add a question</h2>
     <label for="fSet">Set</label>
     <select id="fSet"></select>
     <input type="text" id="fNewSet" placeholder="New set name" style="display:none;margin-top:6px">
@@ -125,6 +114,8 @@ button.ask{font-size:.85rem;padding:5px 10px;color:var(--accent)}
     </div>
     <label for="fExp">Explanation (shown after answering)</label>
     <textarea id="fExp" rows="3"></textarea>
+    <label for="fNote">Note (optional, shown in yellow)</label>
+    <textarea id="fNote" rows="2"></textarea>
     <div class="err" id="fErr"></div>
     <div class="dlgbtns">
       <button type="button" class="tool" id="fCancel">Cancel</button>
@@ -133,25 +124,9 @@ button.ask{font-size:.85rem;padding:5px 10px;color:var(--accent)}
   </form>
 </dialog>
 
-<dialog id="authDlg">
-  <h2>Sign in to sync progress</h2>
-  <p class="acct-note">Your answers and notes will follow you to any device.</p>
-  <label for="aEmail">Email</label>
-  <input type="email" id="aEmail" autocomplete="email">
-  <label for="aPass">Password (6+ characters)</label>
-  <input type="password" id="aPass" autocomplete="current-password">
-  <div class="err" id="aErr"></div>
-  <div class="dlgbtns">
-    <button type="button" class="tool" id="aReset">Forgot password</button>
-    <button type="button" class="tool" id="aCancel">Cancel</button>
-    <button type="button" class="tool" id="aCreate">Create account</button>
-    <button type="button" class="tool primary" id="aIn">Sign in</button>
-  </div>
-</dialog>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyBf8Hvh6y-brtQcHRo6DesVj4i2SrgdnMg",
@@ -164,23 +139,15 @@ const firebaseConfig = {
   measurementId: "G-FY68W64X1J"
 };
 firebase.initializeApp(firebaseConfig);
-try{ firebase.firestore().settings({experimentalAutoDetectLongPolling:true, merge:true}); }catch(e){ console.warn(e); }
 const col = firebase.firestore().collection("questions");
-setTimeout(()=>{ if(!loaded) list.innerHTML='<div class="msg">Still can\u2019t reach Firestore.<br>Check: internet/ad-blocker, that Firestore Database is created in project <b>osaquiz</b>, and the browser console (F12) for errors.</div>'; }, 10000);
 
 const $ = id => document.getElementById(id);
-const list = $("list"), sel = $("setSel"), statusSel = $("statusSel");
-let scope = [];
+const list = $("list"), sel = $("setSel");
 const PROG_KEY = "tuQuizProgressV2";
 let state = {};
 try{ state = JSON.parse(localStorage.getItem(PROG_KEY)||"{}") || {}; }catch(e){ state = {}; }
-const NOTE_KEY = "tuQuizNotesV1";
-let notes = {};
-try{ notes = JSON.parse(localStorage.getItem(NOTE_KEY)||"{}") || {}; }catch(e){ notes = {}; }
-function saveNotes(){ try{ localStorage.setItem(NOTE_KEY, JSON.stringify(notes)); }catch(e){} pushCloud(); }
-function saveState(){ try{ localStorage.setItem(PROG_KEY, JSON.stringify(state)); }catch(e){} pushCloud(); }
+function saveState(){ try{ localStorage.setItem(PROG_KEY, JSON.stringify(state)); }catch(e){} }
 
-let loaded=false;
 let all = [];        // [{id,g,o,s,a,e,n}]
 let groups = [];     // ordered group names
 let visible = [];
@@ -189,7 +156,6 @@ let selectGroupNext = null;
 
 // ---- load from Firestore (live) ----
 col.orderBy("o").onSnapshot(snap=>{
-  loaded=true;
   all = snap.docs.map(d=>({id:d.id, ...d.data()}));
   const seen = new Set(); groups = [];
   all.forEach(q=>{ if(!seen.has(q.g)){ seen.add(q.g); groups.push(q.g); } });
@@ -211,43 +177,32 @@ function esc(s){ return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",
 
 function build(){
   const v = sel.value;
-  scope = all.filter(q=> v==="all" || groups[+v]===q.g );
-  const numOf={}, cnt={}; all.forEach(q=>{ cnt[q.g]=(cnt[q.g]||0)+1; numOf[q.id]=cnt[q.g]; });
-  let items = scope.filter(passes);
+  let items = all.filter(q=> v==="all" || groups[+v]===q.g );
   if(shuffled){ for(let i=items.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[items[i],items[j]]=[items[j],items[i]];} }
   visible = items;
   list.innerHTML = "";
-  if(!items.length){ list.innerHTML = scope.length ? '<div class="msg">No questions match this filter.</div>' : '<div class="msg">No questions yet. Use “+ Add question”.</div>'; stats(); return; }
+  if(!items.length){ list.innerHTML='<div class="msg">No questions yet. Use “+ Add question”.</div>'; stats(); return; }
   let last=null, n=0;
   items.forEach(q=>{
     if(!shuffled && q.g!==last){ const h=document.createElement("div"); h.className="setlabel"; h.textContent=q.g; list.appendChild(h); last=q.g; n=0; }
     n++;
     const c=document.createElement("div"); c.className="card"; c.id="c"+q.id;
-    c.innerHTML='<div class="qn"><span class="qlabel"></span><button class="del">Delete</button></div>'+
+    c.innerHTML='<div class="qn"><span class="qlabel"></span><span class="qtools"><button class="ai">✨ Explain</button><button class="edit">Edit</button><button class="del">Delete</button></span></div>'+
       '<p class="q"></p><div class="opts"><button class="opt" data-v="1">True</button><button class="opt" data-v="0">False</button></div>'+
       '<div class="exp"><div class="verdict"></div><div class="body"></div></div>'+
-      '<div class="gem-row"><button class="tool ask">✨ Ask Gemini</button><button class="tool notebtn">📝 Note</button></div>'+
-      '<div class="mynote"><textarea placeholder="Write your own notes for this question…"></textarea><small>Saved automatically on this device.</small></div><div class="gem"></div>';
-    c.querySelector(".qlabel").textContent=(shuffled? q.g+" · ":"")+"Q"+numOf[q.id];
+      '<div class="ai-panel"><div class="ai-log"></div><div class="ai-ask"><input type="text" placeholder="Ask a follow-up…"><button class="tool primary">Send</button></div></div>';
+    c.querySelector(".qlabel").textContent=(shuffled? q.g+" · ":"")+"Q"+n;
     c.querySelector(".q").textContent=q.s;
     c.querySelector(".del").addEventListener("click",()=>{
       if(!confirm("Delete this question for everyone?")) return;
-      delete state[q.id]; saveState(); delete notes[q.id]; saveNotes();
+      delete state[q.id]; saveState();
       col.doc(q.id).delete().catch(err=>alert("Delete failed: "+err.message));
     });
+    c.querySelector(".edit").addEventListener("click",()=>openEditor(q));
+    setupAI(c,q);
     c.querySelectorAll(".opt").forEach(b=>b.addEventListener("click",()=>answer(q,b.dataset.v==="1")));
-    c.querySelector(".ask").addEventListener("click",()=>toggleGem(q,c));
-    (function(){
-      const nb=c.querySelector(".notebtn"), box=c.querySelector(".mynote"), ta=box.querySelector("textarea");
-      ta.value=notes[q.id]||"";
-      const mark=()=>{ nb.classList.toggle("has", !!ta.value.trim()); nb.textContent = ta.value.trim() ? "📝 Note •" : "📝 Note"; };
-      mark(); if(ta.value.trim()) box.classList.add("show");
-      nb.addEventListener("click",()=>{ box.classList.toggle("show"); if(box.classList.contains("show")) ta.focus(); });
-      let t; ta.addEventListener("input",()=>{ clearTimeout(t); t=setTimeout(()=>{ const v=ta.value.trim(); if(v) notes[q.id]=ta.value; else delete notes[q.id]; saveNotes(); mark(); stats(); },300); });
-    })();
     list.appendChild(c);
     if(q.id in state) paint(q);
-    if(chats[q.id]) renderGem(q,c,true);
   });
   stats();
 }
@@ -267,22 +222,13 @@ function paint(q){
   if(q.n){ const n=document.createElement("div"); n.className="note"; n.textContent="Note: "+q.n; body.appendChild(n); }
 }
 
-function passes(q){
-  const f=statusSel.value, a=q.id in state, ok=a && state[q.id]===!!q.a;
-  return f==="all" || (f==="na"&&!a) || (f==="att"&&a) || (f==="ok"&&ok) || (f==="bad"&&a&&!ok) || (f==="note"&&!!(notes[q.id]||"").trim());
-}
 function stats(){
-  let ans=0, ok=0, bad=0, note=0;
-  scope.forEach(q=>{
-    if(q.id in state){ ans++; if(state[q.id]===!!q.a) ok++; else bad++; }
-    if((notes[q.id]||"").trim()) note++;
-  });
-  $("sAns").textContent=ans; $("sTot").textContent=scope.length; $("sOk").textContent=ok;
-  $("prog").style.width = scope.length ? (100*ans/scope.length)+"%" : "0";
-  const lab={all:["All questions",scope.length],na:["Not attempted",scope.length-ans],att:["Attempted",ans],ok:["Correct",ok],bad:["Incorrect",bad],note:["Has my note",note]};
-  [...statusSel.options].forEach(o=>{ const l=lab[o.value]; if(l) o.textContent=l[0]+" ("+l[1]+")"; });
+  let ans=0, ok=0;
+  visible.forEach(q=>{ if(q.id in state){ ans++; if(state[q.id]===!!q.a) ok++; } });
+  $("sAns").textContent=ans; $("sTot").textContent=visible.length; $("sOk").textContent=ok;
+  $("prog").style.width = visible.length ? (100*ans/visible.length)+"%" : "0";
   const r=$("result");
-  if(scope.length && ans===scope.length){
+  if(visible.length && ans===visible.length){
     const p=Math.round(100*ok/ans);
     $("rScore").textContent=ok+" / "+ans+" ("+p+"%)";
     $("rMsg").textContent = p>=80?"Excellent work!":p>=60?"Good — review the ones you missed.":"Keep practising — read the explanations again.";
@@ -290,183 +236,141 @@ function stats(){
   } else r.classList.remove("show");
 }
 
-statusSel.addEventListener("change",()=>{ build(); window.scrollTo(0,0); });
 sel.addEventListener("change",()=>{ build(); window.scrollTo(0,0); });
 $("shuf").addEventListener("click",()=>{ shuffled=!shuffled; $("shuf").textContent=shuffled?"Unshuffle":"Shuffle"; build(); });
 $("reset").addEventListener("click",()=>{ if(!confirm("Clear all your answers and start over?")) return; state={}; saveState(); build(); window.scrollTo(0,0); });
 
-// ---- Accounts & cross-device sync ----
-let user=null, unsubU=null, pushT=null, firstSync=false;
-const aDlg=$("authDlg"), acctBtn=$("acctBtn");
-function pushCloud(){
-  if(!user) return;
-  clearTimeout(pushT);
-  pushT=setTimeout(()=>{
-    firebase.firestore().collection("users").doc(user.uid)
-      .set({progress:state, notes:notes, updated:Date.now()})
-      .catch(err=>console.warn("Sync failed:",err.message));
-  },600);
-}
-function saveLocalOnly(){
-  try{ localStorage.setItem(PROG_KEY, JSON.stringify(state)); localStorage.setItem(NOTE_KEY, JSON.stringify(notes)); }catch(e){}
-}
-firebase.auth().onAuthStateChanged(u=>{
-  user=u;
-  if(unsubU){ unsubU(); unsubU=null; }
-  acctBtn.textContent = u ? "👤 "+(u.email||"Account").split("@")[0] : "👤 Sign in";
-  if(!u) return;
-  firstSync=true;
-  unsubU=firebase.firestore().collection("users").doc(u.uid).onSnapshot(d=>{
-    if(d.metadata.hasPendingWrites) return;
-    const r=d.exists? d.data() : {}, rp=r.progress||{}, rn=r.notes||{};
-    if(firstSync){
-      firstSync=false;
-      const mp={...state,...rp}, mn={...notes,...rn};
-      const changedRemote = JSON.stringify(mp)!==JSON.stringify(rp) || JSON.stringify(mn)!==JSON.stringify(rn);
-      state=mp; notes=mn; saveLocalOnly();
-      if(changedRemote || !d.exists) pushCloud();
-      if(all.length) build();
-      return;
-    }
-    if(JSON.stringify(rp)===JSON.stringify(state) && JSON.stringify(rn)===JSON.stringify(notes)) return;
-    const typing=document.activeElement && document.activeElement.tagName==="TEXTAREA";
-    state=rp; notes=rn; saveLocalOnly();
-    if(!typing && all.length) build();
-  }, err=>console.warn("Sync read failed:",err.message));
-});
-acctBtn.addEventListener("click",()=>{
-  if(user){
-    if(!confirm("Signed in as "+user.email+".\nSign out? Your progress stays saved in your account; this device's local copy will be cleared.")) return;
-    clearTimeout(pushT);
-    firebase.auth().signOut().then(()=>{ state={}; notes={}; saveLocalOnly(); build(); });
-    return;
-  }
-  $("aErr").textContent=""; aDlg.showModal(); $("aEmail").focus();
-});
-$("aCancel").addEventListener("click",()=>aDlg.close());
-function authErr(e){ $("aErr").textContent=(e.message||String(e)).replace("Firebase: ","").replace(/\s*\(auth\/[^)]+\)\.?/,""); }
-function creds(){ return [$("aEmail").value.trim(), $("aPass").value]; }
-$("aIn").addEventListener("click",()=>{ const [e,p]=creds(); if(!e||!p){ $("aErr").textContent="Enter email and password."; return; }
-  firebase.auth().signInWithEmailAndPassword(e,p).then(()=>aDlg.close()).catch(authErr); });
-$("aCreate").addEventListener("click",()=>{ const [e,p]=creds(); if(!e||!p){ $("aErr").textContent="Enter email and password."; return; }
-  firebase.auth().createUserWithEmailAndPassword(e,p).then(()=>aDlg.close()).catch(authErr); });
-$("aReset").addEventListener("click",()=>{ const [e]=creds(); if(!e){ $("aErr").textContent="Enter your email first."; return; }
-  firebase.auth().sendPasswordResetEmail(e).then(()=>{ $("aErr").textContent="Password reset email sent."; }).catch(authErr); });
-
-// ---- Gemini ----
-const KEY_STORE="tuGeminiKey", MODEL="gemini-3.8-flash";
-let cloudKey="";   // loaded from Firestore: config/gemini -> field "key"
-firebase.firestore().collection("config").doc("gemini").onSnapshot(d=>{ cloudKey=(d.exists && d.data().key)||""; }, err=>console.warn("Gemini key not readable:",err.message));
-const getKey=()=>{ let l=""; try{l=localStorage.getItem(KEY_STORE)||"";}catch(e){} return l||cloudKey; };
-$("keyBtn").addEventListener("click",()=>{
-  const k=prompt("Paste your Gemini API key (kept only in this browser's localStorage):", getKey());
-  if(k!==null){ try{localStorage.setItem(KEY_STORE,k.trim());}catch(e){} }
-});
-function md(t){
-  const sym={rightarrow:"→",to:"→",leftarrow:"←",times:"×",approx:"≈",neq:"≠",leq:"≤",geq:"≥",cdot:"·",div:"÷",pm:"±"};
-  t=String(t).replace(/\$\\([a-zA-Z]+)\$/g,(m,k)=>sym[k]||m).replace(/\\(rightarrow|times|approx|cdot)\b/g,(m,k)=>sym[k]);
-  t=t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-  t=t.replace(/^[ \t]*[*-][ \t]+/gm,"• ")
-     .replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>")
-     .replace(/(^|[^*\w])\*(?!\s)([^*\n]+?)\*(?!\w)/g,"$1<em>$2</em>")
-     .replace(/`([^`\n]+)`/g,"<code>$1</code>")
-     .replace(/^#{1,4}[ \t]+(.+)$/gm,"<strong>$1</strong>");
-  return t;
-}
-const chats={};   // questionId -> [{role:'user'|'model', text}]
-const SYS="You are a concise, friendly business finance tutor helping a student with True/False practice questions. Write plain text only: no LaTeX, no $ math notation, no headings; you may use **bold** and simple dash bullets. Keep answers short (under 150 words unless asked), use plain language, and give a tiny numeric example when it helps.";
-
-async function callGemini(hist){
-  const key=getKey();
-  if(!key) throw new Error("No API key found. Add it in Firestore (config/gemini, field 'key') or paste one with the “🔑 Gemini” button.");
-  const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+MODEL+":generateContent",{
-    method:"POST",
-    headers:{"Content-Type":"application/json","x-goog-api-key":key},
-    body:JSON.stringify({
-      systemInstruction:{parts:[{text:SYS}]},
-      contents:hist.map(m=>({role:m.role,parts:[{text:m.text}]}))
-    })
-  });
-  const j=await r.json().catch(()=>({}));
-  if(!r.ok) throw new Error((j.error&&j.error.message)||("HTTP "+r.status));
-  const t=(((j.candidates||[])[0]||{}).content||{}).parts;
-  return t? t.map(p=>p.text||"").join("") : "(No response – the answer may have been blocked.)";
-}
-
-function firstPrompt(q){
-  const base='Statement: "'+q.s+'"\n';
-  if(q.id in state){
-    const ok=state[q.id]===!!q.a;
-    return base+"Correct answer: "+(q.a?"True":"False")+". The student answered "+(state[q.id]?"True":"False")+" ("+(ok?"correct":"wrong")+")."+
-      (q.e?"\nBook explanation: "+q.e:"")+"\nExplain the concept behind this in simple terms, and why a student might get it wrong.";
-  }
-  return base+"The student hasn't answered yet. Give a short hint about the concept WITHOUT revealing whether it is True or False.";
-}
-
-function toggleGem(q,c){
-  const g=c.querySelector(".gem");
-  if(g.classList.contains("show")){ g.classList.remove("show"); return; }
-  if(!chats[q.id]){ chats[q.id]=[]; renderGem(q,c,true); send(q,c,firstPrompt(q),true); }
-  else renderGem(q,c,true);
-}
-
-function renderGem(q,c,open){
-  const g=c.querySelector(".gem"); g.innerHTML="";
-  const box=document.createElement("div"); g.appendChild(box);
-  chats[q.id].forEach((m,i)=>{
-    if(i===0 && m.role==="user") return;   // hide the auto-generated prompt
-    const d=document.createElement("div"); d.className="gm "+(m.err?"err":m.role); if(m.role==="model" && !m.err) d.innerHTML=md(m.text); else d.textContent=m.text; box.appendChild(d);
-  });
-  const row=document.createElement("div"); row.className="gin";
-  row.innerHTML='<input type="text" placeholder="Ask a follow-up…"><button class="tool primary">Send</button>';
-  const inp=row.querySelector("input"), btn=row.querySelector("button");
-  const go=()=>{ const t=inp.value.trim(); if(t){ inp.value=""; send(q,c,t,false); } };
-  btn.addEventListener("click",go);
-  inp.addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); go(); } });
-  g.appendChild(row);
-  if(open) g.classList.add("show");
-}
-
-async function send(q,c,text,auto){
-  const h=chats[q.id];
-  h.push({role:"user",text});
-  renderGem(q,c,true);
-  const w=document.createElement("div"); w.className="gm wait"; w.textContent="Gemini is thinking…";
-  c.querySelector(".gem > div").appendChild(w);
-  try{
-    const ans=await callGemini(h.filter(m=>!m.err));
-    h.push({role:"model",text:ans});
-  }catch(err){
-    h.push({role:"model",text:"⚠ "+err.message,err:true});
-  }
-  const cc=$("c"+q.id); if(cc) renderGem(q,cc,true);
-}
-
-// ---- add question ----
+// ---- add / edit question ----
 const dlg=$("dlg"), fSet=$("fSet");
+let editing=null;
 fSet.addEventListener("change",()=>{ $("fNewSet").style.display = fSet.value==="__new" ? "block":"none"; });
-$("addBtn").addEventListener("click",()=>{
-  $("addForm").reset(); $("fErr").textContent="";
+function fillSetOptions(selectedGroup){
   fSet.innerHTML = groups.map((g,i)=>'<option value="'+i+'">'+esc(g)+'</option>').join("") + '<option value="__new">+ New set…</option>';
-  const v=sel.value; fSet.value = (v!=="all" && groups[+v]!==undefined) ? v : "__new";
-  $("fNewSet").style.display = fSet.value==="__new" ? "block":"none";
+  const idx = groups.indexOf(selectedGroup);
+  fSet.value = idx>=0 ? String(idx) : "__new";
+  $("fNewSet").value=""; $("fNewSet").style.display = fSet.value==="__new" ? "block":"none";
+}
+$("addBtn").addEventListener("click",()=>{
+  editing=null; $("addForm").reset(); $("fErr").textContent=""; $("dTitle").textContent="Add a question"; $("fSave").textContent="Save question";
+  const v=sel.value; fillSetOptions(v!=="all" ? groups[+v] : null);
   dlg.showModal(); $("fStmt").focus();
 });
+function openEditor(q){
+  editing=q; $("addForm").reset(); $("fErr").textContent=""; $("dTitle").textContent="Edit question"; $("fSave").textContent="Save changes";
+  fillSetOptions(q.g);
+  $("fStmt").value=q.s||""; $("fExp").value=q.e||""; $("fNote").value=q.n||"";
+  document.querySelector('input[name="fAns"][value="'+(q.a?1:0)+'"]').checked=true;
+  dlg.showModal(); $("fStmt").focus();
+}
 $("fCancel").addEventListener("click",()=>dlg.close());
+function nextOrder(g){
+  const inSet = all.filter(q=>q.g===g);
+  const maxAll = all.reduce((m,q)=>Math.max(m,q.o),0);
+  return inSet.length ? Math.max(...inSet.map(q=>q.o)) + 0.001 + Math.random()*0.0005 : (Math.floor(maxAll/1000)+1)*1000;
+}
 $("addForm").addEventListener("submit",e=>{
   const stmt=$("fStmt").value.trim();
-  let g = fSet.value==="__new" ? $("fNewSet").value.trim() : groups[+fSet.value];
+  const g = fSet.value==="__new" ? $("fNewSet").value.trim() : groups[+fSet.value];
   if(!stmt || !g){ e.preventDefault(); $("fErr").textContent = !g ? "Please enter a set name." : "Please enter a statement."; return; }
   const a = document.querySelector('input[name="fAns"]:checked').value==="1";
   const ex = $("fExp").value.trim() || ("The statement is "+(a?"True":"False")+".");
-  // order: place after the last question in that set, or at the end for a new set
-  const inSet = all.filter(q=>q.g===g);
-  const maxAll = all.reduce((m,q)=>Math.max(m,q.o),0);
-  const o = inSet.length ? Math.max(...inSet.map(q=>q.o)) + 0.001*(1) + Math.random()*0.0005 : (Math.floor(maxAll/1000)+1)*1000;
-  selectGroupNext = "g:"+g;
-  col.add({g,o,s:stmt,a,e:ex}).catch(err=>{ selectGroupNext=null; alert("Save failed: "+err.message+"\nCheck your Firestore rules."); });
-  setTimeout(()=>window.scrollTo(0,document.body.scrollHeight),400);
+  const note = $("fNote").value.trim();
+  if(editing){
+    const q=editing, upd={g,s:stmt,a,e:ex,n: note || firebase.firestore.FieldValue.delete()};
+    if(g!==q.g){ upd.o=nextOrder(g); selectGroupNext="g:"+g; }
+    col.doc(q.id).update(upd).catch(err=>{ selectGroupNext=null; alert("Save failed: "+err.message+"\nCheck that your Firestore rules allow updating the questions collection."); });
+  } else {
+    const doc={g,o:nextOrder(g),s:stmt,a,e:ex}; if(note) doc.n=note;
+    selectGroupNext="g:"+g;
+    col.add(doc).catch(err=>{ selectGroupNext=null; alert("Save failed: "+err.message+"\nCheck your Firestore rules."); });
+    setTimeout(()=>window.scrollTo(0,document.body.scrollHeight),400);
+  }
 });
+
+// ---- markdown + math rendering (safe: everything is escaped first) ----
+const SYM={"\\rightarrow":"→","\\to":"→","\\Rightarrow":"⇒","\\leftarrow":"←","\\times":"×","\\cdot":"·","\\div":"÷","\\leq":"≤","\\geq":"≥","\\neq":"≠","\\approx":"≈","\\%":"%","\\$":"$","\\sigma":"σ","\\beta":"β","\\alpha":"α"};
+function mathHTML(tex,display){
+  try{ if(window.katex) return katex.renderToString(tex,{throwOnError:false,displayMode:display}); }catch(e){}
+  let t=tex.replace(/\\(text|mathrm|mathbf)\{([^}]*)\}/g,"$2").replace(/\\frac\{([^}]*)\}\{([^}]*)\}/g,"($1)/($2)");
+  Object.keys(SYM).sort((a,b)=>b.length-a.length).forEach(k=>{ t=t.split(k).join(SYM[k]); });
+  return '<span>'+esc(t)+'</span>';
+}
+function inline(s){
+  return s.replace(/`([^`]+)`/g,"<code>$1</code>")
+          .replace(/\*\*([^*]+)\*\*/g,"<strong>$1</strong>")
+          .replace(/__([^_]+)__/g,"<strong>$1</strong>")
+          .replace(/(^|[\s(])\*([^*\s][^*]*?)\*(?=[\s).,;:!?]|$)/g,"$1<em>$2</em>");
+}
+function renderMD(src){
+  const maths=[];
+  let s=String(src||"").replace(/\\\$/g,"\u0001").replace(/\$(?=\d)/g,"\u0001"); // currency like $10,000 is not math
+  s=s.replace(/\$\$([\s\S]+?)\$\$/g,(m,t)=>{ maths.push(mathHTML(t.trim(),true)); return "\u0000"+(maths.length-1)+"\u0000"; });
+  s=s.replace(/\\\[([\s\S]+?)\\\]/g,(m,t)=>{ maths.push(mathHTML(t.trim(),true)); return "\u0000"+(maths.length-1)+"\u0000"; });
+  s=s.replace(/\\\(([\s\S]+?)\\\)/g,(m,t)=>{ maths.push(mathHTML(t.trim(),false)); return "\u0000"+(maths.length-1)+"\u0000"; });
+  s=s.replace(/\$([^$\n]+?)\$/g,(m,t)=>{ if(/^\s|\s$/.test(t) && !/\\/.test(t)) return m; maths.push(mathHTML(t.trim(),false)); return "\u0000"+(maths.length-1)+"\u0000"; });
+  s=esc(s);
+  const lines=s.split("\n"), out=[]; let list=null, para=[], code=null;
+  const flushP=()=>{ if(para.length){ out.push("<p>"+inline(para.join("<br>"))+"</p>"); para=[]; } };
+  const flushL=()=>{ if(list){ out.push("</"+list+">"); list=null; } };
+  lines.forEach(l=>{
+    if(/^```/.test(l)){ if(code===null){ flushP(); flushL(); code=[]; } else { out.push("<pre><code>"+code.join("\n")+"</code></pre>"); code=null; } return; }
+    if(code!==null){ code.push(l); return; }
+    let m;
+    if((m=l.match(/^\s*#{1,6}\s+(.*)$/))){ flushP(); flushL(); out.push("<h4>"+inline(m[1])+"</h4>"); }
+    else if((m=l.match(/^\s*[*\-•]\s+(.*)$/))){ flushP(); if(list!=="ul"){ flushL(); out.push("<ul>"); list="ul"; } out.push("<li>"+inline(m[1])+"</li>"); }
+    else if((m=l.match(/^\s*\d+[.)]\s+(.*)$/))){ flushP(); if(list!=="ol"){ flushL(); out.push("<ol>"); list="ol"; } out.push("<li>"+inline(m[1])+"</li>"); }
+    else if(!l.trim()){ flushP(); flushL(); }
+    else { flushL(); para.push(l); }
+  });
+  if(code!==null) out.push("<pre><code>"+code.join("\n")+"</code></pre>");
+  flushP(); flushL();
+  return out.join("").replace(/\u0000(\d+)\u0000/g,(m,i)=>maths[+i]).replace(/\u0001/g,"$");
+}
+
+// ---- Gemini explain ----
+const GEMINI_MODEL="gemini-2.5-flash", KEY_STORE="geminiApiKey";
+const getKey=()=>{ try{ return localStorage.getItem(KEY_STORE)||""; }catch(e){ return ""; } };
+$("keyBtn").addEventListener("click",()=>{
+  const k=prompt("Paste your Gemini API key (stored only in this browser):", getKey());
+  if(k===null) return;
+  try{ k.trim()? localStorage.setItem(KEY_STORE,k.trim()) : localStorage.removeItem(KEY_STORE); }catch(e){}
+});
+const chats={}; // question id -> history
+async function askGemini(q,history){
+  const key=getKey(); if(!key) throw new Error("Add your Gemini API key first (🔑 Gemini button).");
+  const sys="You are a friendly Business Finance tutor for Nepali TU students. The student is studying a True/False statement. Explain clearly and briefly in simple English, with a tiny example when useful. Use plain Markdown (bold, bullet lists). Write maths in $...$ LaTeX only when needed.";
+  const ctx="Statement: "+q.s+"\nCorrect answer: "+(q.a?"True":"False")+"\nBook explanation: "+(q.e||"")+(q.n?"\nNote: "+q.n:"");
+  const contents=[{role:"user",parts:[{text:ctx+"\n\nStudent request: "+history[0].text}]}];
+  history.slice(1).forEach(m=>contents.push({role:m.role==="me"?"user":"model",parts:[{text:m.text}]}));
+  const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+GEMINI_MODEL+":generateContent?key="+encodeURIComponent(key),{
+    method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({systemInstruction:{parts:[{text:sys}]},contents})
+  });
+  const j=await r.json();
+  if(!r.ok) throw new Error((j.error&&j.error.message)||("HTTP "+r.status));
+  const t=j.candidates&&j.candidates[0]&&j.candidates[0].content&&j.candidates[0].content.parts.map(p=>p.text||"").join("");
+  if(!t) throw new Error("Empty response from Gemini.");
+  return t;
+}
+function setupAI(card,q){
+  const panel=card.querySelector(".ai-panel"), log=card.querySelector(".ai-log"), input=card.querySelector(".ai-ask input"), send=card.querySelector(".ai-ask button");
+  const hist=chats[q.id]=chats[q.id]||[];
+  const draw=()=>{ log.innerHTML=""; hist.forEach(m=>{ const d=document.createElement("div"); d.className="ai-msg "+(m.role==="me"?"me":"ai"); if(m.role==="me") d.textContent=m.text; else d.innerHTML=renderMD(m.text); log.appendChild(d); }); log.scrollTop=log.scrollHeight; };
+  const run=async(text)=>{
+    hist.push({role:"me",text}); draw(); send.disabled=true;
+    const wait=document.createElement("div"); wait.className="ai-msg"; wait.textContent="Thinking…"; log.appendChild(wait); log.scrollTop=log.scrollHeight;
+    try{ const t=await askGemini(q,hist); hist.push({role:"ai",text:t}); }
+    catch(err){ hist.pop(); const d=document.createElement("div"); d.className="ai-msg"; d.style.color="var(--bad)"; d.textContent=err.message; wait.replaceWith(d); send.disabled=false; return; }
+    send.disabled=false; draw();
+  };
+  card.querySelector(".ai").addEventListener("click",()=>{
+    panel.classList.toggle("show");
+    if(panel.classList.contains("show")){ if(!hist.length) run("Explain this statement and why the answer is "+(q.a?"True":"False")+"."); else draw(); }
+  });
+  const go=()=>{ const t=input.value.trim(); if(!t||send.disabled) return; input.value=""; run(t); };
+  send.addEventListener("click",go);
+  input.addEventListener("keydown",e=>{ if(e.key==="Enter") go(); });
+}
 </script>
 </body>
 </html>
