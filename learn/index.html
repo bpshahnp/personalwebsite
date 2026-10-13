@@ -395,13 +395,14 @@ function renderMD(src){
 }
 
 // ---- Gemini explain ----
-const GEMINI_MODEL="gemini-2.5-flash", KEY_STORE="geminiApiKey";
+let GEMINI_MODEL="gemini-3.8-flash"; const KEY_STORE="geminiApiKey";   // can be overridden by a "model" field in Firestore config/gemini
 // Paste your Gemini API key between the quotes to make AI explanations work for every visitor without asking.
 // NOTE: a key in a public page can be seen by anyone, so restrict it to your website in Google AI Studio / Cloud Console.
 const GEMINI_API_KEY = "";   // optional: you can paste a key here instead, but Firestore (config/gemini → key) is used first
 let fbKey = "";
 const keyReady = firebase.firestore().collection("config").doc("gemini").get()
-  .then(s=>{ if(s.exists && s.data().key){ fbKey=String(s.data().key).trim(); $("keyBtn").style.display="none"; } })
+  .then(s=>{ if(s.exists && s.data().key){ fbKey=String(s.data().key).trim(); $("keyBtn").style.display="none"; }
+    if(s.exists && s.data().model) GEMINI_MODEL=String(s.data().model).trim(); })
   .catch(err=>console.warn("Could not read config/gemini (check Firestore rules):", err.message));
 const getKey=()=>{ if(fbKey) return fbKey; if(GEMINI_API_KEY) return GEMINI_API_KEY; try{ return localStorage.getItem(KEY_STORE)||""; }catch(e){ return ""; } };
 if(GEMINI_API_KEY) $("keyBtn").style.display="none";
