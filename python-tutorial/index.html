@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Python Tutorial | Nepal Curriculum (Grades 4-10 &amp; +2) | B. Prasad Shah</title>
+  <meta name="description" content="CDC & NEB curriculum-aligned Python tutorials for school and college students in Nepal. Grade 4 to +2 Level with code examples, explanations, and in-browser runtime." />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://bholaprasadshah.com.np/python-tutorial/" />
+  <meta property="og:title" content="Python Tutorial | Nepal Curriculum (Grades 4-10 & +2)" />
+  <meta property="og:description" content="Comprehensive Python tutorials for Grade 4, 5, 6, 7, 8, 9, 10, and +2 levels of Nepal with interactive code runner." />
+  <meta property="og:image" content="https://bholaprasadshah.com.np/assets/og-image.png" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="tutorial.css?v=20261011_01" />
+
+  <!-- In-Browser Pyodide Python Engine (same safe high-performance engine powering Python Hub) -->
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js" defer></script>
+</head>
+<body>
+
+  <!-- Site Header -->
+  <header class="site-header">
+    <div class="container">
+      <div class="header-inner">
+        <a href="../index.html" class="logo" title="Back to Homepage">
+          B. <span>Prasad Shah</span>
+          <span class="header-badge">Python Tutorial</span>
+        </a>
+
+        <nav class="main-nav">
+          <a href="../index.html">Home</a>
+          <a href="../mcq.html">MCQ Hub</a>
+          <a href="../python.html">Python Hub</a>
+          <a href="../live-quiz.html">Live Quiz</a>
+          <div class="dropdown">
+            <button class="dropdown-toggle" type="button">More ▾</button>
+            <div class="dropdown-menu">
+              <a href="../mcqmaker/">MCQ Paper Maker</a>
+              <a href="../shapes/">Diagram Studio</a>
+              <a href="../resources.html">Resources</a>
+              <a href="../contact.html">Contact</a>
+            </div>
+          </div>
+          <a href="../python.html" class="hub-btn" target="_blank" title="Launch Interactive Python Hub Workspace">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+            Python IDE
+          </a>
+        </nav>
+
+        <div class="header-actions">
+          <button class="theme-toggle-btn" id="themeToggleBtn" type="button" aria-label="Toggle theme"></button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Grade Navigator Strip (Grade 4 to +2 Level) -->
+  <section class="grade-nav-strip">
+    <div class="grade-nav-inner">
+      <div class="grade-nav-label">
+        <span>Nepal CDC &amp; NEB Curriculum Levels:</span>
+        <span id="lessonCountBadge">Loading...</span>
+      </div>
+      <div class="grade-pills" id="gradePills">
+        <!-- Rendered dynamically by app.js -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content Layout -->
+  <div class="tutorial-layout">
+    
+    <!-- Sidebar Drawer: Lessons and Modules -->
+    <aside class="sidebar-wrapper" id="sidebarWrapper">
+      <div class="sidebar-header">
+        <div class="search-box">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="search" id="lessonSearchInput" placeholder="Filter lessons..." autocomplete="off">
+        </div>
+        <div class="sidebar-count-bar">
+          <span id="currentGradeTitle">Grade 4</span>
+        </div>
+      </div>
+      <div class="sidebar-modules" id="sidebarModules">
+        <!-- Rendered dynamically -->
+      </div>
+    </aside>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Main Reading & Workbench Area -->
+    <main class="lesson-main-area" id="lessonMainArea">
+      <div class="lesson-header">
+        <span class="lesson-meta-tag" id="lessonModuleTag">Module 1</span>
+        <h1 class="lesson-title" id="lessonHeading">Loading lesson...</h1>
+        <p class="lesson-brief" id="lessonBrief"></p>
+
+        <!-- Brand Welcome Ribbon -->
+        <div class="brand-ribbon">
+          <div class="brand-ribbon-text">
+            <strong>B. Prasad Shah Educational Suite:</strong> Master Python programming mapped directly to the Nepal CDC curriculum &amp; SEE/NEB guidelines. Experiment in real-time or practice with custom code in our <a href="../python.html" target="_blank">Python Hub IDE</a>.
+          </div>
+        </div>
+      </div>
+
+      <!-- Theory Content -->
+      <article class="lesson-body" id="lessonBodyContent">
+        <!-- Lesson explanation content -->
+      </article>
+
+      <!-- Code Workbench -->
+      <section class="code-workbench">
+        <div class="workbench-bar">
+          <div class="workbench-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+            Interactive Code Lab
+          </div>
+          <div class="workbench-actions">
+            <button class="btn" id="copyCodeBtn" title="Copy code to clipboard">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              Copy
+            </button>
+            <button class="btn" id="openInHubBtn" title="Open in Python Hub Full Editor">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+              Open in Python Hub
+            </button>
+            <button class="btn btn-primary" id="runCodeBtn" title="Run code in browser">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+              Run Code
+            </button>
+          </div>
+        </div>
+
+        <div class="workbench-grid">
+          <div class="editor-pane">
+            <div class="editor-label">Python Source</div>
+            <textarea class="code-textarea" id="codeEditor" spellcheck="false" placeholder="Type or edit Python code here..."></textarea>
+          </div>
+
+          <div class="terminal-pane">
+            <div class="terminal-label">
+              <span>Terminal Output</span>
+              <button class="terminal-clear" id="clearOutputBtn">Clear</button>
+            </div>
+            <pre class="terminal-output" id="outputTerminal"># Click 'Run Code' or open in Python Hub to execute.</pre>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Mobile Floating Drawer Trigger -->
+  <button class="mobile-sidebar-toggle" id="sidebarToggleBtn" aria-label="Open lessons list">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line></svg>
+    Lessons Menu
+  </button>
+
+  <!-- Site Footer -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <strong>B. Prasad Shah</strong> — Python Tutorial Suite for Nepal Curriculum
+      </div>
+      <div class="footer-links">
+        <a href="../index.html">Home</a>
+        <a href="../mcq.html">MCQ Hub</a>
+        <a href="../python.html">Python Hub</a>
+        <a href="../mcqmaker/">MCQ Maker</a>
+        <a href="../privacy.html">Privacy</a>
+        <a href="../contact.html">Contact</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Site shared scripts: theme toggle & dropdown logic -->
+  <script src="../js/nav-drawer.js"></script>
+  <!-- Tutorial Data & Application Logic -->
+  <script src="tutorial-data.js?v=20261011_01"></script>
+  <script src="app.js?v=20261011_01"></script>
+</body>
+</html>
