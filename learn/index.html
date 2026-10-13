@@ -622,25 +622,72 @@ function saveState() { try { localStorage.setItem(PROG_KEY, JSON.stringify(state
 function saveNotes() { try { localStorage.setItem(NOTE_KEY, JSON.stringify(notes)); } catch(e) {} }
 
 /* ── Question data ────────────────────────────────────────── */
-let all = [], groups = [], visible = [], shuffled = false, selectGroupNext = null;
 const list = $("list"), sel = $("setSel");
-
-col.orderBy("o").onSnapshot(snap => {
+let all = [], groups = [], visible = [], shuffled = false, selectGroupNext = null;
+function handleQuestionsSnapshot(snap) {
   all = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  // Sort in memory by 'o' if present
+  all.sort((a, b) => (Number(a.o) || 0) - (Number(b.o) || 0));
   const seen = new Set(); groups = [];
-  all.forEach(q => { if (!seen.has(q.g)) { seen.add(q.g); groups.push(q.g); } });
+  all.forEach(q => { if (q.g && !seen.has(q.g)) { seen.add(q.g); groups.push(q.g); } });
   const keep = selectGroupNext !== null ? selectGroupNext : sel.value;
   selectGroupNext = null;
   fillSel(keep); build(); scheduleSync();
-}, err => {
-  console.error(err);
-  list.innerHTML = '<div class="msg">Could not load questions from Firebase.<br>Check Firestore rules for the <b>questions</b> collection.</div>';
-});
+}
+
+function handleQuestionsError(err) {
+  console.error("Firebase error loading questions:", err);
+  list.innerHTML = `<div class="msg">
+    <p style="color:var(--bad); font-weight:700; margin-bottom:8px;">⚠️ Could not load questions from Firebase</p>
+    <p style="font-size:0.9rem; margin-bottom:12px; color:var(--ink);">${esc(err.message)}</p>
+    <p style="font-size:0.85rem; color:var(--mist);">
+      Please check that Firestore Database is created in project <b>${esc(firebaseConfig.projectId)}</b><br>
+      and the Firestore Security Rules allow read access to the <b>questions</b> collection.
+    </p>
+  </div>`;
+}
+
+// Subscribe with graceful fallback if orderBy index is missing
+try {
+  col.orderBy("o").onSnapshot(handleQuestionsSnapshot, err => {
+    console.warn("orderBy('o') failed, falling back to simple collection query:", err.message);
+    col.onSnapshot(handleQuestionsSnapshot, handleQuestionsError);
+  });
+} catch(e) {
+  col.onSnapshot(handleQuestionsSnapshot, handleQuestionsError);
+}
 
 function fillSel(keep) {
-  sel.innerHTML =
-    '<option value="all">All sets (' + all.length + ' questions)</option>' +
-    groups.map((g, i) => '<option value="' + i + '">' + esc(g) + ' (' + all.filter(q => q.g === g).length + ')</option>').join("");
+  const allAnswered = all.filter(q => q.id in state).length;
+  let allStatusPrefix = "⚪";
+  if (all.length > 0 && allAnswered === all.length) {
+    allStatusPrefix = "✅";
+  } else if (allAnswered > 0) {
+    allStatusPrefix = "🟡";
+  }
+
+  const allOption = `<option value="all">${allStatusPrefix} All sets (${allAnswered}/${all.length})</option>`;
+
+  const groupOptions = groups.map((g, i) => {
+    const setQuestions = all.filter(q => q.g === g);
+    const setTotal = setQuestions.length;
+    const setAnswered = setQuestions.filter(q => q.id in state).length;
+
+    let icon = "⚪"; // Not attempted
+    let labelSuffix = `(0/${setTotal})`;
+
+    if (setTotal > 0 && setAnswered === setTotal) {
+      icon = "✅"; // Completed
+      labelSuffix = `(${setTotal}/${setTotal} ✓)`;
+    } else if (setAnswered > 0) {
+      icon = "🟡"; // Partially attempted
+      labelSuffix = `(${setAnswered}/${setTotal})`;
+    }
+
+    return `<option value="${i}">${icon} ${esc(g)} ${labelSuffix}</option>`;
+  }).join("");
+
+  sel.innerHTML = allOption + groupOptions;
   const k = typeof keep === "string" && keep.startsWith("g:") ? String(groups.indexOf(keep.slice(2))) : keep;
   sel.value = k !== undefined && [...sel.options].some(o => o.value === String(k)) ? String(k) : "all";
 }
@@ -760,7 +807,7 @@ function renderUserNote(qid) {
 /* ── Answer + Paint ───────────────────────────────────────── */
 function answer(q, val) {
   if (q.id in state) return;
-  state[q.id] = val; saveState(); paintCard(q); stats(); scheduleSync();
+  state[q.id] = val; saveState(); paintCard(q); stats(); fillSel(sel.value); scheduleSync();
 }
 
 function paintCard(q) {
@@ -815,7 +862,7 @@ $("shufBtn").addEventListener("click", () => {
 });
 $("resetBtn").addEventListener("click", () => {
   if (!confirm("Clear all your answers and start over?")) return;
-  state = {}; saveState(); build(); scheduleSync(); window.scrollTo(0, 0);
+  state = {}; saveState(); fillSel(sel.value); build(); scheduleSync(); window.scrollTo(0, 0);
 });
 
 /* ── Auth / Leaderboard / Sync ────────────────────────────── */
