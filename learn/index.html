@@ -754,19 +754,19 @@ function buildCard(q, n) {
       <div class="verdict"></div>
       <div class="exp-body"></div>
     </div>
-    <div class="note-panel" id="np${q.id}">
+    <div class="note-panel">
       <label>📝 My personal note for this question</label>
-      <textarea class="note-textarea" id="nt${q.id}" placeholder="Write your own notes, mnemonics, or reminders…"></textarea>
+      <textarea class="note-textarea" placeholder="Write your own notes, mnemonics, or reminders…"></textarea>
       <div class="note-save-row">
-        <button type="button" id="ns${q.id}">Save note</button>
+        <button type="button" class="btn-note-save">Save note</button>
       </div>
       <div class="user-note-display" id="nd${q.id}"></div>
     </div>
-    <div class="ai-panel" id="ai${q.id}">
-      <div class="ai-log" id="al${q.id}"></div>
+    <div class="ai-panel">
+      <div class="ai-log"></div>
       <div class="ai-ask">
-        <input type="text" id="ainp${q.id}" placeholder="Ask a follow-up…">
-        <button class="tool-btn primary" id="asnd${q.id}">Send</button>
+        <input type="text" placeholder="Ask a follow-up…">
+        <button class="tool-btn primary btn-ai-send">Send</button>
       </div>
     </div>`;
 
@@ -776,22 +776,25 @@ function buildCard(q, n) {
   c.querySelectorAll(".opt").forEach(b => b.addEventListener("click", () => answer(q, b.dataset.v === "1")));
 
   /* Note panel toggle */
+  const notePanel = c.querySelector(".note-panel");
+  const noteTextarea = c.querySelector(".note-textarea");
+  const noteSaveBtn = c.querySelector(".btn-note-save");
+
   c.querySelector(".btn-note").addEventListener("click", () => {
-    const np = $("np" + q.id);
-    np.classList.toggle("show");
-    if (np.classList.contains("show")) {
-      const ta = $("nt" + q.id);
-      ta.value = notes[q.id] || "";
-      ta.focus();
+    notePanel.classList.toggle("show");
+    if (notePanel.classList.contains("show")) {
+      noteTextarea.value = notes[q.id] || "";
+      noteTextarea.focus();
     }
   });
-  $("ns" + q.id).addEventListener("click", () => {
-    const val = $("nt" + q.id).value.trim();
+
+  noteSaveBtn.addEventListener("click", () => {
+    const val = noteTextarea.value.trim();
     if (val) notes[q.id] = val; else delete notes[q.id];
     saveNotes();
     renderUserNote(q.id);
     scheduleSync();
-    $("np" + q.id).classList.remove("show");
+    notePanel.classList.remove("show");
   });
 
   setupAI(c, q);
@@ -1116,8 +1119,10 @@ async function askGemini(q, history) {
 }
 
 function setupAI(card, q) {
-  const panel = $("ai" + q.id), log = $("al" + q.id);
-  const input = $("ainp" + q.id), send = $("asnd" + q.id);
+  const panel = card.querySelector(".ai-panel");
+  const log = card.querySelector(".ai-log");
+  const input = card.querySelector(".ai-ask input");
+  const send = card.querySelector(".btn-ai-send");
   const hist = chats[q.id] = chats[q.id] || [];
 
   const draw = () => {
