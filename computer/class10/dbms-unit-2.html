@@ -1,0 +1,1762 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Unit 2 DBMS Lessons</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: one lesson slide at a time on a full-height stage. Blue marks lesson 2.1, green marks lesson 2.2, magenta marks textbook definitions. */
+:root{
+  --bg:#f3f6fb; --panel:#ffffff; --panel-2:#e8eef8; --fg:#0f1a35; --muted:#475674; --line:#c9d4e6;
+  --blue:#1a4fb0; --blue-soft:#e1eafb;
+  --green:#0a7556; --green-soft:#dcf2e9;
+  --amber:#a64f08; --amber-soft:#fdebd5;
+  --teal:#0a6f86; --teal-soft:#d8f0f5;
+  --violet:#6a3cc0; --violet-soft:#ebe3fb;
+  --olive:#4f6f0a; --olive-soft:#e8f2cc;
+  --sienna:#8c3f1a; --sienna-soft:#f5e2d6;
+  --f-mono:"JetBrains Mono",ui-monospace,Consolas,"Courier New",monospace;
+  --pink:#b0125f; --pink-soft:#fbe3ee;
+  --ok:#0d7a3b; --ok-soft:#dcf3e4; --bad:#b3261e; --bad-soft:#fbe4e2;
+  --on-accent:#ffffff; --scrim:rgba(15,26,53,.55);
+  --f-display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --f-body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --base:clamp(18px, 1vw + 10px, 34px);
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; background:var(--bg); color:var(--fg);
+  font:400 var(--base)/1.45 var(--f-body);
+  display:grid; grid-template-rows:auto 1fr auto; overflow:hidden;
+}
+header,footer{font-size:clamp(13px,.7vw + 6px,19px)}
+html.fs header, html.fs footer{display:none}
+html.fs body{grid-template-rows:1fr}
+.wrap{padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px))}
+button{font:inherit; color:inherit; cursor:pointer}
+:focus-visible{outline:3px solid var(--pink); outline-offset:3px}
+
+/* header */
+header{background:var(--panel); border-bottom:1px solid var(--line)}
+.top{display:flex; align-items:center; gap:.6em 1em; flex-wrap:wrap; padding-block:.55em}
+.brand{font:800 .8em/1 var(--f-display); letter-spacing:.06em; text-transform:uppercase; color:var(--muted)}
+.sel{display:flex; flex-wrap:wrap; gap:.4em; min-width:0}
+.sel button{--c:var(--muted); --cs:var(--panel-2); background:var(--cs); color:var(--c); border:2px solid var(--c); border-radius:.55em; padding:.3em .85em; font:700 .8em/1.2 var(--f-body)}
+.sel button[data-l="1"]{--c:var(--blue); --cs:var(--blue-soft)}
+.sel button[data-l="2"]{--c:var(--green); --cs:var(--green-soft)}
+.sel button[data-l="3"]{--c:var(--amber); --cs:var(--amber-soft)}
+.sel button[data-l="4"]{--c:var(--teal); --cs:var(--teal-soft)}
+.sel button[data-l="5"]{--c:var(--violet); --cs:var(--violet-soft)}
+.sel button[data-l="6"]{--c:var(--olive); --cs:var(--olive-soft)}
+.sel button[data-l="7"]{--c:var(--sienna); --cs:var(--sienna-soft)}
+.sel button.on{background:var(--c); color:var(--on-accent)}
+.sel button:hover:not(.on){background:var(--panel)}
+body[data-lesson="1"]{--accent:var(--blue); --accent-soft:var(--blue-soft)}
+body[data-lesson="2"]{--accent:var(--green); --accent-soft:var(--green-soft)}
+body[data-lesson="3"]{--accent:var(--amber); --accent-soft:var(--amber-soft)}
+body[data-lesson="4"]{--accent:var(--teal); --accent-soft:var(--teal-soft)}
+body[data-lesson="5"]{--accent:var(--violet); --accent-soft:var(--violet-soft)}
+body[data-lesson="6"]{--accent:var(--olive); --accent-soft:var(--olive-soft)}
+body[data-lesson="7"]{--accent:var(--sienna); --accent-soft:var(--sienna-soft)}
+.tools{margin-left:auto; display:flex; align-items:center; gap:.5em}
+.count{font:700 .8em var(--f-body); color:var(--muted); font-variant-numeric:tabular-nums; min-width:4.2em; text-align:right}
+.ghost{background:transparent; border:1.5px solid var(--line); border-radius:.5em; padding:.3em .75em; font-size:.75em; font-weight:600}
+.ghost:hover{border-color:var(--accent,var(--blue))}
+.bar{height:6px; background:var(--panel-2)}
+.bar i{display:block; height:100%; width:0; background:var(--accent,var(--blue)); transition:width .3s ease}
+
+/* stage */
+main{display:flex; flex-direction:column; overflow-y:auto; min-height:0}
+.slide{display:none; --accent:var(--blue); --accent-soft:var(--blue-soft)}
+.slide[data-lesson="2"]{--accent:var(--green); --accent-soft:var(--green-soft)}
+.slide[data-lesson="3"]{--accent:var(--amber); --accent-soft:var(--amber-soft)}
+.slide[data-lesson="4"]{--accent:var(--teal); --accent-soft:var(--teal-soft)}
+.slide[data-lesson="5"]{--accent:var(--violet); --accent-soft:var(--violet-soft)}
+.slide[data-lesson="6"]{--accent:var(--olive); --accent-soft:var(--olive-soft)}
+.slide[data-lesson="7"]{--accent:var(--sienna); --accent-soft:var(--sienna-soft)}
+.slide.active{display:flex; flex-direction:column; gap:.8em; margin:auto; width:100%; max-width:76em; padding-block:1.1em; animation:rise .35s ease both}
+@keyframes rise{from{opacity:0; transform:translateY(.4em)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion: reduce){.slide.active{animation:none} .bar i{transition:none}}
+
+.eyebrow{font:700 .85em/1 var(--f-body); letter-spacing:.12em; text-transform:uppercase; color:var(--accent)}
+h1,h2,h3{font-family:var(--f-display); margin:0; text-wrap:balance; line-height:1.08}
+h1{font-size:3em; font-weight:800}
+h2{font-size:2.15em; font-weight:800}
+h3{font-size:1.2em; font-weight:800; color:var(--accent)}
+p{margin:0}
+.lead{font-size:1.15em; color:var(--muted); max-width:44em}
+b,strong{font-weight:700}
+
+.def{background:var(--pink-soft); border-left:.3em solid var(--pink); border-radius:.3em; padding:.7em 1em; font-size:1.12em; font-weight:600; color:var(--pink)}
+.def small{display:block; font-size:.7em; letter-spacing:.1em; text-transform:uppercase; margin-bottom:.35em; opacity:.85}
+.cols{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,17em),1fr)); gap:.8em}
+.card{background:var(--panel); border:1px solid var(--line); border-radius:.6em; padding:.8em 1em; min-width:0}
+.card p{font-size:1em; color:var(--muted); margin-top:.25em}
+.card.hl{border-color:var(--accent); background:var(--accent-soft)}
+.pts{margin:0; padding:0; list-style:none; display:grid; gap:.55em}
+.pts li{position:relative; padding-left:1.3em}
+.pts li::before{content:""; position:absolute; left:0; top:.55em; width:.55em; height:.55em; border-radius:50%; background:var(--accent)}
+.chips{display:flex; flex-wrap:wrap; gap:.45em}
+.tag{background:var(--accent-soft); color:var(--accent); border-radius:.4em; padding:.2em .7em; font-weight:700}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse; width:100%; background:var(--panel)}
+th,td{border:1px solid var(--line); padding:.45em .8em; text-align:left; vertical-align:top}
+th{background:var(--accent); color:var(--on-accent); font-family:var(--f-display)}
+td:first-child{font-weight:700}
+.note{color:var(--muted); font-size:.95em}
+svg.flow{width:100%; height:auto; max-height:26vh}
+.bx{fill:var(--accent-soft); stroke:var(--accent); stroke-width:3}
+.bx.on{fill:var(--accent)}
+.tx{fill:var(--fg); font:800 28px var(--f-display); text-anchor:middle}
+.tx.on{fill:var(--on-accent)}
+.st{fill:var(--muted); font:600 19px var(--f-body); text-anchor:middle}
+.st.on{fill:var(--on-accent)}
+.ar{stroke:var(--accent); stroke-width:4; fill:none}
+.mk{fill:var(--accent)}
+.split{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,19em),1fr)); gap:1em; align-items:start}
+.vs{display:grid; gap:.4em}
+.example{display:flex; flex-wrap:wrap; align-items:center; gap:.7em}
+.arrow{font:800 1.4em var(--f-display); color:var(--accent)}
+.sample td,.sample th{font-size:1em}
+.sample{max-width:none}
+
+/* title slide */
+.hero{display:grid; gap:.5em}
+.hero h1{color:var(--fg)}
+.hero h1 span{color:var(--blue)}
+.lessons{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,18em),1fr)); gap:.8em; margin-top:.6em}
+.lessons .card{border-width:2px; display:block; width:100%; text-align:left}
+.lessons .card:hover{background:var(--panel-2)}
+.lessons .card.a{border-color:var(--blue)} .lessons .card.b{border-color:var(--green)} .lessons .card.c{border-color:var(--amber)} .lessons .card.d{border-color:var(--teal)} .lessons .card.e{border-color:var(--violet)} .lessons .card.f{border-color:var(--olive)} .lessons .card.g{border-color:var(--sienna)}
+.lessons h3{font-size:1.1em}
+.lessons .card.a h3{color:var(--blue)} .lessons .card.b h3{color:var(--green)} .lessons .card.c h3{color:var(--amber)} .lessons .card.d h3{color:var(--teal)} .lessons .card.e h3{color:var(--violet)} .lessons .card.f h3{color:var(--olive)} .lessons .card.g h3{color:var(--sienna)}
+.ans{visibility:hidden}
+.shown .ans{visibility:visible}
+.reveal{width:max-content}
+table{font-variant-numeric:tabular-nums}
+tr.hirow td{background:var(--pink-soft); color:var(--pink); font-weight:700}
+td.col{background:var(--accent-soft); font-weight:700}
+td.fk{background:var(--pink-soft); color:var(--pink); font-weight:700}
+.tbl-sm table{font-size:.95em}
+.tbl-sm th,.tbl-sm td{padding:.35em .6em}
+.cap{font-weight:700; margin-bottom:.3em}
+.code{margin:0; background:var(--panel); border:1px solid var(--line); border-left:.3em solid var(--accent); border-radius:.4em; padding:.5em .9em; font:500 .95em/1.45 var(--f-mono); white-space:pre; overflow-x:auto; color:var(--fg)}
+.code b{color:var(--accent); font-weight:700}
+.lbl{font:800 .8em/1 var(--f-body); letter-spacing:.1em; text-transform:uppercase; color:var(--accent); margin:0 0 .35em}
+.lbl.ex{color:var(--pink)}
+.pair{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,17em),1fr)); gap:.9em}
+.pair > div{min-width:0}
+.pts.two{grid-template-columns:repeat(auto-fit,minmax(min(100%,19em),1fr)); column-gap:1.4em}
+.res{font-size:.95em}
+svg.er{max-height:26vh}
+.eb{fill:var(--panel); stroke:var(--accent); stroke-width:3}
+.eb.j{fill:var(--accent-soft)}
+.et{fill:var(--accent); font:800 26px var(--f-display)}
+.ef{fill:var(--fg); font:600 20px var(--f-body)}
+.cd{fill:var(--fg); font:800 28px var(--f-display); text-anchor:middle}
+.eg{font-size:1em; color:var(--muted)}
+.hint{font-size:.9em; color:var(--muted)}
+
+/* checkpoint */
+.q-tag{display:inline-flex; align-items:center; gap:.5em; width:max-content; background:var(--pink-soft); color:var(--pink); font:800 .9em/1 var(--f-body); letter-spacing:.12em; text-transform:uppercase; padding:.5em .9em; border-radius:99px}
+.q-text{font:800 2.4em/1.12 var(--f-display); text-wrap:balance}
+.opts{display:grid; gap:.5em; margin-top:.2em}
+@media (min-width:900px){.opts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.opt{display:flex; align-items:center; gap:.8em; text-align:left; background:var(--panel); border:2px solid var(--line); border-radius:.6em; padding:.5em .8em; font-size:1.5em; font-weight:600; width:100%; line-height:1.25}
+.opt:hover{border-color:var(--accent)}
+.opt .k{flex:none; width:1.7em; height:1.7em; border-radius:.4em; display:grid; place-items:center; background:var(--panel-2); font:800 .9em var(--f-display)}
+.opt.correct{border-color:var(--ok); background:var(--ok-soft)}
+.opt.correct .k{background:var(--ok); color:var(--on-accent)}
+.opt.wrong{border-color:var(--bad); background:var(--bad-soft)}
+.opt.wrong .k{background:var(--bad); color:var(--on-accent)}
+.opt.dim{opacity:.55}
+.opt:disabled{cursor:default}
+.explain{border-radius:.5em; padding:.5em 1em; background:var(--panel); border:1px solid var(--line); font-size:1.3em}
+.explain b{display:block; margin-bottom:.15em}
+.explain.good b{color:var(--ok)} .explain.bad b{color:var(--bad)}
+.reset{width:max-content}
+
+/* footer */
+footer{background:var(--panel); border-top:1px solid var(--line)}
+.nav{display:flex; align-items:center; gap:.8em; padding-block:.6em}
+.nav .hint{flex:1; text-align:center}
+.btn{background:var(--accent,var(--blue)); color:var(--on-accent); border:0; border-radius:.55em; padding:.55em 1.4em; font-weight:700; font-size:1em}
+.btn.sec{background:transparent; color:var(--fg); border:2px solid var(--line)}
+.btn:disabled{opacity:.35; cursor:default}
+
+/* contents panel */
+.toc{position:fixed; inset:0; z-index:20; background:var(--scrim); padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px)); overflow-y:auto}
+.toc-panel{max-width:40em; margin:0 auto; background:var(--panel); border:1px solid var(--line); border-radius:.8em; padding:1em 1.2em; display:grid; gap:.3em; font-size:.85em}
+.toc-panel h3{margin-top:.7em; font-size:1em}
+.toc-panel h3:first-child{margin-top:0}
+.toc-item{display:flex; gap:.7em; align-items:baseline; background:none; border:0; text-align:left; padding:.25em .4em; border-radius:.35em; width:100%}
+.toc-item:hover{background:var(--panel-2)}
+.toc-item.now{background:var(--panel-2); font-weight:700}
+.toc-item .n{flex:none; width:2em; color:var(--muted); font-variant-numeric:tabular-nums}
+.toc-item.q{color:var(--pink)}
+@media (max-width:560px){h1{font-size:2.3em} h2{font-size:1.7em} .q-text{font-size:1.5em} .nav .hint{display:none} .nav{justify-content:space-between}}
+</style>
+
+<header>
+  <div class="top wrap">
+    <span class="brand">Unit 2 · Computer Science, Grade 10</span>
+    <nav class="sel" id="sel" aria-label="Choose a lesson"></nav>
+    <div class="tools">
+      <span class="count" id="count">1 / 1</span>
+      <button class="ghost" id="tocBtn" type="button">Contents</button>
+      <button class="ghost" id="fsBtn" type="button" hidden>Full screen</button>
+    </div>
+  </div>
+  <div class="bar"><i id="bar"></i></div>
+</header>
+
+<main id="main" class="wrap">
+
+<!-- ============ TITLE ============ -->
+<section class="slide active" data-lesson="0" data-title="Database Management System">
+  <div class="hero">
+    <span class="eyebrow" style="color:var(--muted)">Unit 2</span>
+    <h1>Database <span>Management</span> System</h1>
+    <p class="lead">Seven lessons in this unit. Questions appear in the middle of each topic so we can check what we have learned.</p>
+  </div>
+  <div class="lessons">
+    <button class="card a" type="button" data-go="1"><h3>2.1</h3><p style="color:var(--fg);font-size:1em">Definition, Importance and Application of Database</p></button>
+    <button class="card b" type="button" data-go="2"><h3>2.2</h3><p style="color:var(--fg);font-size:1em">Database Terminologies, DBMS and RDBMS</p></button>
+    <button class="card c" type="button" data-go="3"><h3>2.3</h3><p style="color:var(--fg);font-size:1em">Data Types: String, Numeric, Date and Time</p></button>
+    <button class="card d" type="button" data-go="4"><h3>2.4</h3><p style="color:var(--fg);font-size:1em">Elements of Database: Field, Record, Table</p></button>
+    <button class="card e" type="button" data-go="5"><h3>2.5</h3><p style="color:var(--fg);font-size:1em">Keys and Relationships</p></button>
+    <button class="card f" type="button" data-go="6"><h3>2.6</h3><p style="color:var(--fg);font-size:1em">Introduction to MySQL, Query and SQL</p></button>
+    <button class="card g" type="button" data-go="7"><h3>2.7</h3><p style="color:var(--fg);font-size:1em">DDL: CREATE, DROP, ALTER, TRUNCATE</p></button>
+  </div>
+  <p class="hint">Pick a lesson above or in the top bar. Arrow keys or the Next button move one slide. Press 1 to 4 (or A to D) to answer a question.</p>
+</section>
+
+<!-- ============ LESSON 2.1 ============ -->
+<section class="slide" data-lesson="1" data-title="Introduction">
+  <span class="eyebrow">2.1 · Introduction</span>
+  <h2>Why do we need data?</h2>
+  <ul class="pts">
+    <li>People and organizations need different types of data for various purposes.</li>
+    <li>Organizations work together and share data with other organizations.</li>
+    <li>Data is essential to achieve a desired goal, so it must be collected from various sources in an organized manner.</li>
+    <li>Collected data is processed to get the desired result, then stored systematically as <b>databases</b> for future use.</li>
+  </ul>
+</section>
+
+<section class="slide" data-lesson="1" data-title="Manual and computerized systems">
+  <span class="eyebrow">2.1 · Introduction</span>
+  <h2>Before and after computers</h2>
+  <div class="cols">
+    <div class="card">
+      <h3>Manual file system</h3>
+      <ul class="pts" style="margin-top:.5em">
+        <li>Preparing and manipulating data is complex and tedious.</li>
+        <li>Data is never updated easily.</li>
+        <li>Data cannot be shared.</li>
+      </ul>
+    </div>
+    <div class="card hl">
+      <h3>Computerized system</h3>
+      <ul class="pts" style="margin-top:.5em">
+        <li>Data is processed, managed and updated easily and effectively.</li>
+        <li>Processing happens at very high speed.</li>
+        <li>A large amount of data is stored in a small space.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-lesson="1" data-title="Definition of database">
+  <span class="eyebrow">2.1 · Definition</span>
+  <h2>What is a database?</h2>
+  <p class="def"><small>Definition</small>An organized collection of logically related data about a particular person, thing, or place that can be used for different purposes is called a database.</p>
+  <p class="lead">A database makes data management more efficient and systematic. It lets users store, retrieve and manipulate large amounts of information quickly and accurately.</p>
+</section>
+
+<section class="slide" data-lesson="1" data-title="Applications of database">
+  <span class="eyebrow">2.1 · Application</span>
+  <h2>Where are databases used?</h2>
+  <p class="lead">Many organizations depend completely on a database for their day to day activities.</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Area</th><th>Uses</th></tr></thead>
+      <tbody>
+        <tr><td>Banking</td><td>Stores day to day transactions and account details of clients.</td></tr>
+        <tr><td>Education</td><td>Stores student records, accounting and grades.</td></tr>
+        <tr><td>Social Media</td><td>Stores users' data, messages and media.</td></tr>
+        <tr><td>Transportation</td><td>Manages bookings of customers, and schedules.</td></tr>
+        <tr><td>Healthcare System</td><td>Stores patient data, medical records and billing information.</td></tr>
+        <tr><td>Business</td><td>Stores information of customers, items and price catalogues.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="slide mcq" data-lesson="1" data-q="m1"></section>
+<section class="slide mcq" data-lesson="1" data-q="m2"></section>
+<section class="slide mcq" data-lesson="1" data-q="m3"></section>
+
+<section class="slide" data-lesson="1" data-title="Importance of database">
+  <span class="eyebrow">2.1 · Importance</span>
+  <h2>Why are databases important?</h2>
+  <ul class="pts">
+    <li>It stores data in an organized manner, making it easy to store, retrieve and manage information.</li>
+    <li>It allows quick searching and retrieval of information.</li>
+    <li>It helps organize data, which supports easy analysis and better decision-making.</li>
+    <li>It can handle large amounts of data and can grow as needed.</li>
+    <li>It stores data in a structured and systematic way.</li>
+  </ul>
+</section>
+
+<section class="slide mcq" data-lesson="1" data-q="m4"></section>
+
+<!-- ============ LESSON 2.2 ============ -->
+<section class="slide" data-lesson="2" data-title="Data">
+  <span class="eyebrow">2.2 · Database Terminologies</span>
+  <h2>Data</h2>
+  <p class="def"><small>Definition</small>Data are the raw facts, symbols or unprocessed material which give complete meaning only after processing.</p>
+  <ul class="pts">
+    <li>Data is the plural form of the word "datum". It may be numbers, figures, characters or symbols.</li>
+    <li>It can be collected from field surveys, questionnaires, authorized agencies and other sources.</li>
+  </ul>
+  <div>
+    <p class="note" style="margin-bottom:.4em">Examples of data. On their own they do not give proper meaning.</p>
+    <div class="chips">
+      <span class="tag">Anil</span><span class="tag">Butwal</span><span class="tag">Ten</span><span class="tag">boy</span><span class="tag">Cricket</span><span class="tag">16</span><span class="tag">Hari</span><span class="tag">Palpa</span><span class="tag">Football</span><span class="tag">nine</span>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-lesson="2" data-title="Data processing">
+  <span class="eyebrow">2.2 · Database Terminologies</span>
+  <h2>Data Processing</h2>
+  <p class="def"><small>Definition</small>Data processing is the method of converting unprocessed data into meaningful information.</p>
+  <svg class="flow" viewBox="0 0 900 190" role="img" aria-label="Data goes through data processing and becomes information">
+    <defs><marker id="mk1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path class="mk" d="M0 0L10 5L0 10z"/></marker></defs>
+    <rect class="bx" x="20" y="35" width="240" height="120" rx="16"/>
+    <text class="tx" x="140" y="90">Data</text><text class="st" x="140" y="124">raw facts</text>
+    <line class="ar" x1="266" y1="95" x2="324" y2="95" marker-end="url(#mk1)"/>
+    <rect class="bx" x="330" y="35" width="240" height="120" rx="16"/>
+    <text class="tx" x="450" y="90">Processing</text><text class="st" x="450" y="124">a series of steps</text>
+    <line class="ar" x1="576" y1="95" x2="634" y2="95" marker-end="url(#mk1)"/>
+    <rect class="bx on" x="640" y="35" width="240" height="120" rx="16"/>
+    <text class="tx on" x="760" y="90">Information</text><text class="st on" x="760" y="124">complete meaning</text>
+  </svg>
+  <p class="lead">Any action taken on data to get the desired result, step by step, is data processing. Computerized data processing is done with the help of database management software.</p>
+</section>
+
+<section class="slide" data-lesson="2" data-title="Information">
+  <span class="eyebrow">2.2 · Database Terminologies</span>
+  <h2>Information</h2>
+  <p class="def"><small>Definition</small>The result we get after processing data is called information. Data becomes information when we understand what it means.</p>
+  <div class="card hl">
+    <p class="note" style="margin:0 0 .4em">Data</p>
+    <div class="chips"><span class="tag">Anil</span><span class="tag">16</span><span class="tag">boy</span><span class="tag">10</span><span class="tag">Cricket</span></div>
+    <p class="arrow" style="margin:.3em 0">↓ processing</p>
+    <p class="note" style="margin:0 0 .2em">Information</p>
+    <p style="font-weight:700; font-size:1.1em; color:var(--fg)">Anil is a 16 years boy, reads in class 10 and likes cricket.</p>
+  </div>
+  <p class="note">This sentence is information because it gives proper meaning.</p>
+</section>
+
+<section class="slide mcq" data-lesson="2" data-q="m5"></section>
+<section class="slide mcq" data-lesson="2" data-q="m6"></section>
+
+<section class="slide" data-lesson="2" data-title="Database">
+  <span class="eyebrow">2.2 · Database Terminologies</span>
+  <h2>Database</h2>
+  <p class="def"><small>Definition</small>An organized collection of logically related data about a particular person, thing, or place that can be used for different purposes is called a database.</p>
+  <ul class="pts">
+    <li>It is the systematic arrangement of logically related data and information.</li>
+    <li>Data in a database may be text, numbers, or encoded graphics.</li>
+    <li>Large amounts of data are stored, organized, processed, manipulated and retrieved easily and effectively.</li>
+  </ul>
+  <div>
+    <p class="note" style="margin-bottom:.4em">Examples of databases</p>
+    <div class="chips"><span class="tag">Telephone directory</span><span class="tag">Mark ledger</span><span class="tag">Flight schedule</span><span class="tag">Employee's records</span></div>
+  </div>
+</section>
+
+<section class="slide" data-lesson="2" data-title="Database Management System">
+  <span class="eyebrow">2.2 · Database Terminologies</span>
+  <h2>Database Management System (DBMS)</h2>
+  <p class="def"><small>Definition</small>A Database Management System is a set of software programs which is used to manage the data stored in a database.</p>
+  <svg class="flow" viewBox="0 0 900 190" role="img" aria-label="A user works with the database through the DBMS">
+    <defs><marker id="mk2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="mk" d="M0 0L10 5L0 10z"/></marker></defs>
+    <rect class="bx" x="20" y="35" width="240" height="120" rx="16"/>
+    <text class="tx" x="140" y="90">User</text><text class="st" x="140" y="124">creates, edits, updates</text>
+    <line class="ar" x1="270" y1="95" x2="320" y2="95" marker-start="url(#mk2)" marker-end="url(#mk2)"/>
+    <rect class="bx on" x="330" y="35" width="240" height="120" rx="16"/>
+    <text class="tx on" x="450" y="90">DBMS</text><text class="st on" x="450" y="124">the interface</text>
+    <line class="ar" x1="580" y1="95" x2="630" y2="95" marker-start="url(#mk2)" marker-end="url(#mk2)"/>
+    <rect class="bx" x="640" y="35" width="240" height="120" rx="16"/>
+    <text class="tx" x="760" y="90">Database</text><text class="st" x="760" y="124">organized data</text>
+  </svg>
+  <p class="lead">A DBMS is mostly used as an interface between the database and the user. It is used to create, edit, update and organize data in database files, and to store, access and process data to get useful information. Its primary objective is a convenient environment to retrieve and store database information.</p>
+</section>
+
+<section class="slide" data-lesson="2" data-title="Examples of DBMS">
+  <span class="eyebrow">2.2 · Database Terminologies</span>
+  <h2>Examples of DBMS</h2>
+  <div class="chips" style="gap:.6em">
+    <span class="tag">Clipper</span><span class="tag">dBase</span><span class="tag">Oracle</span><span class="tag">Foxbase</span><span class="tag">MySQL</span><span class="tag">Foxpro</span><span class="tag">Sybase</span><span class="tag">MS SQL Server</span><span class="tag">PostgreSQL</span><span class="tag">MongoDB</span>
+  </div>
+  <p class="lead">A database holds the data. A DBMS is the software we use to manage it.</p>
+</section>
+
+<section class="slide mcq" data-lesson="2" data-q="m7"></section>
+<section class="slide mcq" data-lesson="2" data-q="m8"></section>
+
+<section class="slide" data-lesson="2" data-title="Features of DBMS (1)">
+  <span class="eyebrow">2.2 · Features of DBMS · 1 of 2</span>
+  <h2>Features of DBMS</h2>
+  <div class="cols">
+    <div class="card"><h3>Organized Data Storage</h3><p>Data sits in tables of rows and columns. Each piece has a specific place, so it is easy to access, update or delete.</p></div>
+    <div class="card"><h3>Data Security</h3><p>Only authorized users can access or modify data. Passwords, user roles and permissions keep it safe.</p></div>
+    <div class="card"><h3>Consistency and Integrity</h3><p>Rules and constraints stop incorrect or duplicate data, for example a phone number in the wrong format.</p></div>
+    <div class="card"><h3>Support for Multiple Users</h3><p>Many users work at the same time without conflicts or interfering with each other.</p></div>
+  </div>
+</section>
+
+<section class="slide" data-lesson="2" data-title="Features of DBMS (2)">
+  <span class="eyebrow">2.2 · Features of DBMS · 2 of 2</span>
+  <h2>Features of DBMS</h2>
+  <div class="cols">
+    <div class="card"><h3>Backup and Recovery</h3><p>Regular backups let data be restored without loss after accidental deletion or system failure.</p></div>
+    <div class="card"><h3>Data Independence</h3><p>Data is separate from application programs, so changes in the database structure do not affect them.</p></div>
+    <div class="card"><h3>Querying and Reporting</h3><p>Users search, retrieve and generate reports with queries to get meaningful information quickly.</p></div>
+    <div class="card"><h3>Control of Data Redundancy</h3><p>Central storage and proper design such as normalization reduce duplicate data and save space.</p></div>
+  </div>
+</section>
+
+<section class="slide mcq" data-lesson="2" data-q="m9"></section>
+<section class="slide mcq" data-lesson="2" data-q="m10"></section>
+
+<section class="slide" data-lesson="2" data-title="Advantages of DBMS">
+  <span class="eyebrow">2.2 · Advantages of DBMS</span>
+  <h2>Advantages of DBMS</h2>
+  <div class="cols" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,15em),1fr))">
+    <div class="card"><h3>Reduced Data Redundancy</h3><p>One central database means less duplication and saved storage.</p></div>
+    <div class="card"><h3>Data Consistency</h3><p>A change made to data is reflected everywhere.</p></div>
+    <div class="card"><h3>Data Security</h3><p>Only authorized users can access or modify data.</p></div>
+    <div class="card"><h3>Easy Access and Retrieval</h3><p>Search, insert, update and delete data using queries.</p></div>
+    <div class="card"><h3>Backup and Recovery</h3><p>Copies of data restore it after a system failure.</p></div>
+    <div class="card"><h3>Data Integrity</h3><p>Rules and constraints prevent incorrect data entry.</p></div>
+    <div class="card"><h3>Multi-User Environment</h3><p>Many users access the database at once without conflicts.</p></div>
+    <div class="card"><h3>Data Independence</h3><p>Structure changes do not affect application programs.</p></div>
+  </div>
+</section>
+
+<section class="slide" data-lesson="2" data-title="Disadvantages of DBMS">
+  <span class="eyebrow">2.2 · Disadvantages of DBMS</span>
+  <h2>Disadvantages of DBMS</h2>
+  <div class="cols">
+    <div class="card"><h3>Costly Development and Installation</h3><p>Needs powerful computers, large storage and supporting software.</p></div>
+    <div class="card"><h3>Users need special knowledge</h3><p>More complex than a simple file system. Untrained users can cause errors.</p></div>
+    <div class="card"><h3>Takes a lot of storage space</h3><p>The data, the DBMS software, backups and logs all need space.</p></div>
+    <div class="card"><h3>System failure affects all users</h3><p>If the DBMS stops working, everyone who relies on it is affected.</p></div>
+    <div class="card"><h3>Regular maintenance is necessary</h3><p>It must be updated, secured and backed up, or it may slow down or make errors.</p></div>
+    <div class="card"><h3>Not suitable for small applications</h3><p>For simple storage it adds complexity and can be slower than ordinary files.</p></div>
+  </div>
+</section>
+
+<section class="slide mcq" data-lesson="2" data-q="m11"></section>
+
+<section class="slide" data-lesson="2" data-title="Types of DBMS">
+  <span class="eyebrow">2.2 · Types of DBMS</span>
+  <h2>Types of Database Management System</h2>
+  <p class="lead">According to database design structure, there are five types.</p>
+  <div class="cols">
+    <div class="card hl"><h3>Relational DBMS</h3><p>RDBMS. This is the one we study in our course.</p></div>
+    <div class="card"><h3>Hierarchical DBMS</h3></div>
+    <div class="card"><h3>Network DBMS</h3></div>
+    <div class="card"><h3>Object-Oriented DBMS</h3><p>OODBMS</p></div>
+    <div class="card"><h3>Distributed DBMS</h3></div>
+  </div>
+</section>
+
+<section class="slide" data-lesson="2" data-title="Relational DBMS (RDBMS)">
+  <span class="eyebrow">2.2 · Types of DBMS</span>
+  <h2>Relational DBMS (RDBMS)</h2>
+  <p class="def"><small>Definition</small>An RDBMS stores and organizes information in the form of multiple linked related tables, and uses matching values between tables to find related data.</p>
+  <div class="split">
+    <div class="vs">
+      <div class="scroll">
+        <table class="sample">
+          <thead><tr><th>Roll</th><th>Name</th><th>Class</th><th>Hobby</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Anil</td><td>10</td><td>Cricket</td></tr>
+            <tr><td>2</td><td>Hari</td><td>10</td><td>Football</td></tr>
+            <tr><td>3</td><td>Mina</td><td>10</td><td>Chess</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">Example table for teaching.</p>
+    </div>
+    <ul class="pts">
+      <li>A <b>relation</b> is a table of rows and columns.</li>
+      <li>A <b>row</b> is a record, a collection of information about one item.</li>
+      <li>A <b>column</b> is a field, a particular attribute of a record.</li>
+      <li>Popular RDBMS: Oracle, MS-Access, SQL Server.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="slide" data-lesson="2" data-title="DBMS and RDBMS compared">
+  <span class="eyebrow">2.2 · Types of DBMS</span>
+  <h2>Difference between DBMS and RDBMS</h2>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>DBMS</th><th>RDBMS</th></tr></thead>
+      <tbody>
+        <tr><td>Data elements have to be accessed individually.</td><td>Multiple data elements can be accessed from multiple tables at the same time.</td></tr>
+        <tr><td>Does not support relationships between tables.</td><td>Supports relationships between tables.</td></tr>
+        <tr><td>Does not support distributed databases.</td><td>Supports distributed databases.</td></tr>
+        <tr><td>Supports a single user at a time.</td><td>Supports multiple users at a time.</td></tr>
+        <tr><td>Data is stored as a file.</td><td>Data is stored as tables.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="slide mcq" data-lesson="2" data-q="m12"></section>
+<section class="slide mcq" data-lesson="2" data-q="m13"></section>
+
+<!-- ============ LESSON 2.3 ============ -->
+<section class="slide" data-lesson="3" data-title="Data types">
+  <span class="eyebrow">2.3 · Data Types</span>
+  <h2>Data Types</h2>
+  <p class="def"><small>Definition</small>Data type defines what type of data is to be stored under the field name.</p>
+  <ul class="pts">
+    <li>It is mandatory to choose a data type for every field name.</li>
+    <li>Field names must be assigned the appropriate data type.</li>
+    <li>MySQL provides different data types, each with a specific purpose. The data type decides what type of data a user can store in a given field.</li>
+  </ul>
+  <div>
+    <p class="note" style="margin-bottom:.4em">In MySQL there are three main data types</p>
+    <div class="chips"><span class="tag">String</span><span class="tag">Numeric</span><span class="tag">Date and time</span></div>
+  </div>
+</section>
+
+<section class="slide" data-lesson="3" data-title="String data types">
+  <span class="eyebrow">2.3 · Data Types</span>
+  <h2>String Data Type</h2>
+  <p class="lead">String data types store string values, which generally means text and character based information.</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Data type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>CHAR (size)</td><td>Stores predefined fixed-length strings of characters.</td></tr>
+        <tr><td>VARCHAR (size)</td><td>Stores variable-length strings with a maximum size specified.</td></tr>
+        <tr><td>LONGTEXT</td><td>Stores large text data and handles large textual content.</td></tr>
+        <tr><td>Text (size)</td><td>Stores medium text strings up to 64 KB of text data.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="slide mcq" data-lesson="3" data-q="m14"></section>
+<section class="slide mcq" data-lesson="3" data-q="m15"></section>
+
+<section class="slide" data-lesson="3" data-title="Numeric data types">
+  <span class="eyebrow">2.3 · Data Types</span>
+  <h2>Numeric Data Type</h2>
+  <p class="lead">Numeric data types store numeric values. These are the common MySQL numeric data types.</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Data type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>INT (size)</td><td>Stores integer values.</td></tr>
+        <tr><td>DECIMAL (M,D)</td><td>Stores exact numeric values. M is the total number of digits and D is the number of digits after the decimal.</td></tr>
+        <tr><td>SMALLINT (size)</td><td>Stores small integer values. Required storage is 2 bytes.</td></tr>
+        <tr><td>BIGINT (size)</td><td>Stores large integer values. Required storage is 8 bytes.</td></tr>
+        <tr><td>FLOAT (size)</td><td>Stores floating point values. Required storage is 4 bytes.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note"><b style="color:var(--pink)">Note:</b> Size specifies the numbers to display.</p>
+</section>
+
+<section class="slide mcq" data-lesson="3" data-q="m16"></section>
+<section class="slide mcq" data-lesson="3" data-q="m17"></section>
+
+<section class="slide" data-lesson="3" data-title="Date and time data types">
+  <span class="eyebrow">2.3 · Data Types</span>
+  <h2>Date and Time</h2>
+  <p class="lead">Date and time data types store a date, a time, or both. These are the common MySQL date and time data types.</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Data type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>DATE</td><td>Stores date values in the standard SQL format YYYY-MM-DD. Required storage is 3 bytes.</td></tr>
+        <tr><td>TIME</td><td>Stores time values in the standard SQL format hh:mm:ss.</td></tr>
+        <tr><td>DATETIME</td><td>Stores date and time together in the standard format YYYY-MM-DD HH:MM:SS. Required storage is 8 bytes.</td></tr>
+        <tr><td>TIMESTAMP</td><td>Stores a timestamp in the format YYYY-MM-DD HH:MM:SS. Useful when applications need SQL to handle time zone conversions automatically. Required storage is between 4 and 7 bytes.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="slide mcq" data-lesson="3" data-q="m18"></section>
+<section class="slide mcq" data-lesson="3" data-q="m19"></section>
+
+<section class="slide" data-lesson="3" data-title="Choose the data type">
+  <span class="eyebrow">2.3 · Class activity</span>
+  <h2>Which data type fits each field?</h2>
+  <p class="lead">Fields of an example student table. Let students decide first, then show the answers.</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Field name</th><th>Data type</th></tr></thead>
+      <tbody>
+        <tr><td>Roll number</td><td><span class="tag ans">INT</span></td></tr>
+        <tr><td>Student name</td><td><span class="tag ans">VARCHAR (size)</span></td></tr>
+        <tr><td>Date of birth</td><td><span class="tag ans">DATE</span></td></tr>
+        <tr><td>Monthly fee</td><td><span class="tag ans">DECIMAL (M,D)</span></td></tr>
+        <tr><td>Teacher's remarks (very long text)</td><td><span class="tag ans">LONGTEXT</span></td></tr>
+        <tr><td>Admission date and time</td><td><span class="tag ans">DATETIME</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <button class="ghost reveal" type="button" data-reveal>Show answers</button>
+</section>
+
+<!-- ============ LESSON 2.4 ============ -->
+<section class="slide" data-lesson="4" data-title="Elements of database">
+  <span class="eyebrow">2.4 · Elements of Database</span>
+  <h2>Elements of Database</h2>
+  <p class="lead">The following are the basic elements of a database.</p>
+  <div class="cols">
+    <div class="card"><h3>Field</h3><p>Column or attribute. The smallest unit of data in a table.</p></div>
+    <div class="card"><h3>Record</h3><p>Row or tuple. A complete set of related fields.</p></div>
+    <div class="card"><h3>Table</h3><p>Relation. An organized collection of records and fields.</p></div>
+    <div class="card"><h3>Database System</h3><p>Hardware, software, data and users working together.</p></div>
+  </div>
+</section>
+
+<section class="slide" data-lesson="4" data-title="Field">
+  <span class="eyebrow">2.4 · Elements of Database</span>
+  <h2>Field (Column / Attribute)</h2>
+  <p class="def"><small>Definition</small>A field, also known as a column or attribute, is the smallest unit of data in a table. Each field represents a single characteristic or property of the entity being stored.</p>
+  <div class="scroll">
+    <p class="cap">Employee Table</p>
+    <table>
+      <thead><tr><th>Emp_ID</th><th>Emp_Name</th><th>Address</th><th>Post</th><th>Salary</th></tr></thead>
+      <tbody>
+        <tr><td>47</td><td>Ruchit Pokharel</td><td>Pokhara</td><td>Manager</td><td>80,000</td></tr>
+        <tr><td>52</td><td>Harimaya Khatri</td><td>Kathmandu</td><td>Officer</td><td>75,000</td></tr>
+        <tr><td>78</td><td>Swarnim Mishra</td><td>Bhaktapur</td><td>Web developer</td><td>63,000</td></tr>
+        <tr><td>35</td><td>Bidhata Timsina</td><td>Udayapur</td><td>DBA</td><td>70,000</td></tr>
+        <tr><td>55</td><td>Siddhartha Khadka</td><td>Lalitpur</td><td>Programmer</td><td>90,000</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="lead">In the Employee Table, Emp_ID, Emp_Name, Address, Post and Salary are all fields.</p>
+</section>
+
+<section class="slide" data-lesson="4" data-title="Record">
+  <span class="eyebrow">2.4 · Elements of Database</span>
+  <h2>Record (Row / Tuple)</h2>
+  <p class="def"><small>Definition</small>A record, also called a row or tuple, is a complete set of related fields that contains all the information about a single entity in the table. Each record corresponds to one instance of the entity.</p>
+  <div class="scroll">
+    <p class="cap">Employee Table</p>
+    <table>
+      <thead><tr><th>Emp_ID</th><th>Emp_Name</th><th>Address</th><th>Post</th><th>Salary</th></tr></thead>
+      <tbody>
+        <tr class="hirow"><td>47</td><td>Ruchit Pokharel</td><td>Pokhara</td><td>Manager</td><td>80,000</td></tr>
+        <tr><td>52</td><td>Harimaya Khatri</td><td>Kathmandu</td><td>Officer</td><td>75,000</td></tr>
+        <tr><td>78</td><td>Swarnim Mishra</td><td>Bhaktapur</td><td>Web developer</td><td>63,000</td></tr>
+        <tr><td>35</td><td>Bidhata Timsina</td><td>Udayapur</td><td>DBA</td><td>70,000</td></tr>
+        <tr><td>55</td><td>Siddhartha Khadka</td><td>Lalitpur</td><td>Programmer</td><td>90,000</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="lead">The highlighted row is one record: Ruchit Pokharel, Pokhara, Manager and 80,000. It holds all the details of one employee.</p>
+</section>
+
+<section class="slide mcq" data-lesson="4" data-q="m20"></section>
+<section class="slide mcq" data-lesson="4" data-q="m21"></section>
+
+<section class="slide" data-lesson="4" data-title="Table (relation)">
+  <span class="eyebrow">2.4 · Elements of Database</span>
+  <h2>Table (Relation)</h2>
+  <p class="def"><small>Definition</small>A table, also called a relation, is an organized collection of records (rows) and fields (columns) that store related information. Tables help in structuring data so it can be easily stored, retrieved and managed.</p>
+  <div class="cols">
+    <div class="card hl"><h3>Rows</h3><p>Records</p></div>
+    <div class="card hl"><h3>Columns</h3><p>Fields</p></div>
+    <div class="card hl"><h3>Whole table</h3><p>Relation</p></div>
+  </div>
+  <p class="lead">Example: an Employee Table may contain information about employees, with fields such as Employee_Name, Address, Post and Salary.</p>
+</section>
+
+<section class="slide" data-lesson="4" data-title="Database system">
+  <span class="eyebrow">2.4 · Elements of Database</span>
+  <h2>Database System</h2>
+  <p class="def"><small>Definition</small>A database system is a technique or system used to store, organize and manage data efficiently.</p>
+  <p class="lead">It is not just the data itself. It is a combination of these four working together to make storing, retrieving and managing information easier and faster.</p>
+  <div class="cols">
+    <div class="card hl"><h3>Hardware</h3></div>
+    <div class="card hl"><h3>Software</h3></div>
+    <div class="card hl"><h3>Data</h3></div>
+    <div class="card hl"><h3>Users</h3></div>
+  </div>
+  <p class="lead">In simple terms, a database system is a method for handling large amounts of data in an organized way.</p>
+</section>
+
+<section class="slide mcq" data-lesson="4" data-q="m22"></section>
+<section class="slide mcq" data-lesson="4" data-q="m23"></section>
+
+<!-- ============ LESSON 2.5 ============ -->
+<section class="slide" data-lesson="5" data-title="Keys">
+  <span class="eyebrow">2.5 · Keys</span>
+  <h2>Keys</h2>
+  <p class="def"><small>Definition</small>A key is a field (or a combination of fields) in a database table that is used to identify records uniquely or to establish relationships between tables.</p>
+  <p class="lead">Keys are fundamental to relational database design because they ensure:</p>
+  <div class="cols">
+    <div class="card"><h3>Data Integrity</h3><p>Preventing duplicate records.</p></div>
+    <div class="card"><h3>Establishing Relationships</h3><p>Linking data between different tables.</p></div>
+    <div class="card"><h3>Enforcing Constraints</h3><p>Defining rules for what data is valid.</p></div>
+  </div>
+  <div>
+    <p class="note" style="margin-bottom:.4em">Types of keys</p>
+    <div class="chips"><span class="tag">Primary Key</span><span class="tag">Foreign Key</span><span class="tag">Composite Key</span></div>
+  </div>
+</section>
+
+<section class="slide" data-lesson="5" data-title="Primary key">
+  <span class="eyebrow">2.5 · Types of Keys</span>
+  <h2>Primary Key</h2>
+  <p class="def"><small>Definition</small>A primary key is a field or combination of fields that uniquely identifies each record in a table.</p>
+  <ul class="pts">
+    <li>It ensures data integrity and helps establish relationships between tables.</li>
+    <li>It does not accept null or repeated (duplicate) values and cannot be left empty. It must always contain a unique value.</li>
+    <li>A table can have only one primary key.</li>
+    <li>It is compulsory to select one field as the primary key.</li>
+    <li>Primary keys can be used to refer to entire records, as each record has a different value for the key.</li>
+  </ul>
+</section>
+
+<section class="slide" data-lesson="5" data-title="Uses of primary key">
+  <span class="eyebrow">2.5 · Types of Keys</span>
+  <h2>Uses of Primary Key</h2>
+  <div class="split">
+    <ul class="pts">
+      <li>To identify each record uniquely.</li>
+      <li>To reduce data redundancy (duplication).</li>
+      <li>To set the relationship among tables.</li>
+      <li>Not to leave any field blank.</li>
+    </ul>
+    <div class="tbl-sm">
+      <p class="cap">Students</p>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>S_N</th><th>Symbol_number</th><th>Name</th><th>Class</th><th>Address</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td class="col">4786</td><td>Bibas Shrestha</td><td>10</td><td>Kathmandu</td></tr>
+            <tr><td>2</td><td class="col">3256</td><td>Asmita Shakya</td><td>9</td><td>Lalitpur</td></tr>
+            <tr><td>3</td><td class="col">3290</td><td>Bidhata Timsina</td><td>10</td><td>Pokhara</td></tr>
+            <tr><td>4</td><td class="col">3289</td><td>Shanvi Mishra</td><td>12</td><td>Udayapur</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <p class="lead">In the Students table, Symbol_number can be selected as the primary key because no two students can have the same symbol number.</p>
+</section>
+
+<section class="slide mcq" data-lesson="5" data-q="m24"></section>
+<section class="slide mcq" data-lesson="5" data-q="m25"></section>
+
+<section class="slide" data-lesson="5" data-title="Foreign key">
+  <span class="eyebrow">2.5 · Types of Keys</span>
+  <h2>Foreign Key</h2>
+  <p class="def"><small>Definition</small>A foreign key is a field in one table that refers to the primary key of another table. It is used as a linking field to establish a relationship between two tables.</p>
+  <p class="lead">The importance of a foreign key:</p>
+  <ul class="pts">
+    <li>It helps to establish a relationship between tables.</li>
+    <li>It ensures the existence of the referenced row in the primary table.</li>
+    <li>It helps to manage data integrity.</li>
+    <li>It is used to link rows in two different tables.</li>
+  </ul>
+</section>
+
+<section class="slide" data-lesson="5" data-title="Foreign key example">
+  <span class="eyebrow">2.5 · Types of Keys</span>
+  <h2>Foreign key in action</h2>
+  <div class="split tbl-sm">
+    <div>
+      <p class="cap">Customer</p>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>S_N</th><th>Customer_ID (PK)</th><th>Name</th><th>Address</th><th>Contact_number</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td class="col">32</td><td>Ritesh Khadka</td><td>Kathmandu</td><td>9800000000</td></tr>
+            <tr><td>2</td><td class="col">89</td><td>Anupa Karki</td><td>Birjung</td><td>9711111111</td></tr>
+            <tr><td>3</td><td class="col">257</td><td>Harimaya Khatri</td><td>Udayapur</td><td>9500000000</td></tr>
+            <tr><td>4</td><td class="col">456</td><td>Raj Bhattrai</td><td>Siraha</td><td>9430000000</td></tr>
+            <tr><td>5</td><td class="col">5321</td><td>Ruchit Pokharel</td><td>Saptari</td><td>9521111111</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div>
+      <p class="cap">Product</p>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>S_N</th><th>Order_ID (PK)</th><th>Order_item</th><th>Order_date</th><th>Customer_ID (FK)</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td class="col">780</td><td>Washing machine</td><td>2083‑01‑21</td><td class="fk">456</td></tr>
+            <tr><td>2</td><td class="col">357</td><td>Oven</td><td>2082‑07‑12</td><td class="fk">5321</td></tr>
+            <tr><td>3</td><td class="col">900</td><td>Mixer</td><td>2082‑09‑13</td><td class="fk">32</td></tr>
+            <tr><td>4</td><td class="col">640</td><td>Fan</td><td>2083‑12‑26</td><td class="fk">32</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <p class="lead">In the Customer table, Customer_ID is the primary key. In the Product table, Order_ID is the primary key. Customer_ID in the Product table is the foreign key that links the two tables.</p>
+</section>
+
+<section class="slide mcq" data-lesson="5" data-q="m26"></section>
+<section class="slide mcq" data-lesson="5" data-q="m27"></section>
+
+<section class="slide" data-lesson="5" data-title="Composite key">
+  <span class="eyebrow">2.5 · Types of Keys</span>
+  <h2>Composite Key</h2>
+  <p class="def"><small>Definition</small>A composite key is a group of fields that together act as the primary key. When a single column is not enough to create a unique identifier, multiple columns are grouped together.</p>
+  <div class="split">
+    <ul class="pts">
+      <li>It identifies records uniquely when the combined values of the columns are considered together.</li>
+      <li>None of the columns in a composite key can be NULL.</li>
+    </ul>
+    <div class="tbl-sm">
+      <p class="cap">Orders</p>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Customer_ID</th><th>Order_ID</th><th>Product</th></tr></thead>
+          <tbody>
+            <tr><td class="col">45</td><td class="col">201</td><td>Laptop</td></tr>
+            <tr><td class="col">45</td><td class="col">210</td><td>Mouse</td></tr>
+            <tr><td class="col">48</td><td class="col">278</td><td>Printer</td></tr>
+            <tr><td class="col">76</td><td class="col">256</td><td>SSD</td></tr>
+            <tr><td class="col">76</td><td class="col">278</td><td>Printer</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <p class="lead">Each customer can place multiple orders, so neither Customer_ID nor Order_ID alone is unique. Together they identify each row, so Customer_ID + Order_ID is a composite key.</p>
+</section>
+
+<section class="slide mcq" data-lesson="5" data-q="m28"></section>
+<section class="slide mcq" data-lesson="5" data-q="m29"></section>
+
+<section class="slide" data-lesson="5" data-title="Relationship">
+  <span class="eyebrow">2.5 · Relationship</span>
+  <h2>Relationship</h2>
+  <p class="def"><small>Definition</small>An association established between the common field of different tables in a relational database is called a relationship. It is the connection between two or more tables in a database.</p>
+  <p class="lead">Relationships allow complex queries and help to extract data from multiple tables. There are mainly three types:</p>
+  <div class="cols">
+    <div class="card hl"><h3>One to One (1:1)</h3></div>
+    <div class="card hl"><h3>One to Many (1:M)</h3><p>or Many to One (M:1)</p></div>
+    <div class="card hl"><h3>Many to Many (M:M)</h3></div>
+  </div>
+</section>
+
+<section class="slide" data-lesson="5" data-title="One to one (1:1)">
+  <span class="eyebrow">2.5 · Relationship</span>
+  <h2>One to One (1:1)</h2>
+  <p class="lead" style="max-width:none">One record in a table is related to only one record in the other table, and the other way round. Every entry in the first table is uniquely matched with an entry in the second table.</p>
+  <svg class="flow er" viewBox="0 0 900 200" role="img" aria-label="Citizen table linked one to one with Passport table">
+    <rect class="eb" x="20" y="20" width="300" height="160" rx="14"/>
+    <text class="et" x="40" y="58">Citizen</text>
+    <text class="ef" x="40" y="94">citizenship_id</text>
+    <text class="ef" x="40" y="122">citizen_name</text>
+    <text class="ef" x="40" y="150">Passport_id</text>
+    <rect class="eb" x="580" y="20" width="300" height="160" rx="14"/>
+    <text class="et" x="600" y="58">Passport</text>
+    <text class="ef" x="600" y="94">Passport_id</text>
+    <text class="ef" x="600" y="122">Passport_no</text>
+    <text class="ef" x="600" y="150">country</text>
+    <line class="ar" x1="320" y1="100" x2="580" y2="100"/>
+    <text class="cd" x="346" y="86">1</text>
+    <text class="cd" x="554" y="86">1</text>
+    <text class="st" x="450" y="132">one to one</text>
+  </svg>
+  <p class="eg">Example: every citizen has his or her own passport, and no two passports are assigned to the same citizen. Each record in the Citizen table is related to only one record in the Passport table.</p>
+</section>
+
+<section class="slide mcq" data-lesson="5" data-q="m32"></section>
+
+<section class="slide" data-lesson="5" data-title="One to many (1:M)">
+  <span class="eyebrow">2.5 · Relationship</span>
+  <h2>One to Many (1:M) or Many to One (M:1)</h2>
+  <p class="lead" style="max-width:none">One record in a table is related to multiple records in another table, but each record in the second table is linked to only one record in the first. This type is very common in database design.</p>
+  <svg class="flow er" viewBox="0 0 900 200" role="img" aria-label="One teacher is linked to many students">
+    <rect class="eb" x="20" y="20" width="300" height="160" rx="14"/>
+    <text class="et" x="40" y="58">Teacher</text>
+    <text class="ef" x="40" y="100">Teacher_id</text>
+    <text class="ef" x="40" y="130">Teacher_name</text>
+    <rect class="eb" x="580" y="20" width="300" height="160" rx="14"/>
+    <text class="et" x="600" y="58">Student</text>
+    <text class="ef" x="600" y="94">Student_id</text>
+    <text class="ef" x="600" y="122">Student_name</text>
+    <text class="ef" x="600" y="150">Teacher_id</text>
+    <line class="ar" x1="320" y1="100" x2="580" y2="100"/>
+    <text class="cd" x="346" y="86">1</text>
+    <text class="cd" x="554" y="86">M</text>
+    <text class="st" x="450" y="132">one to many</text>
+  </svg>
+  <p class="eg">Example: a single teacher can have many students, but each student is assigned to only one teacher.</p>
+</section>
+
+<section class="slide" data-lesson="5" data-title="Many to many (M:M)">
+  <span class="eyebrow">2.5 · Relationship</span>
+  <h2>Many to Many (M:M)</h2>
+  <p class="lead" style="max-width:none">Multiple records in one table can be related to multiple records in a different table. To implement this in relational databases, a junction table (also called a linking or bridge table) connects the two tables.</p>
+  <svg class="flow er" viewBox="0 0 900 200" role="img" aria-label="Student and Course tables connected through the Study junction table">
+    <rect class="eb" x="10" y="20" width="230" height="160" rx="14"/>
+    <text class="et" x="28" y="58">Student</text>
+    <text class="ef" x="28" y="104">Student_id</text>
+    <text class="ef" x="28" y="134">Student_name</text>
+    <rect class="eb j" x="335" y="20" width="230" height="160" rx="14"/>
+    <text class="et" x="353" y="58">Study</text>
+    <text class="ef" x="353" y="94">Student_id</text>
+    <text class="ef" x="353" y="122">Course_id</text>
+    <text class="st" x="450" y="158">junction table</text>
+    <rect class="eb" x="660" y="20" width="230" height="160" rx="14"/>
+    <text class="et" x="678" y="58">Course</text>
+    <text class="ef" x="678" y="104">Course_id</text>
+    <text class="ef" x="678" y="134">Course_name</text>
+    <line class="ar" x1="240" y1="100" x2="335" y2="100"/>
+    <line class="ar" x1="565" y1="100" x2="660" y2="100"/>
+    <text class="cd" x="256" y="86">1</text>
+    <text class="cd" x="320" y="86">M</text>
+    <text class="cd" x="580" y="86">M</text>
+    <text class="cd" x="644" y="86">1</text>
+  </svg>
+  <p class="eg">Example: the Study table links Student and Course. A single student can enroll in multiple courses, and each course can have multiple students enrolled.</p>
+</section>
+
+<section class="slide mcq" data-lesson="5" data-q="m30"></section>
+<section class="slide mcq" data-lesson="5" data-q="m31"></section>
+
+<!-- ============ LESSON 2.6 ============ -->
+<section class="slide" data-lesson="6" data-title="What is MySQL">
+  <span class="eyebrow">2.6 · Introduction to MySQL</span>
+  <h2>Introduction to MySQL</h2>
+  <p class="def"><small>MySQL</small>MySQL is one of the most common, popular and complete Relational Database Management System (RDBMS) software.</p>
+  <ul class="pts">
+    <li>It was originally developed by <b>MySQL AB</b> and is now supported and owned by <b>Oracle Corporation</b>.</li>
+    <li>It is a relational database management system where data is arranged in the form of tables.</li>
+    <li>It enables users to store, edit, update and arrange information according to their requirements.</li>
+  </ul>
+</section>
+
+<section class="slide" data-lesson="6" data-title="Why use MySQL">
+  <span class="eyebrow">2.6 · Introduction to MySQL</span>
+  <h2>Why do many people use MySQL?</h2>
+  <div class="cols">
+    <div class="card hl"><h3>Easy to use</h3><p>It is easier to use and understand than some other RDBMS software, which is why many people use it for data management.</p></div>
+    <div class="card hl"><h3>Open source</h3><p>It is free to use and can be modified by developers.</p></div>
+    <div class="card hl"><h3>Used for the web</h3><p>Widely used for building dynamic websites and web applications, often working with PHP and web servers like Apache.</p></div>
+  </div>
+</section>
+
+<section class="slide mcq" data-lesson="6" data-q="m33"></section>
+<section class="slide mcq" data-lesson="6" data-q="m34"></section>
+
+<section class="slide" data-lesson="6" data-title="Features of MySQL">
+  <span class="eyebrow">2.6 · Introduction to MySQL</span>
+  <h2>Features of MySQL</h2>
+  <ul class="pts">
+    <li>It provides visual tools for different database functions.</li>
+    <li>It allows storing data in multiple tables.</li>
+    <li>It helps to establish different types of relationships between tables.</li>
+    <li>It supports different database objects like table, query, reports etc.</li>
+    <li>It supports Structured Query Language (SQL).</li>
+    <li>It satisfies all the rules of the relational database model.</li>
+    <li>It can be used on different operating systems and with many languages including PHP, PERL, C, C++, JAVA, etc.</li>
+  </ul>
+</section>
+
+<section class="slide" data-lesson="6" data-title="Installing MySQL">
+  <span class="eyebrow">2.6 · Installing MySQL</span>
+  <h2>Installing MySQL</h2>
+  <p class="lead">The MySQL installer is the easiest way to install MySQL on the Windows environment. It provides an easy-to-use wizard that installs MySQL with these components:</p>
+  <div class="chips" style="gap:.6em">
+    <span class="tag">MySQL Server</span><span class="tag">All available connectors</span><span class="tag">MySQL Workbench with sample data models</span><span class="tag">MySQL Notifier</span><span class="tag">Tools for Excel and Microsoft Visual Studio</span><span class="tag">MySQL sample databases</span><span class="tag">MySQL documentation</span>
+  </div>
+</section>
+
+<section class="slide" data-lesson="6" data-title="Steps to install MySQL">
+  <span class="eyebrow">2.6 · Installing MySQL</span>
+  <h2>Steps to install MySQL</h2>
+  <div class="cols" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,15em),1fr))">
+    <div class="card hl"><h3>Step 1</h3><p>Download the MySQL installer from the following link:</p><p class="code" style="margin-top:.5em;font-size:.8em;white-space:normal;overflow-wrap:anywhere">http://dev.mysql.com/downloads/installer/</p></div>
+    <div class="card hl"><h3>Step 2</h3><p>Double-click on the MySQL installer file. Wait while Windows configures MySQL Installer.</p></div>
+    <div class="card hl"><h3>Step 3</h3><p>The welcome screen provides several options. Choose the first option: <b>Install MySQL Products</b>.</p></div>
+  </div>
+</section>
+
+<section class="slide mcq" data-lesson="6" data-q="m35"></section>
+<section class="slide mcq" data-lesson="6" data-q="m36"></section>
+
+<section class="slide" data-lesson="6" data-title="Table in MySQL">
+  <span class="eyebrow">2.6 · Table</span>
+  <h2>Table</h2>
+  <p class="lead">Tables are the fundamental building blocks of a database. They store our data in rows (records) and columns (fields). Each table represents a category of data and defines its structure, including field names, data types and relationships.</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Std_ID</th><th>Name</th><th>Grade</th><th>Address</th></tr></thead>
+      <tbody>
+        <tr><td>32</td><td>Abhisek Baniya</td><td>10</td><td>Pokhara</td></tr>
+        <tr><td>45</td><td>Binaya Shrestha</td><td>9</td><td>Lalitpur</td></tr>
+        <tr><td>21</td><td>Sashi Karki</td><td>10</td><td>Kathmandu</td></tr>
+        <tr><td>99</td><td>Shanvi Mishra</td><td>11</td><td>Kathmandu</td></tr>
+        <tr><td>33</td><td>Sweta Shrestha</td><td>10</td><td>Dharan</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="slide" data-lesson="6" data-title="Query">
+  <span class="eyebrow">2.6 · Query</span>
+  <h2>Query</h2>
+  <p class="def"><small>Definition</small>A query is an important tool of a DBMS that allows you to retrieve, filter and manipulate data from your tables.</p>
+  <ul class="pts">
+    <li>You can create queries to answer specific questions, combine data from multiple tables, calculate and aggregate.</li>
+    <li>A query is used to select data from one or more tables, or multiple linked tables.</li>
+    <li>It helps to sort, filter, update and modify the records in the database according to the criteria or conditions given by the user.</li>
+  </ul>
+</section>
+
+<section class="slide" data-lesson="6" data-title="Advantages of query">
+  <span class="eyebrow">2.6 · Query</span>
+  <h2>Advantages of using a query</h2>
+  <ul class="pts two">
+    <li>To extract the selected records from various tables and assemble them for display in the form of a report.</li>
+    <li>To sort the records based on field names.</li>
+    <li>To find specific data quickly by filtering on specific criteria (conditions).</li>
+    <li>To calculate or summarize data.</li>
+    <li>To perform mathematical calculations on the given data.</li>
+    <li>To perform mass updates on the data of a particular field.</li>
+    <li>To delete the unnecessary data that is no longer required in the database.</li>
+    <li>To automate data management tasks, such as reviewing the most current data on a recurring basis.</li>
+  </ul>
+</section>
+
+<section class="slide" data-lesson="6" data-title="Types of query">
+  <span class="eyebrow">2.6 · Types of Query</span>
+  <h2>Types of Query</h2>
+  <p class="lead">Queries are classified into different types depending upon the nature of operation. Some of the common queries are:</p>
+  <div class="cols">
+    <div class="card hl"><h3>Select Query</h3><p>The simplest type. Selects and displays data from a single table or multiple linked tables, using the criteria given by the user. It does not modify the original table. It displays the selected data in another table.</p></div>
+    <div class="card hl"><h3>Update Query</h3><p>Updates and modifies data in a single operation or click. Very popular because many records can be changed at one time. It directly modifies the original table.</p></div>
+    <div class="card hl"><h3>Delete Query</h3><p>Deletes or erases the unnecessary records that are present in the database, according to the criteria given by the user.</p></div>
+  </div>
+</section>
+
+<section class="slide mcq" data-lesson="6" data-q="m37"></section>
+<section class="slide mcq" data-lesson="6" data-q="m38"></section>
+
+<section class="slide" data-lesson="6" data-title="Structured Query Language">
+  <span class="eyebrow">2.6 · SQL</span>
+  <h2>Structured Query Language (SQL)</h2>
+  <p class="def"><small>Definition</small>SQL is a programming language used to communicate with a database.</p>
+  <ul class="pts">
+    <li>It is the most commonly used language, supported by many DBMS software like MS Access, Oracle, MySQL and MS SQL Server.</li>
+    <li>It is used for querying, reading and updating relational databases.</li>
+    <li>It is the most common and powerful programming language used in relational databases.</li>
+  </ul>
+  <div>
+    <p class="note" style="margin-bottom:.4em">Standard SQL commands</p>
+    <div class="chips"><span class="tag">Select</span><span class="tag">Insert</span><span class="tag">Update</span><span class="tag">Delete</span><span class="tag">Create</span><span class="tag">Drop</span></div>
+  </div>
+</section>
+
+<section class="slide" data-lesson="6" data-title="Features of SQL">
+  <span class="eyebrow">2.6 · SQL</span>
+  <h2>Some features of SQL</h2>
+  <ul class="pts">
+    <li>SQL is an English-like language. It uses instructions like Select, Delete and Update, so it is easy to learn and use.</li>
+    <li>It can process multiple records at a time through the use of a single query.</li>
+    <li>It is a non-procedural language.</li>
+    <li>It can be used by a wide range of users, including database administrators, software developers, management personnel and other end users.</li>
+    <li>SQL keywords and commands are not case sensitive.</li>
+  </ul>
+</section>
+
+<section class="slide" data-lesson="6" data-title="DDL and DML">
+  <span class="eyebrow">2.6 · Database Languages</span>
+  <h2>DDL and DML</h2>
+  <p class="def"><small>Database languages</small>Database languages are the set of statements that are used to define and manipulate a database.</p>
+  <div class="cols">
+    <div class="card hl"><h3>DDL</h3><p>Data Definition Language. Defines the structure of the database.</p></div>
+    <div class="card hl"><h3>DML</h3><p>Data Manipulation Language. Works with the data stored in the database.</p></div>
+  </div>
+  <p class="lead">A database language has both a Data Definition Language and a Data Manipulation Language. Lesson 2.7 covers DDL.</p>
+</section>
+
+<section class="slide mcq" data-lesson="6" data-q="m39"></section>
+<section class="slide mcq" data-lesson="6" data-q="m40"></section>
+
+<!-- ============ LESSON 2.7 ============ -->
+<section class="slide" data-lesson="7" data-title="DDL">
+  <span class="eyebrow">2.7 · DDL</span>
+  <h2>DDL (Data Definition Language)</h2>
+  <p class="def"><small>Definition</small>DDL is used to create, change or delete database structures like databases and tables.</p>
+  <ul class="pts">
+    <li>It works on structure, not just data.</li>
+    <li>It defines the structure of data containers and objects within the database. It does not deal with the data itself.</li>
+    <li>DDL implements the database schema at the <b>physical, logical and external level</b>.</li>
+  </ul>
+  <div>
+    <p class="note" style="margin-bottom:.4em">Examples of DDL commands</p>
+    <div class="chips"><span class="tag">CREATE</span><span class="tag">DROP</span><span class="tag">ALTER</span><span class="tag">TRUNCATE</span></div>
+  </div>
+</section>
+
+<section class="slide mcq" data-lesson="7" data-q="m41"></section>
+
+<section class="slide" data-lesson="7" data-title="CREATE">
+  <span class="eyebrow">2.7 · DDL</span>
+  <h2>CREATE</h2>
+  <p class="def"><small>Command</small>CREATE is a DDL command used to create new database objects. It builds the structure of a database before any data can be stored.</p>
+  <p class="lead">With the CREATE command, users can create these database components:</p>
+  <div class="cols" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,13em),1fr))">
+    <div class="card hl"><h3>Database</h3><p>To create a new database.</p></div>
+    <div class="card hl"><h3>Table</h3><p>To create a new table with columns and data types.</p></div>
+    <div class="card hl"><h3>Index</h3><p>To create indexes for faster data retrieval.</p></div>
+    <div class="card hl"><h3>View</h3><p>To create a virtual table based on a query.</p></div>
+  </div>
+</section>
+
+<section class="slide" data-lesson="7" data-title="Creating a database">
+  <span class="eyebrow">2.7 · CREATE</span>
+  <h2>Creating a database</h2>
+  <p class="lead">The CREATE DATABASE command is used to create a database.</p>
+  <div class="pair">
+    <div><p class="lbl">Syntax</p><pre class="code">CREATE DATABASE database_name;</pre></div>
+    <div><p class="lbl ex">Example</p><pre class="code">CREATE DATABASE School;</pre></div>
+  </div>
+  <p class="lead">This statement creates a database named School.</p>
+</section>
+
+<section class="slide" data-lesson="7" data-title="Use database">
+  <span class="eyebrow">2.7 · CREATE</span>
+  <h2>Use database</h2>
+  <p class="lead">The USE command is used to select a database to work in.</p>
+  <div class="pair">
+    <div><p class="lbl">Syntax</p><pre class="code">USE database_name;</pre></div>
+    <div><p class="lbl ex">Example</p><pre class="code">USE School;</pre></div>
+  </div>
+  <p class="lead">All tables you create, or data you insert, will go into this database.</p>
+</section>
+
+<section class="slide mcq" data-lesson="7" data-q="m42"></section>
+<section class="slide mcq" data-lesson="7" data-q="m43"></section>
+
+<section class="slide" data-lesson="7" data-title="Creating a table">
+  <span class="eyebrow">2.7 · CREATE</span>
+  <h2>Creating a table</h2>
+  <p class="lead">The CREATE TABLE command is used to create a table.</p>
+  <div class="split">
+    <div><p class="lbl">Syntax</p><pre class="code">CREATE TABLE table_name(
+    column1 datatype,
+    column2 datatype,
+    column3 datatype,
+    ....
+);</pre></div>
+    <ul class="pts">
+      <li><b>table_name</b> specifies the name of the table to be created.</li>
+      <li><b>column</b> parameters specify the names of the columns of the table.</li>
+      <li><b>datatype</b> parameter specifies the type of data the column can hold (e.g. varchar, integer, date, etc.).</li>
+    </ul>
+  </div>
+</section>
+
+<section class="slide" data-lesson="7" data-title="Create table example">
+  <span class="eyebrow">2.7 · CREATE</span>
+  <h2>Create table example</h2>
+  <div class="split">
+    <div><p class="lbl ex">Example</p><pre class="code">CREATE TABLE students (
+    Stdid int,
+    Name varchar(255),
+    Address varchar(255),
+    Class int
+);</pre></div>
+    <div class="tbl-sm res">
+      <p class="cap">Result: an empty table named students</p>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Stdid</th><th>Name</th><th>Address</th><th>Class</th></tr></thead>
+          <tbody><tr><td class="note">NULL</td><td class="note">NULL</td><td class="note">NULL</td><td class="note">NULL</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide mcq" data-lesson="7" data-q="m44"></section>
+
+<section class="slide" data-lesson="7" data-title="DROP">
+  <span class="eyebrow">2.7 · DDL</span>
+  <h2>DROP</h2>
+  <p class="def"><small>Command</small>DROP is a DDL command used to permanently delete or remove existing database objects.</p>
+  <p class="lead">Once a DROP command is executed, the entire structure along with all its data is removed from the database and cannot be recovered (unless you have a backup). It is a powerful command and should be used with caution.</p>
+  <div class="cols" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,13em),1fr))">
+    <div class="card hl"><h3>Database</h3><p>Deletes an entire database.</p></div>
+    <div class="card hl"><h3>Table</h3><p>Permanently removes a table and all its data.</p></div>
+    <div class="card hl"><h3>Index</h3><p>Deletes an index.</p></div>
+    <div class="card hl"><h3>View</h3><p>Removes a view.</p></div>
+  </div>
+</section>
+
+<section class="slide" data-lesson="7" data-title="Drop database">
+  <span class="eyebrow">2.7 · DROP</span>
+  <h2>Drop database</h2>
+  <p class="lead">This command permanently deletes an existing database along with all its tables and data.</p>
+  <div class="pair">
+    <div><p class="lbl">Syntax</p><pre class="code">DROP DATABASE database_name;</pre></div>
+    <div><p class="lbl ex">Example</p><pre class="code">DROP DATABASE School;</pre></div>
+  </div>
+  <p class="lead">This statement permanently deletes the database named School and all the data inside it.</p>
+</section>
+
+<section class="slide" data-lesson="7" data-title="Drop table">
+  <span class="eyebrow">2.7 · DROP</span>
+  <h2>Drop table</h2>
+  <p class="lead">This command permanently deletes an existing table along with all its data from the database.</p>
+  <div class="pair">
+    <div><p class="lbl">Syntax</p><pre class="code">DROP TABLE table_name;</pre></div>
+    <div><p class="lbl ex">Example</p><pre class="code">DROP TABLE students;</pre></div>
+  </div>
+  <p class="lead">This statement permanently deletes the table named students and all its records from the database.</p>
+</section>
+
+<section class="slide mcq" data-lesson="7" data-q="m45"></section>
+<section class="slide mcq" data-lesson="7" data-q="m46"></section>
+
+<section class="slide" data-lesson="7" data-title="ALTER">
+  <span class="eyebrow">2.7 · DDL</span>
+  <h2>ALTER</h2>
+  <p class="def"><small>Command</small>ALTER is a DDL command used to modify the structure of an existing database object, usually a table. It allows users to add, delete or modify columns in an existing table.</p>
+  <p class="lead">With the ALTER command, users can:</p>
+  <div class="cols" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,13em),1fr))">
+    <div class="card hl"><h3>ADD</h3><p>a new column to a table</p></div>
+    <div class="card hl"><h3>MODIFY</h3><p>the data type or size of an existing column</p></div>
+    <div class="card hl"><h3>DROP</h3><p>a column from a table</p></div>
+    <div class="card hl"><h3>RENAME</h3><p>a column or table</p></div>
+  </div>
+</section>
+
+<section class="slide" data-lesson="7" data-title="Adding a column">
+  <span class="eyebrow">2.7 · ALTER</span>
+  <h2>Adding a column in the table</h2>
+  <div class="pair">
+    <div><p class="lbl">Syntax</p><pre class="code">ALTER TABLE table_name
+ADD column_name datatype;</pre></div>
+    <div><p class="lbl ex">Example</p><pre class="code">ALTER TABLE students
+ADD College VARCHAR(255);</pre></div>
+  </div>
+  <p class="lead">The field name College will be added in the table named students.</p>
+  <div class="tbl-sm res">
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Std_Id</th><th>Name</th><th>Address</th><th>Class</th><th>College</th></tr></thead>
+        <tbody><tr><td class="note">NULL</td><td class="note">NULL</td><td class="note">NULL</td><td class="note">NULL</td><td style="background:var(--accent-soft);font-weight:700">NULL</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="slide mcq" data-lesson="7" data-q="m47"></section>
+
+<section class="slide" data-lesson="7" data-title="Deleting a column">
+  <span class="eyebrow">2.7 · ALTER</span>
+  <h2>Deleting a column in a table</h2>
+  <div class="pair">
+    <div><p class="lbl">Syntax</p><pre class="code">ALTER TABLE table_name
+DROP COLUMN column_name;</pre></div>
+    <div><p class="lbl ex">Example</p><pre class="code">ALTER TABLE students
+DROP COLUMN College;</pre></div>
+  </div>
+  <p class="lead">The field name College will be deleted from the table named students.</p>
+</section>
+
+<section class="slide" data-lesson="7" data-title="Change data type of a column">
+  <span class="eyebrow">2.7 · ALTER</span>
+  <h2>Change the data type of a column</h2>
+  <div class="pair">
+    <div><p class="lbl">Syntax</p><pre class="code">ALTER TABLE table_name
+MODIFY column_name datatype;</pre></div>
+    <div><p class="lbl ex">Example</p><pre class="code">ALTER TABLE students
+MODIFY gpa int;</pre></div>
+  </div>
+  <p class="lead">The data type of the field name gpa will be changed into int.</p>
+</section>
+
+<section class="slide mcq" data-lesson="7" data-q="m48"></section>
+
+<section class="slide" data-lesson="7" data-title="Rename a column">
+  <span class="eyebrow">2.7 · ALTER</span>
+  <h2>Rename a column</h2>
+  <div class="pair">
+    <div><p class="lbl">Syntax</p><pre class="code">ALTER TABLE table_name
+RENAME COLUMN old_column_name TO new_column_name;</pre></div>
+    <div><p class="lbl ex">Example</p><pre class="code">ALTER TABLE students
+RENAME COLUMN Std_Id TO Roll_no;</pre></div>
+  </div>
+  <p class="lead">This statement renames the field name Std_Id to Roll_no.</p>
+</section>
+
+<section class="slide" data-lesson="7" data-title="Renaming a table">
+  <span class="eyebrow">2.7 · ALTER</span>
+  <h2>Renaming a table</h2>
+  <div class="pair">
+    <div><p class="lbl">Syntax</p><pre class="code">ALTER TABLE old_table_name
+RENAME TO new_table_name;</pre></div>
+    <div><p class="lbl ex">Example</p><pre class="code">ALTER TABLE students
+RENAME TO SchoolStudent;</pre></div>
+  </div>
+  <p class="lead">This statement renames the students table to SchoolStudent.</p>
+  <p class="note"><b style="color:var(--pink)">Note:</b> In MySQL, a semicolon ( ; ) is not mandatory for a single line query, but it is best to use it for safety.</p>
+</section>
+
+<section class="slide mcq" data-lesson="7" data-q="m49"></section>
+
+<section class="slide" data-lesson="7" data-title="TRUNCATE">
+  <span class="eyebrow">2.7 · DDL</span>
+  <h2>TRUNCATE</h2>
+  <p class="def"><small>Command</small>TRUNCATE is used to remove all the records from a table, but it will not destroy the table's structure.</p>
+  <div class="pair">
+    <div><p class="lbl">Syntax</p><pre class="code">TRUNCATE TABLE table_name;</pre></div>
+    <div><p class="lbl ex">Example</p><pre class="code">TRUNCATE TABLE students;</pre></div>
+  </div>
+  <p class="lead">The records stored in the table named students will be deleted.</p>
+</section>
+
+<section class="slide mcq" data-lesson="7" data-q="m50"></section>
+
+<section class="slide" data-lesson="7" data-title="DDL commands at a glance">
+  <span class="eyebrow">2.7 · Review</span>
+  <h2>DDL commands at a glance</h2>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Command</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td>CREATE</td><td>Creates new database objects: database, table, index, view.</td></tr>
+        <tr><td>DROP</td><td>Permanently removes a database, table, index or view, with all its data.</td></tr>
+        <tr><td>ALTER</td><td>Changes the structure of a table: add, modify, drop or rename a column, or rename the table.</td></tr>
+        <tr><td>TRUNCATE</td><td>Removes all records from a table but keeps the table structure.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="slide" data-lesson="0" data-title="Lesson summary">
+  <span class="eyebrow">2.1, 2.2 and 2.3 · Summary</span>
+  <h2>Key terms to remember</h2>
+  <div class="cols">
+    <div class="card"><h3>Data</h3><p>Raw facts, symbols or unprocessed material.</p></div>
+    <div class="card"><h3>Data Processing</h3><p>Converting unprocessed data into meaningful information.</p></div>
+    <div class="card"><h3>Information</h3><p>The result after processing data. It gives complete meaning.</p></div>
+    <div class="card"><h3>Database</h3><p>An organized collection of logically related data.</p></div>
+    <div class="card"><h3>DBMS</h3><p>Software used to manage the data stored in a database.</p></div>
+    <div class="card"><h3>RDBMS</h3><p>A DBMS that stores data in linked tables of rows and columns.</p></div>
+    <div class="card"><h3>Data Type</h3><p>Defines what type of data a field can store: string, numeric, or date and time.</p></div>
+  </div>
+</section>
+
+<section class="slide" data-lesson="0" data-title="Lesson summary (2.4 and 2.5)">
+  <span class="eyebrow">2.4 and 2.5 · Summary</span>
+  <h2>Key terms to remember</h2>
+  <div class="cols">
+    <div class="card"><h3>Field</h3><p>A column or attribute. The smallest unit of data in a table.</p></div>
+    <div class="card"><h3>Record</h3><p>A row or tuple. All the information about one entity.</p></div>
+    <div class="card"><h3>Table</h3><p>Also called a relation. Records (rows) and fields (columns).</p></div>
+    <div class="card"><h3>Database System</h3><p>Hardware, software, data and users working together.</p></div>
+    <div class="card"><h3>Primary Key</h3><p>Uniquely identifies each record. No nulls, no duplicates, one per table.</p></div>
+    <div class="card"><h3>Foreign Key</h3><p>A field that refers to the primary key of another table.</p></div>
+    <div class="card"><h3>Composite Key</h3><p>Several fields grouped together to act as the primary key.</p></div>
+    <div class="card"><h3>Relationship</h3><p>One to one, one to many, or many to many. Many to many needs a junction table.</p></div>
+  </div>
+</section>
+
+<section class="slide" data-lesson="0" data-title="Lesson summary (2.6 and 2.7)">
+  <span class="eyebrow">2.6 and 2.7 · Summary</span>
+  <h2>Key terms to remember</h2>
+  <div class="cols">
+    <div class="card"><h3>MySQL</h3><p>A popular open-source RDBMS, owned by Oracle Corporation.</p></div>
+    <div class="card"><h3>Query</h3><p>A DBMS tool to retrieve, filter and manipulate data. Types: select, update, delete.</p></div>
+    <div class="card"><h3>SQL</h3><p>Structured Query Language, used to communicate with a database.</p></div>
+    <div class="card"><h3>DDL</h3><p>Data Definition Language. Works on structure, not data.</p></div>
+    <div class="card"><h3>CREATE</h3><p>Creates a database, table, index or view.</p></div>
+    <div class="card"><h3>DROP</h3><p>Permanently removes an object and its data.</p></div>
+    <div class="card"><h3>ALTER</h3><p>Adds, modifies, drops or renames columns, or renames a table.</p></div>
+    <div class="card"><h3>TRUNCATE</h3><p>Removes all records but keeps the table structure.</p></div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="nav wrap">
+    <button class="btn sec" id="prev" type="button">← Back</button>
+    <span class="hint">← → keys to move · F for full screen · T for contents</span>
+    <button class="btn" id="next" type="button">Next →</button>
+  </div>
+</footer>
+
+<div class="toc" id="toc" hidden>
+  <div class="toc-panel" id="tocPanel"></div>
+</div>
+
+<script>
+(function(){
+  var LESSONS = {
+    0: "Unit 2 overview and summary",
+    1: "2.1 Definition, Importance and Application of Database",
+    2: "2.2 Database Terminologies",
+    3: "2.3 Data Types",
+    4: "2.4 Elements of Database",
+    5: "2.5 Keys",
+    6: "2.6 Introduction to MySQL",
+    7: "2.7 DDL (Data Definition Language)"
+  };
+  var MCQ = {
+    m1:{q:"Which area uses a database to store student records, accounting and grades?",o:["Banking","Education","Transportation","Social Media"],a:1,
+        e:"Education databases store student records, accounting and grades. Banking stores transactions and account details."},
+    m2:{q:"Why was the manual file system difficult to use?",o:["It processed data too fast","It stored data in a very small space","Data could not be shared and was not updated easily","It needed no preparation at all"],a:2,
+        e:"In the traditional manual system, preparing and manipulating data was complex and tedious, data was never updated easily, and it could not be shared."},
+    m3:{q:"A database is best described as:",o:["A single number or symbol","An organized collection of logically related data","A set of software programs","A paper register kept in an office"],a:1,
+        e:"A database is an organized collection of logically related data about a particular person, thing, or place. The software that manages it is the DBMS."},
+    m4:{q:"Which is a reason why databases are important?",o:["They allow quick searching and retrieval of information","They keep data unorganized so it is harder to misuse","They can only store a small amount of data","They stop data from ever changing"],a:0,
+        e:"Databases store data in an organized way, so information can be searched and retrieved quickly. They also handle large data and can grow as needed."},
+    m5:{q:"Which of these is raw data and not information?",o:["Anil reads in class 10 and likes cricket","Hari plays football in Palpa","Banking stores account details of clients","Butwal"],a:3,
+        e:"A single word like Butwal gives no complete meaning on its own, so it is data. The other options are sentences that carry meaning."},
+    m6:{q:"Converting unprocessed data into meaningful information is called:",o:["Data storage","Data backup","Data processing","Data security"],a:2,
+        e:"Data processing is the method of converting unprocessed data into meaningful information, using a series of steps one after another."},
+    m7:{q:"Which of these is an example of a Database Management System?",o:["Telephone directory","Oracle","Mark ledger","Flight schedule"],a:1,
+        e:"Oracle is DBMS software. A telephone directory, mark ledger and flight schedule are examples of databases."},
+    m8:{q:"A DBMS is mostly used as an interface between:",o:["Two databases","A printer and a computer","The database and the user","Data and information only"],a:2,
+        e:"A DBMS sits between the database and the user, and is used to create, edit, update and organize data in database files."},
+    m9:{q:"Which DBMS feature uses passwords, user roles and permissions?",o:["Data security","Querying and reporting","Control of data redundancy","Data independence"],a:0,
+        e:"Passwords, user roles and permissions let only authorized users access or modify data. That is data security."},
+    m10:{q:"Which feature lets many users work at the same time without conflicts?",o:["Backup and recovery","Support for multiple users","Organized data storage","Data independence"],a:1,
+        e:"The DBMS manages simultaneous access so all users can work smoothly without interfering with each other."},
+    m11:{q:"Which of these is a disadvantage of a DBMS?",o:["Data is stored in an organized way","Backups protect the data","Many users can work together","System failure affects all users"],a:3,
+        e:"All users share one centralized database. If the DBMS stops working because of a crash or power failure, everyone who relies on it is affected."},
+    m12:{q:"In an RDBMS, data is stored as:",o:["A single file","Tables","Paper records","Pictures only"],a:1,
+        e:"In an RDBMS data is stored as tables. In a plain DBMS, data is stored as a file."},
+    m13:{q:"Which statement is true for an RDBMS but not for a plain DBMS?",o:["It supports relationships between tables","It stores data as raw facts","It is software","It can only support one user"],a:0,
+        e:"An RDBMS supports relationships between tables, so multiple data elements can be accessed from multiple tables at the same time."},
+    m14:{q:"According to the textbook, which is NOT one of the three main MySQL data types?",o:["String","Numeric","Date and time","Graphics"],a:3,
+        e:"The three main MySQL data types are string, numeric, and date and time."},
+    m15:{q:"Which string data type stores variable-length strings with a maximum size specified?",o:["CHAR","VARCHAR","LONGTEXT","INT"],a:1,
+        e:"VARCHAR (size) stores variable-length strings up to a maximum size. CHAR stores predefined fixed-length strings."},
+    m16:{q:"Which data type stores exact numeric values, where M is the total number of digits and D is the number of digits after the decimal?",o:["DECIMAL","FLOAT","SMALLINT","BIGINT"],a:0,
+        e:"DECIMAL (M,D) stores exact numeric values. FLOAT stores floating point values."},
+    m17:{q:"How much storage does BIGINT require?",o:["2 bytes","4 bytes","3 bytes","8 bytes"],a:3,
+        e:"BIGINT stores large integer values and requires 8 bytes. SMALLINT needs 2 bytes and FLOAT needs 4 bytes."},
+    m18:{q:"In which standard SQL format is a DATE value stored?",o:["hh:mm:ss","YYYY-MM-DD","DD-MM-YYYY","YYYY-MM-DD HH:MM:SS"],a:1,
+        e:"DATE uses YYYY-MM-DD and needs 3 bytes. TIME uses hh:mm:ss, and DATETIME uses YYYY-MM-DD HH:MM:SS."},
+    m19:{q:"Which data type is useful when applications need SQL to handle time zone conversions automatically?",o:["DATETIME","DATE","TIMESTAMP","TIME"],a:2,
+        e:"TIMESTAMP is useful for automatic time zone conversion. It needs between 4 and 7 bytes of storage."},
+    m20:{q:"What is the smallest unit of data in a table?",o:["Record","Table","Field","Database"],a:2,
+        e:"A field, also known as a column or attribute, is the smallest unit of data in a table. Each field represents a single characteristic of the entity."},
+    m21:{q:"A record in a table is also called a:",o:["Row or tuple","Column or attribute","Relation","Key"],a:0,
+        e:"A record, also called a row or tuple, is a complete set of related fields that holds all the information about a single entity."},
+    m22:{q:"Which combination makes up a database system?",o:["Only the data stored in tables","Software and users only","Hardware, software, data and users","Tables and keys only"],a:2,
+        e:"A database system is not just the data. It is hardware, software, data and users working together to store, retrieve and manage information."},
+    m23:{q:"A table is also called a:",o:["Relation","Tuple","Attribute","Field"],a:0,
+        e:"A table, also called a relation, is an organized collection of records (rows) and fields (columns) that store related information."},
+    m24:{q:"How many primary keys can a table have?",o:["As many as it has fields","Only one","Two","None, a primary key is optional"],a:1,
+        e:"A table can have only one primary key, and it is compulsory to select one field as the primary key."},
+    m25:{q:"According to the textbook, which field is selected as the primary key in the Students table?",o:["Name","Class","Address","Symbol_number"],a:3,
+        e:"No two students can have the same symbol number, so Symbol_number identifies each record uniquely."},
+    m26:{q:"A foreign key is a field in one table that refers to the ______ of another table.",o:["Name","Primary key","Last record","Composite key"],a:1,
+        e:"A foreign key refers to the primary key of another table. It is the linking field that creates a relationship between the two tables."},
+    m27:{q:"In the Product table, which field is the foreign key?",o:["Customer_ID","Order_ID","S_N","Order_date"],a:0,
+        e:"Customer_ID in the Product table refers to the primary key Customer_ID of the Customer table, which links the two tables."},
+    m28:{q:"When is a composite key used?",o:["When a table has no records","When a single column is not enough to identify records uniquely","When a table has too many rows","When fields must be left blank"],a:1,
+        e:"A composite key groups multiple columns together to act as the primary key when a single column cannot create a unique identifier."},
+    m29:{q:"Can any column in a composite key be NULL?",o:["Yes, any one of them","Yes, but only the first","No, none of them can be NULL","Only if the table is small"],a:2,
+        e:"None of the columns involved in a composite key can be NULL."},
+    m30:{q:"A single teacher has many students, but each student has only one teacher. What type of relationship is this?",o:["One to One (1:1)","Many to Many (M:M)","One to Many (1:M)","No relationship"],a:2,
+        e:"One record in the Teacher table relates to many records in the Student table, but each student links to only one teacher. That is one to many."},
+    m31:{q:"Which type of relationship needs a junction table?",o:["One to One (1:1)","Many to Many (M:M)","One to Many (1:M)","None of them"],a:1,
+        e:"A many to many relationship is implemented with a junction (linking or bridge) table, like the Study table between Student and Course."},
+    m32:{q:"Every citizen has one passport, and no two citizens share a passport. This is a:",o:["One to One (1:1) relationship","One to Many (1:M) relationship","Many to Many (M:M) relationship","Composite key"],a:0,
+        e:"Each record in the Citizen table is related to only one record in the Passport table, and the other way round. That is one to one."},
+    m33:{q:"Which company now supports and owns MySQL?",o:["Microsoft","Oracle Corporation","MySQL AB","Apache"],a:1,
+        e:"MySQL was originally developed by MySQL AB and is now supported and owned by Oracle Corporation."},
+    m34:{q:"MySQL is open-source software. What does this mean?",o:["It must be bought before use","It only works on Windows","It is free to use and can be modified by developers","It cannot store tables"],a:2,
+        e:"Open-source means MySQL is free to use and can be modified by developers."},
+    m35:{q:"Which is the easiest way to install MySQL on the Windows environment?",o:["Typing the program by hand","The MySQL installer","Copying folders from another computer","Using a spreadsheet"],a:1,
+        e:"The MySQL installer is the easiest way to install MySQL on Windows. It provides an easy-to-use wizard."},
+    m36:{q:"What is the first step to install MySQL?",o:["Choose Install MySQL Products","Double-click the installer file","Download the MySQL installer","Create a table"],a:2,
+        e:"Step 1 is to download the MySQL installer. Step 2 is to double-click the installer file. Step 3 is to choose Install MySQL Products."},
+    m37:{q:"A query is mainly used to:",o:["Retrieve, filter and manipulate data from tables","Draw pictures in a table","Switch off the computer","Install software"],a:0,
+        e:"A query is a DBMS tool that lets you retrieve, filter and manipulate data from your tables."},
+    m38:{q:"Which query does NOT modify the original table and shows the selected data in another table?",o:["Update query","Delete query","Select query","Insert query"],a:2,
+        e:"A select query only displays the data that matches the criteria. An update query directly modifies the original table."},
+    m39:{q:"Which statement about SQL is true?",o:["SQL keywords are case sensitive","It is an English-like language, so it is easy to learn and use","It can process only one record at a time","It can be used only by software developers"],a:1,
+        e:"SQL is English-like and uses instructions like Select, Delete and Update. Its keywords are not case sensitive, and it can process multiple records with a single query."},
+    m40:{q:"A database language has two parts. They are:",o:["DML and MySQL","DDL and SQL","DDL and DML","SQL and RDBMS"],a:2,
+        e:"A database language has Data Definition Language (DDL) and Data Manipulation Language (DML)."},
+    m41:{q:"DDL commands mainly deal with:",o:["Only the data inside tables","The structure of databases and tables","Only passwords","Only reports"],a:1,
+        e:"DDL works on structure, not just data. It is used to create, change or delete database structures like databases and tables."},
+    m42:{q:"Which statement creates a database named School?",o:["MAKE DATABASE School;","NEW DATABASE School;","CREATE DATABASE School;","OPEN DATABASE School;"],a:2,
+        e:"CREATE DATABASE database_name; is the syntax. For School it is CREATE DATABASE School;"},
+    m43:{q:"Which command is used to select a database to work in?",o:["USE database_name;","SELECT database_name;","START database_name;","ENTER database_name;"],a:0,
+        e:"The USE command selects the database to work in. Tables and data you add afterwards go into this database."},
+    m44:{q:"Which line starts creating a table in MySQL?",o:["MAKE TABLE table_name(","ADD TABLE table_name(","NEW TABLE table_name(","CREATE TABLE table_name("],a:3,
+        e:"CREATE TABLE table_name( is followed by the column names with their data types."},
+    m45:{q:"Which command permanently deletes a table along with all its data?",o:["TRUNCATE TABLE","DROP TABLE","ALTER TABLE","RENAME TABLE"],a:1,
+        e:"DROP TABLE removes the table and all its data. TRUNCATE TABLE removes only the records and keeps the structure."},
+    m46:{q:"After a DROP command is executed, the structure and data:",o:["Move to a recycle bin","Are hidden but safe","Are removed and cannot be recovered unless you have a backup","Are copied automatically"],a:2,
+        e:"DROP is a powerful command. The structure and its data are removed and cannot be recovered unless you have a backup, so use it with caution."},
+    m47:{q:"Which statement adds a column named College to the students table?",o:["CREATE COLUMN College;","ALTER TABLE students ADD College VARCHAR(255);","DROP TABLE College;","TRUNCATE TABLE students;"],a:1,
+        e:"ALTER TABLE table_name ADD column_name datatype; adds a new column to an existing table."},
+    m48:{q:"Which keyword is used with ALTER TABLE to change the data type of a column?",o:["RENAME","ADD","MODIFY","TRUNCATE"],a:2,
+        e:"ALTER TABLE table_name MODIFY column_name datatype; changes the data type or size of an existing column."},
+    m49:{q:"Which statement renames the table students to SchoolStudent?",o:["ALTER TABLE students RENAME TO SchoolStudent;","DROP TABLE students TO SchoolStudent;","CREATE TABLE students RENAME SchoolStudent;","TRUNCATE TABLE students TO SchoolStudent;"],a:0,
+        e:"ALTER TABLE old_table_name RENAME TO new_table_name; renames a table."},
+    m50:{q:"What does TRUNCATE TABLE students; do?",o:["Deletes the table and its structure","Renames the table","Adds a new column","Removes all records but keeps the table structure"],a:3,
+        e:"TRUNCATE removes all the records from a table but does not destroy the table's structure."}
+  };
+  var LETTERS = ["A","B","C","D"];
+
+  var main = document.getElementById("main");
+  var slides = Array.prototype.slice.call(main.querySelectorAll(".slide"));
+  var cur = 0;
+
+  function buildMcq(s, key){
+    var d = MCQ[key];
+    s.dataset.title = "Checkpoint";
+    s.setAttribute("data-title", "Checkpoint: " + d.q);
+    var html = '<span class="q-tag">Checkpoint</span><h2 class="q-text"></h2><div class="opts"></div><div class="explain" hidden></div><button class="ghost reset" type="button" hidden>Reset question</button>';
+    s.innerHTML = html;
+    s.querySelector(".q-text").textContent = d.q;
+    var box = s.querySelector(".opts");
+    d.o.forEach(function(t, i){
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "opt"; b.dataset.i = i;
+      var k = document.createElement("span"); k.className = "k"; k.textContent = LETTERS[i];
+      var tx = document.createElement("span"); tx.textContent = t;
+      b.appendChild(k); b.appendChild(tx);
+      b.addEventListener("click", function(){ answer(s, key, i); });
+      box.appendChild(b);
+    });
+    s.querySelector(".reset").addEventListener("click", function(){ reset(s); });
+  }
+  function answer(s, key, i){
+    if (s._done) return;
+    s._done = true;
+    var d = MCQ[key];
+    var opts = s.querySelectorAll(".opt");
+    opts.forEach(function(b, j){
+      b.disabled = true;
+      if (j === d.a) b.classList.add("correct");
+      else if (j === i) b.classList.add("wrong");
+      else b.classList.add("dim");
+    });
+    var ex = s.querySelector(".explain");
+    var good = i === d.a;
+    ex.className = "explain " + (good ? "good" : "bad");
+    ex.innerHTML = "";
+    var h = document.createElement("b"); h.textContent = good ? "Correct" : "Not quite. The answer is " + LETTERS[d.a] + ".";
+    var p = document.createElement("span"); p.textContent = d.e;
+    ex.appendChild(h); ex.appendChild(p);
+    ex.hidden = false;
+    s.querySelector(".reset").hidden = false;
+  }
+  function reset(s){
+    s._done = false;
+    s.querySelectorAll(".opt").forEach(function(b){ b.disabled = false; b.className = "opt"; });
+    s.querySelector(".explain").hidden = true;
+    s.querySelector(".reset").hidden = true;
+  }
+  slides.forEach(function(s){ if (s.dataset.q) buildMcq(s, s.dataset.q); });
+
+  function goLesson(l){
+    for (var i = 0; i < slides.length; i++) {
+      if ((slides[i].dataset.lesson || "0") === l) { show(i); return; }
+    }
+  }
+  document.querySelectorAll("pre.code").forEach(function(c){
+    var t = c.textContent.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    c.innerHTML = t.replace(/\b(CREATE|DATABASE|TABLE|USE|DROP|ALTER|ADD|MODIFY|COLUMN|RENAME|TO|TRUNCATE)\b/g,"<b>$1</b>");
+  });
+  var selBox = document.getElementById("sel");
+  var SELS = [["0","Overview"],["1","2.1 Database"],["2","2.2 Terminologies"],["3","2.3 Data Types"],["4","2.4 Elements"],["5","2.5 Keys"],["6","2.6 MySQL"],["7","2.7 DDL"]];
+  var selBtns = SELS.map(function(x){
+    var b = document.createElement("button");
+    b.type = "button"; b.dataset.l = x[0]; b.textContent = x[1]; b.title = LESSONS[x[0]];
+    b.addEventListener("click", function(){ goLesson(x[0]); });
+    selBox.appendChild(b);
+    return b;
+  });
+  document.querySelectorAll("[data-go]").forEach(function(b){
+    b.addEventListener("click", function(){ goLesson(b.dataset.go); });
+  });
+  slides.forEach(function(s){
+    var r = s.querySelector("[data-reveal]");
+    if (r) r.addEventListener("click", function(){
+      var on = s.classList.toggle("shown");
+      r.textContent = on ? "Hide answers" : "Show answers";
+    });
+  });
+  var count = document.getElementById("count");
+  var bar = document.getElementById("bar");
+  var prev = document.getElementById("prev");
+  var next = document.getElementById("next");
+
+  /* Choose the largest font size at which the slide fits the stage. */
+  function reserveAnswer(s){
+    if (!s.dataset.q || s._done) return function(){};
+    var ex = s.querySelector(".explain"), rs = s.querySelector(".reset");
+    var h0 = ex.hidden, r0 = rs.hidden, html0 = ex.innerHTML;
+    ex.innerHTML = "<b>Not quite. The answer is A.</b><span></span>";
+    ex.lastChild.textContent = MCQ[s.dataset.q].e;
+    ex.hidden = false; rs.hidden = false;
+    return function(){ ex.hidden = h0; rs.hidden = r0; ex.innerHTML = html0; };
+  }
+  function fitSlide(){
+    var s = slides[cur];
+    if (!s) return;
+    var base = parseFloat(getComputedStyle(document.body).fontSize) || 20;
+    var lo = Math.max(14, base * 0.6), hi = base * 1.8;
+    var restore = reserveAnswer(s);
+    function fits(px){
+      s.style.fontSize = px + "px";
+      if (s.offsetHeight > main.clientHeight + 1) return false;
+      if (s.scrollWidth > s.clientWidth + 1) return false;
+      var sc = s.querySelectorAll(".scroll, .code");
+      for (var k = 0; k < sc.length; k++) if (sc[k].scrollWidth > sc[k].clientWidth + 1) return false;
+      return true;
+    }
+    var best;
+    if (fits(hi)) best = hi;
+    else if (!fits(lo)) best = lo;
+    else {
+      for (var n = 0; n < 10; n++) {
+        var mid = (lo + hi) / 2;
+        if (fits(mid)) lo = mid; else hi = mid;
+      }
+      best = lo;
+    }
+    s.style.fontSize = best + "px";
+    restore();
+  }
+  var fitTimer = null;
+  function refit(){ cancelAnimationFrame(fitTimer); fitTimer = requestAnimationFrame(fitSlide); }
+  window.addEventListener("resize", refit);
+  document.addEventListener("fullscreenchange", function(){ setTimeout(refit, 120); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(refit);
+
+  function show(i, noHash){
+    if (i < 0) i = 0;
+    if (i > slides.length - 1) i = slides.length - 1;
+    cur = i;
+    slides.forEach(function(s, j){ s.classList.toggle("active", j === i); });
+    var l = slides[i].dataset.lesson || "0";
+    document.body.dataset.lesson = l;
+    selBtns.forEach(function(b){
+      var on = b.dataset.l === l;
+      b.classList.toggle("on", on);
+      if (on) b.setAttribute("aria-current", "true"); else b.removeAttribute("aria-current");
+    });
+    count.textContent = (i + 1) + " / " + slides.length;
+    bar.style.width = ((i + 1) / slides.length * 100) + "%";
+    prev.disabled = i === 0;
+    next.disabled = i === slides.length - 1;
+    main.scrollTop = 0;
+    fitSlide();
+    if (!noHash) {
+      try { if (location.hash !== "#slide-" + (i + 1)) location.hash = "slide-" + (i + 1); } catch (e) {}
+    }
+    markToc();
+  }
+  function fromHash(){
+    var m = /^#slide-(\d+)$/.exec(location.hash || "");
+    return m ? parseInt(m[1], 10) - 1 : 0;
+  }
+  window.addEventListener("hashchange", function(){ var i = fromHash(); if (i !== cur) show(i, true); });
+
+  prev.addEventListener("click", function(){ show(cur - 1); });
+  next.addEventListener("click", function(){ show(cur + 1); });
+
+  /* contents */
+  var toc = document.getElementById("toc");
+  var panel = document.getElementById("tocPanel");
+  var items = [];
+  function buildToc(){
+    var last = null;
+    slides.forEach(function(s, i){
+      var l = s.dataset.lesson || "0";
+      if (l !== last) {
+        var h = document.createElement("h3");
+        h.textContent = LESSONS[l];
+        panel.appendChild(h);
+        last = l;
+      }
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "toc-item" + (s.dataset.q ? " q" : "");
+      var n = document.createElement("span"); n.className = "n"; n.textContent = i + 1;
+      var t = document.createElement("span"); t.textContent = s.dataset.q ? "Checkpoint question" : s.dataset.title;
+      b.appendChild(n); b.appendChild(t);
+      b.addEventListener("click", function(){ toc.hidden = true; show(i); });
+      panel.appendChild(b);
+      items.push(b);
+    });
+  }
+  function markToc(){ items.forEach(function(b, i){ b.classList.toggle("now", i === cur); }); }
+  buildToc();
+  document.getElementById("tocBtn").addEventListener("click", function(){ toc.hidden = !toc.hidden; if (!toc.hidden && items[cur]) items[cur].scrollIntoView({block:"center"}); });
+  toc.addEventListener("click", function(e){ if (e.target === toc) toc.hidden = true; });
+
+  /* full screen */
+  var fs = document.getElementById("fsBtn");
+  function toggleFs(){
+    try {
+      if (document.fullscreenElement) { document.exitFullscreen(); }
+      else { var p = document.documentElement.requestFullscreen(); if (p && p.catch) p.catch(function(){}); }
+    } catch (e) {}
+  }
+  if (document.fullscreenEnabled) { fs.hidden = false; fs.addEventListener("click", toggleFs); }
+  document.addEventListener("fullscreenchange", function(){
+    document.documentElement.classList.toggle("fs", !!document.fullscreenElement);
+  });
+
+  /* keyboard */
+  document.addEventListener("keydown", function(e){
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    var k = e.key;
+    if (k === "Escape") { toc.hidden = true; return; }
+    if (!toc.hidden) return;
+    var tag = document.activeElement && document.activeElement.tagName;
+    if (k === "ArrowRight" || k === "PageDown") { e.preventDefault(); show(cur + 1); }
+    else if (k === "ArrowLeft" || k === "PageUp") { e.preventDefault(); show(cur - 1); }
+    else if (k === " " && tag !== "BUTTON") { e.preventDefault(); show(cur + 1); }
+    else if (k === "Home") { show(0); }
+    else if (k === "End") { show(slides.length - 1); }
+    else if (k === "f" || k === "F") { toggleFs(); }
+    else if (k === "t" || k === "T") { toc.hidden = false; if (items[cur]) items[cur].scrollIntoView({block:"center"}); }
+    else {
+      var s = slides[cur];
+      if (s && s.dataset.q) {
+        var idx = "1234".indexOf(k);
+        if (idx < 0) idx = "abcd".indexOf(k.toLowerCase());
+        if (idx > -1) { var b = s.querySelectorAll(".opt")[idx]; if (b && !b.disabled) b.click(); }
+      }
+    }
+  });
+
+  show(fromHash(), true);
+})();
+</script>
+
+</body></html>
