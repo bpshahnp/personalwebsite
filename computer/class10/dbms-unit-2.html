@@ -13,6 +13,7 @@
   --violet:#6a3cc0; --violet-soft:#ebe3fb;
   --olive:#4f6f0a; --olive-soft:#e8f2cc;
   --sienna:#8c3f1a; --sienna-soft:#f5e2d6;
+  --gold:#7d6400; --gold-soft:#f8f0c8;
   --f-mono:"JetBrains Mono",ui-monospace,Consolas,"Courier New",monospace;
   --pink:#b0125f; --pink-soft:#fbe3ee;
   --ok:#0d7a3b; --ok-soft:#dcf3e4; --bad:#b3261e; --bad-soft:#fbe4e2;
@@ -31,14 +32,12 @@ body{
 }
 header,footer{font-size:clamp(13px,.7vw + 6px,19px)}
 html.fs header, html.fs footer{display:none}
+@supports (height:100dvh){html,body{height:100dvh}}
+main{touch-action:pan-y}
+.scroll,.code{touch-action:pan-x pan-y}
+.fsx{display:none; position:fixed; z-index:15; top:calc(env(safe-area-inset-top,0px) + 6px); right:max(8px,env(safe-area-inset-right,0px)); width:2.4em; height:2.4em; place-items:center; border-radius:50%; background:var(--panel); border:1px solid var(--line); color:var(--fg); font:700 16px/1 var(--f-body); opacity:.65}
+@media (pointer:coarse){html.fs .fsx{display:grid}}
 html.fs body{grid-template-rows:1fr}
-@media (max-width: 768px), (max-height: 500px) and (orientation: landscape){
-  html.fs footer{display:block}
-  html.fs body{grid-template-rows:1fr auto}
-  html.fs .nav{padding-block:.4em; justify-content:space-between}
-  html.fs .nav .hint{display:none}
-  html.fs .btn{padding:.45em 1.2em}
-}
 .wrap{padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px))}
 button{font:inherit; color:inherit; cursor:pointer}
 :focus-visible{outline:3px solid var(--pink); outline-offset:3px}
@@ -56,6 +55,7 @@ header{background:var(--panel); border-bottom:1px solid var(--line)}
 .sel button[data-l="5"]{--c:var(--violet); --cs:var(--violet-soft)}
 .sel button[data-l="6"]{--c:var(--olive); --cs:var(--olive-soft)}
 .sel button[data-l="7"]{--c:var(--sienna); --cs:var(--sienna-soft)}
+.sel button[data-l="8"]{--c:var(--gold); --cs:var(--gold-soft)}
 .sel button.on{background:var(--c); color:var(--on-accent)}
 .sel button:hover:not(.on){background:var(--panel)}
 body[data-lesson="1"]{--accent:var(--blue); --accent-soft:var(--blue-soft)}
@@ -65,6 +65,7 @@ body[data-lesson="4"]{--accent:var(--teal); --accent-soft:var(--teal-soft)}
 body[data-lesson="5"]{--accent:var(--violet); --accent-soft:var(--violet-soft)}
 body[data-lesson="6"]{--accent:var(--olive); --accent-soft:var(--olive-soft)}
 body[data-lesson="7"]{--accent:var(--sienna); --accent-soft:var(--sienna-soft)}
+body[data-lesson="8"]{--accent:var(--gold); --accent-soft:var(--gold-soft)}
 .tools{margin-left:auto; display:flex; align-items:center; gap:.5em}
 .count{font:700 .8em var(--f-body); color:var(--muted); font-variant-numeric:tabular-nums; min-width:4.2em; text-align:right}
 .ghost{background:transparent; border:1.5px solid var(--line); border-radius:.5em; padding:.3em .75em; font-size:.75em; font-weight:600}
@@ -81,6 +82,7 @@ main{display:flex; flex-direction:column; overflow-y:auto; min-height:0}
 .slide[data-lesson="5"]{--accent:var(--violet); --accent-soft:var(--violet-soft)}
 .slide[data-lesson="6"]{--accent:var(--olive); --accent-soft:var(--olive-soft)}
 .slide[data-lesson="7"]{--accent:var(--sienna); --accent-soft:var(--sienna-soft)}
+.slide[data-lesson="8"]{--accent:var(--gold); --accent-soft:var(--gold-soft)}
 .slide.active{display:flex; flex-direction:column; gap:.8em; margin:auto; width:100%; max-width:76em; padding-block:1.1em; animation:rise .35s ease both}
 @keyframes rise{from{opacity:0; transform:translateY(.4em)} to{opacity:1; transform:none}}
 @media (prefers-reduced-motion: reduce){.slide.active{animation:none} .bar i{transition:none}}
@@ -134,9 +136,9 @@ svg.flow{width:100%; height:auto; max-height:26vh}
 .lessons{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,18em),1fr)); gap:.8em; margin-top:.6em}
 .lessons .card{border-width:2px; display:block; width:100%; text-align:left}
 .lessons .card:hover{background:var(--panel-2)}
-.lessons .card.a{border-color:var(--blue)} .lessons .card.b{border-color:var(--green)} .lessons .card.c{border-color:var(--amber)} .lessons .card.d{border-color:var(--teal)} .lessons .card.e{border-color:var(--violet)} .lessons .card.f{border-color:var(--olive)} .lessons .card.g{border-color:var(--sienna)}
+.lessons .card.a{border-color:var(--blue)} .lessons .card.b{border-color:var(--green)} .lessons .card.c{border-color:var(--amber)} .lessons .card.d{border-color:var(--teal)} .lessons .card.e{border-color:var(--violet)} .lessons .card.f{border-color:var(--olive)} .lessons .card.g{border-color:var(--sienna)} .lessons .card.h{border-color:var(--gold)}
 .lessons h3{font-size:1.1em}
-.lessons .card.a h3{color:var(--blue)} .lessons .card.b h3{color:var(--green)} .lessons .card.c h3{color:var(--amber)} .lessons .card.d h3{color:var(--teal)} .lessons .card.e h3{color:var(--violet)} .lessons .card.f h3{color:var(--olive)} .lessons .card.g h3{color:var(--sienna)}
+.lessons .card.a h3{color:var(--blue)} .lessons .card.b h3{color:var(--green)} .lessons .card.c h3{color:var(--amber)} .lessons .card.d h3{color:var(--teal)} .lessons .card.e h3{color:var(--violet)} .lessons .card.f h3{color:var(--olive)} .lessons .card.g h3{color:var(--sienna)} .lessons .card.h h3{color:var(--gold)}
 .ans{visibility:hidden}
 .shown .ans{visibility:visible}
 .reveal{width:max-content}
@@ -155,6 +157,11 @@ td.fk{background:var(--pink-soft); color:var(--pink); font-weight:700}
 .pair > div{min-width:0}
 .pts.two{grid-template-columns:repeat(auto-fit,minmax(min(100%,19em),1fr)); column-gap:1.4em}
 .res{font-size:.95em}
+.prow{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,17em),1fr)); gap:.3em .9em; align-items:center; padding:.35em 0; border-bottom:1px solid var(--line)}
+.prow p{margin:0; font-weight:600}
+.prow .code{font-size:.85em; padding:.3em .7em}
+.prow .q{color:var(--accent); font-family:var(--f-display); font-weight:800; margin-right:.4em}
+.stack{display:grid; gap:.8em}
 svg.er{max-height:26vh}
 .eb{fill:var(--panel); stroke:var(--accent); stroke-width:3}
 .eb.j{fill:var(--accent-soft)}
@@ -211,7 +218,7 @@ footer{background:var(--panel); border-top:1px solid var(--line)}
     <div class="tools">
       <span class="count" id="count">1 / 1</span>
       <button class="ghost" id="tocBtn" type="button">Contents</button>
-      <button class="ghost" id="fsBtn" type="button" hidden>Full screen</button>
+      <button class="ghost" id="fsBtn" type="button">Full screen</button>
     </div>
   </div>
   <div class="bar"><i id="bar"></i></div>
@@ -224,7 +231,7 @@ footer{background:var(--panel); border-top:1px solid var(--line)}
   <div class="hero">
     <span class="eyebrow" style="color:var(--muted)">Unit 2</span>
     <h1>Database <span>Management</span> System</h1>
-    <p class="lead">Seven lessons in this unit. Questions appear in the middle of each topic so we can check what we have learned.</p>
+    <p class="lead">Eight lessons in this unit. Questions appear in the middle of each topic so we can check what we have learned.</p>
   </div>
   <div class="lessons">
     <button class="card a" type="button" data-go="1"><h3>2.1</h3><p style="color:var(--fg);font-size:1em">Definition, Importance and Application of Database</p></button>
@@ -234,6 +241,7 @@ footer{background:var(--panel); border-top:1px solid var(--line)}
     <button class="card e" type="button" data-go="5"><h3>2.5</h3><p style="color:var(--fg);font-size:1em">Keys and Relationships</p></button>
     <button class="card f" type="button" data-go="6"><h3>2.6</h3><p style="color:var(--fg);font-size:1em">Introduction to MySQL, Query and SQL</p></button>
     <button class="card g" type="button" data-go="7"><h3>2.7</h3><p style="color:var(--fg);font-size:1em">DDL: CREATE, DROP, ALTER, TRUNCATE</p></button>
+    <button class="card h" type="button" data-go="8"><h3>2.8</h3><p style="color:var(--fg);font-size:1em">DML: INSERT, SELECT, UPDATE, DELETE, Constraints, Operators</p></button>
   </div>
   <p class="hint">Pick a lesson above or in the top bar. Arrow keys or the Next button move one slide. Press 1 to 4 (or A to D) to answer a question.</p>
 </section>
@@ -1361,6 +1369,672 @@ RENAME TO SchoolStudent;</pre></div>
   </div>
 </section>
 
+<!-- ============ LESSON 2.8 ============ -->
+<section class="slide" data-lesson="8" data-title="DML">
+  <span class="eyebrow">2.8 · DML</span>
+  <h2>DML (Data Manipulation Language)</h2>
+  <p class="def"><small>Definition</small>DML is used for accessing, manipulating and retrieving data in a database table.</p>
+  <ul class="pts">
+    <li>It handles user requests.</li>
+    <li>It is a language used for selecting, inserting, deleting and updating data in a database.</li>
+  </ul>
+  <div>
+    <p class="note" style="margin-bottom:.4em">Some of the DML commands</p>
+    <div class="chips"><span class="tag">INSERT</span><span class="tag">SELECT</span><span class="tag">UPDATE</span><span class="tag">DELETE</span></div>
+  </div>
+</section>
+
+<section class="slide mcq" data-lesson="8" data-q="m51"></section>
+
+<section class="slide" data-lesson="8" data-title="INSERT">
+  <span class="eyebrow">2.8 · INSERT</span>
+  <h2>INSERT</h2>
+  <p class="lead">This command is used to insert new records in a table.</p>
+  <div class="pair">
+    <div><p class="lbl">Syntax</p><pre class="code">INSERT INTO table_name (column1, column2, column3, ...)
+VALUES (value1, value2, value3, ...);</pre></div>
+    <div><p class="lbl ex">Example</p><pre class="code">INSERT INTO students (Std_Id, Name, Address, Class)
+VALUES (15, 'Harish', 'Pokhara', 10);</pre></div>
+  </div>
+  <p class="lead">This command adds the record to the table named students. Text values are written inside quotes.</p>
+</section>
+
+<section class="slide" data-lesson="8" data-title="INSERT multiple records">
+  <span class="eyebrow">2.8 · INSERT</span>
+  <h2>Inserting multiple records</h2>
+  <p class="lead">Multiple records can also be inserted by using a single INSERT statement.</p>
+  <div class="split">
+    <div><p class="lbl ex">Example</p><pre class="code">INSERT INTO students (Std_Id, Name, Address, Class)
+VALUES
+(15, 'Harish', 'Pokhara', 10),
+(25, 'Kamal', 'Pokhara', 9),
+(30, 'Yamuna', 'Kathmandu', 8),
+(33, 'Samjhana', 'Jhapa', 10);</pre></div>
+    <div class="tbl-sm res">
+      <p class="cap">students table after the insert</p>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Std_Id</th><th>Name</th><th>Address</th><th>Class</th></tr></thead>
+          <tbody>
+            <tr><td>15</td><td>Harish</td><td>Pokhara</td><td>10</td></tr>
+            <tr><td>25</td><td>Kamal</td><td>Pokhara</td><td>9</td></tr>
+            <tr><td>30</td><td>Yamuna</td><td>Kathmandu</td><td>8</td></tr>
+            <tr><td>33</td><td>Samjhana</td><td>Jhapa</td><td>10</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide mcq" data-lesson="8" data-q="m52"></section>
+
+<section class="slide" data-lesson="8" data-title="SELECT">
+  <span class="eyebrow">2.8 · SELECT</span>
+  <h2>SELECT</h2>
+  <p class="def"><small>Command</small>SELECT is used to extract the necessary records from the database. It can also extract specific records from the table by specifying criteria.</p>
+  <p class="lead">The SELECT command has many optional clauses:</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Clause</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>WHERE</td><td>Specifies which rows to retrieve.</td></tr>
+        <tr><td>GROUP BY</td><td>Is used to arrange the data into groups.</td></tr>
+        <tr><td>HAVING</td><td>Selects among the groups defined by the GROUP BY clause.</td></tr>
+        <tr><td>ORDER BY</td><td>Specifies an order in which to return the rows.</td></tr>
+        <tr><td>AS</td><td>Provides an alias which can be used to temporarily rename tables or columns.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="slide mcq" data-lesson="8" data-q="m53"></section>
+
+<section class="slide" data-lesson="8" data-title="SELECT columns">
+  <span class="eyebrow">2.8 · SELECT</span>
+  <h2>Selecting columns</h2>
+  <div class="pair">
+    <div><p class="lbl">Syntax</p><pre class="code">SELECT column1, column2, ...
+FROM table_name;</pre></div>
+    <div><p class="lbl ex">Example</p><pre class="code">SELECT Std_Id, Name
+FROM students;</pre></div>
+  </div>
+  <p class="lead">column1, column2, ... are the field names of the table whose data is to be selected. This command displays the data stored in Std_Id and Name from the table named students.</p>
+  <div class="tbl-sm res">
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Std_Id</th><th>Name</th></tr></thead>
+        <tbody>
+          <tr><td>15</td><td>Harish</td></tr>
+          <tr><td>25</td><td>Kamal</td></tr>
+          <tr><td>30</td><td>Yamuna</td></tr>
+          <tr><td>33</td><td>Samjhana</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-lesson="8" data-title="SELECT all fields">
+  <span class="eyebrow">2.8 · SELECT</span>
+  <h2>Selecting all the fields</h2>
+  <p class="lead">To select all the fields available in the table, use the following syntax:</p>
+  <div class="pair">
+    <div><p class="lbl">Syntax</p><pre class="code">SELECT * FROM table_name;</pre></div>
+    <div><p class="lbl ex">Example</p><pre class="code">SELECT * FROM students;</pre></div>
+  </div>
+  <p class="lead">This command displays all the records from the table named students.</p>
+  <div class="tbl-sm res">
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Std_Id</th><th>Name</th><th>Address</th><th>Class</th></tr></thead>
+        <tbody>
+          <tr><td>15</td><td>Harish</td><td>Pokhara</td><td>10</td></tr>
+          <tr><td>25</td><td>Kamal</td><td>Pokhara</td><td>9</td></tr>
+          <tr><td>30</td><td>Yamuna</td><td>Kathmandu</td><td>8</td></tr>
+          <tr><td>33</td><td>Samjhana</td><td>Jhapa</td><td>10</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="slide mcq" data-lesson="8" data-q="m54"></section>
+
+<section class="slide" data-lesson="8" data-title="WHERE clause">
+  <span class="eyebrow">2.8 · SELECT</span>
+  <h2>WHERE clause with SELECT</h2>
+  <p class="lead">The WHERE clause is used with the SELECT statement to filter the required records from a single table or by joining multiple tables.</p>
+  <div class="pair">
+    <div><p class="lbl">Syntax</p><pre class="code">SELECT column1, column2, ...
+FROM table_name
+WHERE condition;</pre></div>
+    <div><p class="lbl ex">Example</p><pre class="code">SELECT Std_Id, Name, Address
+FROM students
+WHERE Address = 'Pokhara';</pre></div>
+  </div>
+  <p class="lead">This command displays the Std_Id, Name and Address from the table named students whose address is Pokhara.</p>
+  <div class="tbl-sm res">
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Std_Id</th><th>Name</th><th>Address</th></tr></thead>
+        <tbody><tr><td>15</td><td>Harish</td><td>Pokhara</td></tr><tr><td>25</td><td>Kamal</td><td>Pokhara</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-lesson="8" data-title="WHERE example 2">
+  <span class="eyebrow">2.8 · SELECT</span>
+  <h2>WHERE clause: another example</h2>
+  <div class="split">
+    <div><p class="lbl ex">Example</p><pre class="code">SELECT * FROM students
+WHERE Class = 10;</pre></div>
+    <div class="tbl-sm res">
+      <p class="cap">Result</p>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Std_Id</th><th>Name</th><th>Address</th><th>Class</th></tr></thead>
+          <tbody><tr><td>15</td><td>Harish</td><td>Pokhara</td><td>10</td></tr><tr><td>33</td><td>Samjhana</td><td>Jhapa</td><td>10</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <p class="lead">This command displays all the records from the table named students whose Class is 10.</p>
+</section>
+
+<section class="slide mcq" data-lesson="8" data-q="m55"></section>
+
+<section class="slide" data-lesson="8" data-title="LIKE clause">
+  <span class="eyebrow">2.8 · SELECT</span>
+  <h2>LIKE clause with SELECT</h2>
+  <p class="lead">The LIKE command is used with the WHERE clause to search for a specified pattern in a column. Two wildcard characters are used with the LIKE clause:</p>
+  <div class="cols" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,15em),1fr))">
+    <div class="card hl"><h3>%</h3><p>represents a series of characters</p></div>
+    <div class="card hl"><h3>_</h3><p>represents a single character</p></div>
+  </div>
+  <div class="split">
+    <div><p class="lbl ex">Example</p><pre class="code">SELECT * FROM students
+WHERE Name LIKE 'S%';</pre></div>
+    <p class="lead">This statement displays all the records of students whose name starts with S.</p>
+  </div>
+</section>
+
+<section class="slide" data-lesson="8" data-title="LIKE examples">
+  <span class="eyebrow">2.8 · SELECT</span>
+  <h2>LIKE clause: more examples</h2>
+  <div class="stack">
+    <div class="split">
+      <pre class="code">SELECT * FROM students
+WHERE Name LIKE '%a';</pre>
+      <p class="lead">Displays all the records of students whose name ends with a.</p>
+    </div>
+    <div class="split">
+      <pre class="code">SELECT * FROM students
+WHERE Address LIKE '_a%';</pre>
+      <p class="lead">Displays all the records whose second letter of Address is a.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide mcq" data-lesson="8" data-q="m56"></section>
+<section class="slide mcq" data-lesson="8" data-q="m57"></section>
+
+<section class="slide" data-lesson="8" data-title="ORDER BY clause">
+  <span class="eyebrow">2.8 · SELECT</span>
+  <h2>ORDER BY clause</h2>
+  <p class="lead">The ORDER BY clause is used to sort the data in either ascending or descending order, based on one or more columns. ORDER BY sorts the result in <b>ascending order by default</b>.</p>
+  <div class="split">
+    <div><p class="lbl ex">Example</p><pre class="code">SELECT * FROM students
+ORDER BY Name ASC;</pre></div>
+    <div class="tbl-sm res">
+      <p class="cap">Records in ascending order by Name</p>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Std_Id</th><th>Name</th><th>Address</th><th>Class</th></tr></thead>
+          <tbody>
+            <tr><td>15</td><td>Harish</td><td>Pokhara</td><td>10</td></tr>
+            <tr><td>25</td><td>Kamal</td><td>Pokhara</td><td>9</td></tr>
+            <tr><td>33</td><td>Samjhana</td><td>Jhapa</td><td>10</td></tr>
+            <tr><td>30</td><td>Yamuna</td><td>Kathmandu</td><td>8</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-lesson="8" data-title="ORDER BY DESC">
+  <span class="eyebrow">2.8 · SELECT</span>
+  <h2>ORDER BY: descending order</h2>
+  <div class="split">
+    <div><p class="lbl ex">Example</p><pre class="code">SELECT * FROM students
+ORDER BY Std_Id DESC;</pre></div>
+    <div class="tbl-sm res">
+      <p class="cap">Records in descending order of Std_Id</p>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Std_Id</th><th>Name</th><th>Address</th><th>Class</th></tr></thead>
+          <tbody>
+            <tr><td>33</td><td>Samjhana</td><td>Jhapa</td><td>10</td></tr>
+            <tr><td>30</td><td>Yamuna</td><td>Kathmandu</td><td>8</td></tr>
+            <tr><td>25</td><td>Kamal</td><td>Pokhara</td><td>9</td></tr>
+            <tr><td>15</td><td>Harish</td><td>Pokhara</td><td>10</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide mcq" data-lesson="8" data-q="m58"></section>
+
+<section class="slide" data-lesson="8" data-title="UPDATE">
+  <span class="eyebrow">2.8 · UPDATE</span>
+  <h2>UPDATE</h2>
+  <p class="lead">This statement is used to modify or update the existing records in a table.</p>
+  <div class="pair">
+    <div><p class="lbl">Syntax</p><pre class="code">UPDATE table_name
+SET column1 = value1, column2 = value2, ...
+WHERE condition;</pre></div>
+    <div><p class="lbl ex">Example</p><pre class="code">UPDATE students
+SET Class = 9
+WHERE Std_Id = 30;</pre></div>
+  </div>
+  <p class="lead">This command modifies the data of the Class column of Std_Id 30 into 9.</p>
+  <div class="tbl-sm res">
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Std_Id</th><th>Name</th><th>Address</th><th>Class</th></tr></thead>
+        <tbody>
+          <tr><td>15</td><td>Harish</td><td>Pokhara</td><td>10</td></tr>
+          <tr><td>25</td><td>Kamal</td><td>Pokhara</td><td>9</td></tr>
+          <tr><td>30</td><td>Yamuna</td><td>Kathmandu</td><td style="background:var(--accent-soft);font-weight:700">9</td></tr>
+          <tr><td>33</td><td>Samjhana</td><td>Jhapa</td><td>10</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="slide mcq" data-lesson="8" data-q="m59"></section>
+
+<section class="slide" data-lesson="8" data-title="DELETE">
+  <span class="eyebrow">2.8 · DELETE</span>
+  <h2>DELETE</h2>
+  <p class="lead">This statement is used to delete existing records of a table.</p>
+  <div class="pair">
+    <div><p class="lbl">Syntax</p><pre class="code">DELETE FROM table_name WHERE condition;</pre></div>
+    <div><p class="lbl ex">Example</p><pre class="code">DELETE FROM students WHERE Name = 'Samjhana';</pre></div>
+  </div>
+  <p class="lead">This command deletes all the records of Samjhana from the table students.</p>
+  <div class="tbl-sm res">
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Std_Id</th><th>Name</th><th>Address</th><th>Class</th></tr></thead>
+        <tbody>
+          <tr><td>15</td><td>Harish</td><td>Pokhara</td><td>10</td></tr>
+          <tr><td>25</td><td>Kamal</td><td>Pokhara</td><td>9</td></tr>
+          <tr><td>30</td><td>Yamuna</td><td>Kathmandu</td><td>9</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="slide mcq" data-lesson="8" data-q="m60"></section>
+
+<section class="slide" data-lesson="8" data-title="SQL constraints">
+  <span class="eyebrow">2.8 · SQL Constraints</span>
+  <h2>SQL Constraints</h2>
+  <p class="def"><small>Definition</small>SQL constraints are the rules that limit the values that can be entered in a field.</p>
+  <ul class="pts">
+    <li>They allow you to set a condition or criteria which limits the data entry in the table.</li>
+    <li>They specify the requirements for data entered into a table.</li>
+    <li>They ensure the validity of data, make it consistent, and play a vital role in maintaining the quality and integrity of the database.</li>
+    <li>Constraints can be applied when creating a table, or later using the ALTER TABLE statement.</li>
+  </ul>
+  <div class="chips"><span class="tag">NOT NULL</span><span class="tag">UNIQUE</span><span class="tag">CHECK</span><span class="tag">DEFAULT</span><span class="tag">PRIMARY KEY</span></div>
+</section>
+
+<section class="slide" data-lesson="8" data-title="NOT NULL">
+  <span class="eyebrow">2.8 · SQL Constraints</span>
+  <h2>NOT NULL</h2>
+  <p class="lead">By default, a column holds NULL values. The NOT NULL constraint prevents a column from accepting NULL values.</p>
+  <div class="split">
+    <div><p class="lbl ex">Example</p><pre class="code">CREATE TABLE employee (
+    Emp_Id int NOT NULL,
+    Name varchar(255) NOT NULL,
+    Address varchar(255),
+    Salary int
+);</pre></div>
+    <p class="lead">Emp_Id and Name are defined with the NOT NULL constraint, so they cannot contain a null value and cannot be left empty.</p>
+  </div>
+</section>
+
+<section class="slide" data-lesson="8" data-title="UNIQUE">
+  <span class="eyebrow">2.8 · SQL Constraints</span>
+  <h2>UNIQUE</h2>
+  <p class="lead">The UNIQUE constraint ensures that all values in a column are different.</p>
+  <div class="split">
+    <div><p class="lbl ex">Example</p><pre class="code">CREATE TABLE students (
+    Std_Id int NOT NULL UNIQUE,
+    Name varchar(255) NOT NULL,
+    Address varchar(255),
+    Class int
+);</pre></div>
+    <p class="lead">Std_Id is defined with the NOT NULL and UNIQUE constraints. So Std_Id cannot contain a null value, and the value must be unique for each record.</p>
+  </div>
+</section>
+
+<section class="slide mcq" data-lesson="8" data-q="m61"></section>
+<section class="slide mcq" data-lesson="8" data-q="m62"></section>
+
+<section class="slide" data-lesson="8" data-title="CHECK">
+  <span class="eyebrow">2.8 · SQL Constraints</span>
+  <h2>CHECK</h2>
+  <p class="lead">The CHECK constraint is used to limit the value range that can be entered in a column.</p>
+  <div class="split">
+    <div><p class="lbl ex">Example</p><pre class="code">CREATE TABLE students (
+    Std_Id int NOT NULL UNIQUE,
+    Name varchar(255),
+    Address varchar(255),
+    Class int NOT NULL,
+    CHECK (Class &lt;= 12)
+);</pre></div>
+    <p class="lead">The CHECK constraint limits the value to be entered in the Class field. Only a Class less than or equal to 12 can be inserted into the table.</p>
+  </div>
+</section>
+
+<section class="slide" data-lesson="8" data-title="DEFAULT">
+  <span class="eyebrow">2.8 · SQL Constraints</span>
+  <h2>DEFAULT</h2>
+  <p class="lead">The DEFAULT constraint is used to set a default value for a column. The default value is automatically added to all new records if no other value is specified.</p>
+  <div class="split">
+    <div><p class="lbl ex">Example</p><pre class="code">CREATE TABLE students (
+    Std_Id int NOT NULL UNIQUE,
+    Name varchar(255),
+    Address varchar(255),
+    Class int DEFAULT 10
+);</pre></div>
+    <p class="lead">The default value of 10 is assigned automatically under the Class field if no value is provided for Class.</p>
+  </div>
+</section>
+
+<section class="slide" data-lesson="8" data-title="PRIMARY KEY constraint">
+  <span class="eyebrow">2.8 · SQL Constraints</span>
+  <h2>PRIMARY KEY</h2>
+  <p class="lead">The PRIMARY KEY constraint is used to set the primary key field for a column.</p>
+  <div class="split">
+    <div><p class="lbl ex">Example</p><pre class="code">CREATE TABLE students (
+    Std_Id int,
+    Name varchar(255),
+    Address varchar(255),
+    Class int,
+    PRIMARY KEY (Std_Id)
+);</pre></div>
+    <p class="lead">The Std_Id field is defined with the primary key constraint. So Std_Id cannot contain a null value or a repeated value.</p>
+  </div>
+</section>
+
+<section class="slide mcq" data-lesson="8" data-q="m63"></section>
+<section class="slide mcq" data-lesson="8" data-q="m64"></section>
+<section class="slide mcq" data-lesson="8" data-q="m65"></section>
+
+<section class="slide" data-lesson="8" data-title="Operators in SQL">
+  <span class="eyebrow">2.8 · Operators</span>
+  <h2>Operators Supported by SQL</h2>
+  <p class="def"><small>Definition</small>Operators are special symbols or keywords used to perform operations on the data.</p>
+  <p class="lead">They are mainly used with SELECT and UPDATE statements. An SQL query can support different types of operators:</p>
+  <div class="cols">
+    <div class="card hl"><h3>Arithmetic</h3></div>
+    <div class="card hl"><h3>Relational / Comparison</h3></div>
+    <div class="card hl"><h3>Logical</h3></div>
+    <div class="card hl"><h3>Special</h3></div>
+  </div>
+</section>
+
+<section class="slide" data-lesson="8" data-title="Arithmetic operators">
+  <span class="eyebrow">2.8 · Operators</span>
+  <h2>Arithmetic operators</h2>
+  <p class="lead">Arithmetic operators perform mathematical calculations on the given data.</p>
+  <div class="split">
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Operator</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>+</td><td>Addition</td></tr>
+          <tr><td>-</td><td>Subtraction</td></tr>
+          <tr><td>/</td><td>Division</td></tr>
+          <tr><td>*</td><td>Multiplication</td></tr>
+          <tr><td>%</td><td>Modulus (remainder)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <p class="lbl ex">Example</p>
+      <pre class="code">UPDATE students
+SET Class = Class + 1;</pre>
+      <p class="lead" style="margin-top:.5em">This command updates the class of all the students by adding 1 to the previous class.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide mcq" data-lesson="8" data-q="m66"></section>
+
+<section class="slide" data-lesson="8" data-title="Relational operators">
+  <span class="eyebrow">2.8 · Operators</span>
+  <h2>Relational / Comparison operators</h2>
+  <p class="lead">Relational operators compare values. They evaluate conditions and return a true or false result.</p>
+  <div class="split">
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Operator</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>=</td><td>Equal to</td></tr>
+          <tr><td>&lt;&gt; or !=</td><td>Not equal to</td></tr>
+          <tr><td>&gt;</td><td>Greater than</td></tr>
+          <tr><td>&lt;</td><td>Less than</td></tr>
+          <tr><td>&gt;=</td><td>Greater than or equal to</td></tr>
+          <tr><td>&lt;=</td><td>Less than or equal to</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <p class="lbl ex">Example</p>
+      <pre class="code">SELECT * FROM students
+WHERE Class &gt; 10;</pre>
+      <p class="lead" style="margin-top:.5em">This command displays all the records of students whose class is greater than 10.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide mcq" data-lesson="8" data-q="m67"></section>
+
+<section class="slide" data-lesson="8" data-title="Logical operators">
+  <span class="eyebrow">2.8 · Operators</span>
+  <h2>Logical operators</h2>
+  <p class="lead">Logical operators combine or change conditions in SQL queries to retrieve or manipulate data based on specified criteria.</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Operator</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>AND</td><td>All conditions must be true in order to get a true result.</td></tr>
+        <tr><td>OR</td><td>Any one condition must be true in order to get a true result.</td></tr>
+        <tr><td>NOT</td><td>Negates the condition.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="slide" data-lesson="8" data-title="Logical operator examples">
+  <span class="eyebrow">2.8 · Operators</span>
+  <h2>Logical operators: examples</h2>
+  <div class="stack">
+    <div class="split">
+      <pre class="code">SELECT * FROM students
+WHERE Class = 10 AND Address = 'Pokhara';</pre>
+      <p class="lead"><b>AND</b>: students whose class is 10 and address is Pokhara.</p>
+    </div>
+    <div class="split">
+      <pre class="code">SELECT * FROM students
+WHERE Address = 'Ilam' OR Address = 'Pokhara';</pre>
+      <p class="lead"><b>OR</b>: students whose address is either Ilam or Pokhara.</p>
+    </div>
+    <div class="split">
+      <pre class="code">SELECT * FROM students
+WHERE NOT Address = 'Pokhara';</pre>
+      <p class="lead"><b>NOT</b>: students whose address is not Pokhara.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide mcq" data-lesson="8" data-q="m68"></section>
+
+<section class="slide" data-lesson="8" data-title="Special operators">
+  <span class="eyebrow">2.8 · Operators</span>
+  <h2>Special operators</h2>
+  <p class="lead">Special operators perform specific functions such as filtering data based on a range, checking for existence, and comparing sets of values.</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Operator</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>BETWEEN</td><td>Checks if the value is within a range (inclusive).</td></tr>
+        <tr><td>IN</td><td>Checks if the value matches any in a list.</td></tr>
+        <tr><td>IS NULL</td><td>Checks for a NULL value.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="slide" data-lesson="8" data-title="Special operator examples">
+  <span class="eyebrow">2.8 · Operators</span>
+  <h2>Special operators: examples</h2>
+  <div class="stack">
+    <div class="split">
+      <pre class="code">SELECT * FROM students
+WHERE Class BETWEEN 5 AND 10;</pre>
+      <p class="lead"><b>BETWEEN</b>: students whose class lies between 5 and 10.</p>
+    </div>
+    <div class="split">
+      <pre class="code">SELECT * FROM students
+WHERE Class IN (7, 11);</pre>
+      <p class="lead"><b>IN</b>: students whose class is 7 or 11.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide mcq" data-lesson="8" data-q="m69"></section>
+<section class="slide mcq" data-lesson="8" data-q="m70"></section>
+
+<section class="slide" data-lesson="8" data-title="Report">
+  <span class="eyebrow">2.8 · Report</span>
+  <h2>Report</h2>
+  <p class="def"><small>Definition</small>A report is the printed output that is created from a table or query.</p>
+  <ul class="pts">
+    <li>Reports offer a way to view, format and summarize the information in your SQL database.</li>
+    <li>A report consists of information pulled from tables or queries, and information stored with the report design, such as labels, headings and graphics.</li>
+    <li>It is an object used to display and print data in an organized manner. We cannot add, modify or delete records in it.</li>
+    <li>Since it is the printed format of the database, a report is considered hard copy output.</li>
+    <li>MySQL can be connected to reporting tools like Power BI, Tableau or Google Data Studio to generate advanced graphical or printable reports.</li>
+  </ul>
+</section>
+
+<section class="slide" data-lesson="8" data-title="Types of report">
+  <span class="eyebrow">2.8 · Report</span>
+  <h2>Types of report</h2>
+  <p class="lead">The different types of reports that can be generated with MySQL queries:</p>
+  <div class="cols">
+    <div class="card hl"><h3>Summary Reports</h3><p>Show total values like total sales or number of students.</p></div>
+    <div class="card hl"><h3>Detail Reports</h3><p>Display detailed records, for example a list of all employees with salary and tax.</p></div>
+    <div class="card hl"><h3>Grouped Reports</h3><p>Display records by categories like department or class.</p></div>
+    <div class="card hl"><h3>Filtered Reports</h3><p>Display reports based on certain conditions, for example employees with age greater than 45.</p></div>
+  </div>
+</section>
+
+<section class="slide" data-lesson="8" data-title="Advantages of report">
+  <span class="eyebrow">2.8 · Report</span>
+  <h2>Advantages of a report</h2>
+  <ul class="pts">
+    <li>It is used to display the database in printed form on paper.</li>
+    <li>It is hard copy output, so it can be used for future use.</li>
+    <li>It is used to display and distribute a summary of data in printed form.</li>
+  </ul>
+</section>
+
+<section class="slide mcq" data-lesson="8" data-q="m71"></section>
+<section class="slide mcq" data-lesson="8" data-q="m72"></section>
+
+<section class="slide" data-lesson="8" data-title="Practice: Employee table">
+  <span class="eyebrow">2.8 · Class practice</span>
+  <h2>Write the SQL query</h2>
+  <p class="lead">Table name: <b>Employee</b>. Write the SQL query for the operations on the next slides. Let students try first, then show the answers.</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Emp_Id</th><th>Name</th><th>Post</th><th>Address</th><th>Age</th><th>Salary</th></tr></thead>
+      <tbody>
+        <tr><td>1011</td><td>Ramesh</td><td>Manager</td><td>Kathmandu</td><td>60</td><td>65000</td></tr>
+        <tr><td>326</td><td>Bhuvan</td><td>Officer</td><td>Pokhara</td><td>45</td><td>55000</td></tr>
+        <tr><td>2100</td><td>Shyam</td><td>Programmer</td><td>Kathmandu</td><td>40</td><td>90000</td></tr>
+        <tr><td>532</td><td>Kamal</td><td>DBA</td><td>Bhaktapur</td><td>33</td><td>68000</td></tr>
+        <tr><td>590</td><td>Amit</td><td>DBA</td><td>Dharan</td><td>40</td><td>50000</td></tr>
+        <tr><td>156</td><td>Ram</td><td>Manager</td><td>Surkhet</td><td>39</td><td>70000</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="slide" data-lesson="8" data-title="Practice a to c">
+  <span class="eyebrow">2.8 · Class practice · a to c</span>
+  <div class="prow"><p><span class="q">a.</span>Display all the records of Employees whose Post is Manager.</p><pre class="code ans">SELECT * FROM Employee
+WHERE Post = 'Manager';</pre></div>
+  <div class="prow"><p><span class="q">b.</span>Display Emp_Id, Name and Age of staffs.</p><pre class="code ans">SELECT Emp_Id, Name, Age
+FROM Employee;</pre></div>
+  <div class="prow"><p><span class="q">c.</span>Update the Salary of staffs by 10% whose Post is DBA.</p><pre class="code ans">UPDATE Employee
+SET Salary = Salary + 0.1 * Salary
+WHERE Post = 'DBA';</pre></div>
+  <button class="ghost reveal" type="button" data-reveal>Show answers</button>
+</section>
+
+<section class="slide" data-lesson="8" data-title="Practice d to f">
+  <span class="eyebrow">2.8 · Class practice · d to f</span>
+  <div class="prow"><p><span class="q">d.</span>Delete the record whose age is greater than 58.</p><pre class="code ans">DELETE FROM Employee
+WHERE Age &gt; 58;</pre></div>
+  <div class="prow"><p><span class="q">e.</span>Rename the field name Emp_Id into Staff_Id.</p><pre class="code ans">ALTER TABLE Employee
+RENAME COLUMN Emp_Id TO Staff_Id;</pre></div>
+  <div class="prow"><p><span class="q">f.</span>Display all the records.</p><pre class="code ans">SELECT * FROM Employee;</pre></div>
+  <button class="ghost reveal" type="button" data-reveal>Show answers</button>
+</section>
+
+<section class="slide" data-lesson="8" data-title="Practice g to i">
+  <span class="eyebrow">2.8 · Class practice · g to i</span>
+  <div class="prow"><p><span class="q">g.</span>Delete the table.</p><pre class="code ans">DROP TABLE Employee;</pre></div>
+  <div class="prow"><p><span class="q">h.</span>Display the records of staffs whose name starts with 'K'.</p><pre class="code ans">SELECT * FROM Employee
+WHERE Name LIKE 'K%';</pre></div>
+  <div class="prow"><p><span class="q">i.</span>Display the records according to descending order by Salary.</p><pre class="code ans">SELECT * FROM Employee
+ORDER BY Salary DESC;</pre></div>
+  <button class="ghost reveal" type="button" data-reveal>Show answers</button>
+</section>
+
+<section class="slide" data-lesson="8" data-title="Practice j and k">
+  <span class="eyebrow">2.8 · Class practice · j and k</span>
+  <div class="prow"><p><span class="q">j.</span>Display all the records of staff who live either in Dharan or in Surkhet.</p><pre class="code ans">SELECT * FROM Employee
+WHERE Address = 'Dharan' OR Address = 'Surkhet';</pre></div>
+  <div class="prow"><p><span class="q">k.</span>Display the records of employees whose Salary lies between 65,000 and 80,000.</p><pre class="code ans">SELECT * FROM Employee
+WHERE Salary BETWEEN 65000 AND 80000;</pre></div>
+  <button class="ghost reveal" type="button" data-reveal>Show answers</button>
+</section>
+
+<section class="slide" data-lesson="8" data-title="Practice l and m">
+  <span class="eyebrow">2.8 · Class practice · l and m</span>
+  <div class="prow"><p><span class="q">l.</span>Display the records of employees whose age is greater than 50 and who live in Kathmandu.</p><pre class="code ans">SELECT * FROM Employee
+WHERE Age &gt; 50 AND Address = 'Kathmandu';</pre></div>
+  <div class="prow"><p><span class="q">m.</span>Display Emp_Id, Name and Salary of employees whose age is less than 40.</p><pre class="code ans">SELECT Emp_Id, Name, Salary
+FROM Employee
+WHERE Age &lt; 40;</pre></div>
+  <button class="ghost reveal" type="button" data-reveal>Show answers</button>
+</section>
+
 <section class="slide" data-lesson="0" data-title="Lesson summary">
   <span class="eyebrow">2.1, 2.2 and 2.3 · Summary</span>
   <h2>Key terms to remember</h2>
@@ -1405,15 +2079,32 @@ RENAME TO SchoolStudent;</pre></div>
   </div>
 </section>
 
+<section class="slide" data-lesson="0" data-title="Lesson summary (2.8)">
+  <span class="eyebrow">2.8 · Summary</span>
+  <h2>Key terms to remember</h2>
+  <div class="cols">
+    <div class="card"><h3>DML</h3><p>Accesses, manipulates and retrieves data in a table.</p></div>
+    <div class="card"><h3>INSERT</h3><p>Adds new records to a table.</p></div>
+    <div class="card"><h3>SELECT</h3><p>Extracts records. Clauses: WHERE, GROUP BY, HAVING, ORDER BY, AS, LIKE.</p></div>
+    <div class="card"><h3>UPDATE</h3><p>Modifies existing records.</p></div>
+    <div class="card"><h3>DELETE</h3><p>Deletes existing records.</p></div>
+    <div class="card"><h3>Constraints</h3><p>NOT NULL, UNIQUE, CHECK, DEFAULT, PRIMARY KEY.</p></div>
+    <div class="card"><h3>Operators</h3><p>Arithmetic, relational, logical (AND, OR, NOT) and special (BETWEEN, IN, IS NULL).</p></div>
+    <div class="card"><h3>Report</h3><p>Printed output created from a table or query. Hard copy output.</p></div>
+  </div>
+</section>
+
 </main>
 
 <footer>
   <div class="nav wrap">
     <button class="btn sec" id="prev" type="button">← Back</button>
-    <span class="hint">← → keys to move · F for full screen · T for contents</span>
+    <span class="hint">← → keys or swipe to move · F for full screen · T for contents</span>
     <button class="btn" id="next" type="button">Next →</button>
   </div>
 </footer>
+
+<button class="fsx" id="fsExit" type="button" aria-label="Exit full screen">✕</button>
 
 <div class="toc" id="toc" hidden>
   <div class="toc-panel" id="tocPanel"></div>
@@ -1429,7 +2120,8 @@ RENAME TO SchoolStudent;</pre></div>
     4: "2.4 Elements of Database",
     5: "2.5 Keys",
     6: "2.6 Introduction to MySQL",
-    7: "2.7 DDL (Data Definition Language)"
+    7: "2.7 DDL (Data Definition Language)",
+    8: "2.8 DML (Data Manipulation Language)"
   };
   var MCQ = {
     m1:{q:"Which area uses a database to store student records, accounting and grades?",o:["Banking","Education","Transportation","Social Media"],a:1,
@@ -1531,7 +2223,51 @@ RENAME TO SchoolStudent;</pre></div>
     m49:{q:"Which statement renames the table students to SchoolStudent?",o:["ALTER TABLE students RENAME TO SchoolStudent;","DROP TABLE students TO SchoolStudent;","CREATE TABLE students RENAME SchoolStudent;","TRUNCATE TABLE students TO SchoolStudent;"],a:0,
         e:"ALTER TABLE old_table_name RENAME TO new_table_name; renames a table."},
     m50:{q:"What does TRUNCATE TABLE students; do?",o:["Deletes the table and its structure","Renames the table","Adds a new column","Removes all records but keeps the table structure"],a:3,
-        e:"TRUNCATE removes all the records from a table but does not destroy the table's structure."}
+        e:"TRUNCATE removes all the records from a table but does not destroy the table's structure."},
+    m51:{q:"DML is used for:",o:["Accessing, manipulating and retrieving data in a table","Only creating databases","Only installing MySQL","Only printing reports"],a:0,
+        e:"Data Manipulation Language is used for selecting, inserting, deleting and updating data in a database."},
+    m52:{q:"Which command is used to insert new records in a table?",o:["ADD RECORD","PUT INTO","INSERT INTO","UPDATE INTO"],a:2,
+        e:"INSERT INTO table_name (columns) VALUES (values); adds new records to a table."},
+    m53:{q:"Which SELECT clause is used to arrange the data into groups?",o:["ORDER BY","GROUP BY","WHERE","AS"],a:1,
+        e:"GROUP BY arranges the data into groups. ORDER BY sorts the rows, WHERE filters rows, and AS gives an alias."},
+    m54:{q:"Which statement displays all the fields of the students table?",o:["SELECT ALL students;","SHOW students;","DISPLAY * students;","SELECT * FROM students;"],a:3,
+        e:"SELECT * FROM table_name; displays all the fields and records of the table."},
+    m55:{q:"What does SELECT * FROM students WHERE Class = 10; display?",o:["All the students","All records of students whose Class is 10","Only the Class column","It deletes students of Class 10"],a:1,
+        e:"The WHERE clause filters the rows, so only the records whose Class is 10 are displayed."},
+    m56:{q:"In a LIKE clause, what does the % wildcard represent?",o:["A single character","A series of characters","A number only","A blank space"],a:1,
+        e:"% represents a series of characters. The underscore ( _ ) represents a single character."},
+    m57:{q:"Which condition displays students whose name starts with S?",o:["Name LIKE '%S'","Name LIKE '_S'","Name LIKE 'S%'","Name = 'S'"],a:2,
+        e:"'S%' matches any name beginning with S followed by any series of characters."},
+    m58:{q:"In which order does ORDER BY sort the result by default?",o:["Descending order","Ascending order","Random order","Order of entry only"],a:1,
+        e:"ORDER BY sorts in ascending order by default. Use DESC for descending order."},
+    m59:{q:"Which statement modifies the existing records in a table?",o:["INSERT","SELECT","UPDATE","DROP"],a:2,
+        e:"UPDATE table_name SET column = value WHERE condition; modifies existing records."},
+    m60:{q:"Which statement deletes the records of Samjhana from the students table?",o:["DROP students WHERE Name = 'Samjhana';","REMOVE FROM students WHERE Name = 'Samjhana';","TRUNCATE students WHERE Name = 'Samjhana';","DELETE FROM students WHERE Name = 'Samjhana';"],a:3,
+        e:"DELETE FROM table_name WHERE condition; deletes the records that match the condition."},
+    m61:{q:"A column with the NOT NULL constraint:",o:["Cannot accept NULL values","Must have a default value of 10","Can only hold numbers","Is always the primary key"],a:0,
+        e:"The NOT NULL constraint prevents a column from accepting NULL values, so it cannot be left empty."},
+    m62:{q:"The UNIQUE constraint ensures that:",o:["A column cannot be empty","A column is always a number","All values in a column are different","A table has only one column"],a:2,
+        e:"UNIQUE ensures that all values in a column are different."},
+    m63:{q:"With CHECK (Class <= 12), which value can be inserted in the Class field?",o:["13","15","14","12"],a:3,
+        e:"CHECK limits the value range. Only a Class less than or equal to 12 can be inserted."},
+    m64:{q:"What does the DEFAULT constraint do?",o:["Sets a default value for a column when no value is given","Deletes duplicate values","Stops NULL values","Sorts the column"],a:0,
+        e:"The DEFAULT constraint sets a default value for a column. It is added automatically to new records if no other value is specified."},
+    m65:{q:"A field with the PRIMARY KEY constraint cannot contain:",o:["Numbers","Text","A null value or a repeated value","More than three characters"],a:2,
+        e:"A primary key field cannot contain a null value or a repeated (duplicate) value."},
+    m66:{q:"Which arithmetic operator gives the remainder of a division?",o:["/","*","%","-"],a:2,
+        e:"% is the modulus operator. It gives the remainder."},
+    m67:{q:"Which relational operator means 'not equal to'?",o:["=","<> or !=",">=","<="],a:1,
+        e:"<> and != both mean not equal to."},
+    m68:{q:"Which logical operator needs only one condition to be true?",o:["AND","NOT","BETWEEN","OR"],a:3,
+        e:"With OR, any one condition must be true to get a true result. AND needs all conditions to be true."},
+    m69:{q:"Which operator checks whether a value is within a range (inclusive)?",o:["IN","IS NULL","BETWEEN","LIKE"],a:2,
+        e:"BETWEEN checks if the value is within a range, including both ends."},
+    m70:{q:"WHERE Class IN (7, 11) displays students whose class is:",o:["Between 7 and 11","7 or 11","Greater than 7","Both 7 and 11 at once"],a:1,
+        e:"IN checks if the value matches any value in the list, so the class can be 7 or 11."},
+    m71:{q:"Reports that display detailed records, such as a list of all employees with salary and tax, are called:",o:["Summary reports","Grouped reports","Filtered reports","Detail reports"],a:3,
+        e:"Detail reports display detailed records. Summary reports show total values."},
+    m72:{q:"Which is an advantage of a report?",o:["It can be edited by anyone","It is hard copy output that can be used in future","It deletes unnecessary data","It can only be seen on screen"],a:1,
+        e:"A report displays the database in printed form, so it is hard copy output that can be used for future use."}
   };
   var LETTERS = ["A","B","C","D"];
 
@@ -1594,10 +2330,10 @@ RENAME TO SchoolStudent;</pre></div>
   }
   document.querySelectorAll("pre.code").forEach(function(c){
     var t = c.textContent.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-    c.innerHTML = t.replace(/\b(CREATE|DATABASE|TABLE|USE|DROP|ALTER|ADD|MODIFY|COLUMN|RENAME|TO|TRUNCATE)\b/g,"<b>$1</b>");
+    c.innerHTML = t.replace(/\b(CREATE|DATABASE|TABLE|USE|DROP|ALTER|ADD|MODIFY|COLUMN|RENAME|TO|TRUNCATE|INSERT|INTO|VALUES|SELECT|FROM|WHERE|LIKE|ORDER|BY|ASC|DESC|UPDATE|SET|DELETE|NOT|NULL|UNIQUE|CHECK|DEFAULT|PRIMARY|KEY|AND|OR|BETWEEN|IN|IS|GROUP|HAVING|AS)\b/g,"<b>$1</b>");
   });
   var selBox = document.getElementById("sel");
-  var SELS = [["0","Overview"],["1","2.1 Database"],["2","2.2 Terminologies"],["3","2.3 Data Types"],["4","2.4 Elements"],["5","2.5 Keys"],["6","2.6 MySQL"],["7","2.7 DDL"]];
+  var SELS = [["0","Overview"],["1","2.1 Database"],["2","2.2 Terminologies"],["3","2.3 Data Types"],["4","2.4 Elements"],["5","2.5 Keys"],["6","2.6 MySQL"],["7","2.7 DDL"],["8","2.8 DML"]];
   var selBtns = SELS.map(function(x){
     var b = document.createElement("button");
     b.type = "button"; b.dataset.l = x[0]; b.textContent = x[1]; b.title = LESSONS[x[0]];
@@ -1725,81 +2461,53 @@ RENAME TO SchoolStudent;</pre></div>
   document.getElementById("tocBtn").addEventListener("click", function(){ toc.hidden = !toc.hidden; if (!toc.hidden && items[cur]) items[cur].scrollIntoView({block:"center"}); });
   toc.addEventListener("click", function(e){ if (e.target === toc) toc.hidden = true; });
 
-  /* full screen */
+  /* full screen: uses the browser's full screen when available, otherwise just hides the bars */
   var fs = document.getElementById("fsBtn");
-  function isFs(){
-    return !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
-  }
-  function toggleFs(){
+  var root = document.documentElement;
+  function inFs(){ return root.classList.contains("fs"); }
+  function enterFs(){
+    root.classList.add("fs");
     try {
-      if (isFs()) {
-        var exit = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
-        if (exit) exit.call(document);
-      } else {
-        var el = document.documentElement;
-        var rfs = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
-        if (rfs) {
-          var p = rfs.call(el);
-          if (p && p.catch) p.catch(function(){});
-        }
-      }
+      if (root.requestFullscreen) { var p = root.requestFullscreen(); if (p && p.catch) p.catch(function(){}); }
     } catch (e) {}
+    setTimeout(refit, 150);
   }
-  var fsEnabled = document.fullscreenEnabled || document.webkitFullscreenEnabled || document.mozFullScreenEnabled || document.msFullscreenEnabled;
-  if (fsEnabled) { fs.hidden = false; fs.addEventListener("click", toggleFs); }
-  ["fullscreenchange", "webkitfullscreenchange", "mozfullscreenchange", "MSFullscreenChange"].forEach(function(ev){
-    document.addEventListener(ev, function(){
-      document.documentElement.classList.toggle("fs", isFs());
-      setTimeout(refit, 120);
-    });
+  function exitFs(){
+    root.classList.remove("fs");
+    try { if (document.fullscreenElement) { var p = document.exitFullscreen(); if (p && p.catch) p.catch(function(){}); } } catch (e) {}
+    setTimeout(refit, 150);
+  }
+  function toggleFs(){ if (inFs()) exitFs(); else enterFs(); }
+  fs.addEventListener("click", toggleFs);
+  document.getElementById("fsExit").addEventListener("click", exitFs);
+  document.addEventListener("fullscreenchange", function(){
+    root.classList.toggle("fs", !!document.fullscreenElement);
+    setTimeout(refit, 150);
   });
-  window.addEventListener("orientationchange", function(){ setTimeout(refit, 200); });
 
-  /* touch swipe navigation (mobile view & full screen mode) */
-  var touchStartX = 0;
-  var touchStartY = 0;
-  var touchStartTime = 0;
-
-  window.addEventListener("touchstart", function(e){
-    if (e.touches.length !== 1) return;
-    if (!toc.hidden) return;
-    touchStartX = e.touches[0].clientX;
-    touchStartY = e.touches[0].clientY;
-    touchStartTime = Date.now();
-  }, { passive: true });
-
-  window.addEventListener("touchend", function(e){
-    if (!touchStartTime || e.changedTouches.length !== 1) return;
-    if (!toc.hidden) return;
-    var deltaX = e.changedTouches[0].clientX - touchStartX;
-    var deltaY = e.changedTouches[0].clientY - touchStartY;
-    var deltaTime = Date.now() - touchStartTime;
-    touchStartTime = 0;
-
-    if (deltaTime < 650 && Math.abs(deltaX) >= 40 && Math.abs(deltaX) > Math.abs(deltaY) * 1.3) {
-      var target = e.target;
-      var scrollable = target && target.closest && target.closest(".scroll, pre, code");
-      if (scrollable && scrollable.scrollWidth > scrollable.clientWidth) {
-        if (deltaX < 0 && scrollable.scrollLeft + scrollable.clientWidth < scrollable.scrollWidth - 5) return;
-        if (deltaX > 0 && scrollable.scrollLeft > 5) return;
-      }
-      if (deltaX < 0) {
-        show(cur + 1);
-      } else {
-        show(cur - 1);
-      }
+  /* swipe left / right to change slide */
+  var tx = 0, ty = 0, tt = 0, tracking = false;
+  main.addEventListener("touchstart", function(e){
+    tracking = false;
+    if (e.touches.length !== 1 || !toc.hidden) return;
+    var t = e.touches[0]; tx = t.clientX; ty = t.clientY; tt = Date.now(); tracking = true;
+    var el = e.target.closest ? e.target.closest(".scroll, .code") : null;
+    if (el && el.scrollWidth > el.clientWidth + 1) tracking = false;
+  }, {passive:true});
+  main.addEventListener("touchend", function(e){
+    if (!tracking) return;
+    tracking = false;
+    var t = e.changedTouches[0], dx = t.clientX - tx, dy = t.clientY - ty;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5 && Date.now() - tt < 900) {
+      if (dx < 0) show(cur + 1); else show(cur - 1);
     }
-  }, { passive: true });
-
-  window.addEventListener("touchcancel", function(){
-    touchStartTime = 0;
-  });
+  }, {passive:true});
 
   /* keyboard */
   document.addEventListener("keydown", function(e){
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     var k = e.key;
-    if (k === "Escape") { toc.hidden = true; return; }
+    if (k === "Escape") { if (!toc.hidden) toc.hidden = true; else if (inFs() && !document.fullscreenElement) exitFs(); return; }
     if (!toc.hidden) return;
     var tag = document.activeElement && document.activeElement.tagName;
     if (k === "ArrowRight" || k === "PageDown") { e.preventDefault(); show(cur + 1); }
