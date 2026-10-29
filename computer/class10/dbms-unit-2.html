@@ -32,6 +32,13 @@ body{
 header,footer{font-size:clamp(13px,.7vw + 6px,19px)}
 html.fs header, html.fs footer{display:none}
 html.fs body{grid-template-rows:1fr}
+@media (max-width: 768px), (max-height: 500px) and (orientation: landscape){
+  html.fs footer{display:block}
+  html.fs body{grid-template-rows:1fr auto}
+  html.fs .nav{padding-block:.4em; justify-content:space-between}
+  html.fs .nav .hint{display:none}
+  html.fs .btn{padding:.45em 1.2em}
+}
 .wrap{padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px))}
 button{font:inherit; color:inherit; cursor:pointer}
 :focus-visible{outline:3px solid var(--pink); outline-offset:3px}
@@ -1720,15 +1727,72 @@ RENAME TO SchoolStudent;</pre></div>
 
   /* full screen */
   var fs = document.getElementById("fsBtn");
+  function isFs(){
+    return !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+  }
   function toggleFs(){
     try {
-      if (document.fullscreenElement) { document.exitFullscreen(); }
-      else { var p = document.documentElement.requestFullscreen(); if (p && p.catch) p.catch(function(){}); }
+      if (isFs()) {
+        var exit = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
+        if (exit) exit.call(document);
+      } else {
+        var el = document.documentElement;
+        var rfs = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
+        if (rfs) {
+          var p = rfs.call(el);
+          if (p && p.catch) p.catch(function(){});
+        }
+      }
     } catch (e) {}
   }
-  if (document.fullscreenEnabled) { fs.hidden = false; fs.addEventListener("click", toggleFs); }
-  document.addEventListener("fullscreenchange", function(){
-    document.documentElement.classList.toggle("fs", !!document.fullscreenElement);
+  var fsEnabled = document.fullscreenEnabled || document.webkitFullscreenEnabled || document.mozFullScreenEnabled || document.msFullscreenEnabled;
+  if (fsEnabled) { fs.hidden = false; fs.addEventListener("click", toggleFs); }
+  ["fullscreenchange", "webkitfullscreenchange", "mozfullscreenchange", "MSFullscreenChange"].forEach(function(ev){
+    document.addEventListener(ev, function(){
+      document.documentElement.classList.toggle("fs", isFs());
+      setTimeout(refit, 120);
+    });
+  });
+  window.addEventListener("orientationchange", function(){ setTimeout(refit, 200); });
+
+  /* touch swipe navigation (mobile view & full screen mode) */
+  var touchStartX = 0;
+  var touchStartY = 0;
+  var touchStartTime = 0;
+
+  window.addEventListener("touchstart", function(e){
+    if (e.touches.length !== 1) return;
+    if (!toc.hidden) return;
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+    touchStartTime = Date.now();
+  }, { passive: true });
+
+  window.addEventListener("touchend", function(e){
+    if (!touchStartTime || e.changedTouches.length !== 1) return;
+    if (!toc.hidden) return;
+    var deltaX = e.changedTouches[0].clientX - touchStartX;
+    var deltaY = e.changedTouches[0].clientY - touchStartY;
+    var deltaTime = Date.now() - touchStartTime;
+    touchStartTime = 0;
+
+    if (deltaTime < 650 && Math.abs(deltaX) >= 40 && Math.abs(deltaX) > Math.abs(deltaY) * 1.3) {
+      var target = e.target;
+      var scrollable = target && target.closest && target.closest(".scroll, pre, code");
+      if (scrollable && scrollable.scrollWidth > scrollable.clientWidth) {
+        if (deltaX < 0 && scrollable.scrollLeft + scrollable.clientWidth < scrollable.scrollWidth - 5) return;
+        if (deltaX > 0 && scrollable.scrollLeft > 5) return;
+      }
+      if (deltaX < 0) {
+        show(cur + 1);
+      } else {
+        show(cur - 1);
+      }
+    }
+  }, { passive: true });
+
+  window.addEventListener("touchcancel", function(){
+    touchStartTime = 0;
   });
 
   /* keyboard */
