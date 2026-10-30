@@ -1,4 +1,4 @@
-<title>Video</title>
+﻿<title>Video</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
 <style>
@@ -69,6 +69,7 @@ body[data-lesson="8"]{--accent:var(--gold); --accent-soft:var(--gold-soft)}
 .count{font:700 .8em var(--f-body); color:var(--muted); font-variant-numeric:tabular-nums; min-width:4.2em; text-align:right}
 .ghost{background:transparent; border:1.5px solid var(--line); border-radius:.5em; padding:.3em .75em; font-size:.75em; font-weight:600}
 .ghost:hover{border-color:var(--accent,var(--blue))}
+a.ghost{color:inherit; text-decoration:none; display:inline-flex; align-items:center}
 .bar{height:6px; background:var(--panel-2)}
 .bar i{display:block; height:100%; width:0; background:var(--accent,var(--blue)); transition:width .3s ease}
 
@@ -213,6 +214,7 @@ footer{background:var(--panel); border-top:1px solid var(--line)}
 
 <header>
   <div class="top wrap">
+    <a class="ghost" href="../index.html">← Back to Dashboard</a>
     <span class="brand">Unit 3 · Computer Science, Grade 10</span>
     <nav class="sel" id="sel" aria-label="Choose a lesson"></nav>
     <div class="tools">
