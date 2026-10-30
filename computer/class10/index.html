@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Grade 10 Computer Science</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap">
+<style>
+/* Layout: one screen, five unit rows. Ready units are links, unfinished units are dimmed. Light only for classroom glare. */
+:root{
+  --bg:#f3f6fb; --fg:#0f1b3a; --muted:#4a587a; --card:#ffffff; --line:#cdd7ea;
+  --c1:#1f5fbf; --c1-soft:#e3ecfc; --c1-border:#9dc2f8;
+  --c2:#0a7556; --c2-soft:#daf3e9; --c2-border:#87d9ba;
+  --c3:#a64f08; --c3-soft:#faebd7; --c3-border:#f4c498;
+  --c4:#0a6f86; --c4-soft:#d8f1f7; --c4-border:#8cd2e3;
+  --c5:#6a3cc0; --c5-soft:#ece3fc; --c5-border:#bea5f3;
+  --ready:#065f46; --ready-bg:#ecfdf5; --ready-line:#a7f3d0;
+  --display:'Bricolage Grotesque','Atkinson Hyperlegible',system-ui,sans-serif;
+  --body:'Atkinson Hyperlegible',system-ui,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:18px/1.45 var(--body);padding-block:28px 32px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:1100px;margin:0 auto}
+.eyebrow{font-size:.85rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--c1)}
+h1{font:800 clamp(2rem,5vw,3.2rem)/1.08 var(--display);margin:.1em 0 .45em;text-wrap:balance}
+h1 span{color:var(--c1)}
+
+.list{display:grid;gap:14px}
+.unit{--tc:var(--c1);--ts:var(--c1-soft);--tb:var(--c1-border);
+  display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:6px 22px;align-items:center;
+  background:var(--card);border:2.5px solid var(--tb);border-radius:16px;padding:18px 22px;color:inherit;text-decoration:none;
+  box-shadow:0 2px 8px rgba(15,27,58,.04);transition:transform .15s,box-shadow .15s,border-color .15s}
+.u1{--tc:var(--c1);--ts:var(--c1-soft);--tb:var(--c1-border)}
+.u2{--tc:var(--c2);--ts:var(--c2-soft);--tb:var(--c2-border)}
+.u3{--tc:var(--c3);--ts:var(--c3-soft);--tb:var(--c3-border)}
+.u4{--tc:var(--c4);--ts:var(--c4-soft);--tb:var(--c4-border)}
+.u5{--tc:var(--c5);--ts:var(--c5-soft);--tb:var(--c5-border)}
+a.unit:hover,a.unit:focus-visible{transform:translateY(-2px);border-color:var(--tc);box-shadow:0 10px 24px rgba(15,27,58,.1);outline:3px solid var(--tc);outline-offset:2px}
+.num{display:grid;place-items:center;width:3.2rem;height:3.2rem;border-radius:14px;background:var(--ts);color:var(--tc);font:800 1.7rem/1 var(--display)}
+.t{font:800 clamp(1.3rem,2.6vw,1.65rem)/1.2 var(--display);margin:0;text-wrap:balance}
+.d{margin:.2em 0 0;color:var(--muted);font-size:1rem}
+.meta{display:flex;flex-direction:column;align-items:flex-end;gap:6px;white-space:nowrap}
+.count{font-weight:700;color:var(--muted);font-size:.95rem}
+.status{font-weight:700;font-size:.85rem;padding:3px 10px;border-radius:6px;border:1px solid var(--line);color:var(--muted);background:var(--bg)}
+.status.ready{background:var(--ready-bg);border-color:var(--ready-line);color:var(--ready)}
+.soon{border-style:dashed;border-color:var(--line);background:#e9eef7;box-shadow:none}
+.soon .num{background:#dde4f1;color:#566282}
+.soon .t{color:#566282}
+
+footer{margin-top:22px;color:var(--muted);font-size:.92rem}
+kbd{background:var(--card);border:1.5px solid var(--line);border-radius:4px;padding:2px 6px;font:.82rem monospace;box-shadow:0 1px 0 rgba(0,0,0,.15)}
+
+@media (max-width:640px){
+  body{font-size:16px}
+  .unit{grid-template-columns:auto minmax(0,1fr);padding:14px 16px}
+  .meta{grid-column:1 / -1;flex-direction:row;align-items:center;justify-content:space-between}
+  footer{display:none}
+}
+@media (prefers-reduced-motion:reduce){.unit{transition:none}}
+</style>
+</head>
+<body>
+<main>
+<div class="eyebrow">Computer Science · Grade 10</div>
+<h1>Choose a <span>unit</span></h1>
+
+<div class="list">
+  <a class="unit u1" href="Unit 1 Network Lessons.html" data-num="1">
+    <span class="num">1</span>
+    <div><h2 class="t">Computer Network and Communication</h2><p class="d">Media, connectors, devices, topologies, network types, IP addressing and the internet.</p></div>
+    <div class="meta"><span class="status ready">Ready</span><span class="count">9 lessons</span></div>
+  </a>
+  <a class="unit u2" href="dbms-unit-2.html" data-num="2">
+    <span class="num">2</span>
+    <div><h2 class="t">Database Management System</h2><p class="d">Database concepts, data types, keys, MySQL, DDL and DML.</p></div>
+    <div class="meta"><span class="status ready">Ready</span><span class="count">8 lessons</span></div>
+  </a>
+  <a class="unit u3" href="Unit 3 Multimedia Lessons.html" data-num="3">
+    <span class="num">3</span>
+    <div><h2 class="t">Multimedia</h2><p class="d">Multimedia components, graphics, audio, video and animation.</p></div>
+    <div class="meta"><span class="status ready">Ready</span><span class="count">2 of 6 lessons</span></div>
+  </a>
+  <!-- To open Unit 4 later: change <div class="unit u4 soon"> to <a class="unit u4" href="..." data-num="4"> and set the status to "Ready". Same for Unit 5. -->
+  <div class="unit u4 soon">
+    <span class="num">4</span>
+    <div><h2 class="t">Programming in Python</h2><p class="d">Functions, libraries, Turtle, error handling, files and data visualization.</p></div>
+    <div class="meta"><span class="status">Coming soon</span></div>
+  </div>
+  <div class="unit u5 soon">
+    <span class="num">5</span>
+    <div><h2 class="t">AI and Contemporary Technology</h2><p class="d">AI, machine learning, generative AI, IoT, XR, cloud computing and e-services.</p></div>
+    <div class="meta"><span class="status">Coming soon</span></div>
+  </div>
+</div>
+
+<footer>Press <kbd>1</kbd> to <kbd>3</kbd> to open a ready unit. Press <kbd>F</kbd> for full screen.</footer>
+</main>
+
+<script>
+(function(){
+  function toggleFullscreen(){
+    try{
+      if(document.fullscreenElement||document.webkitFullscreenElement){
+        (document.exitFullscreen||document.webkitExitFullscreen).call(document);
+      }else{
+        var el=document.documentElement;
+        (el.requestFullscreen||el.webkitRequestFullscreen).call(el);
+      }
+    }catch(e){}
+  }
+  document.addEventListener("keydown",function(e){
+    if(e.ctrlKey||e.metaKey||e.altKey)return;
+    var tag=e.target&&e.target.tagName;
+    if(tag==="INPUT"||tag==="TEXTAREA")return;
+    if(e.key>="1"&&e.key<="5"){
+      var card=document.querySelector('a.unit[data-num="'+e.key+'"]');
+      if(card)window.location.href=card.href;
+    }else if(e.key==="f"||e.key==="F"){
+      toggleFullscreen();
+    }
+  });
+})();
+</script>
+</body>
+</html>
