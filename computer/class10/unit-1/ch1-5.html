@@ -1,0 +1,780 @@
+<title>Network Topologies</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: one lesson slide at a time on a full-height stage. Blue marks lesson 2.1, green marks lesson 2.2, magenta marks textbook definitions. */
+:root{
+  --bg:#f3f6fb; --panel:#ffffff; --panel-2:#e8eef8; --fg:#0f1a35; --muted:#475674; --line:#c9d4e6;
+  --blue:#1a4fb0; --blue-soft:#e1eafb;
+  --green:#0a7556; --green-soft:#dcf2e9;
+  --amber:#a64f08; --amber-soft:#fdebd5;
+  --teal:#0a6f86; --teal-soft:#d8f0f5;
+  --violet:#6a3cc0; --violet-soft:#ebe3fb;
+  --olive:#4f6f0a; --olive-soft:#e8f2cc;
+  --sienna:#8c3f1a; --sienna-soft:#f5e2d6;
+  --gold:#7d6400; --gold-soft:#f8f0c8;
+  --f-mono:"JetBrains Mono",ui-monospace,Consolas,"Courier New",monospace;
+  --pink:#b0125f; --pink-soft:#fbe3ee;
+  --ok:#0d7a3b; --ok-soft:#dcf3e4; --bad:#b3261e; --bad-soft:#fbe4e2;
+  --on-accent:#ffffff; --scrim:rgba(15,26,53,.55);
+  --f-display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --f-body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --base:clamp(18px, 1vw + 10px, 34px);
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; background:var(--bg); color:var(--fg);
+  font:400 var(--base)/1.45 var(--f-body);
+  display:grid; grid-template-rows:auto 1fr auto; overflow:hidden;
+}
+header,footer{font-size:clamp(13px,.7vw + 6px,19px)}
+html.fs header, html.fs footer{display:none}
+@supports (height:100dvh){html,body{height:100dvh}}
+main{touch-action:pan-y}
+.scroll,.code{touch-action:pan-x pan-y}
+.fsx{display:none; position:fixed; z-index:15; top:calc(env(safe-area-inset-top,0px) + 6px); right:max(8px,env(safe-area-inset-right,0px)); width:2.4em; height:2.4em; place-items:center; border-radius:50%; background:var(--panel); border:1px solid var(--line); color:var(--fg); font:700 16px/1 var(--f-body); opacity:.65}
+@media (pointer:coarse){html.fs .fsx{display:grid}}
+html.fs body{grid-template-rows:1fr}
+.wrap{padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px))}
+button{font:inherit; color:inherit; cursor:pointer}
+:focus-visible{outline:3px solid var(--pink); outline-offset:3px}
+
+/* header */
+header{background:var(--panel); border-bottom:1px solid var(--line)}
+.top{display:flex; align-items:center; gap:.6em 1em; flex-wrap:wrap; padding-block:.55em}
+.brand{font:800 .8em/1 var(--f-display); letter-spacing:.06em; text-transform:uppercase; color:var(--muted)}
+.sel{display:flex; flex-wrap:wrap; gap:.4em; min-width:0}
+.sel button{--c:var(--muted); --cs:var(--panel-2); background:var(--cs); color:var(--c); border:2px solid var(--c); border-radius:.55em; padding:.3em .85em; font:700 .8em/1.2 var(--f-body)}
+.sel button[data-l="1"]{--c:var(--blue); --cs:var(--blue-soft)}
+.sel button[data-l="2"]{--c:var(--green); --cs:var(--green-soft)}
+.sel button[data-l="3"]{--c:var(--amber); --cs:var(--amber-soft)}
+.sel button[data-l="4"]{--c:var(--teal); --cs:var(--teal-soft)}
+.sel button[data-l="5"]{--c:var(--violet); --cs:var(--violet-soft)}
+.sel button[data-l="6"]{--c:var(--olive); --cs:var(--olive-soft)}
+.sel button[data-l="7"]{--c:var(--sienna); --cs:var(--sienna-soft)}
+.sel button[data-l="8"]{--c:var(--gold); --cs:var(--gold-soft)}
+.sel button.on{background:var(--c); color:var(--on-accent)}
+.sel button:hover:not(.on){background:var(--panel)}
+body[data-lesson="1"]{--accent:var(--blue); --accent-soft:var(--blue-soft)}
+body[data-lesson="2"]{--accent:var(--green); --accent-soft:var(--green-soft)}
+body[data-lesson="3"]{--accent:var(--amber); --accent-soft:var(--amber-soft)}
+body[data-lesson="4"]{--accent:var(--teal); --accent-soft:var(--teal-soft)}
+body[data-lesson="5"]{--accent:var(--violet); --accent-soft:var(--violet-soft)}
+body[data-lesson="6"]{--accent:var(--olive); --accent-soft:var(--olive-soft)}
+body[data-lesson="7"]{--accent:var(--sienna); --accent-soft:var(--sienna-soft)}
+body[data-lesson="8"]{--accent:var(--gold); --accent-soft:var(--gold-soft)}
+.tools{margin-left:auto; display:flex; align-items:center; gap:.5em}
+.count{font:700 .8em var(--f-body); color:var(--muted); font-variant-numeric:tabular-nums; min-width:4.2em; text-align:right}
+.ghost{background:transparent; border:1.5px solid var(--line); border-radius:.5em; padding:.3em .75em; font-size:.75em; font-weight:600}
+.ghost:hover{border-color:var(--accent,var(--blue))}
+.bar{height:6px; background:var(--panel-2)}
+.bar i{display:block; height:100%; width:0; background:var(--accent,var(--blue)); transition:width .3s ease}
+
+/* stage */
+main{display:flex; flex-direction:column; overflow-y:auto; min-height:0}
+.slide{display:none; --accent:var(--blue); --accent-soft:var(--blue-soft)}
+.slide[data-lesson="2"]{--accent:var(--green); --accent-soft:var(--green-soft)}
+.slide[data-lesson="3"]{--accent:var(--amber); --accent-soft:var(--amber-soft)}
+.slide[data-lesson="4"]{--accent:var(--teal); --accent-soft:var(--teal-soft)}
+.slide[data-lesson="5"]{--accent:var(--violet); --accent-soft:var(--violet-soft)}
+.slide[data-lesson="6"]{--accent:var(--olive); --accent-soft:var(--olive-soft)}
+.slide[data-lesson="7"]{--accent:var(--sienna); --accent-soft:var(--sienna-soft)}
+.slide[data-lesson="8"]{--accent:var(--gold); --accent-soft:var(--gold-soft)}
+.slide.active{display:flex; flex-direction:column; gap:.8em; margin:auto; width:100%; max-width:76em; padding-block:1.1em; animation:rise .35s ease both}
+@keyframes rise{from{opacity:0; transform:translateY(.4em)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion: reduce){.slide.active{animation:none} .bar i{transition:none}}
+
+.eyebrow{font:700 .85em/1 var(--f-body); letter-spacing:.12em; text-transform:uppercase; color:var(--accent)}
+h1,h2,h3{font-family:var(--f-display); margin:0; text-wrap:balance; line-height:1.08}
+h1{font-size:3em; font-weight:800}
+h2{font-size:2.15em; font-weight:800}
+h3{font-size:1.2em; font-weight:800; color:var(--accent)}
+p{margin:0}
+.lead{font-size:1.15em; color:var(--muted); max-width:44em}
+b,strong{font-weight:700}
+
+.def{background:var(--pink-soft); border-left:.3em solid var(--pink); border-radius:.3em; padding:.7em 1em; font-size:1.12em; font-weight:600; color:var(--pink)}
+.def small{display:block; font-size:.7em; letter-spacing:.1em; text-transform:uppercase; margin-bottom:.35em; opacity:.85}
+.cols{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,17em),1fr)); gap:.8em}
+.card{background:var(--panel); border:1px solid var(--line); border-radius:.6em; padding:.8em 1em; min-width:0}
+.card p{font-size:1em; color:var(--muted); margin-top:.25em}
+.card.hl{border-color:var(--accent); background:var(--accent-soft)}
+.pts{margin:0; padding:0; list-style:none; display:grid; gap:.55em}
+.pts li{position:relative; padding-left:1.3em}
+.pts li::before{content:""; position:absolute; left:0; top:.55em; width:.55em; height:.55em; border-radius:50%; background:var(--accent)}
+.chips{display:flex; flex-wrap:wrap; gap:.45em}
+.tag{background:var(--accent-soft); color:var(--accent); border-radius:.4em; padding:.2em .7em; font-weight:700}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse; width:100%; background:var(--panel)}
+th,td{border:1px solid var(--line); padding:.45em .8em; text-align:left; vertical-align:top}
+th{background:var(--accent); color:var(--on-accent); font-family:var(--f-display)}
+td:first-child{font-weight:700}
+.note{color:var(--muted); font-size:.95em}
+svg.flow{width:100%; height:auto; max-height:26vh}
+.bx{fill:var(--accent-soft); stroke:var(--accent); stroke-width:3}
+.bx.on{fill:var(--accent)}
+.tx{fill:var(--fg); font:800 28px var(--f-display); text-anchor:middle}
+.tx.on{fill:var(--on-accent)}
+.st{fill:var(--muted); font:600 19px var(--f-body); text-anchor:middle}
+.st.on{fill:var(--on-accent)}
+.ar{stroke:var(--accent); stroke-width:4; fill:none}
+.mk{fill:var(--accent)}
+.split{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,19em),1fr)); gap:1em; align-items:start}
+.vs{display:grid; gap:.4em}
+.example{display:flex; flex-wrap:wrap; align-items:center; gap:.7em}
+.arrow{font:800 1.4em var(--f-display); color:var(--accent)}
+.sample td,.sample th{font-size:1em}
+.sample{max-width:none}
+
+/* title slide */
+.hero{display:grid; gap:.5em}
+.hero h1{color:var(--fg)}
+.hero h1 span{color:var(--blue)}
+.lessons{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,18em),1fr)); gap:.8em; margin-top:.6em}
+.lessons .card{border-width:2px; display:block; width:100%; text-align:left}
+.lessons .card:hover{background:var(--panel-2)}
+.lessons .card.a{border-color:var(--blue)} .lessons .card.b{border-color:var(--green)} .lessons .card.c{border-color:var(--amber)} .lessons .card.d{border-color:var(--teal)} .lessons .card.e{border-color:var(--violet)} .lessons .card.f{border-color:var(--olive)} .lessons .card.g{border-color:var(--sienna)} .lessons .card.h{border-color:var(--gold)}
+.lessons h3{font-size:1.1em}
+.lessons .card.a h3{color:var(--blue)} .lessons .card.b h3{color:var(--green)} .lessons .card.c h3{color:var(--amber)} .lessons .card.d h3{color:var(--teal)} .lessons .card.e h3{color:var(--violet)} .lessons .card.f h3{color:var(--olive)} .lessons .card.g h3{color:var(--sienna)} .lessons .card.h h3{color:var(--gold)}
+.ans{visibility:hidden}
+.shown .ans{visibility:visible}
+.reveal{width:max-content}
+table{font-variant-numeric:tabular-nums}
+tr.hirow td{background:var(--pink-soft); color:var(--pink); font-weight:700}
+td.col{background:var(--accent-soft); font-weight:700}
+td.fk{background:var(--pink-soft); color:var(--pink); font-weight:700}
+.tbl-sm table{font-size:.95em}
+.tbl-sm th,.tbl-sm td{padding:.35em .6em}
+.cap{font-weight:700; margin-bottom:.3em}
+.code{margin:0; background:var(--panel); border:1px solid var(--line); border-left:.3em solid var(--accent); border-radius:.4em; padding:.5em .9em; font:500 .95em/1.45 var(--f-mono); white-space:pre; overflow-x:auto; color:var(--fg)}
+.code b{color:var(--accent); font-weight:700}
+.lbl{font:800 .8em/1 var(--f-body); letter-spacing:.1em; text-transform:uppercase; color:var(--accent); margin:0 0 .35em}
+.lbl.ex{color:var(--pink)}
+.pair{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,17em),1fr)); gap:.9em}
+.pair > div{min-width:0}
+.pts.two{grid-template-columns:repeat(auto-fit,minmax(min(100%,19em),1fr)); column-gap:1.4em}
+.res{font-size:.95em}
+.prow{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,17em),1fr)); gap:.3em .9em; align-items:center; padding:.35em 0; border-bottom:1px solid var(--line)}
+.prow p{margin:0; font-weight:600}
+.prow .code{font-size:.85em; padding:.3em .7em}
+.prow .q{color:var(--accent); font-family:var(--f-display); font-weight:800; margin-right:.4em}
+.stack{display:grid; gap:.8em}
+svg.er{max-height:26vh}
+.eb{fill:var(--panel); stroke:var(--accent); stroke-width:3}
+.eb.j{fill:var(--accent-soft)}
+.et{fill:var(--accent); font:800 26px var(--f-display)}
+.ef{fill:var(--fg); font:600 20px var(--f-body)}
+.ef26{fill:var(--fg); font:600 26px var(--f-body)}
+.cd{fill:var(--fg); font:800 28px var(--f-display); text-anchor:middle}
+.eg{font-size:1em; color:var(--muted)}
+.hint{font-size:.9em; color:var(--muted)}
+
+/* checkpoint */
+.q-tag{display:inline-flex; align-items:center; gap:.5em; width:max-content; background:var(--pink-soft); color:var(--pink); font:800 .9em/1 var(--f-body); letter-spacing:.12em; text-transform:uppercase; padding:.5em .9em; border-radius:99px}
+.q-text{font:800 2.4em/1.12 var(--f-display); text-wrap:balance}
+.opts{display:grid; gap:.5em; margin-top:.2em}
+@media (min-width:900px){.opts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.opt{display:flex; align-items:center; gap:.8em; text-align:left; background:var(--panel); border:2px solid var(--line); border-radius:.6em; padding:.5em .8em; font-size:1.5em; font-weight:600; width:100%; line-height:1.25}
+.opt:hover{border-color:var(--accent)}
+.opt .k{flex:none; width:1.7em; height:1.7em; border-radius:.4em; display:grid; place-items:center; background:var(--panel-2); font:800 .9em var(--f-display)}
+.opt.correct{border-color:var(--ok); background:var(--ok-soft)}
+.opt.correct .k{background:var(--ok); color:var(--on-accent)}
+.opt.wrong{border-color:var(--bad); background:var(--bad-soft)}
+.opt.wrong .k{background:var(--bad); color:var(--on-accent)}
+.opt.dim{opacity:.55}
+.opt:disabled{cursor:default}
+.explain{border-radius:.5em; padding:.5em 1em; background:var(--panel); border:1px solid var(--line); font-size:1.3em}
+.explain b{display:block; margin-bottom:.15em}
+.explain.good b{color:var(--ok)} .explain.bad b{color:var(--bad)}
+.reset{width:max-content}
+
+/* footer */
+footer{background:var(--panel); border-top:1px solid var(--line)}
+.nav{display:flex; align-items:center; gap:.8em; padding-block:.6em}
+.nav .hint{flex:1; text-align:center}
+.btn{background:var(--accent,var(--blue)); color:var(--on-accent); border:0; border-radius:.55em; padding:.55em 1.4em; font-weight:700; font-size:1em}
+.btn.sec{background:transparent; color:var(--fg); border:2px solid var(--line)}
+.btn:disabled{opacity:.35; cursor:default}
+
+/* contents panel */
+.toc{position:fixed; inset:0; z-index:20; background:var(--scrim); padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px)); overflow-y:auto}
+.toc-panel{max-width:40em; margin:0 auto; background:var(--panel); border:1px solid var(--line); border-radius:.8em; padding:1em 1.2em; display:grid; gap:.3em; font-size:.85em}
+.toc-panel h3{margin-top:.7em; font-size:1em}
+.toc-panel h3:first-child{margin-top:0}
+.toc-item{display:flex; gap:.7em; align-items:baseline; background:none; border:0; text-align:left; padding:.25em .4em; border-radius:.35em; width:100%}
+.toc-item:hover{background:var(--panel-2)}
+.toc-item.now{background:var(--panel-2); font-weight:700}
+.toc-item .n{flex:none; width:2em; color:var(--muted); font-variant-numeric:tabular-nums}
+.toc-item.q{color:var(--pink)}
+@media (max-width:560px){h1{font-size:2.3em} h2{font-size:1.7em} .q-text{font-size:1.5em} .nav .hint{display:none} .nav{justify-content:space-between}}
+</style>
+
+<header>
+  <div class="top wrap">
+    <span class="brand">Chapter 1 · Computer Science, Grade 10</span>
+    <nav class="sel" id="sel" aria-label="Choose a lesson"></nav>
+    <div class="tools">
+      <span class="count" id="count">1 / 1</span>
+      <button class="ghost" id="tocBtn" type="button">Contents</button>
+      <button class="ghost" id="fsBtn" type="button">Full screen</button>
+    </div>
+  </div>
+  <div class="bar"><i id="bar"></i></div>
+</header>
+
+<main id="main" class="wrap">
+
+<section class="slide active" data-lesson="0" data-title="Overview">
+  <div class="hero">
+    <span class="eyebrow" style="color:var(--muted)">Unit 1 · Lesson 1.5</span>
+    <h1>Network <span>Topologies</span></h1>
+    <p class="lead">Six topics from Computer Network and Communication. Questions appear in the middle of each topic.</p>
+  </div>
+  <div class="lessons">
+    <button class="card a" type="button" data-go="1"><h3>Network Topologies</h3><p style="color:var(--fg);font-size:1em">What a topology is</p></button>
+    <button class="card b" type="button" data-go="2"><h3>Bus or Linear Topology</h3><p style="color:var(--fg);font-size:1em">One central cable</p></button>
+    <button class="card c" type="button" data-go="3"><h3>Star Topology</h3><p style="color:var(--fg);font-size:1em">A central hub or switch</p></button>
+    <button class="card d" type="button" data-go="4"><h3>Ring Topology</h3><p style="color:var(--fg);font-size:1em">A closed loop with a token</p></button>
+    <button class="card e" type="button" data-go="5"><h3>Hybrid Topology</h3><p style="color:var(--fg);font-size:1em">Mixing two or more topologies</p></button>
+    <button class="card f" type="button" data-go="6"><h3>Topologies Compared</h3><p style="color:var(--fg);font-size:1em">Strengths and weaknesses</p></button>
+  </div>
+  <p class="hint">Pick a topic above or in the top bar. Arrow keys, a swipe or the Next button move one slide. Press 1 to 4 (or A to D) to answer a question.</p>
+</section>
+<section class="slide" data-lesson="1" data-title="Network topologies">
+  <span class="eyebrow">1.5 · Network Topologies</span>
+  <h2>Network topologies</h2>
+  <p class="def"><small>Definition</small>Network topology refers to the arrangement and connection patterns of computers in the network. It is the physical layout of the terminals, links and computers in the network.</p>
+  <p class="lead">It can be defined as the cabling structure or geometrical arrangement of computers in a Local Area Network. It is also known as Network Topology or LAN Topology. Some topologies used in LAN are:</p>
+  <div class="cols" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,11em),1fr))">
+    <div class="card hl"><h3>Bus or linear</h3></div>
+    <div class="card hl"><h3>Star</h3></div>
+    <div class="card hl"><h3>Ring</h3></div>
+    <div class="card hl"><h3>Hybrid</h3></div>
+  </div>
+
+</section>
+<section class="slide mcq" data-lesson="1" data-q="g1"></section>
+<section class="slide" data-lesson="2" data-title="Bus or linear topology">
+  <span class="eyebrow">1.5 · Bus Topology</span>
+  <h2>Bus or linear topology</h2>
+  <p class="def"><small>Definition</small>In bus topology, all computers, servers and other devices are connected to a single central cable called the bus.</p>
+<svg class="flow" viewBox="0 0 900 245" role="img" aria-label="Devices connected to a single bus cable with a terminator at each end"><defs><marker id="mk1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="mk" d="M0 0L10 5L0 10z"/></marker></defs><rect class="bx" x="110" y="10" width="120" height="50" rx="16"/><text class="tx" x="170.0" y="45.0">PC 1</text><rect class="bx" x="340" y="10" width="120" height="50" rx="16"/><text class="tx" x="400.0" y="45.0">PC 2</text><rect class="bx" x="570" y="10" width="120" height="50" rx="16"/><text class="tx" x="630.0" y="45.0">Server</text><rect class="bx" x="225" y="180" width="120" height="50" rx="16"/><text class="tx" x="285.0" y="215.0">PC 3</text><rect class="bx" x="455" y="180" width="120" height="50" rx="16"/><text class="tx" x="515.0" y="215.0">Printer</text><line class="ar" x1="170" y1="60" x2="170" y2="120"/><line class="ar" x1="400" y1="60" x2="400" y2="120"/><line class="ar" x1="630" y1="60" x2="630" y2="120"/><line class="ar" x1="285" y1="120" x2="285" y2="180"/><line class="ar" x1="515" y1="120" x2="515" y2="180"/><line class="ar" x1="50" y1="120" x2="850" y2="120"/><text class="st" x="50" y="160">Terminator</text><text class="st" x="850" y="160">Terminator</text><text class="st" x="450" y="150">Bus (single central cable)</text><circle cx="50" cy="120" r="13" fill="var(--accent)"/><circle cx="850" cy="120" r="13" fill="var(--accent)"/></svg>  <ul class="pts">
+    <li>Each device communicates with others through this bus. Terminators are attached at both ends of the cable to prevent data from leaving the network.</li>
+    <li>If the bus has only two endpoints, the topology is called a linear bus topology.</li>
+    <li>It depends heavily on the central cable. If the bus fails, the entire network stops functioning. It also has a higher chance of data collisions.</li>
+  </ul>
+
+</section>
+<section class="slide" data-lesson="2" data-title="Bus topology: advantages and limitations">
+  <span class="eyebrow">1.5 · Bus Topology</span>
+  <h2>Bus topology: advantages and limitations</h2>
+  <div class="cols" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,20em),1fr))">
+    <div class="card hl"><h3>Advantages</h3><p>It is easy to set up and extend. Comparatively cheaper. The cable length required is the least compared to other networks. Linear bus is mostly used in small networks.</p></div>
+    <div class="card hl"><h3>Limitations</h3><p>If the main cable (bus) has any problem, the whole network breaks down. Maximum chance of collision of data. Difficult to detect and troubleshoot a fault at an individual station.</p></div>
+  </div>
+
+</section>
+<section class="slide mcq" data-lesson="2" data-q="g2"></section>
+<section class="slide mcq" data-lesson="2" data-q="g3"></section>
+<section class="slide" data-lesson="3" data-title="Star topology">
+  <span class="eyebrow">1.5 · Star Topology</span>
+  <h2>Star topology</h2>
+  <p class="def"><small>Definition</small>In star topology, all devices are connected to a central device. The central device can be a hub, switch or router.</p>
+<svg class="flow" viewBox="0 0 900 250" role="img" aria-label="Six devices each connected directly to a central hub or switch"><defs><marker id="mk2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="mk" d="M0 0L10 5L0 10z"/></marker></defs><rect class="bx on" x="375" y="95" width="150" height="60" rx="16"/><text class="tx on" x="450.0" y="135.0">Hub / Switch</text><rect class="bx" x="150" y="10" width="150" height="50" rx="16"/><text class="tx" x="225.0" y="45.0">PC</text><rect class="bx" x="600" y="10" width="150" height="50" rx="16"/><text class="tx" x="675.0" y="45.0">PC</text><rect class="bx" x="20" y="100" width="150" height="50" rx="16"/><text class="tx" x="95.0" y="135.0">PC</text><rect class="bx" x="730" y="100" width="150" height="50" rx="16"/><text class="tx" x="805.0" y="135.0">PC</text><rect class="bx" x="150" y="190" width="150" height="50" rx="16"/><text class="tx" x="225.0" y="225.0">PC</text><rect class="bx" x="600" y="190" width="150" height="50" rx="16"/><text class="tx" x="675.0" y="225.0">PC</text><line class="ar" x1="375" y1="100" x2="300" y2="50"/><line class="ar" x1="525" y1="100" x2="600" y2="50"/><line class="ar" x1="375" y1="125" x2="170" y2="125"/><line class="ar" x1="525" y1="125" x2="730" y2="125"/><line class="ar" x1="375" y1="150" x2="300" y2="200"/><line class="ar" x1="525" y1="150" x2="600" y2="200"/></svg>  <ul class="pts">
+    <li>Devices do not share a single cable. Each device has a direct connection to the central device.</li>
+    <li>All data passes through the central device before reaching its destination. The central device manages the network and controls data flow. It can also act as a repeater to strengthen signals.</li>
+    <li>It is one of the most widely used topologies in LANs. It uses different cables, such as UTP, coaxial or optical fiber.</li>
+  </ul>
+
+</section>
+<section class="slide" data-lesson="3" data-title="Star topology: advantages and limitations">
+  <span class="eyebrow">1.5 · Star Topology</span>
+  <h2>Star topology: advantages and limitations</h2>
+  <div class="cols" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,20em),1fr))">
+    <div class="card hl"><h3>Advantages</h3><p>Much better performance than bus topology. New nodes can be added easily without affecting the rest of the network. Centralized management helps in monitoring the network. Failure of one node or link does not affect the rest of the network.</p></div>
+    <div class="card hl"><h3>Limitations</h3><p>If the central device (hub or switch) fails, the entire network breaks down. The central device increases the overall cost. Performance and the number of nodes depend on the capacity of the central device. More cable is required, which can make installation difficult and costly.</p></div>
+  </div>
+
+</section>
+<section class="slide mcq" data-lesson="3" data-q="g4"></section>
+<section class="slide mcq" data-lesson="3" data-q="g5"></section>
+<section class="slide" data-lesson="4" data-title="Ring topology">
+  <span class="eyebrow">1.5 · Ring Topology</span>
+  <h2>Ring topology</h2>
+  <p class="def"><small>Definition</small>Ring topology is a network topology where all devices are connected in a closed circular loop. Each device is connected to two neighboring devices.</p>
+<svg class="flow" viewBox="0 0 900 255" role="img" aria-label="Four computers in a closed loop, data flows in one direction"><defs><marker id="mk3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="mk" d="M0 0L10 5L0 10z"/></marker></defs><rect class="bx" x="375" y="8" width="150" height="56" rx="16"/><text class="tx" x="450.0" y="46.0">PC 1</text><rect class="bx" x="700" y="100" width="150" height="56" rx="16"/><text class="tx" x="775.0" y="138.0">PC 2</text><rect class="bx" x="375" y="190" width="150" height="56" rx="16"/><text class="tx" x="450.0" y="228.0">PC 3</text><rect class="bx" x="50" y="100" width="150" height="56" rx="16"/><text class="tx" x="125.0" y="138.0">PC 4</text><line class="ar" x1="525" y1="45" x2="730" y2="98" marker-end="url(#mk3)"/><line class="ar" x1="790" y1="158" x2="525" y2="205" marker-end="url(#mk3)"/><line class="ar" x1="375" y1="218" x2="170" y2="158" marker-end="url(#mk3)"/><line class="ar" x1="120" y1="98" x2="375" y2="40" marker-end="url(#mk3)"/><text class="st" x="450" y="125">Flow of message</text><text class="st" x="450" y="150">one direction only</text></svg>  <ul class="pts">
+    <li>There is no central device to control the network. All devices have equal access to send and receive data.</li>
+    <li>Data travels in one direction only, clockwise or anti-clockwise. This ensures organized communication and prevents data collisions.</li>
+  </ul>
+
+</section>
+<section class="slide" data-lesson="4" data-title="Token passing in a ring">
+  <span class="eyebrow">1.5 · Ring Topology</span>
+  <h2>Token passing in a ring</h2>
+  <p class="lead">Ring networks use a token-passing method to send data. A token is a special signal or empty packet.</p>
+  <div class="cols" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,14em),1fr))">
+    <div class="card hl"><h3>1. Capture</h3><p>A device that wants to send data captures the token.</p></div>
+    <div class="card hl"><h3>2. Send</h3><p>It attaches its data and the destination address, and passes it along the ring.</p></div>
+    <div class="card hl"><h3>3. Check</h3><p>Each device checks if the data is for it.</p></div>
+    <div class="card hl"><h3>4. Receive or pass</h3><p>If yes, it receives the data and releases a new token. If not, it passes the token to the next device.</p></div>
+  </div>
+
+</section>
+<section class="slide" data-lesson="4" data-title="Ring topology: advantages and limitations">
+  <span class="eyebrow">1.5 · Ring Topology</span>
+  <h2>Ring topology: advantages and limitations</h2>
+  <div class="cols" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,20em),1fr))">
+    <div class="card hl"><h3>Advantages</h3><p>Data transmits in one direction only, which reduces the chances of data collision. No need for a network server to control the connectivity between workstations. Additional components do not affect the performance of the network. Each computer has equal access to resources.</p></div>
+    <div class="card hl"><h3>Limitations</h3><p>Each packet of data must pass through all the computers between source and destination, so it is slower than star topology. If one workstation or port goes down, the entire network gets affected. The network is highly dependent on the wire connecting the different components.</p></div>
+  </div>
+
+</section>
+<section class="slide mcq" data-lesson="4" data-q="g6"></section>
+<section class="slide mcq" data-lesson="4" data-q="g7"></section>
+<section class="slide mcq" data-lesson="4" data-q="g8"></section>
+<section class="slide" data-lesson="5" data-title="Hybrid topology">
+  <span class="eyebrow">1.5 · Hybrid Topology</span>
+  <h2>Hybrid topology</h2>
+  <p class="def"><small>Definition</small>A hybrid topology is a network structure that mixes two or more different types of topologies (like star, bus and ring) in one network.</p>
+<svg class="flow" viewBox="0 0 900 235" role="img" aria-label="Three star networks joined by a bus"><defs><marker id="mk4" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="mk" d="M0 0L10 5L0 10z"/></marker></defs><rect class="bx" x="30" y="15" width="230" height="90" rx="16"/><text class="tx" x="145.0" y="56.0">Star</text><text class="st" x="145.0" y="88.0">department A</text><rect class="bx" x="335" y="15" width="230" height="90" rx="16"/><text class="tx" x="450.0" y="56.0">Star</text><text class="st" x="450.0" y="88.0">department B</text><rect class="bx" x="640" y="15" width="230" height="90" rx="16"/><text class="tx" x="755.0" y="56.0">Star</text><text class="st" x="755.0" y="88.0">department C</text><line class="ar" x1="145" y1="108" x2="145" y2="170"/><line class="ar" x1="450" y1="108" x2="450" y2="170"/><line class="ar" x1="755" y1="108" x2="755" y2="170"/><line class="ar" x1="50" y1="170" x2="850" y2="170"/><text class="st" x="450" y="212">Bus topology connects the departments</text></svg>  <ul class="pts">
+    <li>It combines the strengths of each topology and helps build a more reliable and efficient network.</li>
+    <li>Example: a university may use a star topology in its computer lab (easy to manage) and a bus topology to connect the different buildings or departments (cost-saving), all combined into a single hybrid network.</li>
+  </ul>
+
+</section>
+<section class="slide" data-lesson="5" data-title="Hybrid topology: advantages and limitations">
+  <span class="eyebrow">1.5 · Hybrid Topology</span>
+  <h2>Hybrid topology: advantages and limitations</h2>
+  <div class="cols" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,20em),1fr))">
+    <div class="card hl"><h3>Advantages</h3><p>It can be designed based on requirements. If one part fails, it does not crash the whole network. New devices can be added easily. It combines the best parts of each topology.</p></div>
+    <div class="card hl"><h3>Limitations</h3><p>It needs more devices, cables and planning. It is harder to set up and maintain. It needs skilled technicians because configuration can be difficult. Hybrid topologies are complex to design and can be expensive.</p></div>
+  </div>
+
+</section>
+<section class="slide mcq" data-lesson="5" data-q="g9"></section>
+<section class="slide mcq" data-lesson="5" data-q="g10"></section>
+<section class="slide" data-lesson="6" data-title="Topologies compared">
+  <span class="eyebrow">1.5 · Network Topologies</span>
+  <h2>Topologies compared</h2>
+  <div class="scroll "><table><thead><tr><th>Topology</th><th>Layout</th><th>Main strength</th><th>Main weakness</th></tr></thead><tbody><tr><td>Bus</td><td>All devices on one central cable</td><td>Easy to set up, cheapest, least cable</td><td>If the bus fails, the whole network breaks down</td></tr><tr><td>Star</td><td>All devices connect to a central hub or switch</td><td>One node failing does not affect the others</td><td>If the central device fails, the whole network breaks down</td></tr><tr><td>Ring</td><td>Closed loop, data in one direction, token passing</td><td>Fewer collisions, equal access</td><td>If one workstation goes down, the network is affected</td></tr><tr><td>Hybrid</td><td>A mix of two or more topologies</td><td>Designed to need, reliable, easy to extend</td><td>Complex and expensive</td></tr></tbody></table></div>
+
+</section>
+<section class="slide mcq" data-lesson="6" data-q="g11"></section>
+<section class="slide" data-lesson="0" data-title="Lesson summary">
+  <span class="eyebrow">1.5 · Summary</span>
+  <h2>Key terms to remember</h2>
+  <div class="cols" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,17em),1fr))">
+    <div class="card"><h3>Topology</h3><p>The arrangement of computers in a network.</p></div>
+    <div class="card"><h3>Bus</h3><p>Single central cable with terminators.</p></div>
+    <div class="card"><h3>Star</h3><p>Central hub or switch.</p></div>
+    <div class="card"><h3>Ring</h3><p>Closed loop, one direction, token passing.</p></div>
+    <div class="card"><h3>Hybrid</h3><p>Mix of two or more topologies.</p></div>
+  </div>
+
+</section>
+
+</main>
+
+<footer>
+  <div class="nav wrap">
+    <button class="btn sec" id="prev" type="button">← Back</button>
+    <span class="hint">← → keys or swipe to move · F for full screen · T for contents</span>
+    <button class="btn" id="next" type="button">Next →</button>
+  </div>
+</footer>
+
+<button class="fsx" id="fsExit" type="button" aria-label="Exit full screen">✕</button>
+
+<div class="toc" id="toc" hidden>
+  <div class="toc-panel" id="tocPanel"></div>
+</div>
+
+<script>
+(function(){
+  var LESSONS = {"0": "Overview and summary", "1": "1.5 Network Topologies", "2": "1.5 Bus or Linear Topology", "3": "1.5 Star Topology", "4": "1.5 Ring Topology", "5": "1.5 Hybrid Topology", "6": "1.5 Topologies Compared"};
+  var MCQ = {
+ "g1": {
+  "q": "Network topology refers to:",
+  "o": [
+   "The arrangement and connection pattern of computers in a network",
+   "The speed of the internet",
+   "The price of a computer",
+   "The size of a monitor"
+  ],
+  "a": 0,
+  "e": "Network topology is the physical layout of the terminals, links and computers in the network."
+ },
+ "g2": {
+  "q": "Terminators in a bus topology are attached:",
+  "o": [
+   "At both ends of the cable",
+   "Only at the middle",
+   "On each computer screen",
+   "Only to the server"
+  ],
+  "a": 0,
+  "e": "Terminators are attached at both ends of the bus cable to prevent data from leaving the network."
+ },
+ "g3": {
+  "q": "In bus topology, if the main cable fails:",
+  "o": [
+   "Only one computer stops",
+   "The whole network breaks down",
+   "Nothing happens",
+   "The network becomes faster"
+  ],
+  "a": 1,
+  "e": "The whole network breaks down if the main cable (bus) has a problem."
+ },
+ "g4": {
+  "q": "In star topology, all devices are connected to:",
+  "o": [
+   "A central device",
+   "A single bus cable",
+   "Each other in a loop",
+   "A satellite"
+  ],
+  "a": 0,
+  "e": "In star topology each device has a direct connection to a central device, such as a hub, switch or router."
+ },
+ "g5": {
+  "q": "What happens in star topology if one node fails?",
+  "o": [
+   "The entire network fails",
+   "The rest of the network is not affected",
+   "The hub is destroyed",
+   "All data is lost"
+  ],
+  "a": 1,
+  "e": "Failure of one node or link does not affect the rest of the network. If the central device fails, the entire network breaks down."
+ },
+ "g6": {
+  "q": "In a ring topology, data travels:",
+  "o": [
+   "In both directions at once",
+   "In one direction only",
+   "Directly to a hub",
+   "Only by satellite"
+  ],
+  "a": 1,
+  "e": "Data travels in one direction only, clockwise or anti-clockwise, which prevents data collisions."
+ },
+ "g7": {
+  "q": "What is a token in a ring network?",
+  "o": [
+   "A special signal or empty packet",
+   "A type of cable",
+   "A kind of printer",
+   "A password"
+  ],
+  "a": 0,
+  "e": "A token is a special signal or empty packet. A device that wants to send data captures the token and attaches its data."
+ },
+ "g8": {
+  "q": "What happens in a ring if one workstation or port goes down?",
+  "o": [
+   "Nothing happens",
+   "The entire network gets affected",
+   "Only that computer is affected",
+   "The network speeds up"
+  ],
+  "a": 1,
+  "e": "If one workstation or port goes down, the entire ring network gets affected."
+ },
+ "g9": {
+  "q": "A hybrid topology is:",
+  "o": [
+   "A mix of two or more different topologies",
+   "Only a star topology",
+   "Only a ring topology",
+   "A network without cables"
+  ],
+  "a": 0,
+  "e": "A hybrid topology mixes two or more different types of topologies in one network."
+ },
+ "g10": {
+  "q": "What is one major disadvantage of a hybrid topology?",
+  "o": [
+   "It cannot add devices",
+   "It is complex to design and can be expensive",
+   "It has only one cable",
+   "It has no central device"
+  ],
+  "a": 1,
+  "e": "Hybrid topologies are complex to design and can be expensive to install and maintain."
+ },
+ "g11": {
+  "q": "Which topology uses token passing?",
+  "o": [
+   "Bus",
+   "Star",
+   "Ring",
+   "Hybrid"
+  ],
+  "a": 2,
+  "e": "Ring networks use a token-passing method to send data."
+ }
+};
+  var LETTERS = ["A","B","C","D"];
+
+  var main = document.getElementById("main");
+  var slides = Array.prototype.slice.call(main.querySelectorAll(".slide"));
+  var cur = 0;
+
+  function buildMcq(s, key){
+    var d = MCQ[key];
+    s.dataset.title = "Checkpoint";
+    s.setAttribute("data-title", "Checkpoint: " + d.q);
+    var html = '<span class="q-tag">Checkpoint</span><h2 class="q-text"></h2><div class="opts"></div><div class="explain" hidden></div><button class="ghost reset" type="button" hidden>Reset question</button>';
+    s.innerHTML = html;
+    s.querySelector(".q-text").textContent = d.q;
+    var box = s.querySelector(".opts");
+    d.o.forEach(function(t, i){
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "opt"; b.dataset.i = i;
+      var k = document.createElement("span"); k.className = "k"; k.textContent = LETTERS[i];
+      var tx = document.createElement("span"); tx.textContent = t;
+      b.appendChild(k); b.appendChild(tx);
+      b.addEventListener("click", function(){ answer(s, key, i); });
+      box.appendChild(b);
+    });
+    s.querySelector(".reset").addEventListener("click", function(){ reset(s); });
+  }
+  function answer(s, key, i){
+    if (s._done) return;
+    s._done = true;
+    var d = MCQ[key];
+    var opts = s.querySelectorAll(".opt");
+    opts.forEach(function(b, j){
+      b.disabled = true;
+      if (j === d.a) b.classList.add("correct");
+      else if (j === i) b.classList.add("wrong");
+      else b.classList.add("dim");
+    });
+    var ex = s.querySelector(".explain");
+    var good = i === d.a;
+    ex.className = "explain " + (good ? "good" : "bad");
+    ex.innerHTML = "";
+    var h = document.createElement("b"); h.textContent = good ? "Correct" : "Not quite. The answer is " + LETTERS[d.a] + ".";
+    var p = document.createElement("span"); p.textContent = d.e;
+    ex.appendChild(h); ex.appendChild(p);
+    ex.hidden = false;
+    s.querySelector(".reset").hidden = false;
+  }
+  function reset(s){
+    s._done = false;
+    s.querySelectorAll(".opt").forEach(function(b){ b.disabled = false; b.className = "opt"; });
+    s.querySelector(".explain").hidden = true;
+    s.querySelector(".reset").hidden = true;
+  }
+  slides.forEach(function(s){ if (s.dataset.q) buildMcq(s, s.dataset.q); });
+
+  function goLesson(l){
+    for (var i = 0; i < slides.length; i++) {
+      if ((slides[i].dataset.lesson || "0") === l) { show(i); return; }
+    }
+  }
+  document.querySelectorAll("pre.code").forEach(function(c){
+    var t = c.textContent.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    c.innerHTML = t.replace(/\b(CREATE|DATABASE|TABLE|USE|DROP|ALTER|ADD|MODIFY|COLUMN|RENAME|TO|TRUNCATE|INSERT|INTO|VALUES|SELECT|FROM|WHERE|LIKE|ORDER|BY|ASC|DESC|UPDATE|SET|DELETE|NOT|NULL|UNIQUE|CHECK|DEFAULT|PRIMARY|KEY|AND|OR|BETWEEN|IN|IS|GROUP|HAVING|AS)\b/g,"<b>$1</b>");
+  });
+  var selBox = document.getElementById("sel");
+  var SELS = [["0", "Overview"], ["1", "Topologies"], ["2", "Bus"], ["3", "Star"], ["4", "Ring"], ["5", "Hybrid"], ["6", "Compare"]];
+  var selBtns = SELS.map(function(x){
+    var b = document.createElement("button");
+    b.type = "button"; b.dataset.l = x[0]; b.textContent = x[1]; b.title = LESSONS[x[0]];
+    b.addEventListener("click", function(){ goLesson(x[0]); });
+    selBox.appendChild(b);
+    return b;
+  });
+  document.querySelectorAll("[data-go]").forEach(function(b){
+    b.addEventListener("click", function(){ goLesson(b.dataset.go); });
+  });
+  slides.forEach(function(s){
+    var r = s.querySelector("[data-reveal]");
+    if (r) r.addEventListener("click", function(){
+      var on = s.classList.toggle("shown");
+      r.textContent = on ? "Hide answers" : "Show answers";
+    });
+  });
+  var count = document.getElementById("count");
+  var bar = document.getElementById("bar");
+  var prev = document.getElementById("prev");
+  var next = document.getElementById("next");
+
+  /* Choose the largest font size at which the slide fits the stage. */
+  function reserveAnswer(s){
+    if (!s.dataset.q || s._done) return function(){};
+    var ex = s.querySelector(".explain"), rs = s.querySelector(".reset");
+    var h0 = ex.hidden, r0 = rs.hidden, html0 = ex.innerHTML;
+    ex.innerHTML = "<b>Not quite. The answer is A.</b><span></span>";
+    ex.lastChild.textContent = MCQ[s.dataset.q].e;
+    ex.hidden = false; rs.hidden = false;
+    return function(){ ex.hidden = h0; rs.hidden = r0; ex.innerHTML = html0; };
+  }
+  function fitSlide(){
+    var s = slides[cur];
+    if (!s) return;
+    var base = parseFloat(getComputedStyle(document.body).fontSize) || 20;
+    var lo = Math.max(14, base * 0.6), hi = base * 1.8;
+    var restore = reserveAnswer(s);
+    function fits(px){
+      s.style.fontSize = px + "px";
+      if (s.offsetHeight > main.clientHeight + 1) return false;
+      if (s.scrollWidth > s.clientWidth + 1) return false;
+      var sc = s.querySelectorAll(".scroll, .code");
+      for (var k = 0; k < sc.length; k++) if (sc[k].scrollWidth > sc[k].clientWidth + 1) return false;
+      return true;
+    }
+    var best;
+    if (fits(hi)) best = hi;
+    else if (!fits(lo)) best = lo;
+    else {
+      for (var n = 0; n < 10; n++) {
+        var mid = (lo + hi) / 2;
+        if (fits(mid)) lo = mid; else hi = mid;
+      }
+      best = lo;
+    }
+    s.style.fontSize = best + "px";
+    restore();
+  }
+  var fitTimer = null;
+  function refit(){ cancelAnimationFrame(fitTimer); fitTimer = requestAnimationFrame(fitSlide); }
+  window.addEventListener("resize", refit);
+  document.addEventListener("fullscreenchange", function(){ setTimeout(refit, 120); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(refit);
+
+  function show(i, noHash){
+    if (i < 0) i = 0;
+    if (i > slides.length - 1) i = slides.length - 1;
+    cur = i;
+    slides.forEach(function(s, j){ s.classList.toggle("active", j === i); });
+    var l = slides[i].dataset.lesson || "0";
+    document.body.dataset.lesson = l;
+    selBtns.forEach(function(b){
+      var on = b.dataset.l === l;
+      b.classList.toggle("on", on);
+      if (on) b.setAttribute("aria-current", "true"); else b.removeAttribute("aria-current");
+    });
+    count.textContent = (i + 1) + " / " + slides.length;
+    bar.style.width = ((i + 1) / slides.length * 100) + "%";
+    prev.disabled = i === 0;
+    next.disabled = i === slides.length - 1;
+    main.scrollTop = 0;
+    fitSlide();
+    if (!noHash) {
+      try { if (location.hash !== "#slide-" + (i + 1)) location.hash = "slide-" + (i + 1); } catch (e) {}
+    }
+    markToc();
+  }
+  function fromHash(){
+    var m = /^#slide-(\d+)$/.exec(location.hash || "");
+    return m ? parseInt(m[1], 10) - 1 : 0;
+  }
+  window.addEventListener("hashchange", function(){ var i = fromHash(); if (i !== cur) show(i, true); });
+
+  prev.addEventListener("click", function(){ show(cur - 1); });
+  next.addEventListener("click", function(){ show(cur + 1); });
+
+  /* contents */
+  var toc = document.getElementById("toc");
+  var panel = document.getElementById("tocPanel");
+  var items = [];
+  function buildToc(){
+    var last = null;
+    slides.forEach(function(s, i){
+      var l = s.dataset.lesson || "0";
+      if (l !== last) {
+        var h = document.createElement("h3");
+        h.textContent = LESSONS[l];
+        panel.appendChild(h);
+        last = l;
+      }
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "toc-item" + (s.dataset.q ? " q" : "");
+      var n = document.createElement("span"); n.className = "n"; n.textContent = i + 1;
+      var t = document.createElement("span"); t.textContent = s.dataset.q ? "Checkpoint question" : s.dataset.title;
+      b.appendChild(n); b.appendChild(t);
+      b.addEventListener("click", function(){ toc.hidden = true; show(i); });
+      panel.appendChild(b);
+      items.push(b);
+    });
+  }
+  function markToc(){ items.forEach(function(b, i){ b.classList.toggle("now", i === cur); }); }
+  buildToc();
+  document.getElementById("tocBtn").addEventListener("click", function(){ toc.hidden = !toc.hidden; if (!toc.hidden && items[cur]) items[cur].scrollIntoView({block:"center"}); });
+  toc.addEventListener("click", function(e){ if (e.target === toc) toc.hidden = true; });
+
+  /* full screen: uses the browser's full screen when available, otherwise just hides the bars */
+  var fs = document.getElementById("fsBtn");
+  var root = document.documentElement;
+  function inFs(){ return root.classList.contains("fs"); }
+  function enterFs(){
+    root.classList.add("fs");
+    try {
+      if (root.requestFullscreen) { var p = root.requestFullscreen(); if (p && p.catch) p.catch(function(){}); }
+    } catch (e) {}
+    setTimeout(refit, 150);
+  }
+  function exitFs(){
+    root.classList.remove("fs");
+    try { if (document.fullscreenElement) { var p = document.exitFullscreen(); if (p && p.catch) p.catch(function(){}); } } catch (e) {}
+    setTimeout(refit, 150);
+  }
+  function toggleFs(){ if (inFs()) exitFs(); else enterFs(); }
+  fs.addEventListener("click", toggleFs);
+  document.getElementById("fsExit").addEventListener("click", exitFs);
+  document.addEventListener("fullscreenchange", function(){
+    root.classList.toggle("fs", !!document.fullscreenElement);
+    setTimeout(refit, 150);
+  });
+
+  /* swipe left / right to change slide */
+  var tx = 0, ty = 0, tt = 0, tracking = false;
+  main.addEventListener("touchstart", function(e){
+    tracking = false;
+    if (e.touches.length !== 1 || !toc.hidden) return;
+    var t = e.touches[0]; tx = t.clientX; ty = t.clientY; tt = Date.now(); tracking = true;
+    var el = e.target.closest ? e.target.closest(".scroll, .code") : null;
+    if (el && el.scrollWidth > el.clientWidth + 1) tracking = false;
+  }, {passive:true});
+  main.addEventListener("touchend", function(e){
+    if (!tracking) return;
+    tracking = false;
+    var t = e.changedTouches[0], dx = t.clientX - tx, dy = t.clientY - ty;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5 && Date.now() - tt < 900) {
+      if (dx < 0) show(cur + 1); else show(cur - 1);
+    }
+  }, {passive:true});
+
+  /* keyboard */
+  document.addEventListener("keydown", function(e){
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    var k = e.key;
+    if (k === "Escape") { if (!toc.hidden) toc.hidden = true; else if (inFs() && !document.fullscreenElement) exitFs(); return; }
+    if (!toc.hidden) return;
+    var tag = document.activeElement && document.activeElement.tagName;
+    if (k === "ArrowRight" || k === "PageDown") { e.preventDefault(); show(cur + 1); }
+    else if (k === "ArrowLeft" || k === "PageUp") { e.preventDefault(); show(cur - 1); }
+    else if (k === " " && tag !== "BUTTON") { e.preventDefault(); show(cur + 1); }
+    else if (k === "Home") { show(0); }
+    else if (k === "End") { show(slides.length - 1); }
+    else if (k === "f" || k === "F") { toggleFs(); }
+    else if (k === "t" || k === "T") { toc.hidden = false; if (items[cur]) items[cur].scrollIntoView({block:"center"}); }
+    else {
+      var s = slides[cur];
+      if (s && s.dataset.q) {
+        var idx = "1234".indexOf(k);
+        if (idx < 0) idx = "abcd".indexOf(k.toLowerCase());
+        if (idx > -1) { var b = s.querySelectorAll(".opt")[idx]; if (b && !b.disabled) b.click(); }
+      }
+    }
+  });
+
+  show(fromHash(), true);
+})();
+</script>

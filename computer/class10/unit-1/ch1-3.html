@@ -1,0 +1,662 @@
+<title>RJ45 and Media Converter</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: one lesson slide at a time on a full-height stage. Blue marks lesson 2.1, green marks lesson 2.2, magenta marks textbook definitions. */
+:root{
+  --bg:#f3f6fb; --panel:#ffffff; --panel-2:#e8eef8; --fg:#0f1a35; --muted:#475674; --line:#c9d4e6;
+  --blue:#1a4fb0; --blue-soft:#e1eafb;
+  --green:#0a7556; --green-soft:#dcf2e9;
+  --amber:#a64f08; --amber-soft:#fdebd5;
+  --teal:#0a6f86; --teal-soft:#d8f0f5;
+  --violet:#6a3cc0; --violet-soft:#ebe3fb;
+  --olive:#4f6f0a; --olive-soft:#e8f2cc;
+  --sienna:#8c3f1a; --sienna-soft:#f5e2d6;
+  --gold:#7d6400; --gold-soft:#f8f0c8;
+  --f-mono:"JetBrains Mono",ui-monospace,Consolas,"Courier New",monospace;
+  --pink:#b0125f; --pink-soft:#fbe3ee;
+  --ok:#0d7a3b; --ok-soft:#dcf3e4; --bad:#b3261e; --bad-soft:#fbe4e2;
+  --on-accent:#ffffff; --scrim:rgba(15,26,53,.55);
+  --f-display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --f-body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --base:clamp(18px, 1vw + 10px, 34px);
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; background:var(--bg); color:var(--fg);
+  font:400 var(--base)/1.45 var(--f-body);
+  display:grid; grid-template-rows:auto 1fr auto; overflow:hidden;
+}
+header,footer{font-size:clamp(13px,.7vw + 6px,19px)}
+html.fs header, html.fs footer{display:none}
+@supports (height:100dvh){html,body{height:100dvh}}
+main{touch-action:pan-y}
+.scroll,.code{touch-action:pan-x pan-y}
+.fsx{display:none; position:fixed; z-index:15; top:calc(env(safe-area-inset-top,0px) + 6px); right:max(8px,env(safe-area-inset-right,0px)); width:2.4em; height:2.4em; place-items:center; border-radius:50%; background:var(--panel); border:1px solid var(--line); color:var(--fg); font:700 16px/1 var(--f-body); opacity:.65}
+@media (pointer:coarse){html.fs .fsx{display:grid}}
+html.fs body{grid-template-rows:1fr}
+.wrap{padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px))}
+button{font:inherit; color:inherit; cursor:pointer}
+:focus-visible{outline:3px solid var(--pink); outline-offset:3px}
+
+/* header */
+header{background:var(--panel); border-bottom:1px solid var(--line)}
+.top{display:flex; align-items:center; gap:.6em 1em; flex-wrap:wrap; padding-block:.55em}
+.brand{font:800 .8em/1 var(--f-display); letter-spacing:.06em; text-transform:uppercase; color:var(--muted)}
+.sel{display:flex; flex-wrap:wrap; gap:.4em; min-width:0}
+.sel button{--c:var(--muted); --cs:var(--panel-2); background:var(--cs); color:var(--c); border:2px solid var(--c); border-radius:.55em; padding:.3em .85em; font:700 .8em/1.2 var(--f-body)}
+.sel button[data-l="1"]{--c:var(--blue); --cs:var(--blue-soft)}
+.sel button[data-l="2"]{--c:var(--green); --cs:var(--green-soft)}
+.sel button[data-l="3"]{--c:var(--amber); --cs:var(--amber-soft)}
+.sel button[data-l="4"]{--c:var(--teal); --cs:var(--teal-soft)}
+.sel button[data-l="5"]{--c:var(--violet); --cs:var(--violet-soft)}
+.sel button[data-l="6"]{--c:var(--olive); --cs:var(--olive-soft)}
+.sel button[data-l="7"]{--c:var(--sienna); --cs:var(--sienna-soft)}
+.sel button[data-l="8"]{--c:var(--gold); --cs:var(--gold-soft)}
+.sel button.on{background:var(--c); color:var(--on-accent)}
+.sel button:hover:not(.on){background:var(--panel)}
+body[data-lesson="1"]{--accent:var(--blue); --accent-soft:var(--blue-soft)}
+body[data-lesson="2"]{--accent:var(--green); --accent-soft:var(--green-soft)}
+body[data-lesson="3"]{--accent:var(--amber); --accent-soft:var(--amber-soft)}
+body[data-lesson="4"]{--accent:var(--teal); --accent-soft:var(--teal-soft)}
+body[data-lesson="5"]{--accent:var(--violet); --accent-soft:var(--violet-soft)}
+body[data-lesson="6"]{--accent:var(--olive); --accent-soft:var(--olive-soft)}
+body[data-lesson="7"]{--accent:var(--sienna); --accent-soft:var(--sienna-soft)}
+body[data-lesson="8"]{--accent:var(--gold); --accent-soft:var(--gold-soft)}
+.tools{margin-left:auto; display:flex; align-items:center; gap:.5em}
+.count{font:700 .8em var(--f-body); color:var(--muted); font-variant-numeric:tabular-nums; min-width:4.2em; text-align:right}
+.ghost{background:transparent; border:1.5px solid var(--line); border-radius:.5em; padding:.3em .75em; font-size:.75em; font-weight:600}
+.ghost:hover{border-color:var(--accent,var(--blue))}
+.bar{height:6px; background:var(--panel-2)}
+.bar i{display:block; height:100%; width:0; background:var(--accent,var(--blue)); transition:width .3s ease}
+
+/* stage */
+main{display:flex; flex-direction:column; overflow-y:auto; min-height:0}
+.slide{display:none; --accent:var(--blue); --accent-soft:var(--blue-soft)}
+.slide[data-lesson="2"]{--accent:var(--green); --accent-soft:var(--green-soft)}
+.slide[data-lesson="3"]{--accent:var(--amber); --accent-soft:var(--amber-soft)}
+.slide[data-lesson="4"]{--accent:var(--teal); --accent-soft:var(--teal-soft)}
+.slide[data-lesson="5"]{--accent:var(--violet); --accent-soft:var(--violet-soft)}
+.slide[data-lesson="6"]{--accent:var(--olive); --accent-soft:var(--olive-soft)}
+.slide[data-lesson="7"]{--accent:var(--sienna); --accent-soft:var(--sienna-soft)}
+.slide[data-lesson="8"]{--accent:var(--gold); --accent-soft:var(--gold-soft)}
+.slide.active{display:flex; flex-direction:column; gap:.8em; margin:auto; width:100%; max-width:76em; padding-block:1.1em; animation:rise .35s ease both}
+@keyframes rise{from{opacity:0; transform:translateY(.4em)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion: reduce){.slide.active{animation:none} .bar i{transition:none}}
+
+.eyebrow{font:700 .85em/1 var(--f-body); letter-spacing:.12em; text-transform:uppercase; color:var(--accent)}
+h1,h2,h3{font-family:var(--f-display); margin:0; text-wrap:balance; line-height:1.08}
+h1{font-size:3em; font-weight:800}
+h2{font-size:2.15em; font-weight:800}
+h3{font-size:1.2em; font-weight:800; color:var(--accent)}
+p{margin:0}
+.lead{font-size:1.15em; color:var(--muted); max-width:44em}
+b,strong{font-weight:700}
+
+.def{background:var(--pink-soft); border-left:.3em solid var(--pink); border-radius:.3em; padding:.7em 1em; font-size:1.12em; font-weight:600; color:var(--pink)}
+.def small{display:block; font-size:.7em; letter-spacing:.1em; text-transform:uppercase; margin-bottom:.35em; opacity:.85}
+.cols{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,17em),1fr)); gap:.8em}
+.card{background:var(--panel); border:1px solid var(--line); border-radius:.6em; padding:.8em 1em; min-width:0}
+.card p{font-size:1em; color:var(--muted); margin-top:.25em}
+.card.hl{border-color:var(--accent); background:var(--accent-soft)}
+.pts{margin:0; padding:0; list-style:none; display:grid; gap:.55em}
+.pts li{position:relative; padding-left:1.3em}
+.pts li::before{content:""; position:absolute; left:0; top:.55em; width:.55em; height:.55em; border-radius:50%; background:var(--accent)}
+.chips{display:flex; flex-wrap:wrap; gap:.45em}
+.tag{background:var(--accent-soft); color:var(--accent); border-radius:.4em; padding:.2em .7em; font-weight:700}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse; width:100%; background:var(--panel)}
+th,td{border:1px solid var(--line); padding:.45em .8em; text-align:left; vertical-align:top}
+th{background:var(--accent); color:var(--on-accent); font-family:var(--f-display)}
+td:first-child{font-weight:700}
+.note{color:var(--muted); font-size:.95em}
+svg.flow{width:100%; height:auto; max-height:26vh}
+.bx{fill:var(--accent-soft); stroke:var(--accent); stroke-width:3}
+.bx.on{fill:var(--accent)}
+.tx{fill:var(--fg); font:800 28px var(--f-display); text-anchor:middle}
+.tx.on{fill:var(--on-accent)}
+.st{fill:var(--muted); font:600 19px var(--f-body); text-anchor:middle}
+.st.on{fill:var(--on-accent)}
+.ar{stroke:var(--accent); stroke-width:4; fill:none}
+.mk{fill:var(--accent)}
+.split{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,19em),1fr)); gap:1em; align-items:start}
+.vs{display:grid; gap:.4em}
+.example{display:flex; flex-wrap:wrap; align-items:center; gap:.7em}
+.arrow{font:800 1.4em var(--f-display); color:var(--accent)}
+.sample td,.sample th{font-size:1em}
+.sample{max-width:none}
+
+/* title slide */
+.hero{display:grid; gap:.5em}
+.hero h1{color:var(--fg)}
+.hero h1 span{color:var(--blue)}
+.lessons{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,18em),1fr)); gap:.8em; margin-top:.6em}
+.lessons .card{border-width:2px; display:block; width:100%; text-align:left}
+.lessons .card:hover{background:var(--panel-2)}
+.lessons .card.a{border-color:var(--blue)} .lessons .card.b{border-color:var(--green)} .lessons .card.c{border-color:var(--amber)} .lessons .card.d{border-color:var(--teal)} .lessons .card.e{border-color:var(--violet)} .lessons .card.f{border-color:var(--olive)} .lessons .card.g{border-color:var(--sienna)} .lessons .card.h{border-color:var(--gold)}
+.lessons h3{font-size:1.1em}
+.lessons .card.a h3{color:var(--blue)} .lessons .card.b h3{color:var(--green)} .lessons .card.c h3{color:var(--amber)} .lessons .card.d h3{color:var(--teal)} .lessons .card.e h3{color:var(--violet)} .lessons .card.f h3{color:var(--olive)} .lessons .card.g h3{color:var(--sienna)} .lessons .card.h h3{color:var(--gold)}
+.ans{visibility:hidden}
+.shown .ans{visibility:visible}
+.reveal{width:max-content}
+table{font-variant-numeric:tabular-nums}
+tr.hirow td{background:var(--pink-soft); color:var(--pink); font-weight:700}
+td.col{background:var(--accent-soft); font-weight:700}
+td.fk{background:var(--pink-soft); color:var(--pink); font-weight:700}
+.tbl-sm table{font-size:.95em}
+.tbl-sm th,.tbl-sm td{padding:.35em .6em}
+.cap{font-weight:700; margin-bottom:.3em}
+.code{margin:0; background:var(--panel); border:1px solid var(--line); border-left:.3em solid var(--accent); border-radius:.4em; padding:.5em .9em; font:500 .95em/1.45 var(--f-mono); white-space:pre; overflow-x:auto; color:var(--fg)}
+.code b{color:var(--accent); font-weight:700}
+.lbl{font:800 .8em/1 var(--f-body); letter-spacing:.1em; text-transform:uppercase; color:var(--accent); margin:0 0 .35em}
+.lbl.ex{color:var(--pink)}
+.pair{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,17em),1fr)); gap:.9em}
+.pair > div{min-width:0}
+.pts.two{grid-template-columns:repeat(auto-fit,minmax(min(100%,19em),1fr)); column-gap:1.4em}
+.res{font-size:.95em}
+.prow{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,17em),1fr)); gap:.3em .9em; align-items:center; padding:.35em 0; border-bottom:1px solid var(--line)}
+.prow p{margin:0; font-weight:600}
+.prow .code{font-size:.85em; padding:.3em .7em}
+.prow .q{color:var(--accent); font-family:var(--f-display); font-weight:800; margin-right:.4em}
+.stack{display:grid; gap:.8em}
+svg.er{max-height:26vh}
+.eb{fill:var(--panel); stroke:var(--accent); stroke-width:3}
+.eb.j{fill:var(--accent-soft)}
+.et{fill:var(--accent); font:800 26px var(--f-display)}
+.ef{fill:var(--fg); font:600 20px var(--f-body)}
+.ef26{fill:var(--fg); font:600 26px var(--f-body)}
+.cd{fill:var(--fg); font:800 28px var(--f-display); text-anchor:middle}
+.eg{font-size:1em; color:var(--muted)}
+.hint{font-size:.9em; color:var(--muted)}
+
+/* checkpoint */
+.q-tag{display:inline-flex; align-items:center; gap:.5em; width:max-content; background:var(--pink-soft); color:var(--pink); font:800 .9em/1 var(--f-body); letter-spacing:.12em; text-transform:uppercase; padding:.5em .9em; border-radius:99px}
+.q-text{font:800 2.4em/1.12 var(--f-display); text-wrap:balance}
+.opts{display:grid; gap:.5em; margin-top:.2em}
+@media (min-width:900px){.opts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.opt{display:flex; align-items:center; gap:.8em; text-align:left; background:var(--panel); border:2px solid var(--line); border-radius:.6em; padding:.5em .8em; font-size:1.5em; font-weight:600; width:100%; line-height:1.25}
+.opt:hover{border-color:var(--accent)}
+.opt .k{flex:none; width:1.7em; height:1.7em; border-radius:.4em; display:grid; place-items:center; background:var(--panel-2); font:800 .9em var(--f-display)}
+.opt.correct{border-color:var(--ok); background:var(--ok-soft)}
+.opt.correct .k{background:var(--ok); color:var(--on-accent)}
+.opt.wrong{border-color:var(--bad); background:var(--bad-soft)}
+.opt.wrong .k{background:var(--bad); color:var(--on-accent)}
+.opt.dim{opacity:.55}
+.opt:disabled{cursor:default}
+.explain{border-radius:.5em; padding:.5em 1em; background:var(--panel); border:1px solid var(--line); font-size:1.3em}
+.explain b{display:block; margin-bottom:.15em}
+.explain.good b{color:var(--ok)} .explain.bad b{color:var(--bad)}
+.reset{width:max-content}
+
+/* footer */
+footer{background:var(--panel); border-top:1px solid var(--line)}
+.nav{display:flex; align-items:center; gap:.8em; padding-block:.6em}
+.nav .hint{flex:1; text-align:center}
+.btn{background:var(--accent,var(--blue)); color:var(--on-accent); border:0; border-radius:.55em; padding:.55em 1.4em; font-weight:700; font-size:1em}
+.btn.sec{background:transparent; color:var(--fg); border:2px solid var(--line)}
+.btn:disabled{opacity:.35; cursor:default}
+
+/* contents panel */
+.toc{position:fixed; inset:0; z-index:20; background:var(--scrim); padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px)); overflow-y:auto}
+.toc-panel{max-width:40em; margin:0 auto; background:var(--panel); border:1px solid var(--line); border-radius:.8em; padding:1em 1.2em; display:grid; gap:.3em; font-size:.85em}
+.toc-panel h3{margin-top:.7em; font-size:1em}
+.toc-panel h3:first-child{margin-top:0}
+.toc-item{display:flex; gap:.7em; align-items:baseline; background:none; border:0; text-align:left; padding:.25em .4em; border-radius:.35em; width:100%}
+.toc-item:hover{background:var(--panel-2)}
+.toc-item.now{background:var(--panel-2); font-weight:700}
+.toc-item .n{flex:none; width:2em; color:var(--muted); font-variant-numeric:tabular-nums}
+.toc-item.q{color:var(--pink)}
+@media (max-width:560px){h1{font-size:2.3em} h2{font-size:1.7em} .q-text{font-size:1.5em} .nav .hint{display:none} .nav{justify-content:space-between}}
+</style>
+
+<header>
+  <div class="top wrap">
+    <span class="brand">Chapter 1 · Computer Science, Grade 10</span>
+    <nav class="sel" id="sel" aria-label="Choose a lesson"></nav>
+    <div class="tools">
+      <span class="count" id="count">1 / 1</span>
+      <button class="ghost" id="tocBtn" type="button">Contents</button>
+      <button class="ghost" id="fsBtn" type="button">Full screen</button>
+    </div>
+  </div>
+  <div class="bar"><i id="bar"></i></div>
+</header>
+
+<main id="main" class="wrap">
+
+<section class="slide active" data-lesson="0" data-title="Overview">
+  <div class="hero">
+    <span class="eyebrow" style="color:var(--muted)">Unit 1 · Lesson 1.3</span>
+    <h1>Connector <span>(RJ45, Media Converter)</span></h1>
+    <p class="lead">Three topics from Computer Network and Communication. Questions appear in the middle of each topic.</p>
+  </div>
+  <div class="lessons">
+    <button class="card a" type="button" data-go="1"><h3>RJ45 (Registered Jack 45)</h3><p style="color:var(--fg);font-size:1em">The plug for Ethernet network cables</p></button>
+    <button class="card b" type="button" data-go="2"><h3>Media Converter</h3><p style="color:var(--fg);font-size:1em">Joining copper and fiber-optic cables</p></button>
+    <button class="card c" type="button" data-go="3"><h3>Connectors Compared</h3><p style="color:var(--fg);font-size:1em">RJ45 and media converter side by side</p></button>
+  </div>
+  <p class="hint">Pick a topic above or in the top bar. Arrow keys, a swipe or the Next button move one slide. Press 1 to 4 (or A to D) to answer a question.</p>
+</section>
+<section class="slide" data-lesson="1" data-title="RJ45">
+  <span class="eyebrow">1.3 · RJ45</span>
+  <h2>RJ45 (Registered Jack 45)</h2>
+  <p class="def"><small>Definition</small>RJ45 is a type of plug used to connect computers or devices to a network using a network cable (like CAT6).</p>
+<svg class="flow" viewBox="0 0 900 215" role="img" aria-label="An RJ45 plug with eight pins"><defs><marker id="mk1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="mk" d="M0 0L10 5L0 10z"/></marker></defs><text class="st" x="450" y="200">8 pins in one plug: 8P8C (Eight Positions, Eight Contacts)</text><rect class="bx" x="250" y="25" width="400" height="130" rx="18"/><rect class="bx on" x="285" y="48" width="18" height="70" rx="4"/><text class="st" x="294" y="146">1</text><rect class="bx on" x="329" y="48" width="18" height="70" rx="4"/><text class="st" x="338" y="146">2</text><rect class="bx on" x="373" y="48" width="18" height="70" rx="4"/><text class="st" x="382" y="146">3</text><rect class="bx on" x="417" y="48" width="18" height="70" rx="4"/><text class="st" x="426" y="146">4</text><rect class="bx on" x="461" y="48" width="18" height="70" rx="4"/><text class="st" x="470" y="146">5</text><rect class="bx on" x="505" y="48" width="18" height="70" rx="4"/><text class="st" x="514" y="146">6</text><rect class="bx on" x="549" y="48" width="18" height="70" rx="4"/><text class="st" x="558" y="146">7</text><rect class="bx on" x="593" y="48" width="18" height="70" rx="4"/><text class="st" x="602" y="146">8</text></svg>  <ul class="pts">
+    <li>It is the plastic end of an Ethernet (network) cable. It plugs into devices like computers, routers or switches.</li>
+    <li>It is used in a Local Area Network (LAN). It is commonly seen at the end of CAT5/CAT6 cables. It looks like a slightly larger phone plug.</li>
+    <li>Example: when you connect your computer to the internet with a wire, the connector you plug in is usually an RJ45.</li>
+  </ul>
+
+</section>
+<section class="slide" data-lesson="1" data-title="Features of RJ45">
+  <span class="eyebrow">1.3 · RJ45</span>
+  <h2>Features of RJ45 connector</h2>
+  <ul class="pts two">
+    <li>RJ45 is a network connector used with Ethernet cables.</li>
+    <li>It is primarily used for connecting PCs, switches and routers to a network.</li>
+    <li>It is compatible with UTP (Unshielded Twisted Pair) and STP (Shielded Twisted Pair) cables such as CAT5e, CAT6, CAT6a and CAT7.</li>
+    <li>It includes 8 pins (8P8C: Eight Positions, Eight Contacts) for data transmission.</li>
+    <li>It ensures a secure and stable connection.</li>
+    <li>It is easy to connect and disconnect.</li>
+    <li>It is commonly used in LAN (Local Area Network) connections.</li>
+  </ul>
+
+</section>
+<section class="slide mcq" data-lesson="1" data-q="e1"></section>
+<section class="slide mcq" data-lesson="1" data-q="e2"></section>
+<section class="slide mcq" data-lesson="1" data-q="e3"></section>
+<section class="slide" data-lesson="2" data-title="Media converter">
+  <span class="eyebrow">1.3 · Media Converter</span>
+  <h2>Media converter</h2>
+  <p class="def"><small>Definition</small>A media converter is a device that changes one type of network connection to another, typically from copper (wired) to fiber-optic or the other way around.</p>
+<svg class="flow" viewBox="0 0 900 170" role="img" aria-label="Copper cable connects through a Media converter to Fiber-optic cable"><defs><marker id="mk2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="mk" d="M0 0L10 5L0 10z"/></marker></defs><rect class="bx" x="20" y="30" width="250" height="110" rx="16"/><text class="tx" x="145.0" y="95.0">Copper cable</text><rect class="bx on" x="325" y="30" width="250" height="110" rx="16"/><text class="tx on" x="450.0" y="95.0">Media converter</text><rect class="bx" x="630" y="30" width="250" height="110" rx="16"/><text class="tx" x="755.0" y="95.0">Fiber-optic cable</text><line class="ar" x1="272" y1="85" x2="322" y2="85" marker-end="url(#mk2)" marker-start="url(#mk2)"/><line class="ar" x1="577" y1="85" x2="627" y2="85" marker-end="url(#mk2)" marker-start="url(#mk2)"/></svg>  <ul class="pts">
+    <li>It is used when two devices use different types of network media.</li>
+    <li>It is common in large buildings or network centers. It helps connect long-distance fiber cables to regular computers or routers.</li>
+    <li>It enables communication between different cable types.</li>
+  </ul>
+
+</section>
+<section class="slide" data-lesson="2" data-title="Features of media converter">
+  <span class="eyebrow">1.3 · Media Converter</span>
+  <h2>Features of media converter</h2>
+  <ul class="pts two">
+    <li>Media converters are network devices.</li>
+    <li>Converts Ethernet signals to optical fibers and vice versa.</li>
+    <li>Facilitates connecting various network wires.</li>
+    <li>Improves network connectivity over long distances.</li>
+    <li>Enhances network speed and dependability.</li>
+    <li>Primarily used in fibre optic networks.</li>
+    <li>Commonly used in educational, business and ISP networks.</li>
+  </ul>
+
+</section>
+<section class="slide mcq" data-lesson="2" data-q="e4"></section>
+<section class="slide mcq" data-lesson="2" data-q="e5"></section>
+<section class="slide" data-lesson="3" data-title="Connectors compared">
+  <span class="eyebrow">1.3 · Connectors</span>
+  <h2>RJ45 and media converter compared</h2>
+  <div class="scroll "><table><thead><tr><th>Connector</th><th>Use</th><th>Example</th></tr></thead><tbody><tr><td>RJ45</td><td>Connects wired network cables to devices</td><td>Plugging in the internet cable to a computer</td></tr><tr><td>Media converter</td><td>Changes signal type between cable types</td><td>Connecting a fiber-optic cable from an ISP to a standard Ethernet switch or router</td></tr></tbody></table></div>
+
+</section>
+<section class="slide mcq" data-lesson="3" data-q="e6"></section>
+<section class="slide" data-lesson="0" data-title="Lesson summary">
+  <span class="eyebrow">1.3 · Summary</span>
+  <h2>Key terms to remember</h2>
+  <div class="cols" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,17em),1fr))">
+    <div class="card"><h3>RJ45</h3><p>Plug with 8 pins for Ethernet cables, used in LAN.</p></div>
+    <div class="card"><h3>8P8C</h3><p>Eight Positions, Eight Contacts.</p></div>
+    <div class="card"><h3>Media converter</h3><p>Changes the signal between copper and fiber-optic cable.</p></div>
+  </div>
+
+</section>
+
+</main>
+
+<footer>
+  <div class="nav wrap">
+    <button class="btn sec" id="prev" type="button">← Back</button>
+    <span class="hint">← → keys or swipe to move · F for full screen · T for contents</span>
+    <button class="btn" id="next" type="button">Next →</button>
+  </div>
+</footer>
+
+<button class="fsx" id="fsExit" type="button" aria-label="Exit full screen">✕</button>
+
+<div class="toc" id="toc" hidden>
+  <div class="toc-panel" id="tocPanel"></div>
+</div>
+
+<script>
+(function(){
+  var LESSONS = {"0": "Overview and summary", "1": "1.3 RJ45 (Registered Jack 45)", "2": "1.3 Media Converter", "3": "1.3 Connectors Compared"};
+  var MCQ = {
+ "e1": {
+  "q": "How many pins does an RJ45 connector have?",
+  "o": [
+   "4",
+   "6",
+   "8",
+   "10"
+  ],
+  "a": 2,
+  "e": "An RJ45 connector includes 8 pins (8P8C: Eight Positions, Eight Contacts)."
+ },
+ "e2": {
+  "q": "RJ45 is commonly seen at the end of which cables?",
+  "o": [
+   "Fiber-optic cables",
+   "CAT5/CAT6 cables",
+   "HDMI cables",
+   "Power cables"
+  ],
+  "a": 1,
+  "e": "RJ45 is commonly seen at the end of CAT5 and CAT6 Ethernet cables."
+ },
+ "e3": {
+  "q": "RJ45 connectors are mainly used in which type of network?",
+  "o": [
+   "LAN (Local Area Network)",
+   "Satellite network",
+   "Bluetooth network",
+   "Radio broadcast"
+  ],
+  "a": 0,
+  "e": "RJ45 is commonly used in LAN connections."
+ },
+ "e4": {
+  "q": "A media converter changes a network connection from:",
+  "o": [
+   "Copper to fiber-optic or fiber-optic to copper",
+   "Wi-Fi to Bluetooth",
+   "Text to images",
+   "Analog to paper"
+  ],
+  "a": 0,
+  "e": "A media converter changes one type of network connection to another, typically copper (wired) to fiber-optic or the reverse."
+ },
+ "e5": {
+  "q": "Which device connects a fiber-optic cable from an ISP to a standard Ethernet switch or router?",
+  "o": [
+   "RJ45",
+   "Media converter",
+   "Repeater",
+   "Printer"
+  ],
+  "a": 1,
+  "e": "A media converter connects different kinds of cables, such as fiber-optic from an ISP to a standard Ethernet switch."
+ },
+ "e6": {
+  "q": "Which connector is used to plug an internet cable into a computer?",
+  "o": [
+   "Media converter",
+   "RJ45",
+   "Hub",
+   "Bridge"
+  ],
+  "a": 1,
+  "e": "RJ45 connects wired network cables to devices, for example plugging the internet cable into a computer."
+ }
+};
+  var LETTERS = ["A","B","C","D"];
+
+  var main = document.getElementById("main");
+  var slides = Array.prototype.slice.call(main.querySelectorAll(".slide"));
+  var cur = 0;
+
+  function buildMcq(s, key){
+    var d = MCQ[key];
+    s.dataset.title = "Checkpoint";
+    s.setAttribute("data-title", "Checkpoint: " + d.q);
+    var html = '<span class="q-tag">Checkpoint</span><h2 class="q-text"></h2><div class="opts"></div><div class="explain" hidden></div><button class="ghost reset" type="button" hidden>Reset question</button>';
+    s.innerHTML = html;
+    s.querySelector(".q-text").textContent = d.q;
+    var box = s.querySelector(".opts");
+    d.o.forEach(function(t, i){
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "opt"; b.dataset.i = i;
+      var k = document.createElement("span"); k.className = "k"; k.textContent = LETTERS[i];
+      var tx = document.createElement("span"); tx.textContent = t;
+      b.appendChild(k); b.appendChild(tx);
+      b.addEventListener("click", function(){ answer(s, key, i); });
+      box.appendChild(b);
+    });
+    s.querySelector(".reset").addEventListener("click", function(){ reset(s); });
+  }
+  function answer(s, key, i){
+    if (s._done) return;
+    s._done = true;
+    var d = MCQ[key];
+    var opts = s.querySelectorAll(".opt");
+    opts.forEach(function(b, j){
+      b.disabled = true;
+      if (j === d.a) b.classList.add("correct");
+      else if (j === i) b.classList.add("wrong");
+      else b.classList.add("dim");
+    });
+    var ex = s.querySelector(".explain");
+    var good = i === d.a;
+    ex.className = "explain " + (good ? "good" : "bad");
+    ex.innerHTML = "";
+    var h = document.createElement("b"); h.textContent = good ? "Correct" : "Not quite. The answer is " + LETTERS[d.a] + ".";
+    var p = document.createElement("span"); p.textContent = d.e;
+    ex.appendChild(h); ex.appendChild(p);
+    ex.hidden = false;
+    s.querySelector(".reset").hidden = false;
+  }
+  function reset(s){
+    s._done = false;
+    s.querySelectorAll(".opt").forEach(function(b){ b.disabled = false; b.className = "opt"; });
+    s.querySelector(".explain").hidden = true;
+    s.querySelector(".reset").hidden = true;
+  }
+  slides.forEach(function(s){ if (s.dataset.q) buildMcq(s, s.dataset.q); });
+
+  function goLesson(l){
+    for (var i = 0; i < slides.length; i++) {
+      if ((slides[i].dataset.lesson || "0") === l) { show(i); return; }
+    }
+  }
+  document.querySelectorAll("pre.code").forEach(function(c){
+    var t = c.textContent.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    c.innerHTML = t.replace(/\b(CREATE|DATABASE|TABLE|USE|DROP|ALTER|ADD|MODIFY|COLUMN|RENAME|TO|TRUNCATE|INSERT|INTO|VALUES|SELECT|FROM|WHERE|LIKE|ORDER|BY|ASC|DESC|UPDATE|SET|DELETE|NOT|NULL|UNIQUE|CHECK|DEFAULT|PRIMARY|KEY|AND|OR|BETWEEN|IN|IS|GROUP|HAVING|AS)\b/g,"<b>$1</b>");
+  });
+  var selBox = document.getElementById("sel");
+  var SELS = [["0", "Overview"], ["1", "RJ45"], ["2", "Media converter"], ["3", "Compare"]];
+  var selBtns = SELS.map(function(x){
+    var b = document.createElement("button");
+    b.type = "button"; b.dataset.l = x[0]; b.textContent = x[1]; b.title = LESSONS[x[0]];
+    b.addEventListener("click", function(){ goLesson(x[0]); });
+    selBox.appendChild(b);
+    return b;
+  });
+  document.querySelectorAll("[data-go]").forEach(function(b){
+    b.addEventListener("click", function(){ goLesson(b.dataset.go); });
+  });
+  slides.forEach(function(s){
+    var r = s.querySelector("[data-reveal]");
+    if (r) r.addEventListener("click", function(){
+      var on = s.classList.toggle("shown");
+      r.textContent = on ? "Hide answers" : "Show answers";
+    });
+  });
+  var count = document.getElementById("count");
+  var bar = document.getElementById("bar");
+  var prev = document.getElementById("prev");
+  var next = document.getElementById("next");
+
+  /* Choose the largest font size at which the slide fits the stage. */
+  function reserveAnswer(s){
+    if (!s.dataset.q || s._done) return function(){};
+    var ex = s.querySelector(".explain"), rs = s.querySelector(".reset");
+    var h0 = ex.hidden, r0 = rs.hidden, html0 = ex.innerHTML;
+    ex.innerHTML = "<b>Not quite. The answer is A.</b><span></span>";
+    ex.lastChild.textContent = MCQ[s.dataset.q].e;
+    ex.hidden = false; rs.hidden = false;
+    return function(){ ex.hidden = h0; rs.hidden = r0; ex.innerHTML = html0; };
+  }
+  function fitSlide(){
+    var s = slides[cur];
+    if (!s) return;
+    var base = parseFloat(getComputedStyle(document.body).fontSize) || 20;
+    var lo = Math.max(14, base * 0.6), hi = base * 1.8;
+    var restore = reserveAnswer(s);
+    function fits(px){
+      s.style.fontSize = px + "px";
+      if (s.offsetHeight > main.clientHeight + 1) return false;
+      if (s.scrollWidth > s.clientWidth + 1) return false;
+      var sc = s.querySelectorAll(".scroll, .code");
+      for (var k = 0; k < sc.length; k++) if (sc[k].scrollWidth > sc[k].clientWidth + 1) return false;
+      return true;
+    }
+    var best;
+    if (fits(hi)) best = hi;
+    else if (!fits(lo)) best = lo;
+    else {
+      for (var n = 0; n < 10; n++) {
+        var mid = (lo + hi) / 2;
+        if (fits(mid)) lo = mid; else hi = mid;
+      }
+      best = lo;
+    }
+    s.style.fontSize = best + "px";
+    restore();
+  }
+  var fitTimer = null;
+  function refit(){ cancelAnimationFrame(fitTimer); fitTimer = requestAnimationFrame(fitSlide); }
+  window.addEventListener("resize", refit);
+  document.addEventListener("fullscreenchange", function(){ setTimeout(refit, 120); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(refit);
+
+  function show(i, noHash){
+    if (i < 0) i = 0;
+    if (i > slides.length - 1) i = slides.length - 1;
+    cur = i;
+    slides.forEach(function(s, j){ s.classList.toggle("active", j === i); });
+    var l = slides[i].dataset.lesson || "0";
+    document.body.dataset.lesson = l;
+    selBtns.forEach(function(b){
+      var on = b.dataset.l === l;
+      b.classList.toggle("on", on);
+      if (on) b.setAttribute("aria-current", "true"); else b.removeAttribute("aria-current");
+    });
+    count.textContent = (i + 1) + " / " + slides.length;
+    bar.style.width = ((i + 1) / slides.length * 100) + "%";
+    prev.disabled = i === 0;
+    next.disabled = i === slides.length - 1;
+    main.scrollTop = 0;
+    fitSlide();
+    if (!noHash) {
+      try { if (location.hash !== "#slide-" + (i + 1)) location.hash = "slide-" + (i + 1); } catch (e) {}
+    }
+    markToc();
+  }
+  function fromHash(){
+    var m = /^#slide-(\d+)$/.exec(location.hash || "");
+    return m ? parseInt(m[1], 10) - 1 : 0;
+  }
+  window.addEventListener("hashchange", function(){ var i = fromHash(); if (i !== cur) show(i, true); });
+
+  prev.addEventListener("click", function(){ show(cur - 1); });
+  next.addEventListener("click", function(){ show(cur + 1); });
+
+  /* contents */
+  var toc = document.getElementById("toc");
+  var panel = document.getElementById("tocPanel");
+  var items = [];
+  function buildToc(){
+    var last = null;
+    slides.forEach(function(s, i){
+      var l = s.dataset.lesson || "0";
+      if (l !== last) {
+        var h = document.createElement("h3");
+        h.textContent = LESSONS[l];
+        panel.appendChild(h);
+        last = l;
+      }
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "toc-item" + (s.dataset.q ? " q" : "");
+      var n = document.createElement("span"); n.className = "n"; n.textContent = i + 1;
+      var t = document.createElement("span"); t.textContent = s.dataset.q ? "Checkpoint question" : s.dataset.title;
+      b.appendChild(n); b.appendChild(t);
+      b.addEventListener("click", function(){ toc.hidden = true; show(i); });
+      panel.appendChild(b);
+      items.push(b);
+    });
+  }
+  function markToc(){ items.forEach(function(b, i){ b.classList.toggle("now", i === cur); }); }
+  buildToc();
+  document.getElementById("tocBtn").addEventListener("click", function(){ toc.hidden = !toc.hidden; if (!toc.hidden && items[cur]) items[cur].scrollIntoView({block:"center"}); });
+  toc.addEventListener("click", function(e){ if (e.target === toc) toc.hidden = true; });
+
+  /* full screen: uses the browser's full screen when available, otherwise just hides the bars */
+  var fs = document.getElementById("fsBtn");
+  var root = document.documentElement;
+  function inFs(){ return root.classList.contains("fs"); }
+  function enterFs(){
+    root.classList.add("fs");
+    try {
+      if (root.requestFullscreen) { var p = root.requestFullscreen(); if (p && p.catch) p.catch(function(){}); }
+    } catch (e) {}
+    setTimeout(refit, 150);
+  }
+  function exitFs(){
+    root.classList.remove("fs");
+    try { if (document.fullscreenElement) { var p = document.exitFullscreen(); if (p && p.catch) p.catch(function(){}); } } catch (e) {}
+    setTimeout(refit, 150);
+  }
+  function toggleFs(){ if (inFs()) exitFs(); else enterFs(); }
+  fs.addEventListener("click", toggleFs);
+  document.getElementById("fsExit").addEventListener("click", exitFs);
+  document.addEventListener("fullscreenchange", function(){
+    root.classList.toggle("fs", !!document.fullscreenElement);
+    setTimeout(refit, 150);
+  });
+
+  /* swipe left / right to change slide */
+  var tx = 0, ty = 0, tt = 0, tracking = false;
+  main.addEventListener("touchstart", function(e){
+    tracking = false;
+    if (e.touches.length !== 1 || !toc.hidden) return;
+    var t = e.touches[0]; tx = t.clientX; ty = t.clientY; tt = Date.now(); tracking = true;
+    var el = e.target.closest ? e.target.closest(".scroll, .code") : null;
+    if (el && el.scrollWidth > el.clientWidth + 1) tracking = false;
+  }, {passive:true});
+  main.addEventListener("touchend", function(e){
+    if (!tracking) return;
+    tracking = false;
+    var t = e.changedTouches[0], dx = t.clientX - tx, dy = t.clientY - ty;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5 && Date.now() - tt < 900) {
+      if (dx < 0) show(cur + 1); else show(cur - 1);
+    }
+  }, {passive:true});
+
+  /* keyboard */
+  document.addEventListener("keydown", function(e){
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    var k = e.key;
+    if (k === "Escape") { if (!toc.hidden) toc.hidden = true; else if (inFs() && !document.fullscreenElement) exitFs(); return; }
+    if (!toc.hidden) return;
+    var tag = document.activeElement && document.activeElement.tagName;
+    if (k === "ArrowRight" || k === "PageDown") { e.preventDefault(); show(cur + 1); }
+    else if (k === "ArrowLeft" || k === "PageUp") { e.preventDefault(); show(cur - 1); }
+    else if (k === " " && tag !== "BUTTON") { e.preventDefault(); show(cur + 1); }
+    else if (k === "Home") { show(0); }
+    else if (k === "End") { show(slides.length - 1); }
+    else if (k === "f" || k === "F") { toggleFs(); }
+    else if (k === "t" || k === "T") { toc.hidden = false; if (items[cur]) items[cur].scrollIntoView({block:"center"}); }
+    else {
+      var s = slides[cur];
+      if (s && s.dataset.q) {
+        var idx = "1234".indexOf(k);
+        if (idx < 0) idx = "abcd".indexOf(k.toLowerCase());
+        if (idx > -1) { var b = s.querySelectorAll(".opt")[idx]; if (b && !b.disabled) b.click(); }
+      }
+    }
+  });
+
+  show(fromHash(), true);
+})();
+</script>
