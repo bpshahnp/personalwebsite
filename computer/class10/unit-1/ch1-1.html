@@ -1,4 +1,4 @@
-﻿<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Concept of Telecommunication</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
@@ -1064,7 +1064,7 @@ footer{background:var(--panel); border-top:1px solid var(--line)}
   var fitTimer = null;
   function refit(){ cancelAnimationFrame(fitTimer); fitTimer = requestAnimationFrame(fitSlide); }
   window.addEventListener("resize", refit);
-  document.addEventListener("fullscreenchange", function(){ setTimeout(refit, 120); });
+  document.addEventListener("fullscreenchange", function(){ setTimeout(refit, 120); setTimeout(refit, 600); });
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(refit);
 
   function show(i, noHash){
@@ -1138,19 +1138,19 @@ footer{background:var(--panel); border-top:1px solid var(--line)}
     try {
       if (root.requestFullscreen) { var p = root.requestFullscreen(); if (p && p.catch) p.catch(function(){}); }
     } catch (e) {}
-    setTimeout(refit, 150);
+    setTimeout(refit, 150); setTimeout(refit, 600);
   }
   function exitFs(){
     root.classList.remove("fs");
     try { if (document.fullscreenElement) { var p = document.exitFullscreen(); if (p && p.catch) p.catch(function(){}); } } catch (e) {}
-    setTimeout(refit, 150);
+    setTimeout(refit, 150); setTimeout(refit, 600);
   }
   function toggleFs(){ if (inFs()) exitFs(); else enterFs(); }
   fs.addEventListener("click", toggleFs);
   document.getElementById("fsExit").addEventListener("click", exitFs);
   document.addEventListener("fullscreenchange", function(){
     root.classList.toggle("fs", !!document.fullscreenElement);
-    setTimeout(refit, 150);
+    setTimeout(refit, 150); setTimeout(refit, 600);
   });
 
   /* swipe left / right to change slide */
