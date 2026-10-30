@@ -211,6 +211,23 @@ footer{background:var(--panel); border-top:1px solid var(--line)}
 .toc-item .n{flex:none; width:2em; color:var(--muted); font-variant-numeric:tabular-nums}
 .toc-item.q{color:var(--pink)}
 @media (max-width:560px){h1{font-size:2.3em} h2{font-size:1.7em} .q-text{font-size:1.5em} .nav .hint{display:none} .nav{justify-content:space-between}}
+@media (max-width:560px){
+  .brand{display:none}
+  .top{flex-wrap:nowrap; gap:.4em .5em; overflow:hidden}
+  .sel{flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; min-width:0}
+  .sel::-webkit-scrollbar{display:none}
+  .tools{gap:.4em; flex-shrink:0}
+  .nav{padding-bottom:max(.5em,env(safe-area-inset-bottom,0px))}
+  svg.flow,svg.er{max-height:16vh}
+  .opt{font-size:1.15em; padding:.4em .6em}
+  .opt .k{width:1.5em; height:1.5em}
+  .slide.active{padding-block:.7em}
+}
+/* fullscreen mobile: ensure slide scrolls if still too tall after font scaling */
+@media (max-width:560px){
+  html.fs main{overflow-y:auto}
+  html.fs .slide.active{padding-block:1em; justify-content:flex-start}
+}
 </style>
 
 <header>
@@ -621,7 +638,7 @@ footer{background:var(--panel); border-top:1px solid var(--line)}
     var s = slides[cur];
     if (!s) return;
     var base = parseFloat(getComputedStyle(document.body).fontSize) || 20;
-    var lo = Math.max(14, base * 0.6), hi = base * 1.8;
+    var lo = Math.max(12, base * 0.55), hi = base * 1.8;
     var restore = reserveAnswer(s);
     function fits(px){
       s.style.fontSize = px + "px";
@@ -647,7 +664,7 @@ footer{background:var(--panel); border-top:1px solid var(--line)}
   var fitTimer = null;
   function refit(){ cancelAnimationFrame(fitTimer); fitTimer = requestAnimationFrame(fitSlide); }
   window.addEventListener("resize", refit);
-  document.addEventListener("fullscreenchange", function(){ setTimeout(refit, 120); });
+  document.addEventListener("fullscreenchange", function(){ setTimeout(refit, 120); setTimeout(refit, 400); });
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(refit);
 
   function show(i, noHash){
