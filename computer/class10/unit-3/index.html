@@ -1,0 +1,39 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Unit 3 Lessons</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: one hub page, a grid of large lesson cards that open each lesson page in a new tab. Light only, for classroom glare. */
+:root{--bg:#f3f6fb;--fg:#0f1b3a;--muted:#4a587a;--card:#ffffff;--line:#cdd7ea;
+--c1:#1f5fbf;--c2:#0b7a56;--c3:#b45309;--c4:#0e7490;--c5:#6d3fc0;--c6:#5c6f12;--c7:#9a3d17;--c8:#8a6d00;--c9:#a21d6b;
+--display:'Atkinson Hyperlegible',system-ui,sans-serif;--body:'Atkinson Hyperlegible',system-ui,sans-serif;color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:18px/1.45 var(--body);padding-block:28px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:1180px;margin:0 auto}
+.eyebrow{font-size:.85rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--c1)}
+h1{font:700 clamp(2rem,5vw,3.4rem)/1.1 var(--display);margin:.15em 0 .3em;text-wrap:balance}
+.lead{color:var(--muted);font-size:1.15rem;max-width:46em;margin:0 0 28px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,17.5rem),1fr));gap:16px}
+a.card{display:flex;flex-direction:column;gap:6px;min-width:0;background:var(--card);border:2px solid var(--a);border-radius:14px;padding:18px 18px 16px;color:inherit;text-decoration:none;transition:transform .12s,box-shadow .12s}
+a.card:hover,a.card:focus-visible{transform:translateY(-2px);box-shadow:0 6px 18px rgba(15,27,58,.14);outline:3px solid var(--a);outline-offset:2px}
+.num{font-weight:700;font-size:1.05rem;color:var(--a);letter-spacing:.06em}
+.t{font:700 1.5rem/1.2 var(--display);text-wrap:balance}
+.d{color:var(--muted);font-size:1rem}
+.go{margin-top:auto;padding-top:10px;font-weight:700;color:var(--a)}
+.tip{margin-top:26px;color:var(--muted);font-size:.95rem}
+@media (prefers-reduced-motion:reduce){a.card{transition:none}}
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<main>
+<div class="eyebrow">Computer Science, Grade 10 · Unit 3</div>
+<h1>Multimedia</h1>
+<p class="lead">Six lessons for classroom projection. Tap a lesson to open its slides. Each has quiz questions in the middle of every topic.</p>
+<div class="grid">
+<a class="card" style="--a:var(--c1)" href="ch3-1.html"><span class="num">3.1</span><span class="t">Concept of Multimedia</span><span class="d">Concept and seven areas of application</span><span class="go">Open lesson →</span></a>
+<a class="card" style="--a:var(--c2)" href="ch3-2.html"><span class="num">3.2</span><span class="t">Components of Multimedia</span><span class="d">Text, graphics, audio, video, animation</span><span class="go">Open lesson →</span></a>
+<a class="card" style="--a:var(--c3)" href="ch3-3.html"><span class="num">3.3</span><span class="t">Computer Graphics</span><span class="d">Raster, vector and graphics file formats</span><span class="go">Open lesson →</span></a>
+<a class="card" style="--a:var(--c4)" href="ch3-4.html"><span class="num">3.4</span><span class="t">Audio Waveform</span><span class="d">Reading a waveform, MP3, AAC, WAV</span><span class="go">Open lesson →</span></a>
+<a class="card" style="--a:var(--c5)" href="ch3-5.html"><span class="num">3.5</span><span class="t">Video</span><span class="d">Frame rate, resolution, MP4, MOV, AVI</span><span class="go">Open lesson →</span></a>
+<a class="card" style="--a:var(--c6)" href="ch3-6.html"><span class="num">3.6</span><span class="t">Animation</span><span class="d">Concept, 2D, 3D and differences</span><span class="go">Open lesson →</span></a>
+</div>
+<p class="tip">Inside a lesson, press F for full screen and T for the contents list.</p>
+</main>
+</html>
