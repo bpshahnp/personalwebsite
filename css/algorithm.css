@@ -1,0 +1,472 @@
+/* ============================================
+   algorithm.css — Algorithm & Flowchart page
+   Palette matches site: navy #16213E, orange #E8834E, cream #FAF7F2
+   ============================================ */
+
+/* ---------- Hero ---------- */
+.algo-hero {
+  background: linear-gradient(135deg, var(--navy-deep) 0%, var(--navy) 100%);
+  color: var(--white);
+  padding: 64px 0 56px;
+  text-align: center;
+}
+
+.algo-hero-inner {
+  max-width: 700px;
+}
+
+.algo-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(232, 131, 78, 0.18);
+  color: var(--orange);
+  border: 1px solid rgba(232, 131, 78, 0.35);
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.algo-hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 2.9rem);
+  font-weight: 700;
+  color: var(--white);
+  margin: 0 0 16px;
+  line-height: 1.15;
+}
+
+.algo-hero p {
+  font-size: 1.05rem;
+  color: rgba(255, 255, 255, 0.78);
+  margin: 0 0 32px;
+  line-height: 1.65;
+  max-width: 540px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.algo-hero-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.algo-hero .btn-outline {
+  border-color: rgba(255, 255, 255, 0.45);
+  color: var(--white);
+}
+.algo-hero .btn-outline:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--white);
+  border-color: rgba(255, 255, 255, 0.7);
+}
+
+/* ---------- Filter Bar ---------- */
+.algo-filter-bar {
+  background: var(--white);
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 56px; /* below site-header */
+  z-index: 30;
+  padding: 12px 0;
+}
+
+.algo-filter-inner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.algo-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--cream);
+  border: 1.5px solid var(--line);
+  border-radius: 8px;
+  padding: 7px 12px;
+  flex: 0 0 220px;
+  min-width: 160px;
+  color: var(--mist);
+  transition: border-color 0.15s;
+}
+.algo-search-wrap:focus-within {
+  border-color: var(--orange);
+  color: var(--navy);
+}
+.algo-search-wrap input {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  color: var(--ink);
+  width: 100%;
+}
+.algo-search-wrap input::placeholder {
+  color: var(--mist);
+}
+
+.algo-filter-chips {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.filter-chip {
+  background: var(--cream);
+  border: 1.5px solid var(--line);
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--ink);
+  font-family: var(--font-body);
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.filter-chip:hover {
+  border-color: var(--orange);
+  color: var(--orange);
+}
+.filter-chip.active {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: var(--white);
+}
+
+/* ---------- Main Grid ---------- */
+.algo-main {
+  flex: 1;
+  padding: 48px 0 72px;
+}
+
+.algo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+.algo-empty {
+  text-align: center;
+  color: var(--mist);
+  font-size: 1rem;
+  padding: 60px 0;
+}
+
+/* ---------- Topic Card ---------- */
+.algo-card {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.algo-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(15, 23, 41, 0.12);
+}
+
+.algo-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.algo-card-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: rgba(232, 131, 78, 0.1);
+  color: var(--orange);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.algo-card-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.algo-card-title {
+  font-family: var(--font-display);
+  font-size: 1.08rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin: 0 0 2px;
+  line-height: 1.2;
+}
+
+.algo-card-cat {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--orange);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Algorithm steps */
+.algo-steps {
+  padding: 16px 20px;
+  flex: 1;
+}
+
+.algo-steps-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--mist);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0 0 10px;
+}
+
+.algo-steps ol {
+  margin: 0;
+  padding: 0 0 0 18px;
+  font-size: 0.88rem;
+  color: var(--ink);
+  line-height: 1.65;
+}
+
+.algo-steps ol li {
+  margin-bottom: 4px;
+}
+
+/* Card Footer — 2 buttons */
+.algo-card-footer {
+  display: flex;
+  gap: 10px;
+  padding: 14px 20px 18px;
+  border-top: 1px solid var(--line);
+}
+
+.btn-flowchart {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 14px;
+  border-radius: 7px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1.5px solid var(--navy);
+  background: transparent;
+  color: var(--navy);
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: background 0.15s, color 0.15s;
+  text-decoration: none;
+  text-align: center;
+}
+.btn-flowchart:hover {
+  background: var(--navy);
+  color: var(--white);
+}
+
+.btn-python-hub {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 14px;
+  border-radius: 7px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: var(--orange);
+  color: var(--white);
+  border: 1.5px solid var(--orange);
+  text-decoration: none;
+  text-align: center;
+  transition: background 0.15s, transform 0.15s;
+}
+.btn-python-hub:hover {
+  background: var(--orange-dark);
+  border-color: var(--orange-dark);
+  transform: translateY(-1px);
+}
+
+/* ---------- Flowchart Modal ---------- */
+.flowchart-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.flowchart-modal[hidden] {
+  display: none !important;
+}
+
+.flowchart-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 41, 0.55);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+
+.flowchart-modal-box {
+  position: relative;
+  background: var(--white);
+  border-radius: 16px;
+  box-shadow: 0 24px 60px rgba(15, 23, 41, 0.22);
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: modalPop 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes modalPop {
+  from { opacity: 0; transform: scale(0.95) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.flowchart-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px 14px;
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+}
+
+.flowchart-modal-header h2 {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin: 0;
+}
+
+.flowchart-modal-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.5rem;
+  color: var(--mist);
+  padding: 2px 6px;
+  border-radius: 6px;
+  line-height: 1;
+  transition: color 0.15s, background 0.15s;
+}
+.flowchart-modal-close:hover {
+  color: var(--navy);
+  background: var(--cream);
+}
+
+.flowchart-modal-body {
+  overflow-y: auto;
+  flex: 1;
+  padding: 24px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.flowchart-modal-body svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.flowchart-modal-footer {
+  padding: 14px 24px 18px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.flowchart-modal-footer .btn {
+  flex: 1;
+  text-align: center;
+  padding: 10px 16px;
+  font-size: 0.9rem;
+}
+
+/* ---------- SVG Flowchart Shapes ---------- */
+.fc-svg {
+  font-family: var(--font-body);
+}
+
+.fc-start-end rect { rx: 24; }
+
+/* ---------- Dark Mode Overrides ---------- */
+[data-theme="dark"] .algo-filter-bar {
+  background: #131c2e;
+  border-color: #2a3650;
+}
+[data-theme="dark"] .algo-search-wrap {
+  background: #0f1729;
+  border-color: #2a3650;
+  color: #7c879b;
+}
+[data-theme="dark"] .algo-search-wrap input { color: #e2e8f0; }
+[data-theme="dark"] .filter-chip {
+  background: #1a2540;
+  border-color: #2a3650;
+  color: #cbd5e1;
+}
+[data-theme="dark"] .filter-chip:hover { border-color: var(--orange); color: var(--orange); }
+[data-theme="dark"] .filter-chip.active { background: var(--orange); border-color: var(--orange); color: var(--white); }
+
+[data-theme="dark"] .algo-card {
+  background: #131c2e;
+  border-color: #2a3650;
+}
+[data-theme="dark"] .algo-card-header { border-color: #2a3650; }
+[data-theme="dark"] .algo-card-title { color: #e2e8f0; }
+[data-theme="dark"] .algo-card-footer { border-color: #2a3650; }
+[data-theme="dark"] .algo-steps ol { color: #cbd5e1; }
+[data-theme="dark"] .algo-steps-title { color: #64748b; }
+
+[data-theme="dark"] .btn-flowchart {
+  border-color: #64748b;
+  color: #e2e8f0;
+}
+[data-theme="dark"] .btn-flowchart:hover {
+  background: #2a3650;
+  color: var(--white);
+}
+
+[data-theme="dark"] .flowchart-modal-box {
+  background: #131c2e;
+  border: 1px solid #2a3650;
+}
+[data-theme="dark"] .flowchart-modal-header { border-color: #2a3650; }
+[data-theme="dark"] .flowchart-modal-header h2 { color: #e2e8f0; }
+[data-theme="dark"] .flowchart-modal-footer { border-color: #2a3650; }
+[data-theme="dark"] .flowchart-modal-close { color: #64748b; }
+[data-theme="dark"] .flowchart-modal-close:hover { background: #1a2540; color: #e2e8f0; }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 600px) {
+  .algo-hero { padding: 44px 0 36px; }
+  .algo-filter-inner { gap: 10px; }
+  .algo-search-wrap { flex: 1 1 100%; }
+  .algo-grid { grid-template-columns: 1fr; }
+  .algo-card-footer { flex-direction: column; }
+  .flowchart-modal-footer { flex-direction: column; }
+}
