@@ -1,1 +1,43 @@
-
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Unit 4 Python Lessons</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: one hub page, a grid of large lesson cards that open each lesson page in a new tab. Light only, for classroom glare. */
+:root{--bg:#f3f6fb;--fg:#0f1b3a;--muted:#4a587a;--card:#ffffff;--line:#cdd7ea;
+--c1:#1f5fbf;--c2:#0b7a56;--c3:#b45309;--c4:#0e7490;--c5:#6d3fc0;--c6:#5c6f12;--c7:#9a3d17;--c8:#8a6d00;--c9:#a21d6b;
+--display:'Atkinson Hyperlegible',system-ui,sans-serif;--body:'Atkinson Hyperlegible',system-ui,sans-serif;color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:18px/1.45 var(--body);padding-block:28px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:1180px;margin:0 auto}
+.eyebrow{font-size:.85rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--c1)}
+h1{font:700 clamp(2rem,5vw,3.4rem)/1.1 var(--display);margin:.15em 0 .3em;text-wrap:balance}
+.lead{color:var(--muted);font-size:1.15rem;max-width:46em;margin:0 0 28px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,17.5rem),1fr));gap:16px}
+a.card{display:flex;flex-direction:column;gap:6px;min-width:0;background:var(--card);border:2px solid var(--a);border-radius:14px;padding:18px 18px 16px;color:inherit;text-decoration:none;transition:transform .12s,box-shadow .12s}
+a.card:hover,a.card:focus-visible{transform:translateY(-2px);box-shadow:0 6px 18px rgba(15,27,58,.14);outline:3px solid var(--a);outline-offset:2px}
+.num{font-weight:700;font-size:1.05rem;color:var(--a);letter-spacing:.06em}
+.t{font:700 1.5rem/1.2 var(--display);text-wrap:balance}
+.d{color:var(--muted);font-size:1rem}
+.go{margin-top:auto;padding-top:10px;font-weight:700;color:var(--a)}
+.tip{margin-top:26px;color:var(--muted);font-size:.95rem}
+.back-btn{display:inline-flex;align-items:center;gap:6px;margin-bottom:14px;padding:6px 14px;border-radius:8px;border:1.5px solid var(--line);background:var(--card);color:var(--muted);font-weight:700;font-size:.9rem;text-decoration:none;transition:all .15s}
+.back-btn:hover,.back-btn:focus-visible{color:var(--c1);border-color:var(--c1);transform:translateX(-2px);outline:none}
+@media (prefers-reduced-motion:reduce){a.card{transition:none}}
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<main>
+<a class="back-btn" href="../index.html">← Back to Dashboard</a>
+<div class="eyebrow">Computer Science, Grade 10 · Unit 4</div>
+<h1>Programming in Python</h1>
+<p class="lead">Classroom projection slides with interactive checkpoint questions, code examples, IDLE shell traces, and exercises.</p>
+<div class="grid">
+<a class="card" style="--a:var(--c1)" href="ch4-1.html"><span class="num">4.1</span><span class="t">Review of Python Programming</span><span class="d">Variables, I/O, operators, conditionals, loops, lists, dictionaries, built-in functions, dry runs, and 45 checkpoint MCQs.</span><span class="go">Open lesson slides →</span></a>
+<a class="card" style="--a:var(--c2)" href="ch4-2.html"><span class="num">4.2</span><span class="t">User Defined Functions</span><span class="d">Functions, def keyword, parameters vs arguments, local/global scope, return values, argument types, algorithms, and 40 checkpoint MCQs.</span><span class="go">Open lesson slides →</span></a>
+<a class="card" style="--a:var(--c3)" href="ch4-3.html"><span class="num">4.3</span><span class="t">Libraries &amp; Packages</span><span class="d">Standard vs external libraries, package structure (__init__.py), import techniques, math, random, pandas (Series/DataFrame), matplotlib, and 35 checkpoint MCQs.</span><span class="go">Open lesson slides →</span></a>
+<a class="card" style="--a:var(--c4)" href="ch4-4.html"><span class="num">4.4</span><span class="t">Graphics Using Turtle</span><span class="d">Canvas, motion (forward/backward), turns (right/left), pen controls, RGB colors, fillcolor, shape/turtlesize, regular polygons, and 35 checkpoint MCQs.</span><span class="go">Open lesson slides →</span></a>
+<a class="card" style="--a:var(--c5)" href="ch4-5.html"><span class="num">4.5</span><span class="t">Error Handling &amp; Exceptions</span><span class="d">Syntax vs logical vs runtime errors, try...except...else...finally blocks, exception aliasing, sphere volume/area, factorial, and 35 checkpoint MCQs.</span><span class="go">Open lesson slides →</span></a>
+<a class="card" style="--a:var(--c6)" href="ch4-6.html"><span class="num">4.6</span><span class="t">File Handling &amp; Pandas</span><span class="d">Data files, open modes (r/w/a/x), text file I/O (read/write/readline), CSV files with csv module, Pandas to_csv &amp; read_csv, and 35 checkpoint MCQs.</span><span class="go">Open lesson slides →</span></a>
+<a class="card" style="--a:var(--c7)" href="ch4-7.html"><span class="num">4.7</span><span class="t">Data Visualization &amp; Project</span><span class="d">Matplotlib (bar/scatter), Seaborn (line plots), Plotly (interactive web charts), Student Result Management capstone project, and 35 checkpoint MCQs.</span><span class="go">Open lesson slides →</span></a>
+</div>
+<p class="tip">Inside the lesson, press F for full screen, T for contents, and 1 to 4 (or A to D) to answer checkpoint questions.</p>
+</main>
+</html>

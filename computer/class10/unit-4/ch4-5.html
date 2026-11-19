@@ -1,0 +1,1478 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Unit 4 · Error Handling &amp; Exceptions</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: one lesson slide at a time on a full-height stage. High contrast for classroom projection. */
+:root{
+  --bg:#f3f6fb; --panel:#ffffff; --panel-2:#e8eef8; --fg:#0f1a35; --muted:#475674; --line:#c9d4e6;
+  --blue:#1a4fb0; --blue-soft:#e1eafb;
+  --green:#0a7556; --green-soft:#dcf2e9;
+  --amber:#a64f08; --amber-soft:#fdebd5;
+  --teal:#0a6f86; --teal-soft:#d8f0f5;
+  --violet:#6a3cc0; --violet-soft:#ebe3fb;
+  --olive:#4f6f0a; --olive-soft:#e8f2cc;
+  --sienna:#8c3f1a; --sienna-soft:#f5e2d6;
+  --gold:#7d6400; --gold-soft:#f8f0c8;
+  --pink:#b0125f; --pink-soft:#fbe3ee;
+  --indigo:#283593; --indigo-soft:#e8eaf6;
+  --f-mono:"JetBrains Mono",ui-monospace,Consolas,"Courier New",monospace;
+  --ok:#0d7a3b; --ok-soft:#dcf3e4; --bad:#b3261e; --bad-soft:#fbe4e2;
+  --on-accent:#ffffff; --scrim:rgba(15,26,53,.55);
+  --f-display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --f-body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --base:clamp(17px, 1vw + 9px, 32px);
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; background:var(--bg); color:var(--fg);
+  font:400 var(--base)/1.45 var(--f-body);
+  display:grid; grid-template-rows:auto 1fr auto; overflow:hidden;
+}
+header,footer{font-size:clamp(13px,.7vw + 6px,19px)}
+html.fs header, html.fs footer{display:none}
+@supports (height:100dvh){html,body{height:100dvh}}
+main{touch-action:pan-y}
+.scroll,.code{touch-action:pan-x pan-y}
+.fsx{display:none; position:fixed; z-index:15; top:calc(env(safe-area-inset-top,0px) + 6px); right:max(8px,env(safe-area-inset-right,0px)); width:2.4em; height:2.4em; place-items:center; border-radius:50%; background:var(--panel); border:1px solid var(--line); color:var(--fg); font:700 16px/1 var(--f-body); opacity:.65}
+@media (pointer:coarse){html.fs .fsx{display:grid}}
+html.fs body{grid-template-rows:1fr}
+.wrap{padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px))}
+button{font:inherit; color:inherit; cursor:pointer}
+:focus-visible{outline:3px solid var(--pink); outline-offset:3px}
+
+/* header */
+header{background:var(--panel); border-bottom:1px solid var(--line)}
+.top{display:flex; align-items:center; gap:.5em .8em; flex-wrap:wrap; padding-block:.5em}
+.brand{font:800 .8em/1 var(--f-display); letter-spacing:.05em; text-transform:uppercase; color:var(--muted)}
+.sel{display:flex; flex-wrap:wrap; gap:.35em; min-width:0}
+.sel button{--c:var(--muted); --cs:var(--panel-2); background:var(--cs); color:var(--c); border:2px solid var(--c); border-radius:.55em; padding:.25em .65em; font:700 .75em/1.2 var(--f-body)}
+.sel button[data-l="1"]{--c:var(--blue); --cs:var(--blue-soft)}
+.sel button[data-l="2"]{--c:var(--teal); --cs:var(--teal-soft)}
+.sel button[data-l="3"]{--c:var(--amber); --cs:var(--amber-soft)}
+.sel button[data-l="4"]{--c:var(--green); --cs:var(--green-soft)}
+.sel button[data-l="5"]{--c:var(--violet); --cs:var(--violet-soft)}
+.sel button[data-l="6"]{--c:var(--olive); --cs:var(--olive-soft)}
+.sel button[data-l="7"]{--c:var(--sienna); --cs:var(--sienna-soft)}
+.sel button[data-l="8"]{--c:var(--gold); --cs:var(--gold-soft)}
+.sel button[data-l="9"]{--c:var(--indigo); --cs:var(--indigo-soft)}
+.sel button[data-l="10"]{--c:var(--pink); --cs:var(--pink-soft)}
+.sel button.on{background:var(--c); color:var(--on-accent)}
+.sel button:hover:not(.on){background:var(--panel)}
+
+body[data-lesson="1"]{--accent:var(--blue); --accent-soft:var(--blue-soft)}
+body[data-lesson="2"]{--accent:var(--teal); --accent-soft:var(--teal-soft)}
+body[data-lesson="3"]{--accent:var(--amber); --accent-soft:var(--amber-soft)}
+body[data-lesson="4"]{--accent:var(--green); --accent-soft:var(--green-soft)}
+body[data-lesson="5"]{--accent:var(--violet); --accent-soft:var(--violet-soft)}
+body[data-lesson="6"]{--accent:var(--olive); --accent-soft:var(--olive-soft)}
+body[data-lesson="7"]{--accent:var(--sienna); --accent-soft:var(--sienna-soft)}
+body[data-lesson="8"]{--accent:var(--gold); --accent-soft:var(--gold-soft)}
+body[data-lesson="9"]{--accent:var(--indigo); --accent-soft:var(--indigo-soft)}
+body[data-lesson="10"]{--accent:var(--pink); --accent-soft:var(--pink-soft)}
+
+.tools{margin-left:auto; display:flex; align-items:center; gap:.5em}
+.count{font:700 .8em var(--f-body); color:var(--muted); font-variant-numeric:tabular-nums; min-width:4.2em; text-align:right}
+.ghost{background:transparent; border:1.5px solid var(--line); border-radius:.5em; padding:.3em .75em; font-size:.75em; font-weight:600}
+.ghost:hover{border-color:var(--accent,var(--blue))}
+a.ghost{color:inherit; text-decoration:none; display:inline-flex; align-items:center}
+.bar{height:6px; background:var(--panel-2)}
+.bar i{display:block; height:100%; width:0; background:var(--accent,var(--blue)); transition:width .3s ease}
+
+/* stage */
+main{display:flex; flex-direction:column; overflow-y:auto; min-height:0}
+.slide{display:none; --accent:var(--blue); --accent-soft:var(--blue-soft)}
+.slide[data-lesson="2"]{--accent:var(--teal); --accent-soft:var(--teal-soft)}
+.slide[data-lesson="3"]{--accent:var(--amber); --accent-soft:var(--amber-soft)}
+.slide[data-lesson="4"]{--accent:var(--green); --accent-soft:var(--green-soft)}
+.slide[data-lesson="5"]{--accent:var(--violet); --accent-soft:var(--violet-soft)}
+.slide[data-lesson="6"]{--accent:var(--olive); --accent-soft:var(--olive-soft)}
+.slide[data-lesson="7"]{--accent:var(--sienna); --accent-soft:var(--sienna-soft)}
+.slide[data-lesson="8"]{--accent:var(--gold); --accent-soft:var(--gold-soft)}
+.slide[data-lesson="9"]{--accent:var(--indigo); --accent-soft:var(--indigo-soft)}
+.slide[data-lesson="10"]{--accent:var(--pink); --accent-soft:var(--pink-soft)}
+.slide.active{display:flex; flex-direction:column; gap:.75em; margin:auto; width:100%; max-width:76em; padding-block:1em; animation:rise .3s ease both}
+@keyframes rise{from{opacity:0; transform:translateY(.4em)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion: reduce){.slide.active{animation:none} .bar i{transition:none}}
+
+.eyebrow{font:700 .85em/1 var(--f-body); letter-spacing:.12em; text-transform:uppercase; color:var(--accent)}
+h1,h2,h3{font-family:var(--f-display); margin:0; text-wrap:balance; line-height:1.08}
+h1{font-size:2.8em; font-weight:800}
+h2{font-size:2.1em; font-weight:800}
+h3{font-size:1.2em; font-weight:800; color:var(--accent)}
+p{margin:0}
+.lead{font-size:1.12em; color:var(--muted); max-width:44em}
+b,strong{font-weight:700}
+
+.def{background:var(--pink-soft); border-left:.3em solid var(--pink); border-radius:.3em; padding:.65em .95em; font-size:1.1em; font-weight:600; color:var(--pink)}
+.def small{display:block; font-size:.7em; letter-spacing:.1em; text-transform:uppercase; margin-bottom:.3em; opacity:.85}
+.cols{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,16.5em),1fr)); gap:.75em}
+.card{background:var(--panel); border:1px solid var(--line); border-radius:.6em; padding:.75em .95em; min-width:0}
+.card p{font-size:.98em; color:var(--muted); margin-top:.25em}
+.card.hl{border-color:var(--accent); background:var(--accent-soft)}
+.pts{margin:0; padding:0; list-style:none; display:grid; gap:.5em}
+.pts li{position:relative; padding-left:1.3em}
+.pts li::before{content:""; position:absolute; left:0; top:.55em; width:.55em; height:.55em; border-radius:50%; background:var(--accent)}
+.chips{display:flex; flex-wrap:wrap; gap:.4em}
+.tag{background:var(--accent-soft); color:var(--accent); border-radius:.4em; padding:.2em .65em; font-weight:700}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse; width:100%; background:var(--panel); font-size:.95em}
+th,td{border:1px solid var(--line); padding:.4em .75em; text-align:left; vertical-align:top}
+th{background:var(--accent); color:var(--on-accent); font-family:var(--f-display)}
+td:first-child{font-weight:700}
+.note{color:var(--muted); font-size:.92em}
+.split{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,19em),1fr)); gap:.9em; align-items:start}
+.pair{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,17em),1fr)); gap:.8em}
+
+/* Code & IDLE Shell Simulation */
+.code{margin:0; background:var(--panel); border:1px solid var(--line); border-left:.3em solid var(--accent); border-radius:.4em; padding:.55em .9em; font:500 .92em/1.45 var(--f-mono); white-space:pre-wrap; overflow-x:auto; color:var(--fg)}
+.code b{color:var(--accent); font-weight:700}
+.code i{color:var(--muted); font-style:normal}
+.code span.str{color:#0b7a56}
+.code span.num{color:#b45309}
+
+.idle{background:#ffffff; border:2px solid #9dc2f8; border-radius:.6em; overflow:hidden; box-shadow:0 3px 12px rgba(15,27,58,.08); font:500 .9em/1.4 var(--f-mono); margin-top:.3em}
+.idle-bar{background:#0078d7; color:#fff; padding:.3em .75em; display:flex; align-items:center; justify-content:space-between; font-size:.8em; font-weight:700}
+.idle-menu{background:#f0f4f9; border-bottom:1px solid #d5e0ee; padding:.2em .6em; display:flex; gap:.7em; font-size:.78em; color:#44526c}
+.idle-body{padding:.5em .8em; background:#ffffff; color:#0f1a35; white-space:pre-wrap; font-size:.9em}
+.idle-restart{color:#6c757d; font-size:.82em; margin-bottom:.3em}
+.idle-out{color:#0000cd; font-weight:600}
+.idle-err{color:#d32f2f; font-weight:700}
+
+/* Hero & Lessons grid */
+.hero{display:grid; gap:.45em}
+.hero h1 span{color:var(--blue)}
+.lessons{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,17.5em),1fr)); gap:.75em; margin-top:.5em}
+.lessons .card{border-width:2px; display:block; width:100%; text-align:left; cursor:pointer; transition:transform .12s, box-shadow .12s}
+.lessons .card:hover{background:var(--panel-2); transform:translateY(-2px)}
+.lessons .card.c1{border-color:var(--blue)} .lessons .card.c2{border-color:var(--teal)} .lessons .card.c3{border-color:var(--amber)} .lessons .card.c4{border-color:var(--green)} .lessons .card.c5{border-color:var(--violet)} .lessons .card.c6{border-color:var(--olive)} .lessons .card.c7{border-color:var(--sienna)} .lessons .card.c8{border-color:var(--gold)} .lessons .card.c9{border-color:var(--indigo)} .lessons .card.c10{border-color:var(--pink)}
+.lessons h3{font-size:1.05em}
+
+/* Checkpoint MCQ */
+.q-tag{display:inline-flex; align-items:center; gap:.5em; width:max-content; background:var(--pink-soft); color:var(--pink); font:800 .85em/1 var(--f-body); letter-spacing:.12em; text-transform:uppercase; padding:.45em .85em; border-radius:99px}
+.q-text{font:800 2.2em/1.12 var(--f-display); text-wrap:balance}
+.opts{display:grid; gap:.5em; margin-top:.2em}
+@media (min-width:900px){.opts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.opt{display:flex; align-items:center; gap:.75em; text-align:left; background:var(--panel); border:2px solid var(--line); border-radius:.6em; padding:.5em .8em; font-size:1.4em; font-weight:600; width:100%; line-height:1.25}
+.opt:hover{border-color:var(--accent)}
+.opt .k{flex:none; width:1.7em; height:1.7em; border-radius:.4em; display:grid; place-items:center; background:var(--panel-2); font:800 .9em var(--f-display)}
+.opt.correct{border-color:var(--ok); background:var(--ok-soft)}
+.opt.correct .k{background:var(--ok); color:var(--on-accent)}
+.opt.wrong{border-color:var(--bad); background:var(--bad-soft)}
+.opt.wrong .k{background:var(--bad); color:var(--on-accent)}
+.opt.dim{opacity:.55}
+.opt:disabled{cursor:default}
+.explain{border-radius:.5em; padding:.5em .9em; background:var(--panel); border:1px solid var(--line); font-size:1.2em}
+.explain b{display:block; margin-bottom:.15em}
+.explain.good b{color:var(--ok)} .explain.bad b{color:var(--bad)}
+.reset{width:max-content}
+
+/* footer */
+footer{background:var(--panel); border-top:1px solid var(--line)}
+.nav{display:flex; align-items:center; gap:.8em; padding-block:.5em}
+.nav .hint{flex:1; text-align:center; color:var(--muted); font-size:.9em}
+.btn{background:var(--accent,var(--blue)); color:var(--on-accent); border:0; border-radius:.55em; padding:.5em 1.3em; font-weight:700; font-size:1em}
+.btn.sec{background:transparent; color:var(--fg); border:2px solid var(--line)}
+.btn:disabled{opacity:.35; cursor:default}
+
+/* contents panel */
+.toc{position:fixed; inset:0; z-index:20; background:var(--scrim); padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px)); overflow-y:auto}
+.toc-panel{max-width:42em; margin:0 auto; background:var(--panel); border:1px solid var(--line); border-radius:.8em; padding:1em 1.2em; display:grid; gap:.3em; font-size:.85em}
+.toc-panel h3{margin-top:.7em; font-size:1em}
+.toc-panel h3:first-child{margin-top:0}
+.toc-item{display:flex; gap:.7em; align-items:baseline; background:none; border:0; text-align:left; padding:.25em .4em; border-radius:.35em; width:100%}
+.toc-item:hover{background:var(--panel-2)}
+.toc-item.now{background:var(--panel-2); font-weight:700}
+.toc-item .n{flex:none; width:2em; color:var(--muted); font-variant-numeric:tabular-nums}
+.toc-item.q{color:var(--pink)}
+@media (max-width:640px){h1{font-size:2.2em} h2{font-size:1.6em} .q-text{font-size:1.4em} .nav .hint{display:none} .nav{justify-content:space-between}}
+</style>
+
+<header>
+  <div class="top wrap">
+    <a class="ghost" href="index.html">← Unit 4 Hub</a>
+    <span class="brand">Unit 4 · Computer Science, Grade 10</span>
+    <nav class="sel" id="sel" aria-label="Choose a lesson"></nav>
+    <div class="tools">
+      <span class="count" id="count">1 / 1</span>
+      <button class="ghost" id="tocBtn" type="button">Contents</button>
+      <button class="ghost" id="fsBtn" type="button">Full screen</button>
+    </div>
+  </div>
+  <div class="bar"><i id="bar"></i></div>
+</header>
+
+<main id="main" class="wrap">
+<section class="slide hero" data-lesson="0">
+  <div class="hero-tag">Class 10 Computer Science · Unit 4 · Lesson 4.5</div>
+  <h1>Error Handling &amp; Exception Management</h1>
+  <p class="hero-sub">Mastering Syntax Errors, Semantic (Logical) Errors, Runtime Exceptions, and the defensive <code>try...except...else...finally</code> architecture in Python.</p>
+  <div class="hero-meta">
+    <span><b>Textbook:</b> CDC Nepal Grade 10 (Pages 219–225)</span>
+    <span><b>Interactive:</b> 35 Checkpoint MCQs</span>
+    <span><b>Exam Focus:</b> SEE Theory &amp; Coding Questions</span>
+  </div>
+</section>
+<section class="slide" data-lesson="0">
+  <div class="slide-badge">Curriculum Map</div>
+  <h2>Lesson 4.5 Agenda</h2>
+  <div class="grid grid-3">
+    <div class="card">
+      <h3>1. Errors &amp; Bugs</h3>
+      <p>Definition of bug, error vs exception, and the 3 core error categories.</p>
+    </div>
+    <div class="card">
+      <h3>2. Syntax Errors</h3>
+      <p>Grammar violations, missing colons, indentation, and parse-time detection.</p>
+    </div>
+    <div class="card">
+      <h3>3. Logical Errors</h3>
+      <p>Semantic flaws, formula errors, off-by-one mistakes, and debugging tactics.</p>
+    </div>
+    <div class="card">
+      <h3>4. Runtime &amp; Exceptions</h3>
+      <p>Execution disruptions, ZeroDivisionError, IndexError, and unhandled crashes.</p>
+    </div>
+    <div class="card">
+      <h3>5. try...except Blocks</h3>
+      <p>Catching exceptions gracefully, preventing crashes, and flow of execution.</p>
+    </div>
+    <div class="card">
+      <h3>6. Error Aliasing</h3>
+      <p>Using <code>except Exception as e</code> to inspect runtime error messages.</p>
+    </div>
+    <div class="card">
+      <h3>7. else &amp; finally Clauses</h3>
+      <p>Running code on success (else) and guaranteed cleanup execution (finally).</p>
+    </div>
+    <div class="card">
+      <h3>8. Sphere &amp; Math Examples</h3>
+      <p>Worked-out programs: Sphere surface area/volume, factorial, fabs, randint.</p>
+    </div>
+    <div class="card hl">
+      <h3>9. CDC Exercises</h3>
+      <p>Official questions a–h, short answer questions, and SEE exam tips.</p>
+    </div>
+  </div>
+</section>
+<section class="slide" data-lesson="1">
+  <div class="slide-badge">Lesson 4.5.1 · Foundations</div>
+  <h2>Bugs &amp; Errors in Programming</h2>
+  <p>In software development, there is very little chance that a program runs 100% perfectly the first time. Detecting and fixing errors is a universal software skill.</p>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>What is a Bug / Error?</h3>
+      <p>An <b>error</b> or <b>bug</b> is a flaw or mistake in a program that prevents it from executing or causes it to generate erroneous results.</p>
+      <p class="note"><b>Debugging</b> is the systematic process of finding, tracing, and resolving bugs in program code.</p>
+    </div>
+    <div class="card hl">
+      <h3>What is an Exception?</h3>
+      <p>An <b>exception</b> is an anomalous condition or event that occurs during program execution that interrupts the normal flow of instructions.</p>
+      <p class="note">Both errors and exceptions can happen, but Python provides special structures to catch and resolve exceptions safely.</p>
+    </div>
+  </div>
+</section>
+<section class="slide" data-lesson="1">
+  <div class="slide-badge">Lesson 4.5.1 · Error Classification</div>
+  <h2>The Three Major Types of Errors</h2>
+  <div class="grid grid-3">
+    <div class="card">
+      <h3>1. Syntax Errors</h3>
+      <p>Violations of Python's grammatical rules and format. Caught <b>before execution</b> during parsing.</p>
+      <p class="note">E.g., missing <code>:</code>, unclosed quotes.</p>
+    </div>
+    <div class="card">
+      <h3>2. Semantic / Logical Errors</h3>
+      <p>Flaws in reasoning, algorithm, or mathematical formula. Code <b>runs</b> but outputs wrong data.</p>
+      <p class="note">E.g., <code>length + breadth</code> instead of <code>length * breadth</code>.</p>
+    </div>
+    <div class="card hl">
+      <h3>3. Runtime Errors</h3>
+      <p>Impossible operations attempted <b>while code is executing</b>. Causes program crash unless handled.</p>
+      <p class="note">E.g., <code>10 / 0</code>, accessing missing index.</p>
+    </div>
+  </div>
+</section>
+<section class="slide mcq" data-lesson="1" data-q="c1"></section>
+<section class="slide mcq" data-lesson="1" data-q="c2"></section>
+<section class="slide mcq" data-lesson="1" data-q="c3"></section>
+<section class="slide" data-lesson="2">
+  <div class="slide-badge">Lesson 4.5.2 · Syntax Errors</div>
+  <h2>Understanding Syntax Errors</h2>
+  <p>The set of rules that a programmer must follow when writing Python code is called <b>Python syntax</b>.</p>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Why Syntax Errors Happen</h3>
+      <ul>
+        <li>Missing punctuation (e.g. missing colon <code>:</code> at the end of <code>if</code>, <code>for</code>, <code>def</code>)</li>
+        <li>Incorrect indentation (mixing tabs/spaces or unaligned blocks)</li>
+        <li>Misspelling reserved keywords (e.g. <code>whlie</code> instead of <code>while</code>)</li>
+        <li>Unmatched parentheses <code>()</code>, brackets <code>[]</code>, or unclosed quotation marks <code>""</code></li>
+      </ul>
+    </div>
+    <div class="card hl">
+      <h3>When Are They Caught?</h3>
+      <p>Syntax errors are detected <b>before the program runs</b>, as the interpreter checks the code structure first during the parsing phase.</p>
+      <pre><code># SyntaxError Example:
+if x > 10
+    print("Greater")
+# ^ SyntaxError: expected ':'</code></pre>
+    </div>
+  </div>
+</section>
+<section class="slide" data-lesson="2">
+  <div class="slide-badge">Lesson 4.5.2 · Diagnostics</div>
+  <h2>Reading Python's SyntaxError Traceback</h2>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>The Caret (^) Marker</h3>
+      <p>When Python encounters a syntax error, it prints the filename, line number, and points a caret <code>^</code> directly at the first token that failed grammar validation.</p>
+      <pre><code>  File "calc.py", line 4
+    if num > 0
+              ^
+SyntaxError: expected ':'</code></pre>
+    </div>
+    <div class="card hl">
+      <h3>Exam Rule: Official CDC Question (g)</h3>
+      <p><b>Question:</b> Which type of error occurs in the program if programmers violate the rules and format of the program?</p>
+      <p><b>Answer:</b> <b>Syntax Error</b></p>
+      <p class="note">Remember: If it breaks Python's grammatical formatting rules, it is always a Syntax Error!</p>
+    </div>
+  </div>
+</section>
+<section class="slide mcq" data-lesson="2" data-q="c4"></section>
+<section class="slide mcq" data-lesson="2" data-q="c5"></section>
+<section class="slide mcq" data-lesson="2" data-q="c6"></section>
+<section class="slide mcq" data-lesson="2" data-q="c7"></section>
+<section class="slide" data-lesson="3">
+  <div class="slide-badge">Lesson 4.5.3 · Logical Errors</div>
+  <h2>Semantic (Logical) Errors</h2>
+  <p>A semantic error occurs when code runs without any syntax errors or runtime crashes, but <b>does not produce the intended result</b>.</p>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Root Causes of Logical Errors</h3>
+      <ul>
+        <li><b>Flawed Algorithm:</b> Misunderstanding the logic required to solve the problem.</li>
+        <li><b>Wrong Operator:</b> Typing <code>+</code> instead of <code>*</code>, or <code>/</code> instead of <code>//</code>.</li>
+        <li><b>Incorrect Precedence:</b> Missing parentheses in complex math expressions (e.g. <code>a + b / 2</code> instead of <code>(a + b) / 2</code>).</li>
+        <li><b>Off-By-One Loops:</b> <code>range(1, 10)</code> only loops up to 9, missing 10!</li>
+      </ul>
+    </div>
+    <div class="card hl">
+      <h3>Why They Are Dangerous</h3>
+      <p>Unlike syntax and runtime errors, <b>Python produces NO warning or error message</b> for logical errors!</p>
+      <p class="note">The computer does exactly what you told it to do, not what you intended to do.</p>
+    </div>
+  </div>
+</section>
+<section class="slide" data-lesson="3">
+  <div class="slide-badge">Lesson 4.5.3 · Debugging Tactics</div>
+  <h2>How to Identify &amp; Fix Logical Errors</h2>
+  <div class="grid grid-3">
+    <div class="card">
+      <h3>1. Trace / Dry Run</h3>
+      <p>Manually step through the code on paper with small sample inputs, tracking variable values line by line.</p>
+    </div>
+    <div class="card">
+      <h3>2. Print Debugging</h3>
+      <p>Insert temporary <code>print()</code> statements before and after calculations to verify intermediate states.</p>
+    </div>
+    <div class="card hl">
+      <h3>3. Known Test Cases</h3>
+      <p>Test your program using inputs with known, pre-calculated outputs (e.g. radius=7 gives area &approx; 153.94).</p>
+    </div>
+  </div>
+</section>
+<section class="slide mcq" data-lesson="3" data-q="c8"></section>
+<section class="slide mcq" data-lesson="3" data-q="c9"></section>
+<section class="slide mcq" data-lesson="3" data-q="c10"></section>
+<section class="slide" data-lesson="4">
+  <div class="slide-badge">Lesson 4.5.4 · Runtime Failures</div>
+  <h2>Run-time Errors &amp; Built-in Exceptions</h2>
+  <p>A runtime error occurs <b>during program execution</b> when the computer is asked to perform an operation that is impossible or illegal.</p>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Common Runtime Exceptions</h3>
+      <ul>
+        <li><code>ZeroDivisionError</code>: Attempting to divide a number by zero (e.g. <code>25 / 0</code>).</li>
+        <li><code>IndexError</code>: Accessing an index outside sequence bounds (e.g. <code>nums[5]</code> when length is 3).</li>
+        <li><code>ValueError</code>: Wrong value type passed to a function (e.g. <code>int("hello")</code>).</li>
+        <li><code>TypeError</code>: Incompatible type operation (e.g. <code>"age: " + 16</code>).</li>
+        <li><code>NameError</code>: Using an undeclared variable name.</li>
+      </ul>
+    </div>
+    <div class="card hl">
+      <h3>The Impact of Unhandled Exceptions</h3>
+      <p>When an unhandled exception occurs, Python <b>abruptly halts program execution</b> and prints a traceback.</p>
+      <p class="note">In real-world apps, this means sudden application crash, lost work, and poor user experience!</p>
+    </div>
+  </div>
+</section>
+<section class="slide mcq" data-lesson="4" data-q="c11"></section>
+<section class="slide mcq" data-lesson="4" data-q="c12"></section>
+<section class="slide mcq" data-lesson="4" data-q="c13"></section>
+<section class="slide mcq" data-lesson="4" data-q="c14"></section>
+<section class="slide" data-lesson="5">
+  <div class="slide-badge">Lesson 4.5.5 · Exception Handling</div>
+  <h2>The try...except Architecture</h2>
+  <p>Exception handling is used to handle unexpected runtime errors gracefully and prevent the program from crashing.</p>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Keywords for Handling</h3>
+      <ul>
+        <li><code>try</code>: Tests a block of code for errors.</li>
+        <li><code>except</code>: Handles the error if an exception occurs.</li>
+        <li><code>else</code>: Runs only if NO exception occurred.</li>
+        <li><code>finally</code>: Runs ALWAYS, regardless of outcome.</li>
+      </ul>
+    </div>
+    <div class="card hl">
+      <h3>Control Flow</h3>
+      <ol>
+        <li>Python executes statements inside <code>try</code> block.</li>
+        <li>If no error occurs, the <code>except</code> block is skipped.</li>
+        <li>If an error occurs, execution jumps immediately to the <code>except</code> block!</li>
+      </ol>
+    </div>
+  </div>
+</section>
+<section class="slide" data-lesson="5">
+  <div class="slide-badge">Lesson 4.5.5 · Worked Example</div>
+  <h2>Textbook Example: Safe Division</h2>
+  <p>Comparing unhandled crash vs defensive <code>try...except</code> handling:</p>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Without Exception Handling</h3>
+      <pre><code>x = 25
+y = 0
+result = x / y
+print("Result is", result)
+
+# Crash Traceback:
+# ZeroDivisionError: division by zero</code></pre>
+      <p class="note">Program crashes immediately; lines below never execute!</p>
+    </div>
+    <div class="card hl">
+      <h3>With try...except (Page 221)</h3>
+      <pre><code>x = 25
+y = 0
+try:
+    result = x / y
+    print("Result is", result)
+except:
+    print("Not possible to divide")
+
+# Output:
+# Not possible to divide</code></pre>
+      <p class="note">Program handles error cleanly and continues running!</p>
+    </div>
+  </div>
+</section>
+<section class="slide mcq" data-lesson="5" data-q="c15"></section>
+<section class="slide mcq" data-lesson="5" data-q="c16"></section>
+<section class="slide mcq" data-lesson="5" data-q="c17"></section>
+<section class="slide mcq" data-lesson="5" data-q="c18"></section>
+<section class="slide mcq" data-lesson="5" data-q="c19"></section>
+<section class="slide" data-lesson="6">
+  <div class="slide-badge">Lesson 4.5.6 · Aliasing Errors</div>
+  <h2>Catching Error Objects: <code>except Exception as e</code></h2>
+  <p>Instead of guessing what went wrong, Python allows us to capture the exact exception object raised by using an alias <code>as e</code>.</p>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Syntax &amp; Textbook Example (Page 222)</h3>
+      <pre><code>x = 25
+y = 0
+try:
+    result = x / y
+    print("Result is", result)
+except Exception as e:
+    print("Cannot be divided", e)
+
+# Output:
+# Cannot be divided division by zero</code></pre>
+    </div>
+    <div class="card hl">
+      <h3>Why Aliasing is Useful</h3>
+      <ul>
+        <li><code>e</code> stores the exact message generated by Python.</li>
+        <li>Allows dynamic reporting without hardcoding error descriptions.</li>
+        <li>Crucial for debugging and writing error logs to files.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+<section class="slide mcq" data-lesson="6" data-q="c20"></section>
+<section class="slide mcq" data-lesson="6" data-q="c21"></section>
+<section class="slide" data-lesson="7">
+  <div class="slide-badge">Lesson 4.5.7 · The else Clause</div>
+  <h2>The <code>else</code> Block in Exception Handling</h2>
+  <p>In Python, the <code>else</code> block in a <code>try...except</code> statement executes <b>only if the try statement does NOT raise an exception</b>.</p>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Textbook Example (Page 222)</h3>
+      <pre><code>num1 = 25
+num2 = 12
+try:
+    result = num1 / num2
+except Exception as e:
+    print("Cannot be divided", e)
+else:
+    print("Result is", result)
+
+# Output:
+# Result is 2.0833333333333335</code></pre>
+    </div>
+    <div class="card hl">
+      <h3>Best Practice Rule</h3>
+      <p>Keep the <code>try</code> block as small as possible (only the risky operation). Put the code that depends on the successful calculation inside the <code>else</code> block!</p>
+      <p class="note">This prevents accidental catching of unexpected errors in non-risky code.</p>
+    </div>
+  </div>
+</section>
+<section class="slide mcq" data-lesson="7" data-q="c22"></section>
+<section class="slide mcq" data-lesson="7" data-q="c23"></section>
+<section class="slide" data-lesson="8">
+  <div class="slide-badge">Lesson 4.5.8 · Guaranteed Execution</div>
+  <h2>The <code>finally</code> Clause</h2>
+  <p>The <code>finally</code> block <b>always executes</b>, no matter if the try block raises an error or executes smoothly.</p>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Textbook Example (Page 223)</h3>
+      <pre><code>num1 = 25
+num2 = 0
+try:
+    result = num1 / num2
+    print("Result is", result)
+except Exception as e:
+    print("Cannot be divided", e)
+finally:
+    print("The program is finished.")
+
+# Output:
+# Cannot be divided division by zero
+# The program is finished.</code></pre>
+    </div>
+    <div class="card hl">
+      <h3>Real-World Cleanup Use Cases</h3>
+      <ul>
+        <li>Closing opened files (<code>file.close()</code>)</li>
+        <li>Closing network sockets and database connections</li>
+        <li>Releasing hardware locks and temporary resources</li>
+      </ul>
+      <p class="note">Cleanup code in <code>finally</code> runs even if an error is unhandled or code returns early!</p>
+    </div>
+  </div>
+</section>
+<section class="slide" data-lesson="8">
+  <div class="slide-badge">Lesson 4.5.8 · Master Blueprint</div>
+  <h2>The Complete 4-Clause Blueprint</h2>
+  <div class="grid grid-4">
+    <div class="card">
+      <h3>1. try</h3>
+      <p>Enclose risky code that could trigger an exception.</p>
+    </div>
+    <div class="card">
+      <h3>2. except</h3>
+      <p>Executes ONLY if an exception occurs in <code>try</code>.</p>
+    </div>
+    <div class="card">
+      <h3>3. else</h3>
+      <p>Executes ONLY if NO exception occurs in <code>try</code>.</p>
+    </div>
+    <div class="card hl">
+      <h3>4. finally</h3>
+      <p>Executes ALWAYS, without exception.</p>
+    </div>
+  </div>
+  <p class="note" style="margin-top:.6em">Execution order: <code>try &rarr; (except OR else) &rarr; finally</code></p>
+</section>
+<section class="slide mcq" data-lesson="8" data-q="c24"></section>
+<section class="slide mcq" data-lesson="8" data-q="c25"></section>
+<section class="slide mcq" data-lesson="8" data-q="c26"></section>
+<section class="slide" data-lesson="9">
+  <div class="slide-badge">Lesson 4.5.9 · Worked Examples</div>
+  <h2>Program 1: Area &amp; Volume of a Sphere</h2>
+  <p>Official CDC Textbook Worked Example 1 (Pages 223–224):</p>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Mathematical Formulas</h3>
+      <ul>
+        <li>Surface Area of Sphere: <code>A = 4 &pi; r&sup2;</code></li>
+        <li>Volume of Sphere: <code>V = 4/3 &pi; r&sup3;</code></li>
+        <li>Constant: <code>&pi; &approx; 3.14159...</code> from <code>math.pi</code></li>
+      </ul>
+    </div>
+    <div class="card hl">
+      <h3>Python Implementation</h3>
+      <pre><code>import math as m
+
+radius = float(input("enter the radius:"))
+pie = m.pi
+
+a = 4 * pie * pow(radius, 2)
+v = 4/3 * pie * pow(radius, 3)
+
+print("Area of the of the sphere is", a)
+print("Volume of the of the sphere is", v)</code></pre>
+    </div>
+  </div>
+</section>
+<section class="slide" data-lesson="9">
+  <div class="slide-badge">Lesson 4.5.9 · Worked Examples</div>
+  <h2>Programs 2, 3 &amp; 4: Factorial, Fabs &amp; Random</h2>
+  <div class="grid grid-3">
+    <div class="card">
+      <h3>Program 2: Factorial</h3>
+      <pre><code>import math
+
+n = int(input("Enter number: "))
+f = math.factorial(n)
+print("Factorial is", f)</code></pre>
+      <p class="note">Computes <code>n!</code>. E.g., for 5 &rarr; <code>120</code>.</p>
+    </div>
+    <div class="card">
+      <h3>Program 3: Absolute Value</h3>
+      <pre><code>from math import fabs
+
+n = int(input("Enter number: "))
+a = fabs(n)
+print("Absolute value is :", a)</code></pre>
+      <p class="note">Returns positive float: <code>fabs(-15) &rarr; 15.0</code>.</p>
+    </div>
+    <div class="card hl">
+      <h3>Program 4: Random Number</h3>
+      <pre><code>import random
+
+r = random.randint(1, 100)
+print("Number generated is", r)</code></pre>
+      <p class="note">Generates random integer inclusive between 1 and 100.</p>
+    </div>
+  </div>
+</section>
+<section class="slide mcq" data-lesson="9" data-q="c27"></section>
+<section class="slide mcq" data-lesson="9" data-q="c28"></section>
+<section class="slide mcq" data-lesson="9" data-q="c29"></section>
+<section class="slide mcq" data-lesson="9" data-q="c30"></section>
+<section class="slide mcq" data-lesson="9" data-q="c31"></section>
+<section class="slide mcq" data-lesson="9" data-q="c32"></section>
+<section class="slide" data-lesson="10">
+  <div class="slide-badge">Lesson 4.5.10 · Official Exercises</div>
+  <h2>Official CDC Questions Review (Pages 224–225)</h2>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Choose the Best Answer (1. a &ndash; d)</h3>
+      <ul>
+        <li><b>a.</b> Python ______ is a collection of codes/modules: <b>(ii) library</b></li>
+        <li><b>b.</b> Library mostly used for figures/plots: <b>(iii) matplotlib</b></li>
+        <li><b>c.</b> Keyword to access a module from standard library: <b>(i) import</b></li>
+        <li><b>d.</b> Keyword to import specific functions: <b>(iv) from...import</b></li>
+      </ul>
+    </div>
+    <div class="card hl">
+      <h3>Choose the Best Answer (1. e &ndash; h)</h3>
+      <ul>
+        <li><b>e.</b> Module for arithmetic, trig, logarithms: <b>(ii) math</b></li>
+        <li><b>f.</b> Module to draw lines, shapes, graphics: <b>(i) turtle</b></li>
+        <li><b>g.</b> Error from violating rules/format of program: <b>(iv) Syntax</b></li>
+        <li><b>h.</b> Block used to test code for errors: <b>(iii) try</b></li>
+      </ul>
+    </div>
+  </div>
+</section>
+<section class="slide" data-lesson="10">
+  <div class="slide-badge">Lesson 4.5.10 · Examination Guide</div>
+  <h2>Short Answer Solutions for SEE Exam</h2>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Key Concept Answers</h3>
+      <ul>
+        <li><b>Role of except block:</b> Executes when an error occurs in the try block to handle it gracefully and prevent a crash.</li>
+        <li><b>When else block executes:</b> Only when the try block completes successfully without raising any exceptions.</li>
+        <li><b>Three error types:</b> Syntax errors, Semantic (logical) errors, and Runtime errors.</li>
+      </ul>
+    </div>
+    <div class="card hl">
+      <h3>Four Exception Handling Keywords</h3>
+      <p>Be prepared to list and explain all four keywords in SEE theory:</p>
+      <ul>
+        <li><code>try</code> &mdash; encloses test code</li>
+        <li><code>except</code> &mdash; handles raised exceptions</li>
+        <li><code>else</code> &mdash; runs if no exception occurred</li>
+        <li><code>finally</code> &mdash; guaranteed cleanup execution</li>
+      </ul>
+    </div>
+  </div>
+</section>
+<section class="slide mcq" data-lesson="10" data-q="c33"></section>
+<section class="slide mcq" data-lesson="10" data-q="c34"></section>
+<section class="slide mcq" data-lesson="10" data-q="c35"></section>
+<section class="slide" data-lesson="10">
+  <div class="slide-badge">Unit 4 Complete</div>
+  <h2>Unit 4 Lesson 4.5 Summary &amp; Review</h2>
+  <div class="grid grid-3">
+    <div class="card">
+      <h3>Syntax Errors</h3>
+      <p>Caught before run-time during parsing; caused by missing colons, invalid indentation, or typos.</p>
+    </div>
+    <div class="card">
+      <h3>Logical Errors</h3>
+      <p>Runs cleanly without error messages, but yields wrong results due to flawed algorithms or formulas.</p>
+    </div>
+    <div class="card hl">
+      <h3>Runtime Errors</h3>
+      <p>Handled safely using <code>try...except...else...finally</code> to prevent catastrophic crashes.</p>
+    </div>
+  </div>
+  <p class="note" style="margin-top:.4em">Use the Contents button to review any topic or replay all 35 checkpoint questions!</p>
+</section>
+</main>
+
+<footer>
+  <div class="nav wrap">
+    <button class="btn sec" id="prev" type="button">← Prev</button>
+    <span class="hint">Use <b>Arrow keys</b> or <b>Space</b> to advance. Press <b>1-4</b> or <b>A-D</b> for MCQs. Press <b>F</b> for full screen.</span>
+    <button class="btn" id="next" type="button">Next →</button>
+  </div>
+</footer>
+
+<div class="toc" id="toc" hidden>
+  <div class="toc-panel" id="tocPanel">
+    <h2>Table of Contents</h2>
+  </div>
+</div>
+<button class="fsx" id="fsExit" type="button" aria-label="Exit full screen">✕</button>
+
+<script>
+(function(){
+  "use strict";
+  var LESSONS = {
+  "0": "Overview",
+  "1": "1. Errors & Bugs",
+  "2": "2. Syntax Errors",
+  "3": "3. Logical Errors",
+  "4": "4. Runtime Errors",
+  "5": "5. try...except",
+  "6": "6. Error Aliasing",
+  "7": "7. else Block",
+  "8": "8. finally Block",
+  "9": "9. Worked Examples",
+  "10": "10. CDC Exercises"
+};
+
+  var MCQ = {
+ "c1": {
+  "q": "What is an error (bug) in a computer program?",
+  "o": [
+   "An intentional Easter egg in software",
+   "A mistake in code that causes unexpected behavior, wrong output, or stops execution",
+   "A hardware malfunction of the CPU",
+   "An advanced compiler optimization technique"
+  ],
+  "a": 1,
+  "e": "A bug or error is an unintentional flaw or mistake in program instructions that prevents execution or generates erroneous results."
+ },
+ "c2": {
+  "q": "What is an Exception in Python?",
+  "o": [
+   "A special comment for code documentation",
+   "A condition or event during program execution that disrupts the normal flow of instructions",
+   "A syntax rule violated before compilation",
+   "A reserved keyword to define a function"
+  ],
+  "a": 1,
+  "e": "An exception is an abnormal condition or event occurring at runtime that halts the standard control flow unless handled."
+ },
+ "c3": {
+  "q": "What are the three primary categories of errors in Python?",
+  "o": [
+   "Hardware, network, and software errors",
+   "Syntax errors, semantic (logical) errors, and runtime errors",
+   "Input errors, output errors, and memory errors",
+   "Variable errors, function errors, and loop errors"
+  ],
+  "a": 1,
+  "e": "Python programs encounter three distinct types of errors: Syntax errors, Semantic (logical) errors, and Runtime errors."
+ },
+ "c4": {
+  "q": "Which type of error occurs when Python grammar and punctuation rules are violated?",
+  "o": [
+   "Logical error",
+   "Runtime error",
+   "Syntax error",
+   "Semantic error"
+  ],
+  "a": 2,
+  "e": "Syntax errors happen when code violates Python grammar rules, like missing colons, typos in keywords, or unmatched parentheses."
+ },
+ "c5": {
+  "q": "When are Syntax Errors detected in Python?",
+  "o": [
+   "After the entire program finishes running",
+   "Before program execution during the parsing phase",
+   "Only when the user provides invalid input",
+   "Never, they are automatically ignored"
+  ],
+  "a": 1,
+  "e": "The Python interpreter detects syntax errors during parsing before any code instructions begin execution."
+ },
+ "c6": {
+  "q": "Which of the following code snippets triggers a SyntaxError?",
+  "o": [
+   "if x > 5: print(x)",
+   "if x > 5 print(x)",
+   "print('x is greater than 5')",
+   "x = 5 + 2"
+  ],
+  "a": 1,
+  "e": "'if x > 5 print(x)' is missing the mandatory colon (:) after the conditional test, triggering an immediate SyntaxError."
+ },
+ "c7": {
+  "q": "How does Python indicate where a SyntaxError occurred?",
+  "o": [
+   "By sending an alert dialog",
+   "By pointing a caret symbol (^) to the token where parsing failed in the traceback",
+   "By terminating without any feedback",
+   "By executing the rest of the file anyway"
+  ],
+  "a": 1,
+  "e": "Python displays an error traceback with a caret (^) indicating the exact token where the syntax parsing broke down."
+ },
+ "c8": {
+  "q": "What is a Semantic (Logical) Error?",
+  "o": [
+   "Code that fails to compile due to missing punctuation",
+   "Code that runs smoothly without syntax or crash errors but produces incorrect results due to flawed logic",
+   "An out-of-memory crash",
+   "An invalid imported file name"
+  ],
+  "a": 1,
+  "e": "In semantic/logical errors, program structure is valid and executes, but the algorithm or formula is wrong, yielding false output."
+ },
+ "c9": {
+  "q": "Why are Semantic / Logical errors often harder to detect than Syntax errors?",
+  "o": [
+   "Python crashes immediately on launch",
+   "The interpreter does not flag them or generate error messages because the syntax is fully valid",
+   "They cause permanent hard drive data loss",
+   "They only happen in interpreted languages"
+  ],
+  "a": 1,
+  "e": "The interpreter cannot know the programmer's intended meaning; since syntax is valid, it produces no error alerts, requiring manual testing."
+ },
+ "c10": {
+  "q": "Which of the following is a classic example of a logical error?",
+  "o": [
+   "Writing prin('hello')",
+   "Writing area = length + breadth instead of length * breadth for rectangle area",
+   "Writing 10 / 0",
+   "Writing for i in range:"
+  ],
+  "a": 1,
+  "e": "Using '+' instead of '*' calculates perimeter or sum instead of area; the code runs without error but calculates the wrong value."
+ },
+ "c11": {
+  "q": "What is a Run-time Error?",
+  "o": [
+   "An error caught before code starts running",
+   "An error that occurs during program execution when an illegal operation is attempted",
+   "A typing mistake in a variable name caught by the editor",
+   "An expired Python license"
+  ],
+  "a": 1,
+  "e": "Runtime errors arise during code execution when an operation cannot be performed (e.g. division by zero, invalid index)."
+ },
+ "c12": {
+  "q": "Which built-in exception is raised when executing print(25 / 0)?",
+  "o": [
+   "ValueError",
+   "ZeroDivisionError",
+   "IndexError",
+   "KeyError"
+  ],
+  "a": 1,
+  "e": "Division or modulo by zero raises the built-in ZeroDivisionError exception."
+ },
+ "c13": {
+  "q": "What exception occurs when accessing my_list[10] if my_list = [1, 2, 3]?",
+  "o": [
+   "SyntaxError",
+   "IndexError",
+   "TypeError",
+   "NameError"
+  ],
+  "a": 1,
+  "e": "Accessing an index outside the boundaries of a sequence raises an IndexError: list index out of range."
+ },
+ "c14": {
+  "q": "What happens if a runtime exception is NOT handled in a Python program?",
+  "o": [
+   "Python skips the line and continues happily",
+   "Python terminates execution abruptly and displays a traceback",
+   "The program restarts from slide 1",
+   "It deletes the python file"
+  ],
+  "a": 1,
+  "e": "Unhandled exceptions crash the program immediately, displaying a traceback message to standard error."
+ },
+ "c15": {
+  "q": "What mechanism does Python provide to prevent unexpected program crashes?",
+  "o": [
+   "GOTO statements",
+   "Exception handling using try...except blocks",
+   "Endless while loops",
+   "Commenting out risky code"
+  ],
+  "a": 1,
+  "e": "Python uses try...except blocks to catch and gracefully handle exceptions, preventing abrupt crashes."
+ },
+ "c16": {
+  "q": "In a try...except structure, what code goes inside the try block?",
+  "o": [
+   "Code that will never fail",
+   "Code that is risky and might potentially raise an exception during execution",
+   "The program's license agreement",
+   "Only import statements"
+  ],
+  "a": 1,
+  "e": "The try block encloses statements that have the potential to raise an exception at runtime."
+ },
+ "c17": {
+  "q": "When does the except block execute?",
+  "o": [
+   "Always, before the try block",
+   "Only if an exception occurs inside the associated try block",
+   "Only when the computer runs out of memory",
+   "Never, it is just a documentation comment"
+  ],
+  "a": 1,
+  "e": "The except block executes exclusively when an exception is raised within the try block."
+ },
+ "c18": {
+  "q": "What is printed by this code?\ntry:\n    x = 10 / 2\n    print('Success')\nexcept:\n    print('Failed')",
+  "o": [
+   "Failed",
+   "Success",
+   "Both Success and Failed",
+   "An error traceback"
+  ],
+  "a": 1,
+  "e": "10 / 2 evaluates to 5.0 without exception, so 'Success' is printed and the except block is skipped."
+ },
+ "c19": {
+  "q": "What is the danger of using a bare 'except:' without specifying an exception type?",
+  "o": [
+   "It makes code run 10x slower",
+   "It catches ALL exceptions indiscriminately, including SystemExit, KeyboardInterrupt, and typos",
+   "It refuses to run in Python 3",
+   "It deletes local variables"
+  ],
+  "a": 1,
+  "e": "A bare except: intercepts all exceptions, including user keyboard interrupts (Ctrl+C) and unexpected bugs, making debugging harder."
+ },
+ "c20": {
+  "q": "How can you capture the exception object and inspect its error message?",
+  "o": [
+   "catch Exception -> e",
+   "except Exception as e:",
+   "except e in Exception:",
+   "try Exception as e:"
+  ],
+  "a": 1,
+  "e": "'except Exception as e:' binds the raised exception instance to variable e, which can be printed or logged."
+ },
+ "c21": {
+  "q": "In the code 'except Exception as e: print(e)', what does 'e' display for 10 / 0?",
+  "o": [
+   "SyntaxError: bad math",
+   "division by zero",
+   "0.0",
+   "Number too small"
+  ],
+  "a": 1,
+  "e": "The exception message for ZeroDivisionError is 'division by zero'."
+ },
+ "c22": {
+  "q": "When does the else block execute in a try...except...else structure?",
+  "o": [
+   "Whenever an exception is caught",
+   "Only when the try block finishes WITHOUT raising any exception",
+   "In every single run",
+   "Only if the except block fails"
+  ],
+  "a": 1,
+  "e": "The else block runs only when the try block executes successfully without raising any exceptions."
+ },
+ "c23": {
+  "q": "What is printed?\ntry:\n    res = 25 / 5\nexcept:\n    print('Error')\nelse:\n    print('Answer:', res)",
+  "o": [
+   "Error",
+   "Answer: 5.0",
+   "Nothing",
+   "SyntaxError"
+  ],
+  "a": 1,
+  "e": "Since 25 / 5 raises no exception, the except block is bypassed and the else block prints 'Answer: 5.0'."
+ },
+ "c24": {
+  "q": "What is the unique characteristic of the finally block in Python?",
+  "o": [
+   "It runs only when an error occurs",
+   "It executes ALWAYS, regardless of whether an exception occurred or not",
+   "It only runs if the program crashes",
+   "It replaces the try block"
+  ],
+  "a": 1,
+  "e": "The finally block is guaranteed to execute unconditionally, whether an exception was raised, handled, or absent."
+ },
+ "c25": {
+  "q": "For what purpose is a finally block most commonly used in real-world programming?",
+  "o": [
+   "Writing mathematical formulas",
+   "Clean-up actions such as closing open files, network connections, or database sockets",
+   "Defining global variables",
+   "Speeding up loop iterations"
+  ],
+  "a": 1,
+  "e": "finally guarantees that vital cleanup tasks (like closing files or database sockets) happen even if an error occurred."
+ },
+ "c26": {
+  "q": "In the full 4-block syntax try...except...else...finally, what is the mandatory execution order?",
+  "o": [
+   "except -> try -> finally -> else",
+   "try -> (except OR else) -> finally",
+   "finally -> try -> except",
+   "else -> try -> except"
+  ],
+  "a": 1,
+  "e": "try runs first; if error -> except; if no error -> else; lastly finally runs in all scenarios."
+ },
+ "c27": {
+  "q": "In textbook Example 1 for calculating the surface area of a sphere, what is the mathematical formula?",
+  "o": [
+   "2 * pi * r",
+   "4 * pi * r^2",
+   "(4/3) * pi * r^3",
+   "pi * r^2"
+  ],
+  "a": 1,
+  "e": "The surface area of a sphere of radius r is A = 4 * pi * r^2."
+ },
+ "c28": {
+  "q": "In Python, what is the formula to calculate sphere volume using math.pi and pow(r, 3)?",
+  "o": [
+   "v = 4/3 * math.pi * pow(r, 3)",
+   "v = 4 * math.pi * r * 2",
+   "v = (3/4) * math.pi * pow(r, 2)",
+   "v = math.pi * r"
+  ],
+  "a": 0,
+  "e": "Volume of a sphere is V = 4/3 * pi * r^3, coded as '4/3 * math.pi * pow(r, 3)'."
+ },
+ "c29": {
+  "q": "What function from the math module computes the factorial of an integer n?",
+  "o": [
+   "math.fact(n)",
+   "math.factorial(n)",
+   "math.product(n)",
+   "math.fac(n)"
+  ],
+  "a": 1,
+  "e": "math.factorial(n) returns the factorial n! for a non-negative integer."
+ },
+ "c30": {
+  "q": "What does math.factorial(0) return in Python?",
+  "o": [
+   "0",
+   "1",
+   "-1",
+   "ValueError"
+  ],
+  "a": 1,
+  "e": "By mathematical definition, 0! = 1, and math.factorial(0) returns 1."
+ },
+ "c31": {
+  "q": "What does the fabs() function in the math module do?",
+  "o": [
+   "Calculates Fibonacci numbers",
+   "Returns the absolute value of a number as a float",
+   "Rounds a number to the nearest integer",
+   "Calculates factorials"
+  ],
+  "a": 1,
+  "e": "math.fabs(x) returns the absolute value of x as a floating-point number."
+ },
+ "c32": {
+  "q": "What is the output of 'from math import fabs; print(fabs(-15.8))'?",
+  "o": [
+   "-15.8",
+   "15.8",
+   "15",
+   "-15"
+  ],
+  "a": 1,
+  "e": "fabs(-15.8) returns the positive floating-point absolute value 15.8."
+ },
+ "c33": {
+  "q": "(Official CDC Question g) Which type of error occurs if a programmer violates the rules and format of the programming language?",
+  "o": [
+   "Logical Error",
+   "Runtime Error",
+   "Semantic Error",
+   "Syntax Error"
+  ],
+  "a": 3,
+  "e": "Official textbook exercise 1(g): Violating the syntactic rules and grammar format of the programming language produces a Syntax Error."
+ },
+ "c34": {
+  "q": "(Official CDC Question h) Which block is used to test a block of code for potential errors in Python?",
+  "o": [
+   "finally",
+   "else",
+   "try",
+   "error"
+  ],
+  "a": 2,
+  "e": "Official textbook exercise 1(h): The try block encloses code to test for potential runtime errors."
+ },
+ "c35": {
+  "q": "(Official CDC Question d) Which keyword combination is used to import specific functions from a module instead of everything?",
+  "o": [
+   "as...import",
+   "from...export",
+   "as...export",
+   "from...import"
+  ],
+  "a": 3,
+  "e": "Official textbook exercise 1(d): 'from <module> import <name>' imports specific functions or attributes."
+ }
+};
+
+  var LETTERS = ["A","B","C","D"];
+  var main = document.getElementById("main");
+  var slides = Array.prototype.slice.call(main.querySelectorAll(".slide"));
+  var cur = 0;
+  var updatingHash = false;
+
+  function buildMcq(s, key){
+    var d = MCQ[key];
+    if (!d) return;
+    s.dataset.title = "Checkpoint: " + d.q;
+    var html = '<span class="q-tag">Checkpoint Question</span><h2 class="q-text"></h2><div class="opts"></div><div class="explain" hidden></div><button class="ghost reset" type="button" hidden>Reset question</button>';
+    s.innerHTML = html;
+    s.querySelector(".q-text").textContent = d.q;
+    var box = s.querySelector(".opts");
+    d.o.forEach(function(t, i){
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "opt"; b.dataset.i = i;
+      var k = document.createElement("span"); k.className = "k"; k.textContent = LETTERS[i];
+      var tx = document.createElement("span"); tx.textContent = t;
+      b.appendChild(k); b.appendChild(tx);
+      b.addEventListener("click", function(){ answer(s, key, i); });
+      box.appendChild(b);
+    });
+    s.querySelector(".reset").addEventListener("click", function(){ reset(s); });
+  }
+
+  function answer(s, key, i){
+    if (s._done) return;
+    s._done = true;
+    var d = MCQ[key];
+    var opts = s.querySelectorAll(".opt");
+    opts.forEach(function(b, j){
+      b.disabled = true;
+      if (j === d.a) b.classList.add("correct");
+      else if (j === i) b.classList.add("wrong");
+      else b.classList.add("dim");
+    });
+    var ex = s.querySelector(".explain");
+    var good = i === d.a;
+    ex.className = "explain " + (good ? "good" : "bad");
+    ex.innerHTML = "";
+    var h = document.createElement("b"); h.textContent = good ? "✓ Correct!" : "✗ Not quite. The correct answer is " + LETTERS[d.a] + ".";
+    var p = document.createElement("span"); p.textContent = d.e;
+    ex.appendChild(h); ex.appendChild(p);
+    ex.hidden = false;
+    s.querySelector(".reset").hidden = false;
+    fitSlide();
+  }
+
+  function reset(s){
+    s._done = false;
+    s.querySelectorAll(".opt").forEach(function(b){ b.disabled = false; b.className = "opt"; });
+    s.querySelector(".explain").hidden = true;
+    s.querySelector(".reset").hidden = true;
+    fitSlide();
+  }
+
+  slides.forEach(function(s){ if (s.dataset.q) buildMcq(s, s.dataset.q); });
+
+  function goLesson(l){
+    for (var i = 0; i < slides.length; i++) {
+      if ((slides[i].dataset.lesson || "0") === l) { show(i); return; }
+    }
+  }
+
+  document.querySelectorAll("pre.code").forEach(function(c){
+    var t = c.textContent.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    c.innerHTML = t.replace(/\b(def|class|import|from|if|elif|else|while|for|in|return|print|input|len|range|append|insert|sum|min|max|get|keys|values|del|True|False|None|and|or|not|abs|pow|sqrt|int|float|str|list|dict|break|continue)\b/g, "<b>$1</b>");
+  });
+
+  var selBox = document.getElementById("sel");
+  var SELS = [
+  [
+    "0",
+    "Overview"
+  ],
+  [
+    "1",
+    "1. Errors"
+  ],
+  [
+    "2",
+    "2. Syntax"
+  ],
+  [
+    "3",
+    "3. Logical"
+  ],
+  [
+    "4",
+    "4. Runtime"
+  ],
+  [
+    "5",
+    "5. try/except"
+  ],
+  [
+    "6",
+    "6. Alias"
+  ],
+  [
+    "7",
+    "7. else"
+  ],
+  [
+    "8",
+    "8. finally"
+  ],
+  [
+    "9",
+    "9. Examples"
+  ],
+  [
+    "10",
+    "10. Exercises"
+  ]
+];
+
+  var selBtns = SELS.map(function(x){
+    var b = document.createElement("button");
+    b.type = "button"; b.dataset.l = x[0]; b.textContent = x[1]; b.title = LESSONS[x[0]];
+    b.addEventListener("click", function(){ goLesson(x[0]); });
+    selBox.appendChild(b);
+    return b;
+  });
+
+  document.querySelectorAll("[data-go]").forEach(function(b){
+    b.addEventListener("click", function(){ goLesson(b.dataset.go); });
+  });
+
+  var count = document.getElementById("count");
+  var bar = document.getElementById("bar");
+  var prev = document.getElementById("prev");
+  var next = document.getElementById("next");
+
+  function reserveAnswer(s){
+    if (!s.dataset.q || s._done) return function(){};
+    var ex = s.querySelector(".explain"), rs = s.querySelector(".reset");
+    var h0 = ex.hidden, r0 = rs.hidden, html0 = ex.innerHTML;
+    ex.innerHTML = "<b>Not quite. The answer is A.</b><span></span>";
+    ex.lastChild.textContent = MCQ[s.dataset.q] ? MCQ[s.dataset.q].e : "";
+    ex.hidden = false; rs.hidden = false;
+    return function(){ ex.hidden = h0; rs.hidden = r0; ex.innerHTML = html0; };
+  }
+
+  function fitSlide(){
+    var s = slides[cur];
+    if (!s) return;
+    var base = parseFloat(getComputedStyle(document.body).fontSize) || 20;
+    var lo = Math.max(13, base * 0.58), hi = base * 1.7;
+    var restore = reserveAnswer(s);
+    function fits(px){
+      s.style.fontSize = px + "px";
+      if (s.offsetHeight > main.clientHeight + 1) return false;
+      if (s.scrollWidth > s.clientWidth + 1) return false;
+      var sc = s.querySelectorAll(".scroll, .code");
+      for (var k = 0; k < sc.length; k++) if (sc[k].scrollWidth > sc[k].clientWidth + 1) return false;
+      return true;
+    }
+    var best;
+    if (fits(hi)) best = hi;
+    else if (!fits(lo)) best = lo;
+    else {
+      for (var n = 0; n < 10; n++) {
+        var mid = (lo + hi) / 2;
+        if (fits(mid)) lo = mid; else hi = mid;
+      }
+      best = lo;
+    }
+    s.style.fontSize = best + "px";
+    restore();
+  }
+
+  var fitTimer = null;
+  function refit(){ cancelAnimationFrame(fitTimer); fitTimer = requestAnimationFrame(fitSlide); }
+  window.addEventListener("resize", refit);
+  document.addEventListener("fullscreenchange", function(){ setTimeout(refit, 120); setTimeout(refit, 600); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(refit);
+
+  function show(i, noHash){
+    if (i < 0) i = 0;
+    if (i > slides.length - 1) i = slides.length - 1;
+    cur = i;
+    slides.forEach(function(s, j){ s.classList.toggle("active", j === i); });
+    var l = slides[i].dataset.lesson || "0";
+    document.body.dataset.lesson = l;
+    selBtns.forEach(function(b){
+      var on = b.dataset.l === l;
+      b.classList.toggle("on", on);
+      if (on) b.setAttribute("aria-current", "true"); else b.removeAttribute("aria-current");
+    });
+    count.textContent = (i + 1) + " / " + slides.length;
+    bar.style.width = ((i + 1) / slides.length * 100) + "%";
+    prev.disabled = i === 0;
+    next.disabled = i === slides.length - 1;
+    main.scrollTop = 0;
+    fitSlide();
+    if (!noHash) {
+      updatingHash = true;
+      try {
+        var targetHash = "#slide-" + (i + 1);
+        if (location.hash !== targetHash) {
+          location.hash = targetHash;
+        }
+      } catch (e) {}
+      setTimeout(function(){ updatingHash = false; }, 80);
+    }
+    markToc();
+  }
+
+  function fromHash(){
+    var m = /^#slide-(\d+)$/.exec(location.hash || "");
+    return m ? parseInt(m[1], 10) - 1 : 0;
+  }
+
+  window.addEventListener("hashchange", function(){
+    if (updatingHash) return;
+    var i = fromHash();
+    if (i !== cur) show(i, true);
+  });
+
+  prev.addEventListener("click", function(){ show(cur - 1); });
+  next.addEventListener("click", function(){ show(cur + 1); });
+
+  /* TOC */
+  var toc = document.getElementById("toc");
+  var panel = document.getElementById("tocPanel");
+  var items = [];
+  function buildToc(){
+    var last = null;
+    slides.forEach(function(s, i){
+      var l = s.dataset.lesson || "0";
+      if (l !== last) {
+        var h = document.createElement("h3");
+        h.textContent = LESSONS[l] || ("Section " + l);
+        panel.appendChild(h);
+        last = l;
+      }
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "toc-item" + (s.dataset.q ? " q" : "");
+      var n = document.createElement("span"); n.className = "n"; n.textContent = i + 1;
+      var t = document.createElement("span"); t.textContent = s.dataset.q ? ("Checkpoint: " + (MCQ[s.dataset.q] ? MCQ[s.dataset.q].q : "")) : s.dataset.title;
+      b.appendChild(n); b.appendChild(t);
+      b.addEventListener("click", function(){ toc.hidden = true; show(i); });
+      panel.appendChild(b);
+      items.push(b);
+    });
+  }
+  function markToc(){ items.forEach(function(b, i){ b.classList.toggle("now", i === cur); }); }
+  buildToc();
+  document.getElementById("tocBtn").addEventListener("click", function(){
+    toc.hidden = !toc.hidden;
+    if (!toc.hidden && items[cur]) items[cur].scrollIntoView({block:"center"});
+  });
+  toc.addEventListener("click", function(e){ if (e.target === toc) toc.hidden = true; });
+
+  /* Full screen */
+  var fs = document.getElementById("fsBtn");
+  var root = document.documentElement;
+  function inFs(){ return root.classList.contains("fs"); }
+  function enterFs(){
+    root.classList.add("fs");
+    try {
+      if (root.requestFullscreen) { var p = root.requestFullscreen(); if (p && p.catch) p.catch(function(){}); }
+    } catch (e) {}
+    setTimeout(refit, 150); setTimeout(refit, 600);
+  }
+  function exitFs(){
+    root.classList.remove("fs");
+    try { if (document.fullscreenElement) { var p = document.exitFullscreen(); if (p && p.catch) p.catch(function(){}); } } catch (e) {}
+    setTimeout(refit, 150); setTimeout(refit, 600);
+  }
+  function toggleFs(){ if (inFs()) exitFs(); else enterFs(); }
+  fs.addEventListener("click", toggleFs);
+  document.getElementById("fsExit").addEventListener("click", exitFs);
+  document.addEventListener("fullscreenchange", function(){
+    root.classList.toggle("fs", !!document.fullscreenElement);
+    setTimeout(refit, 150); setTimeout(refit, 600);
+  });
+
+  /* Touch swipe */
+  var tx = 0, ty = 0, tt = 0, tracking = false;
+  main.addEventListener("touchstart", function(e){
+    tracking = false;
+    if (e.touches.length !== 1 || !toc.hidden) return;
+    var t = e.touches[0]; tx = t.clientX; ty = t.clientY; tt = Date.now(); tracking = true;
+    var el = e.target.closest ? e.target.closest(".scroll, .code, .idle") : null;
+    if (el && el.scrollWidth > el.clientWidth + 1) tracking = false;
+  }, {passive:true});
+  main.addEventListener("touchend", function(e){
+    if (!tracking) return;
+    tracking = false;
+    var t = e.changedTouches[0], dx = t.clientX - tx, dy = t.clientY - ty;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5 && Date.now() - tt < 900) {
+      if (dx < 0) show(cur + 1); else show(cur - 1);
+    }
+  }, {passive:true});
+
+  /* Keyboard */
+  document.addEventListener("keydown", function(e){
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    var k = e.key;
+    if (k === "Escape") { if (!toc.hidden) toc.hidden = true; else if (inFs() && !document.fullscreenElement) exitFs(); return; }
+    if (!toc.hidden) return;
+    var tag = document.activeElement && document.activeElement.tagName;
+    if (k === "ArrowRight" || k === "PageDown") { e.preventDefault(); show(cur + 1); }
+    else if (k === "ArrowLeft" || k === "PageUp") { e.preventDefault(); show(cur - 1); }
+    else if (k === " ") { e.preventDefault(); show(cur + 1); }
+    else if (k === "Home") { show(0); }
+    else if (k === "End") { show(slides.length - 1); }
+    else if (k === "f" || k === "F") { toggleFs(); }
+    else if (k === "t" || k === "T") { toc.hidden = false; if (items[cur]) items[cur].scrollIntoView({block:"center"}); }
+    else {
+      var s = slides[cur];
+      if (s && s.dataset.q) {
+        var idx = "1234".indexOf(k);
+        if (idx < 0) idx = "abcd".indexOf(k.toLowerCase());
+        if (idx > -1) { var b = s.querySelectorAll(".opt")[idx]; if (b && !b.disabled) b.click(); }
+      }
+    }
+  });
+
+  show(fromHash(), true);
+})();
+</script>
+</body></html>

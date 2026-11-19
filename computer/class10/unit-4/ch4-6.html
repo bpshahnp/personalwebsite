@@ -1,0 +1,1504 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Unit 4 · File Handling</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: one lesson slide at a time on a full-height stage. High contrast for classroom projection. */
+:root{
+  --bg:#f3f6fb; --panel:#ffffff; --panel-2:#e8eef8; --fg:#0f1a35; --muted:#475674; --line:#c9d4e6;
+  --blue:#1a4fb0; --blue-soft:#e1eafb;
+  --green:#0a7556; --green-soft:#dcf2e9;
+  --amber:#a64f08; --amber-soft:#fdebd5;
+  --teal:#0a6f86; --teal-soft:#d8f0f5;
+  --violet:#6a3cc0; --violet-soft:#ebe3fb;
+  --olive:#4f6f0a; --olive-soft:#e8f2cc;
+  --sienna:#8c3f1a; --sienna-soft:#f5e2d6;
+  --gold:#7d6400; --gold-soft:#f8f0c8;
+  --pink:#b0125f; --pink-soft:#fbe3ee;
+  --indigo:#283593; --indigo-soft:#e8eaf6;
+  --f-mono:"JetBrains Mono",ui-monospace,Consolas,"Courier New",monospace;
+  --ok:#0d7a3b; --ok-soft:#dcf3e4; --bad:#b3261e; --bad-soft:#fbe4e2;
+  --on-accent:#ffffff; --scrim:rgba(15,26,53,.55);
+  --f-display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --f-body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --base:clamp(17px, 1vw + 9px, 32px);
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; background:var(--bg); color:var(--fg);
+  font:400 var(--base)/1.45 var(--f-body);
+  display:grid; grid-template-rows:auto 1fr auto; overflow:hidden;
+}
+header,footer{font-size:clamp(13px,.7vw + 6px,19px)}
+html.fs header, html.fs footer{display:none}
+@supports (height:100dvh){html,body{height:100dvh}}
+main{touch-action:pan-y}
+.scroll,.code{touch-action:pan-x pan-y}
+.fsx{display:none; position:fixed; z-index:15; top:calc(env(safe-area-inset-top,0px) + 6px); right:max(8px,env(safe-area-inset-right,0px)); width:2.4em; height:2.4em; place-items:center; border-radius:50%; background:var(--panel); border:1px solid var(--line); color:var(--fg); font:700 16px/1 var(--f-body); opacity:.65}
+@media (pointer:coarse){html.fs .fsx{display:grid}}
+html.fs body{grid-template-rows:1fr}
+.wrap{padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px))}
+button{font:inherit; color:inherit; cursor:pointer}
+:focus-visible{outline:3px solid var(--pink); outline-offset:3px}
+
+/* header */
+header{background:var(--panel); border-bottom:1px solid var(--line)}
+.top{display:flex; align-items:center; gap:.5em .8em; flex-wrap:wrap; padding-block:.5em}
+.brand{font:800 .8em/1 var(--f-display); letter-spacing:.05em; text-transform:uppercase; color:var(--muted)}
+.sel{display:flex; flex-wrap:wrap; gap:.35em; min-width:0}
+.sel button{--c:var(--muted); --cs:var(--panel-2); background:var(--cs); color:var(--c); border:2px solid var(--c); border-radius:.55em; padding:.25em .65em; font:700 .75em/1.2 var(--f-body)}
+.sel button[data-l="1"]{--c:var(--blue); --cs:var(--blue-soft)}
+.sel button[data-l="2"]{--c:var(--teal); --cs:var(--teal-soft)}
+.sel button[data-l="3"]{--c:var(--amber); --cs:var(--amber-soft)}
+.sel button[data-l="4"]{--c:var(--green); --cs:var(--green-soft)}
+.sel button[data-l="5"]{--c:var(--violet); --cs:var(--violet-soft)}
+.sel button[data-l="6"]{--c:var(--olive); --cs:var(--olive-soft)}
+.sel button[data-l="7"]{--c:var(--sienna); --cs:var(--sienna-soft)}
+.sel button[data-l="8"]{--c:var(--gold); --cs:var(--gold-soft)}
+.sel button[data-l="9"]{--c:var(--indigo); --cs:var(--indigo-soft)}
+.sel button[data-l="10"]{--c:var(--pink); --cs:var(--pink-soft)}
+.sel button.on{background:var(--c); color:var(--on-accent)}
+.sel button:hover:not(.on){background:var(--panel)}
+
+body[data-lesson="1"]{--accent:var(--blue); --accent-soft:var(--blue-soft)}
+body[data-lesson="2"]{--accent:var(--teal); --accent-soft:var(--teal-soft)}
+body[data-lesson="3"]{--accent:var(--amber); --accent-soft:var(--amber-soft)}
+body[data-lesson="4"]{--accent:var(--green); --accent-soft:var(--green-soft)}
+body[data-lesson="5"]{--accent:var(--violet); --accent-soft:var(--violet-soft)}
+body[data-lesson="6"]{--accent:var(--olive); --accent-soft:var(--olive-soft)}
+body[data-lesson="7"]{--accent:var(--sienna); --accent-soft:var(--sienna-soft)}
+body[data-lesson="8"]{--accent:var(--gold); --accent-soft:var(--gold-soft)}
+body[data-lesson="9"]{--accent:var(--indigo); --accent-soft:var(--indigo-soft)}
+body[data-lesson="10"]{--accent:var(--pink); --accent-soft:var(--pink-soft)}
+
+.tools{margin-left:auto; display:flex; align-items:center; gap:.5em}
+.count{font:700 .8em var(--f-body); color:var(--muted); font-variant-numeric:tabular-nums; min-width:4.2em; text-align:right}
+.ghost{background:transparent; border:1.5px solid var(--line); border-radius:.5em; padding:.3em .75em; font-size:.75em; font-weight:600}
+.ghost:hover{border-color:var(--accent,var(--blue))}
+a.ghost{color:inherit; text-decoration:none; display:inline-flex; align-items:center}
+.bar{height:6px; background:var(--panel-2)}
+.bar i{display:block; height:100%; width:0; background:var(--accent,var(--blue)); transition:width .3s ease}
+
+/* stage */
+main{display:flex; flex-direction:column; overflow-y:auto; min-height:0}
+.slide{display:none; --accent:var(--blue); --accent-soft:var(--blue-soft)}
+.slide[data-lesson="2"]{--accent:var(--teal); --accent-soft:var(--teal-soft)}
+.slide[data-lesson="3"]{--accent:var(--amber); --accent-soft:var(--amber-soft)}
+.slide[data-lesson="4"]{--accent:var(--green); --accent-soft:var(--green-soft)}
+.slide[data-lesson="5"]{--accent:var(--violet); --accent-soft:var(--violet-soft)}
+.slide[data-lesson="6"]{--accent:var(--olive); --accent-soft:var(--olive-soft)}
+.slide[data-lesson="7"]{--accent:var(--sienna); --accent-soft:var(--sienna-soft)}
+.slide[data-lesson="8"]{--accent:var(--gold); --accent-soft:var(--gold-soft)}
+.slide[data-lesson="9"]{--accent:var(--indigo); --accent-soft:var(--indigo-soft)}
+.slide[data-lesson="10"]{--accent:var(--pink); --accent-soft:var(--pink-soft)}
+.slide.active{display:flex; flex-direction:column; gap:.75em; margin:auto; width:100%; max-width:76em; padding-block:1em; animation:rise .3s ease both}
+@keyframes rise{from{opacity:0; transform:translateY(.4em)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion: reduce){.slide.active{animation:none} .bar i{transition:none}}
+
+.eyebrow{font:700 .85em/1 var(--f-body); letter-spacing:.12em; text-transform:uppercase; color:var(--accent)}
+h1,h2,h3{font-family:var(--f-display); margin:0; text-wrap:balance; line-height:1.08}
+h1{font-size:2.8em; font-weight:800}
+h2{font-size:2.1em; font-weight:800}
+h3{font-size:1.2em; font-weight:800; color:var(--accent)}
+p{margin:0}
+.lead{font-size:1.12em; color:var(--muted); max-width:44em}
+b,strong{font-weight:700}
+
+.def{background:var(--pink-soft); border-left:.3em solid var(--pink); border-radius:.3em; padding:.65em .95em; font-size:1.1em; font-weight:600; color:var(--pink)}
+.def small{display:block; font-size:.7em; letter-spacing:.1em; text-transform:uppercase; margin-bottom:.3em; opacity:.85}
+.cols{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,16.5em),1fr)); gap:.75em}
+.card{background:var(--panel); border:1px solid var(--line); border-radius:.6em; padding:.75em .95em; min-width:0}
+.card p{font-size:.98em; color:var(--muted); margin-top:.25em}
+.card.hl{border-color:var(--accent); background:var(--accent-soft)}
+.pts{margin:0; padding:0; list-style:none; display:grid; gap:.5em}
+.pts li{position:relative; padding-left:1.3em}
+.pts li::before{content:""; position:absolute; left:0; top:.55em; width:.55em; height:.55em; border-radius:50%; background:var(--accent)}
+.chips{display:flex; flex-wrap:wrap; gap:.4em}
+.tag{background:var(--accent-soft); color:var(--accent); border-radius:.4em; padding:.2em .65em; font-weight:700}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse; width:100%; background:var(--panel); font-size:.95em}
+th,td{border:1px solid var(--line); padding:.4em .75em; text-align:left; vertical-align:top}
+th{background:var(--accent); color:var(--on-accent); font-family:var(--f-display)}
+td:first-child{font-weight:700}
+.note{color:var(--muted); font-size:.92em}
+.split{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,19em),1fr)); gap:.9em; align-items:start}
+.pair{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,17em),1fr)); gap:.8em}
+
+/* Code & IDLE Shell Simulation */
+.code{margin:0; background:var(--panel); border:1px solid var(--line); border-left:.3em solid var(--accent); border-radius:.4em; padding:.55em .9em; font:500 .92em/1.45 var(--f-mono); white-space:pre-wrap; overflow-x:auto; color:var(--fg)}
+.code b{color:var(--accent); font-weight:700}
+.code i{color:var(--muted); font-style:normal}
+.code span.str{color:#0b7a56}
+.code span.num{color:#b45309}
+
+.idle{background:#ffffff; border:2px solid #9dc2f8; border-radius:.6em; overflow:hidden; box-shadow:0 3px 12px rgba(15,27,58,.08); font:500 .9em/1.4 var(--f-mono); margin-top:.3em}
+.idle-bar{background:#0078d7; color:#fff; padding:.3em .75em; display:flex; align-items:center; justify-content:space-between; font-size:.8em; font-weight:700}
+.idle-menu{background:#f0f4f9; border-bottom:1px solid #d5e0ee; padding:.2em .6em; display:flex; gap:.7em; font-size:.78em; color:#44526c}
+.idle-body{padding:.5em .8em; background:#ffffff; color:#0f1a35; white-space:pre-wrap; font-size:.9em}
+.idle-restart{color:#6c757d; font-size:.82em; margin-bottom:.3em}
+.idle-out{color:#0000cd; font-weight:600}
+.idle-err{color:#d32f2f; font-weight:700}
+
+/* Hero & Lessons grid */
+.hero{display:grid; gap:.45em}
+.hero h1 span{color:var(--blue)}
+.lessons{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,17.5em),1fr)); gap:.75em; margin-top:.5em}
+.lessons .card{border-width:2px; display:block; width:100%; text-align:left; cursor:pointer; transition:transform .12s, box-shadow .12s}
+.lessons .card:hover{background:var(--panel-2); transform:translateY(-2px)}
+.lessons .card.c1{border-color:var(--blue)} .lessons .card.c2{border-color:var(--teal)} .lessons .card.c3{border-color:var(--amber)} .lessons .card.c4{border-color:var(--green)} .lessons .card.c5{border-color:var(--violet)} .lessons .card.c6{border-color:var(--olive)} .lessons .card.c7{border-color:var(--sienna)} .lessons .card.c8{border-color:var(--gold)} .lessons .card.c9{border-color:var(--indigo)} .lessons .card.c10{border-color:var(--pink)}
+.lessons h3{font-size:1.05em}
+
+/* Checkpoint MCQ */
+.q-tag{display:inline-flex; align-items:center; gap:.5em; width:max-content; background:var(--pink-soft); color:var(--pink); font:800 .85em/1 var(--f-body); letter-spacing:.12em; text-transform:uppercase; padding:.45em .85em; border-radius:99px}
+.q-text{font:800 2.2em/1.12 var(--f-display); text-wrap:balance}
+.opts{display:grid; gap:.5em; margin-top:.2em}
+@media (min-width:900px){.opts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.opt{display:flex; align-items:center; gap:.75em; text-align:left; background:var(--panel); border:2px solid var(--line); border-radius:.6em; padding:.5em .8em; font-size:1.4em; font-weight:600; width:100%; line-height:1.25}
+.opt:hover{border-color:var(--accent)}
+.opt .k{flex:none; width:1.7em; height:1.7em; border-radius:.4em; display:grid; place-items:center; background:var(--panel-2); font:800 .9em var(--f-display)}
+.opt.correct{border-color:var(--ok); background:var(--ok-soft)}
+.opt.correct .k{background:var(--ok); color:var(--on-accent)}
+.opt.wrong{border-color:var(--bad); background:var(--bad-soft)}
+.opt.wrong .k{background:var(--bad); color:var(--on-accent)}
+.opt.dim{opacity:.55}
+.opt:disabled{cursor:default}
+.explain{border-radius:.5em; padding:.5em .9em; background:var(--panel); border:1px solid var(--line); font-size:1.2em}
+.explain b{display:block; margin-bottom:.15em}
+.explain.good b{color:var(--ok)} .explain.bad b{color:var(--bad)}
+.reset{width:max-content}
+
+/* footer */
+footer{background:var(--panel); border-top:1px solid var(--line)}
+.nav{display:flex; align-items:center; gap:.8em; padding-block:.5em}
+.nav .hint{flex:1; text-align:center; color:var(--muted); font-size:.9em}
+.btn{background:var(--accent,var(--blue)); color:var(--on-accent); border:0; border-radius:.55em; padding:.5em 1.3em; font-weight:700; font-size:1em}
+.btn.sec{background:transparent; color:var(--fg); border:2px solid var(--line)}
+.btn:disabled{opacity:.35; cursor:default}
+
+/* contents panel */
+.toc{position:fixed; inset:0; z-index:20; background:var(--scrim); padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px)); overflow-y:auto}
+.toc-panel{max-width:42em; margin:0 auto; background:var(--panel); border:1px solid var(--line); border-radius:.8em; padding:1em 1.2em; display:grid; gap:.3em; font-size:.85em}
+.toc-panel h3{margin-top:.7em; font-size:1em}
+.toc-panel h3:first-child{margin-top:0}
+.toc-item{display:flex; gap:.7em; align-items:baseline; background:none; border:0; text-align:left; padding:.25em .4em; border-radius:.35em; width:100%}
+.toc-item:hover{background:var(--panel-2)}
+.toc-item.now{background:var(--panel-2); font-weight:700}
+.toc-item .n{flex:none; width:2em; color:var(--muted); font-variant-numeric:tabular-nums}
+.toc-item.q{color:var(--pink)}
+@media (max-width:640px){h1{font-size:2.2em} h2{font-size:1.6em} .q-text{font-size:1.4em} .nav .hint{display:none} .nav{justify-content:space-between}}
+</style>
+
+<header>
+  <div class="top wrap">
+    <a class="ghost" href="index.html">← Unit 4 Hub</a>
+    <span class="brand">Unit 4 · Computer Science, Grade 10</span>
+    <nav class="sel" id="sel" aria-label="Choose a lesson"></nav>
+    <div class="tools">
+      <span class="count" id="count">1 / 1</span>
+      <button class="ghost" id="tocBtn" type="button">Contents</button>
+      <button class="ghost" id="fsBtn" type="button">Full screen</button>
+    </div>
+  </div>
+  <div class="bar"><i id="bar"></i></div>
+</header>
+
+<main id="main" class="wrap">
+<section class="slide hero" data-lesson="0">
+  <div class="hero-tag">Class 10 Computer Science · Unit 4 · Lesson 4.6</div>
+  <h1>File Handling using Panda Library</h1>
+  <p class="hero-sub">Mastering data files, open modes, text file operations (<code>read</code>, <code>write</code>, <code>readline</code>), CSV files via the <code>csv</code> module, and reading/writing CSV with <b>Pandas</b> <code>read_csv</code> &amp; <code>to_csv</code>.</p>
+  <div class="hero-meta">
+    <span><b>Textbook:</b> CDC Nepal Grade 10 (Pages 226–243)</span>
+    <span><b>Interactive:</b> 35 Checkpoint MCQs</span>
+    <span><b>Exam Focus:</b> SEE Theory &amp; Coding Questions</span>
+  </div>
+</section>
+<section class="slide" data-lesson="0">
+  <div class="slide-badge">Curriculum Map</div>
+  <h2>Lesson 4.6 Agenda</h2>
+  <div class="grid grid-3">
+    <div class="card"><h3>1. Data Files</h3><p>What is a file, why store data permanently, and the 3 basic file steps.</p></div>
+    <div class="card"><h3>2. File Handling in Python</h3><p>Built-in file functions: <code>open()</code>, <code>write()</code>, <code>read()</code>, <code>close()</code>.</p></div>
+    <div class="card"><h3>3. File Open Modes</h3><p>Four modes: <code>r</code> (read), <code>w</code> (write), <code>a</code> (append), <code>x</code> (exclusive).</p></div>
+    <div class="card"><h3>4. Writing to Files</h3><p>Using <code>open()</code> with mode <code>w</code> and <code>file.write()</code>; newline characters.</p></div>
+    <div class="card"><h3>5. Reading from Files</h3><p><code>read()</code>, <code>readline()</code>, <code>readlines()</code> — differences and use cases.</p></div>
+    <div class="card"><h3>6. Closing Files</h3><p><code>file.close()</code> and the safer <code>with open(...)</code> context manager pattern.</p></div>
+    <div class="card"><h3>7. CSV via csv Module</h3><p><code>csv.writer</code>, <code>writerow</code>, <code>writerows</code>, <code>csv.reader</code>, looping rows.</p></div>
+    <div class="card"><h3>8. CSV via Pandas</h3><p><code>to_csv()</code>, <code>read_csv()</code>, <code>usecols</code>, <code>index_col</code>, <code>nrows</code> parameters.</p></div>
+    <div class="card hl"><h3>9. CDC Exercises &amp; Worked Examples</h3><p>Official questions a–f, worked programs 1–6, SEE exam tips.</p></div>
+  </div>
+</section>
+<section class="slide" data-lesson="1">
+  <div class="slide-badge">Lesson 4.6.1 · Data Files</div>
+  <h2>Concept of Data Files</h2>
+  <p>Computers store large volumes of data and information in <b>storage devices</b>. Data is stored using the concept of a <b>file</b>.</p>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>What is a File?</h3>
+      <p>A <b>file</b> is simply a collection of related information stored in a storage device. Every file is identified by its unique <b>file name</b>.</p>
+      <p class="note">Examples: <code>staff.txt</code>, <code>students.csv</code>, <code>report.pdf</code></p>
+    </div>
+    <div class="card hl">
+      <h3>Three Steps for Working with Files</h3>
+      <ol>
+        <li><b>Open</b> the file (create it if it doesn't exist).</li>
+        <li><b>Read or Write</b> information in the file.</li>
+        <li><b>Close</b> the file when all work is done.</li>
+      </ol>
+      <p class="note">The same procedure applies when writing Python programs for file operations.</p>
+    </div>
+  </div>
+</section>
+<section class="slide" data-lesson="1">
+  <div class="slide-badge">Lesson 4.6.1 · Why File Handling</div>
+  <h2>4.6.1 Concept of File Handling in Python</h2>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Why We Need File Handling</h3>
+      <p>File handling is an essential concept in any programming language as it allows programs to <b>store data permanently</b>.</p>
+      <p class="note">Without file handling, any data created during program execution would be <b>lost when the program ends</b>.</p>
+    </div>
+    <div class="card hl">
+      <h3>Python Built-in File Functions</h3>
+      <ul>
+        <li><code>open()</code> — to open a file</li>
+        <li><code>read()</code> / <code>readline()</code> — to read data from a file</li>
+        <li><code>write()</code> — to write data to a file</li>
+        <li><code>append()</code> — to add data to an existing file</li>
+        <li><code>close()</code> — to close the file</li>
+      </ul>
+    </div>
+  </div>
+</section>
+<section class="slide mcq" data-lesson="1" data-q="c1"></section>
+<section class="slide mcq" data-lesson="1" data-q="c2"></section>
+<section class="slide mcq" data-lesson="1" data-q="c3"></section>
+<section class="slide" data-lesson="2">
+  <div class="slide-badge">Lesson 4.6.2 · Opening Files</div>
+  <h2>4.6.2 Opening a File in Python</h2>
+  <p>The first step when working with a file is to <b>open</b> it using the <code>open()</code> function.</p>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Syntax</h3>
+      <pre><code>with open('Filename', 'mode') as file:
+    # work with file here
+    
+# OR (older style):
+file = open("File name", mode)</code></pre>
+      <p class="note"><code>file</code> is the variable (alias) that lets you access the opened file object inside the block.</p>
+    </div>
+    <div class="card hl">
+      <h3>Quick Examples</h3>
+      <pre><code># Example 1: Create/overwrite employee.txt
+f = open("employee.txt", "w")
+
+# Example 2: Using 'with' statement
+with open("teachers.txt") as f:
+    # auto-closes after block</code></pre>
+      <p class="note">The <code>with</code> statement automatically closes the file — even if an exception occurs!</p>
+    </div>
+  </div>
+</section>
+<section class="slide" data-lesson="2">
+  <div class="slide-badge">Lesson 4.6.2 · File Modes</div>
+  <h2>File Open Modes</h2>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Mode 'r' — Read</h3>
+      <p>Opens file for reading. Sets pointer to first character. <b>Raises IOError</b> if file does not exist.</p>
+      <pre><code>with open("staff.txt", "r") as file:
+    content = file.read()</code></pre>
+    </div>
+    <div class="card">
+      <h3>Mode 'w' — Write</h3>
+      <p>Opens file for writing. Creates new file if it doesn't exist. <b>Overwrites</b> existing content.</p>
+      <pre><code>with open("employee.txt", "w") as f:
+    f.write("Hello")</code></pre>
+    </div>
+    <div class="card">
+      <h3>Mode 'a' — Append</h3>
+      <p>Opens file in append mode. Adds data to the <b>end</b> of existing file. Creates new file if needed.</p>
+      <pre><code>with open("log.txt", "a") as f:
+    f.write("New entry
+")</code></pre>
+    </div>
+    <div class="card hl">
+      <h3>Mode 'x' — Exclusive Create</h3>
+      <p>Creates a <b>new</b> file. <b>Fails (IOError)</b> if file already exists. Safe for new file creation.</p>
+      <pre><code>with open("newfile.txt", "x") as f:
+    f.write("Safe create")</code></pre>
+    </div>
+  </div>
+</section>
+<section class="slide mcq" data-lesson="2" data-q="c4"></section>
+<section class="slide mcq" data-lesson="2" data-q="c5"></section>
+<section class="slide mcq" data-lesson="2" data-q="c6"></section>
+<section class="slide mcq" data-lesson="2" data-q="c7"></section>
+<section class="slide mcq" data-lesson="2" data-q="c8"></section>
+<section class="slide mcq" data-lesson="2" data-q="c9"></section>
+<section class="slide" data-lesson="3">
+  <div class="slide-badge">Lesson 4.6.3 · Writing Files</div>
+  <h2>Writing Information to a File</h2>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>write() Function</h3>
+      <p>Write function writes information (string) to the file. Use modes <code>x</code> or <code>w</code> to create/overwrite.</p>
+      <p><b>Syntax:</b> <code>file.write(information)</code></p>
+      <ul>
+        <li><b>x:</b> Creates new empty file; raises error if exists.</li>
+        <li><b>w:</b> Creates new file or replaces existing one.</li>
+      </ul>
+    </div>
+    <div class="card hl">
+      <h3>Textbook Example</h3>
+      <pre><code>with open('staff.txt', 'w') as f:
+    f.write('Ramesh
+')
+    f.write('Kamal
+')
+    f.write('Kabin
+')</code></pre>
+      <p class="note"><b>Output in staff.txt (Notepad):</b></p>
+      <pre><code>Ramesh
+Kamal
+Kabin</code></pre>
+      <p class="note"><code>
+</code> = newline escape character — starts writing on the next line.</p>
+    </div>
+  </div>
+</section>
+<section class="slide" data-lesson="3">
+  <div class="slide-badge">Lesson 4.6.3 · Worked Example</div>
+  <h2>Textbook Example 1: Create Staff.txt with Employee Data</h2>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Program (Page 230)</h3>
+      <pre><code>with open("Staff.txt", "w") as file:
+    for i in range(1, 4):
+        print(f"
+Enter details of Employee {i}")
+        name = input("Name: ")
+        post = input("Post: ")
+        age = input("Age: ")
+        file.write(f"{name}		")
+        file.write(f"{post}		 ")
+        file.write(f"{age}
+")</code></pre>
+    </div>
+    <div class="card hl">
+      <h3>Sample Output (in Staff.txt)</h3>
+      <pre><code>Ramesh    Manager    43
+Sarisma   Officer    32
+Binish    Programmer 54</code></pre>
+      <p class="note"><code>	</code> = tab character (adds spacing between columns).<br><code>
+</code> = newline at end of each record.</p>
+    </div>
+  </div>
+</section>
+<section class="slide mcq" data-lesson="3" data-q="c10"></section>
+<section class="slide" data-lesson="4">
+  <div class="slide-badge">Lesson 4.6.4 · Reading Files</div>
+  <h2>Reading Information from Files</h2>
+  <p>Python provides three functions to read data stored in a file.</p>
+  <div class="grid grid-3">
+    <div class="card">
+      <h3>read()</h3>
+      <p>Reads and returns the <b>ENTIRE content</b> of the file as one string.</p>
+      <p><b>Syntax:</b> <code>file.read()</code></p>
+      <pre><code>with open("staff.txt", "r") as file:
+    content = file.read()
+    print(content)
+# Output: Ramesh
+# Kamal
+# Kabin</code></pre>
+    </div>
+    <div class="card">
+      <h3>readline()</h3>
+      <p>Reads and returns <b>ONE LINE</b> at a time from the current file pointer position.</p>
+      <p><b>Syntax:</b> <code>file.readline()</code></p>
+      <pre><code>with open("staff.txt", "r") as file:
+    content = file.readline()
+    print(content)
+# Output: Ramesh</code></pre>
+    </div>
+    <div class="card hl">
+      <h3>readlines()</h3>
+      <p>Reads ALL lines and returns a <b>list</b> where each element is one line.</p>
+      <p><b>Syntax:</b> <code>file.readlines()</code></p>
+      <pre><code>with open("staff.txt", "r") as file:
+    content = file.readlines()
+    print(content)
+# Output: ['Ramesh
+',
+#          'Kamal
+',
+#          'Kabin
+']</code></pre>
+    </div>
+  </div>
+</section>
+<section class="slide" data-lesson="4">
+  <div class="slide-badge">Lesson 4.6.4 · Worked Example</div>
+  <h2>Textbook Example 2: Display All Records from Staff.txt</h2>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Program (Page 231)</h3>
+      <pre><code>with open("Staff.txt", "r") as file:
+    data = file.read()
+    print("Staff Records:
+")
+    print(data)</code></pre>
+    </div>
+    <div class="card hl">
+      <h3>Output</h3>
+      <pre><code>Staff Records:
+
+Ramesh    Manager   34
+Sarisma   Officer   32
+Binish    Programmer 54</code></pre>
+      <p class="note"><code>file.read()</code> returns the complete file content as one string, which <code>print()</code> displays exactly as stored.</p>
+    </div>
+  </div>
+</section>
+<section class="slide mcq" data-lesson="4" data-q="c11"></section>
+<section class="slide mcq" data-lesson="4" data-q="c12"></section>
+<section class="slide mcq" data-lesson="4" data-q="c13"></section>
+<section class="slide" data-lesson="5">
+  <div class="slide-badge">Lesson 4.6.5 · Closing Files</div>
+  <h2>Closing a File: close()</h2>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Why Close a File?</h3>
+      <p>After completing all file operations, the file <b>must be closed</b> using <code>file.close()</code>. This:</p>
+      <ul>
+        <li>Terminates all resources used by the file.</li>
+        <li>Frees system memory and I/O buffers.</li>
+        <li>Flushes any unwritten data to disk.</li>
+      </ul>
+      <p><b>Syntax:</b> <code>file.close</code></p>
+    </div>
+    <div class="card hl">
+      <h3>Manual Close Example</h3>
+      <pre><code>file = open("stafftxt", "r")
+content = file.read()
+print(content)
+file.close()  # Must close!</code></pre>
+      <h3>Better: Use 'with' Statement</h3>
+      <pre><code>with open("staff.txt", "r") as file:
+    content = file.read()
+    print(content)
+# File auto-closed here!</code></pre>
+      <p class="note">The <code>with</code> statement automatically calls <code>close()</code> at the end.</p>
+    </div>
+  </div>
+</section>
+<section class="slide mcq" data-lesson="5" data-q="c14"></section>
+<section class="slide mcq" data-lesson="5" data-q="c15"></section>
+<section class="slide" data-lesson="6">
+  <div class="slide-badge">Lesson 4.6.6 · CSV Files</div>
+  <h2>4.6.3 Read and Write CSV File Using Standard Library</h2>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>What is a CSV File?</h3>
+      <p><b>CSV (Comma Separated Values)</b> separates information using commas. Spreadsheet applications convert comma-separated data into table cells.</p>
+      <p>Structure example:</p>
+      <pre><code>Name, Address, Class
+Bipin, Kathmandu, 10
+Shyam, Pokhara, 9
+Sita, Bhaktapur, 10</code></pre>
+      <p class="note">CSV files have <code>.csv</code> extension and are human-readable.</p>
+    </div>
+    <div class="card hl">
+      <h3>csv Module Functions</h3>
+      <ul>
+        <li><code>csv.writer(file)</code> — returns a writer object</li>
+        <li><code>cs.writerow(fields)</code> — writes one row (e.g. headers)</li>
+        <li><code>cs.writerows(records)</code> — writes multiple data rows</li>
+        <li><code>csv.reader(file)</code> — returns a reader iterable</li>
+      </ul>
+      <p class="note">First, <code>import csv</code> to access the module.</p>
+    </div>
+  </div>
+</section>
+<section class="slide" data-lesson="6">
+  <div class="slide-badge">Lesson 4.6.6 · Writing CSV</div>
+  <h2>Textbook Example 1: Write Data to CSV File</h2>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Program (Page 233)</h3>
+      <pre><code>import csv
+f = ['Name', 'Class', 'Address']
+r = [
+    ['Kamal', '10', 'Surkhet'],
+    ['Binita', '9', 'Butwal'],
+    ['Pawan', '10', 'Kathmandu']
+]
+with open("employees.csv", 'w', newline='') as file:
+    cs = csv.writer(file)
+    cs.writerow(f)    # Write header
+    cs.writerows(r)   # Write all data rows</code></pre>
+    </div>
+    <div class="card hl">
+      <h3>Output (in Excel)</h3>
+      <pre><code>Name   | Class | Address
+Kamal  | 10    | Surkhet
+Binita | 9     | Butwal
+Pawan  | 10    | Kathmandu</code></pre>
+      <p class="note"><code>writerow(f)</code> writes the header list as one row.<br><code>writerows(r)</code> writes the list of lists (each inner list = one data row).</p>
+    </div>
+  </div>
+</section>
+<section class="slide" data-lesson="6">
+  <div class="slide-badge">Lesson 4.6.6 · Reading CSV</div>
+  <h2>Textbook Example 2: Read Records from CSV File</h2>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Program (Page 233–234)</h3>
+      <pre><code>import csv
+with open('employees.csv', mode='r') as file:
+    cs = csv.reader(file)
+    for i in cs:
+        print(i)</code></pre>
+      <h3>Output</h3>
+      <pre><code>['Name', 'Class', 'Address']
+['Kamal', '10', 'Surkhet']
+['Binita', '9', 'Butwal']
+['Pawan', '10', 'Kathmandu']</code></pre>
+    </div>
+    <div class="card hl">
+      <h3>Filtering Specific Rows (Example 4)</h3>
+      <pre><code>import csv
+with open("result.csv", "r") as file:
+    r = csv.reader(file)
+    for i in r:
+        if i[1] == "10":
+            print(i)</code></pre>
+      <p class="note"><code>i[1]</code> accesses the second field (Class column) of each row. This filters and prints only Class 10 students.</p>
+    </div>
+  </div>
+</section>
+<section class="slide mcq" data-lesson="6" data-q="c16"></section>
+<section class="slide mcq" data-lesson="6" data-q="c17"></section>
+<section class="slide mcq" data-lesson="6" data-q="c18"></section>
+<section class="slide mcq" data-lesson="6" data-q="c19"></section>
+<section class="slide mcq" data-lesson="6" data-q="c20"></section>
+<section class="slide mcq" data-lesson="6" data-q="c21"></section>
+<section class="slide" data-lesson="7">
+  <div class="slide-badge">Lesson 4.6.7 · Pandas &amp; CSV</div>
+  <h2>Using Pandas Library for CSV Files</h2>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Writing CSV with Pandas: to_csv()</h3>
+      <p>Pandas provides <code>to_csv()</code> to write a DataFrame to a CSV file.</p>
+      <pre><code>import pandas as p
+emp_name = ["Harish", "Yubaraj", "Pashupati"]
+post = ["Manager","Officer","Programmer"]
+salary = [55000, 65000, 90000]
+dict = {'Name': emp_name,
+        'Post': post,
+        'Salary': salary}
+df = p.DataFrame(dict)
+df.to_csv('employee.csv')</code></pre>
+      <p class="note">Output includes auto-generated row index: 0, 1, 2.</p>
+    </div>
+    <div class="card hl">
+      <h3>Saving Without Index</h3>
+      <pre><code>df.to_csv('employee.csv', index=False)</code></pre>
+      <p>Removes the numeric row index (0, 1, 2) from the CSV output.</p>
+      <h3>Saving Without Index and Header</h3>
+      <pre><code>df.to_csv('employee.csv',
+           index=False,
+           header=False)</code></pre>
+      <p class="note">Both <code>index=False</code> AND <code>header=False</code> produce a clean data-only CSV with no row numbers or column names.</p>
+    </div>
+  </div>
+</section>
+<section class="slide" data-lesson="7">
+  <div class="slide-badge">Lesson 4.6.7 · Pandas read_csv</div>
+  <h2>Reading CSV with Pandas: read_csv()</h2>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Basic read_csv()</h3>
+      <pre><code>import pandas as p
+data = p.read_csv('employees.csv')
+print(data)
+# Output:
+#   Name  Class  Address
+# 0 Kamal  10  Surkhet
+# 1 Binita  9  Butwal
+# 2 Pawan  10  Kathmandu</code></pre>
+    </div>
+    <div class="card hl">
+      <h3>Advanced Parameters</h3>
+      <pre><code># Select specific columns only:
+data = p.read_csv("employees.csv",
+        usecols=["Name", "Class"])
+
+# Set index column:
+data = p.read_csv("employees.csv",
+        index_col=["Name"])
+
+# Read only first N rows:
+data = p.read_csv("employees.csv",
+        nrows=2)</code></pre>
+    </div>
+  </div>
+</section>
+<section class="slide" data-lesson="7">
+  <div class="slide-badge">Lesson 4.6.7 · Pandas Filtering</div>
+  <h2>Filtering Data after read_csv()</h2>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Filter Rows by Column Value</h3>
+      <pre><code>import pandas as p
+data = p.read_csv("Emp.csv")
+# Filter rows where Age > 25
+n = data[data['Age'] > 25]
+print(n)</code></pre>
+      <pre><code>import pandas as p
+data = pd.read_csv("Employee.csv")
+# Filter where Post is MANAGER
+d = data[data['Post'].str.upper()
+         == "MANAGER"]
+print(d)</code></pre>
+    </div>
+    <div class="card hl">
+      <h3>Multiple Conditions Filter</h3>
+      <pre><code>import pandas as p
+data = pd.read_csv("Student.csv")
+# Class == 10 AND Age > 15
+d = data[(data['Class'] == 10)
+         &amp; (data['Age'] > 15)]
+print(d)</code></pre>
+      <p class="note">Use <code>&amp;</code> for AND, <code>|</code> for OR in Pandas boolean filters. Each condition must be in parentheses!</p>
+    </div>
+  </div>
+</section>
+<section class="slide mcq" data-lesson="7" data-q="c22"></section>
+<section class="slide mcq" data-lesson="7" data-q="c23"></section>
+<section class="slide mcq" data-lesson="7" data-q="c24"></section>
+<section class="slide mcq" data-lesson="7" data-q="c25"></section>
+<section class="slide mcq" data-lesson="7" data-q="c26"></section>
+<section class="slide mcq" data-lesson="7" data-q="c27"></section>
+<section class="slide mcq" data-lesson="7" data-q="c28"></section>
+<section class="slide mcq" data-lesson="7" data-q="c29"></section>
+<section class="slide" data-lesson="8">
+  <div class="slide-badge">Lesson 4.6.8 · Worked Examples</div>
+  <h2>File Handling Using CSV Module: Worked Examples</h2>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>WE1: Write Name/Age/Address of 4 staffs to staff.csv</h3>
+      <pre><code>import csv
+with open("staff.csv", "w", newline="") as file:
+    writer = csv.writer(file)
+    writer.writerow(["Name", "Age", "Address"])
+    for i in range(1, 5):
+        name = input("Enter the Name:")
+        age = input("Enter the age:")
+        address = input("Enter the address:")
+        writer.writerow([name, age, address])</code></pre>
+    </div>
+    <div class="card hl">
+      <h3>WE3: Display records where age is 50</h3>
+      <pre><code>import csv
+with open("staff.csv", "r") as file:
+    data = csv.reader(file)
+    for i in data:
+        if i[1] == "50":
+            print(i)</code></pre>
+      <p class="note"><code>i[1]</code> = second field = Age column (index 1). Note: CSV reader returns all values as strings, so compare with <code>"50"</code> not <code>50</code>.</p>
+    </div>
+  </div>
+</section>
+<section class="slide" data-lesson="8">
+  <div class="slide-badge">Lesson 4.6.8 · CDC Exercises</div>
+  <h2>Official CDC Exercise Review (Pages 241–243)</h2>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Choose the Best Answer</h3>
+      <ul>
+        <li><b>a.</b> Mode for reading purpose: <b>(ii) r</b></li>
+        <li><b>b.</b> Mode to create a new file: <b>(iv) w</b></li>
+        <li><b>c.</b> Pandas function to read CSV: <b>(iii) read_csv()</b></li>
+        <li><b>d.</b> Pandas function to write CSV: <b>(iv) to_csv()</b></li>
+        <li><b>e.</b> Library for reading/writing CSV: <b>(ii) pandas</b></li>
+        <li><b>f.</b> Default CSV separator in Pandas: <b>(iii) comma (,)</b></li>
+      </ul>
+    </div>
+    <div class="card hl">
+      <h3>Short Answer Guide</h3>
+      <ul>
+        <li><b>What is CSV?</b> Comma Separated Values file — stores tabular data as text with commas as delimiters. Common format for data exchange.</li>
+        <li><b>File opening modes:</b> <code>r</code>, <code>w</code>, <code>a</code>, <code>x</code></li>
+        <li><b>Pandas syntax to read CSV:</b> <code>pd.read_csv('file.csv')</code></li>
+        <li><b>To write CSV with Pandas:</b> <code>df.to_csv('file.csv')</code></li>
+      </ul>
+    </div>
+  </div>
+</section>
+<section class="slide mcq" data-lesson="8" data-q="c30"></section>
+<section class="slide mcq" data-lesson="8" data-q="c31"></section>
+<section class="slide mcq" data-lesson="8" data-q="c32"></section>
+<section class="slide mcq" data-lesson="8" data-q="c33"></section>
+<section class="slide mcq" data-lesson="8" data-q="c34"></section>
+<section class="slide mcq" data-lesson="8" data-q="c35"></section>
+<section class="slide" data-lesson="8">
+  <div class="slide-badge">Lesson Complete</div>
+  <h2>Lesson 4.6 Summary</h2>
+  <div class="grid grid-3">
+    <div class="card">
+      <h3>File Modes</h3>
+      <p><code>r</code> read · <code>w</code> write (overwrite) · <code>a</code> append · <code>x</code> exclusive create</p>
+    </div>
+    <div class="card">
+      <h3>Reading Functions</h3>
+      <p><code>read()</code> entire file · <code>readline()</code> one line · <code>readlines()</code> list of lines</p>
+    </div>
+    <div class="card hl">
+      <h3>Pandas CSV</h3>
+      <p><code>to_csv()</code> write · <code>read_csv()</code> read · <code>usecols</code> filter columns · <code>nrows</code> limit rows</p>
+    </div>
+  </div>
+  <p class="note" style="margin-top:.4em">Use the Contents button to review any topic or replay all 35 checkpoint questions!</p>
+</section>
+</main>
+
+<footer>
+  <div class="nav wrap">
+    <button class="btn sec" id="prev" type="button">← Prev</button>
+    <span class="hint">Use <b>Arrow keys</b> or <b>Space</b> to advance. Press <b>1-4</b> or <b>A-D</b> for MCQs. Press <b>F</b> for full screen.</span>
+    <button class="btn" id="next" type="button">Next →</button>
+  </div>
+</footer>
+
+<div class="toc" id="toc" hidden>
+  <div class="toc-panel" id="tocPanel">
+    <h2>Table of Contents</h2>
+  </div>
+</div>
+<button class="fsx" id="fsExit" type="button" aria-label="Exit full screen">✕</button>
+
+<script>
+(function(){
+  "use strict";
+  var LESSONS = {
+  "0": "Overview",
+  "1": "1. Data Files",
+  "2": "2. File Modes",
+  "3": "3. Writing Files",
+  "4": "4. Reading Files",
+  "5": "5. Closing Files",
+  "6": "6. CSV Module",
+  "7": "7. Pandas CSV",
+  "8": "8. Exercises"
+};
+
+  var MCQ = {
+ "c1": {
+  "q": "What is a data file?",
+  "o": [
+   "A temporary variable that holds one number",
+   "A collection of related information stored permanently in a storage device",
+   "A Python class definition",
+   "A network protocol"
+  ],
+  "a": 1,
+  "e": "A file is simply a collection of related information stored in a storage device, identified by its unique file name."
+ },
+ "c2": {
+  "q": "What are the three basic steps for working with a file in Python?",
+  "o": [
+   "Compile, link, run",
+   "Open the file, read/write information, close the file",
+   "Create, delete, rename",
+   "Import, export, flush"
+  ],
+  "a": 1,
+  "e": "The three-step file workflow is: 1) Open the file, 2) Read or write data, 3) Close the file."
+ },
+ "c3": {
+  "q": "Why is file handling important in programming?",
+  "o": [
+   "To speed up the CPU",
+   "To store data permanently so it is not lost when the program ends",
+   "To increase RAM capacity",
+   "To bypass the operating system"
+  ],
+  "a": 1,
+  "e": "Without file handling, any data created during program execution would be lost when the program ends."
+ },
+ "c4": {
+  "q": "Which built-in Python function is used to open a file?",
+  "o": [
+   "file()",
+   "read()",
+   "open()",
+   "load()"
+  ],
+  "a": 2,
+  "e": "The open() function is the built-in Python function used to open a file for reading, writing or appending."
+ },
+ "c5": {
+  "q": "Which of the following is the correct syntax to open a file using the 'with' statement?",
+  "o": [
+   "file.open('name', 'mode')",
+   "with open('Filename', 'mode') as file:",
+   "open file('name') as:",
+   "file = load('name', 'mode')"
+  ],
+  "a": 1,
+  "e": "The correct syntax is: with open('Filename', 'mode') as file: \u2014 this automatically closes the file when the block exits."
+ },
+ "c6": {
+  "q": "What does file mode 'r' do?",
+  "o": [
+   "Creates a new file and replaces existing content",
+   "Opens a file for reading; sets pointer to first character; raises IOError if file does not exist",
+   "Appends data to an existing file",
+   "Exclusively creates a new file"
+  ],
+  "a": 1,
+  "e": "Mode 'r' (read) opens a file for reading and sets the pointer to the first character. It raises an IOError if the file does not exist."
+ },
+ "c7": {
+  "q": "What does file mode 'w' do?",
+  "o": [
+   "Reads from an existing file",
+   "Opens a file for writing; creates if not exists; OVERWRITES existing contents",
+   "Appends to an existing file without overwriting",
+   "Opens exclusively for binary writing"
+  ],
+  "a": 1,
+  "e": "Mode 'w' (write) creates a new file or OVERWRITES the existing file's contents if it already exists."
+ },
+ "c8": {
+  "q": "What does file mode 'a' do?",
+  "o": [
+   "Overwrites existing file contents from the beginning",
+   "Opens a file in append mode: adds data to the end without overwriting existing contents",
+   "Creates a new empty file only",
+   "Opens a file for read-only access"
+  ],
+  "a": 1,
+  "e": "Mode 'a' (append) allows adding new data to the END of an existing file without overwriting it. Creates new file if it does not exist."
+ },
+ "c9": {
+  "q": "What does file mode 'x' do?",
+  "o": [
+   "Read-only exclusive mode",
+   "Exclusive creation mode: creates new file but FAILS if file already exists",
+   "Extend an existing file",
+   "Delete the file on close"
+  ],
+  "a": 1,
+  "e": "Mode 'x' (exclusive creation) safely creates a new file, but raises an IOError if a file with the same name already exists."
+ },
+ "c10": {
+  "q": "In 'with open(\"staff.txt\", \"w\") as f: f.write(\"Ramesh\\n\")', what does '\\n' do?",
+  "o": [
+   "Closes the file",
+   "Inserts a newline character so the next write starts on a new line",
+   "Skips the write operation",
+   "Raises SyntaxError"
+  ],
+  "a": 1,
+  "e": "'\\n' is the newline escape sequence that moves the write cursor to the beginning of the next line."
+ },
+ "c11": {
+  "q": "Which function reads the ENTIRE content of a file at once?",
+  "o": [
+   "readline()",
+   "readlines()",
+   "read()",
+   "readall()"
+  ],
+  "a": 2,
+  "e": "file.read() reads and returns the entire content of the file as a single string."
+ },
+ "c12": {
+  "q": "What does readline() return when called once on a file with multiple lines?",
+  "o": [
+   "The entire file content",
+   "Only the first line of the file",
+   "A list of all lines",
+   "An empty string always"
+  ],
+  "a": 1,
+  "e": "file.readline() reads and returns one line at a time, starting from the current file pointer position."
+ },
+ "c13": {
+  "q": "What does readlines() return?",
+  "o": [
+   "A single string of the entire file",
+   "A Python list where each element is one line from the file (including \\n)",
+   "An integer count of lines",
+   "A tuple of words"
+  ],
+  "a": 1,
+  "e": "file.readlines() reads all lines and returns them as a list: ['Ramesh\\n', 'Kamal\\n', 'Kabin\\n']."
+ },
+ "c14": {
+  "q": "What is the purpose of file.close()?",
+  "o": [
+   "Resets the file pointer to the beginning",
+   "Terminates all resources used by the file and frees system memory",
+   "Deletes the file from disk",
+   "Re-opens the file for writing"
+  ],
+  "a": 1,
+  "e": "file.close() terminates all resources associated with the file and releases them back to the system."
+ },
+ "c15": {
+  "q": "What is the main advantage of using 'with open(...) as f:' instead of open/close manually?",
+  "o": [
+   "It is 10x faster",
+   "It automatically closes the file when the with block ends, even if an exception occurs",
+   "It only works with text files",
+   "It prevents reading of files"
+  ],
+  "a": 1,
+  "e": "The 'with' statement context manager guarantees the file is closed automatically, even if an error occurs inside the block."
+ },
+ "c16": {
+  "q": "What does CSV stand for?",
+  "o": [
+   "Computer Separated Values",
+   "Comma Separated Values",
+   "Column Structured Variables",
+   "Character Symbol Vector"
+  ],
+  "a": 1,
+  "e": "CSV stands for Comma Separated Values \u2014 a plain text format that separates pieces of data with commas."
+ },
+ "c17": {
+  "q": "What two ways can Python work with CSV files?",
+  "o": [
+   "Using IDLE and Notepad",
+   "Using the built-in csv module OR using the Pandas library",
+   "Using numpy and scipy",
+   "Using json and xml modules"
+  ],
+  "a": 1,
+  "e": "Python can read/write CSV files using either the built-in csv module or the external Pandas library."
+ },
+ "c18": {
+  "q": "What does csv.writer(file) return?",
+  "o": [
+   "A list of rows",
+   "A CSV writer object used to write data to the CSV file",
+   "A string of the file path",
+   "A Pandas DataFrame"
+  ],
+  "a": 1,
+  "e": "csv.writer(csv_file) returns a CSV writer object (cs) that provides methods like writerow() and writerows() to write data."
+ },
+ "c19": {
+  "q": "What is the difference between csv.writerow() and csv.writerows()?",
+  "o": [
+   "writerow() writes multiple rows; writerows() writes one row",
+   "writerow() writes a single row (list); writerows() writes multiple rows (list of lists)",
+   "They are identical with different spellings",
+   "writerows() is for headers only"
+  ],
+  "a": 1,
+  "e": "writerow([row]) writes one row (typically used for headers). writerows([[rows]]) writes multiple rows of records at once."
+ },
+ "c20": {
+  "q": "What does csv.reader(file) do?",
+  "o": [
+   "Writes records to a CSV file",
+   "Reads records from the CSV file and returns a reader iterable object",
+   "Sorts the CSV file alphabetically",
+   "Converts CSV to Excel format"
+  ],
+  "a": 1,
+  "e": "csv.reader(csv_file) returns an iterable reader object whose rows can be looped with 'for i in cs: print(i)'."
+ },
+ "c21": {
+  "q": "Why should 'newline=\"\"' be passed to open() when writing a CSV file on Windows?",
+  "o": [
+   "To avoid encoding errors",
+   "To prevent extra blank rows that Windows adds after each row in CSV",
+   "To enable binary writing mode",
+   "To suppress IOErrors"
+  ],
+  "a": 1,
+  "e": "On Windows, Python's universal newline translation adds extra blank rows in CSV files. 'newline=\"\"' disables this."
+ },
+ "c22": {
+  "q": "Which Pandas function writes a DataFrame to a CSV file?",
+  "o": [
+   "pd.write_csv()",
+   "df.to_csv()",
+   "pd.save_csv()",
+   "df.export_csv()"
+  ],
+  "a": 1,
+  "e": "DataFrame.to_csv('filename.csv') saves the DataFrame data into a CSV file."
+ },
+ "c23": {
+  "q": "What does the 'index=False' argument in df.to_csv('file.csv', index=False) do?",
+  "o": [
+   "Sorts data alphabetically",
+   "Excludes the auto-generated row index numbers (0, 1, 2...) from the output CSV",
+   "Drops the first column from output",
+   "Creates a new index column"
+  ],
+  "a": 1,
+  "e": "By default, Pandas adds a numeric row index column. index=False suppresses this so only the actual data columns are written."
+ },
+ "c24": {
+  "q": "Which Pandas function reads a CSV file into a DataFrame?",
+  "o": [
+   "pd.load_csv()",
+   "pd.import_csv()",
+   "pd.read_csv()",
+   "pd.open_csv()"
+  ],
+  "a": 2,
+  "e": "pd.read_csv('filename.csv') reads a CSV file and loads it into a Pandas DataFrame for analysis."
+ },
+ "c25": {
+  "q": "What does the 'usecols' parameter in pd.read_csv() do?",
+  "o": [
+   "Sets the number of rows to read",
+   "Filters and loads only the specified columns from the CSV file",
+   "Sorts columns alphabetically",
+   "Creates new computed columns"
+  ],
+  "a": 1,
+  "e": "usecols=[\"Name\", \"Class\"] in read_csv() loads only those specific columns, saving memory for large datasets."
+ },
+ "c26": {
+  "q": "What does the 'index_col' parameter in pd.read_csv() do?",
+  "o": [
+   "Counts the number of index columns",
+   "Sets one or more columns as the DataFrame's row index instead of default 0,1,2...",
+   "Filters rows by index value",
+   "Creates a new integer index column"
+  ],
+  "a": 1,
+  "e": "index_col=[\"Name\"] in read_csv() uses the Name column as the DataFrame's row index label."
+ },
+ "c27": {
+  "q": "What does the 'nrows' parameter in pd.read_csv() do?",
+  "o": [
+   "Sets the number of columns to read",
+   "Reads only a specified number of rows from the CSV file (useful for previewing large files)",
+   "Skips every nth row",
+   "Counts total rows in the file"
+  ],
+  "a": 1,
+  "e": "nrows=2 in read_csv() reads only the first 2 data rows, which is very efficient for previewing large datasets."
+ },
+ "c28": {
+  "q": "What does 'header=False' in df.to_csv() do?",
+  "o": [
+   "Saves only the column headers, no data rows",
+   "Removes the column header row from the output CSV file",
+   "Creates a hidden file",
+   "Reverses the column order"
+  ],
+  "a": 1,
+  "e": "header=False in to_csv() omits the column name header row from the CSV output."
+ },
+ "c29": {
+  "q": "In pd.read_csv(\"employees.csv\"), what does each row of the resulting DataFrame represent?",
+  "o": [
+   "A column definition",
+   "One record (row) from the CSV file",
+   "A Python function",
+   "A file mode character"
+  ],
+  "a": 1,
+  "e": "Each row in the DataFrame corresponds to one record (data row) from the CSV file."
+ },
+ "c30": {
+  "q": "(CDC Exercise 1a) Which file mode is used to open a file for reading purpose?",
+  "o": [
+   "a",
+   "r",
+   "read",
+   "w"
+  ],
+  "a": 1,
+  "e": "CDC Exercise 1a: Mode 'r' (read) is used to open a file for reading purpose."
+ },
+ "c31": {
+  "q": "(CDC Exercise 1b) Which file mode is used to create a new file?",
+  "o": [
+   "o",
+   "a",
+   "r",
+   "w"
+  ],
+  "a": 3,
+  "e": "CDC Exercise 1b: Mode 'w' (write) creates a new file. If the file already exists, it overwrites it."
+ },
+ "c32": {
+  "q": "(CDC Exercise 1c) Which Pandas function is used to read data from a CSV file?",
+  "o": [
+   "open_csv()",
+   "read_file()",
+   "read_csv()",
+   "write_csv()"
+  ],
+  "a": 2,
+  "e": "CDC Exercise 1c: pd.read_csv() is the Pandas function used to read data from a CSV file into a DataFrame."
+ },
+ "c33": {
+  "q": "(CDC Exercise 1d) Which Pandas function is used to write data to a CSV file?",
+  "o": [
+   "from_csv()",
+   "to_file()",
+   "write_csv()",
+   "to_csv()"
+  ],
+  "a": 3,
+  "e": "CDC Exercise 1d: df.to_csv() is the Pandas function used to write/export a DataFrame to a CSV file."
+ },
+ "c34": {
+  "q": "(CDC Exercise 1e) Which library provides various functions for both reading from and writing data to CSV files?",
+  "o": [
+   "matplotlib",
+   "pandas",
+   "turtle",
+   "random"
+  ],
+  "a": 1,
+  "e": "CDC Exercise 1e: Pandas provides comprehensive functions for both reading (read_csv) and writing (to_csv) CSV files."
+ },
+ "c35": {
+  "q": "(CDC Exercise 1f) What is the default separator used by Pandas when reading or writing CSV files?",
+  "o": [
+   "semicolon (;)",
+   "tab (\\t)",
+   "comma (,)",
+   "space ( )"
+  ],
+  "a": 2,
+  "e": "CDC Exercise 1f: The default separator (delimiter) used by Pandas in CSV files is the comma (,)."
+ }
+};
+
+  var LETTERS = ["A","B","C","D"];
+  var main = document.getElementById("main");
+  var slides = Array.prototype.slice.call(main.querySelectorAll(".slide"));
+  var cur = 0;
+  var updatingHash = false;
+
+  function buildMcq(s, key){
+    var d = MCQ[key];
+    if (!d) return;
+    s.dataset.title = "Checkpoint: " + d.q;
+    var html = '<span class="q-tag">Checkpoint Question</span><h2 class="q-text"></h2><div class="opts"></div><div class="explain" hidden></div><button class="ghost reset" type="button" hidden>Reset question</button>';
+    s.innerHTML = html;
+    s.querySelector(".q-text").textContent = d.q;
+    var box = s.querySelector(".opts");
+    d.o.forEach(function(t, i){
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "opt"; b.dataset.i = i;
+      var k = document.createElement("span"); k.className = "k"; k.textContent = LETTERS[i];
+      var tx = document.createElement("span"); tx.textContent = t;
+      b.appendChild(k); b.appendChild(tx);
+      b.addEventListener("click", function(){ answer(s, key, i); });
+      box.appendChild(b);
+    });
+    s.querySelector(".reset").addEventListener("click", function(){ reset(s); });
+  }
+
+  function answer(s, key, i){
+    if (s._done) return;
+    s._done = true;
+    var d = MCQ[key];
+    var opts = s.querySelectorAll(".opt");
+    opts.forEach(function(b, j){
+      b.disabled = true;
+      if (j === d.a) b.classList.add("correct");
+      else if (j === i) b.classList.add("wrong");
+      else b.classList.add("dim");
+    });
+    var ex = s.querySelector(".explain");
+    var good = i === d.a;
+    ex.className = "explain " + (good ? "good" : "bad");
+    ex.innerHTML = "";
+    var h = document.createElement("b"); h.textContent = good ? "✓ Correct!" : "✗ Not quite. The correct answer is " + LETTERS[d.a] + ".";
+    var p = document.createElement("span"); p.textContent = d.e;
+    ex.appendChild(h); ex.appendChild(p);
+    ex.hidden = false;
+    s.querySelector(".reset").hidden = false;
+    fitSlide();
+  }
+
+  function reset(s){
+    s._done = false;
+    s.querySelectorAll(".opt").forEach(function(b){ b.disabled = false; b.className = "opt"; });
+    s.querySelector(".explain").hidden = true;
+    s.querySelector(".reset").hidden = true;
+    fitSlide();
+  }
+
+  slides.forEach(function(s){ if (s.dataset.q) buildMcq(s, s.dataset.q); });
+
+  function goLesson(l){
+    for (var i = 0; i < slides.length; i++) {
+      if ((slides[i].dataset.lesson || "0") === l) { show(i); return; }
+    }
+  }
+
+  document.querySelectorAll("pre.code").forEach(function(c){
+    var t = c.textContent.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    c.innerHTML = t.replace(/\b(def|class|import|from|if|elif|else|while|for|in|return|print|input|len|range|append|insert|sum|min|max|get|keys|values|del|True|False|None|and|or|not|abs|pow|sqrt|int|float|str|list|dict|break|continue)\b/g, "<b>$1</b>");
+  });
+
+  var selBox = document.getElementById("sel");
+  var SELS = [
+  [
+    "0",
+    "Overview"
+  ],
+  [
+    "1",
+    "1. Data Files"
+  ],
+  [
+    "2",
+    "2. Modes"
+  ],
+  [
+    "3",
+    "3. Writing"
+  ],
+  [
+    "4",
+    "4. Reading"
+  ],
+  [
+    "5",
+    "5. Closing"
+  ],
+  [
+    "6",
+    "6. csv Module"
+  ],
+  [
+    "7",
+    "7. Pandas"
+  ],
+  [
+    "8",
+    "8. Exercises"
+  ]
+];
+
+  var selBtns = SELS.map(function(x){
+    var b = document.createElement("button");
+    b.type = "button"; b.dataset.l = x[0]; b.textContent = x[1]; b.title = LESSONS[x[0]];
+    b.addEventListener("click", function(){ goLesson(x[0]); });
+    selBox.appendChild(b);
+    return b;
+  });
+
+  document.querySelectorAll("[data-go]").forEach(function(b){
+    b.addEventListener("click", function(){ goLesson(b.dataset.go); });
+  });
+
+  var count = document.getElementById("count");
+  var bar = document.getElementById("bar");
+  var prev = document.getElementById("prev");
+  var next = document.getElementById("next");
+
+  function reserveAnswer(s){
+    if (!s.dataset.q || s._done) return function(){};
+    var ex = s.querySelector(".explain"), rs = s.querySelector(".reset");
+    var h0 = ex.hidden, r0 = rs.hidden, html0 = ex.innerHTML;
+    ex.innerHTML = "<b>Not quite. The answer is A.</b><span></span>";
+    ex.lastChild.textContent = MCQ[s.dataset.q] ? MCQ[s.dataset.q].e : "";
+    ex.hidden = false; rs.hidden = false;
+    return function(){ ex.hidden = h0; rs.hidden = r0; ex.innerHTML = html0; };
+  }
+
+  function fitSlide(){
+    var s = slides[cur];
+    if (!s) return;
+    var base = parseFloat(getComputedStyle(document.body).fontSize) || 20;
+    var lo = Math.max(13, base * 0.58), hi = base * 1.7;
+    var restore = reserveAnswer(s);
+    function fits(px){
+      s.style.fontSize = px + "px";
+      if (s.offsetHeight > main.clientHeight + 1) return false;
+      if (s.scrollWidth > s.clientWidth + 1) return false;
+      var sc = s.querySelectorAll(".scroll, .code");
+      for (var k = 0; k < sc.length; k++) if (sc[k].scrollWidth > sc[k].clientWidth + 1) return false;
+      return true;
+    }
+    var best;
+    if (fits(hi)) best = hi;
+    else if (!fits(lo)) best = lo;
+    else {
+      for (var n = 0; n < 10; n++) {
+        var mid = (lo + hi) / 2;
+        if (fits(mid)) lo = mid; else hi = mid;
+      }
+      best = lo;
+    }
+    s.style.fontSize = best + "px";
+    restore();
+  }
+
+  var fitTimer = null;
+  function refit(){ cancelAnimationFrame(fitTimer); fitTimer = requestAnimationFrame(fitSlide); }
+  window.addEventListener("resize", refit);
+  document.addEventListener("fullscreenchange", function(){ setTimeout(refit, 120); setTimeout(refit, 600); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(refit);
+
+  function show(i, noHash){
+    if (i < 0) i = 0;
+    if (i > slides.length - 1) i = slides.length - 1;
+    cur = i;
+    slides.forEach(function(s, j){ s.classList.toggle("active", j === i); });
+    var l = slides[i].dataset.lesson || "0";
+    document.body.dataset.lesson = l;
+    selBtns.forEach(function(b){
+      var on = b.dataset.l === l;
+      b.classList.toggle("on", on);
+      if (on) b.setAttribute("aria-current", "true"); else b.removeAttribute("aria-current");
+    });
+    count.textContent = (i + 1) + " / " + slides.length;
+    bar.style.width = ((i + 1) / slides.length * 100) + "%";
+    prev.disabled = i === 0;
+    next.disabled = i === slides.length - 1;
+    main.scrollTop = 0;
+    fitSlide();
+    if (!noHash) {
+      updatingHash = true;
+      try {
+        var targetHash = "#slide-" + (i + 1);
+        if (location.hash !== targetHash) {
+          location.hash = targetHash;
+        }
+      } catch (e) {}
+      setTimeout(function(){ updatingHash = false; }, 80);
+    }
+    markToc();
+  }
+
+  function fromHash(){
+    var m = /^#slide-(\d+)$/.exec(location.hash || "");
+    return m ? parseInt(m[1], 10) - 1 : 0;
+  }
+
+  window.addEventListener("hashchange", function(){
+    if (updatingHash) return;
+    var i = fromHash();
+    if (i !== cur) show(i, true);
+  });
+
+  prev.addEventListener("click", function(){ show(cur - 1); });
+  next.addEventListener("click", function(){ show(cur + 1); });
+
+  /* TOC */
+  var toc = document.getElementById("toc");
+  var panel = document.getElementById("tocPanel");
+  var items = [];
+  function buildToc(){
+    var last = null;
+    slides.forEach(function(s, i){
+      var l = s.dataset.lesson || "0";
+      if (l !== last) {
+        var h = document.createElement("h3");
+        h.textContent = LESSONS[l] || ("Section " + l);
+        panel.appendChild(h);
+        last = l;
+      }
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "toc-item" + (s.dataset.q ? " q" : "");
+      var n = document.createElement("span"); n.className = "n"; n.textContent = i + 1;
+      var t = document.createElement("span"); t.textContent = s.dataset.q ? ("Checkpoint: " + (MCQ[s.dataset.q] ? MCQ[s.dataset.q].q : "")) : s.dataset.title;
+      b.appendChild(n); b.appendChild(t);
+      b.addEventListener("click", function(){ toc.hidden = true; show(i); });
+      panel.appendChild(b);
+      items.push(b);
+    });
+  }
+  function markToc(){ items.forEach(function(b, i){ b.classList.toggle("now", i === cur); }); }
+  buildToc();
+  document.getElementById("tocBtn").addEventListener("click", function(){
+    toc.hidden = !toc.hidden;
+    if (!toc.hidden && items[cur]) items[cur].scrollIntoView({block:"center"});
+  });
+  toc.addEventListener("click", function(e){ if (e.target === toc) toc.hidden = true; });
+
+  /* Full screen */
+  var fs = document.getElementById("fsBtn");
+  var root = document.documentElement;
+  function inFs(){ return root.classList.contains("fs"); }
+  function enterFs(){
+    root.classList.add("fs");
+    try {
+      if (root.requestFullscreen) { var p = root.requestFullscreen(); if (p && p.catch) p.catch(function(){}); }
+    } catch (e) {}
+    setTimeout(refit, 150); setTimeout(refit, 600);
+  }
+  function exitFs(){
+    root.classList.remove("fs");
+    try { if (document.fullscreenElement) { var p = document.exitFullscreen(); if (p && p.catch) p.catch(function(){}); } } catch (e) {}
+    setTimeout(refit, 150); setTimeout(refit, 600);
+  }
+  function toggleFs(){ if (inFs()) exitFs(); else enterFs(); }
+  fs.addEventListener("click", toggleFs);
+  document.getElementById("fsExit").addEventListener("click", exitFs);
+  document.addEventListener("fullscreenchange", function(){
+    root.classList.toggle("fs", !!document.fullscreenElement);
+    setTimeout(refit, 150); setTimeout(refit, 600);
+  });
+
+  /* Touch swipe */
+  var tx = 0, ty = 0, tt = 0, tracking = false;
+  main.addEventListener("touchstart", function(e){
+    tracking = false;
+    if (e.touches.length !== 1 || !toc.hidden) return;
+    var t = e.touches[0]; tx = t.clientX; ty = t.clientY; tt = Date.now(); tracking = true;
+    var el = e.target.closest ? e.target.closest(".scroll, .code, .idle") : null;
+    if (el && el.scrollWidth > el.clientWidth + 1) tracking = false;
+  }, {passive:true});
+  main.addEventListener("touchend", function(e){
+    if (!tracking) return;
+    tracking = false;
+    var t = e.changedTouches[0], dx = t.clientX - tx, dy = t.clientY - ty;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5 && Date.now() - tt < 900) {
+      if (dx < 0) show(cur + 1); else show(cur - 1);
+    }
+  }, {passive:true});
+
+  /* Keyboard */
+  document.addEventListener("keydown", function(e){
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    var k = e.key;
+    if (k === "Escape") { if (!toc.hidden) toc.hidden = true; else if (inFs() && !document.fullscreenElement) exitFs(); return; }
+    if (!toc.hidden) return;
+    var tag = document.activeElement && document.activeElement.tagName;
+    if (k === "ArrowRight" || k === "PageDown") { e.preventDefault(); show(cur + 1); }
+    else if (k === "ArrowLeft" || k === "PageUp") { e.preventDefault(); show(cur - 1); }
+    else if (k === " ") { e.preventDefault(); show(cur + 1); }
+    else if (k === "Home") { show(0); }
+    else if (k === "End") { show(slides.length - 1); }
+    else if (k === "f" || k === "F") { toggleFs(); }
+    else if (k === "t" || k === "T") { toc.hidden = false; if (items[cur]) items[cur].scrollIntoView({block:"center"}); }
+    else {
+      var s = slides[cur];
+      if (s && s.dataset.q) {
+        var idx = "1234".indexOf(k);
+        if (idx < 0) idx = "abcd".indexOf(k.toLowerCase());
+        if (idx > -1) { var b = s.querySelectorAll(".opt")[idx]; if (b && !b.disabled) b.click(); }
+      }
+    }
+  });
+
+  show(fromHash(), true);
+})();
+</script>
+</body></html>

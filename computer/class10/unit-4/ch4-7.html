@@ -1,0 +1,1378 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Unit 4 · Data Visualization &amp; Project</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: one lesson slide at a time on a full-height stage. High contrast for classroom projection. */
+:root{
+  --bg:#f3f6fb; --panel:#ffffff; --panel-2:#e8eef8; --fg:#0f1a35; --muted:#475674; --line:#c9d4e6;
+  --blue:#1a4fb0; --blue-soft:#e1eafb;
+  --green:#0a7556; --green-soft:#dcf2e9;
+  --amber:#a64f08; --amber-soft:#fdebd5;
+  --teal:#0a6f86; --teal-soft:#d8f0f5;
+  --violet:#6a3cc0; --violet-soft:#ebe3fb;
+  --olive:#4f6f0a; --olive-soft:#e8f2cc;
+  --sienna:#8c3f1a; --sienna-soft:#f5e2d6;
+  --gold:#7d6400; --gold-soft:#f8f0c8;
+  --pink:#b0125f; --pink-soft:#fbe3ee;
+  --indigo:#283593; --indigo-soft:#e8eaf6;
+  --f-mono:"JetBrains Mono",ui-monospace,Consolas,"Courier New",monospace;
+  --ok:#0d7a3b; --ok-soft:#dcf3e4; --bad:#b3261e; --bad-soft:#fbe4e2;
+  --on-accent:#ffffff; --scrim:rgba(15,26,53,.55);
+  --f-display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --f-body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --base:clamp(17px, 1vw + 9px, 32px);
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; background:var(--bg); color:var(--fg);
+  font:400 var(--base)/1.45 var(--f-body);
+  display:grid; grid-template-rows:auto 1fr auto; overflow:hidden;
+}
+header,footer{font-size:clamp(13px,.7vw + 6px,19px)}
+html.fs header, html.fs footer{display:none}
+@supports (height:100dvh){html,body{height:100dvh}}
+main{touch-action:pan-y}
+.scroll,.code{touch-action:pan-x pan-y}
+.fsx{display:none; position:fixed; z-index:15; top:calc(env(safe-area-inset-top,0px) + 6px); right:max(8px,env(safe-area-inset-right,0px)); width:2.4em; height:2.4em; place-items:center; border-radius:50%; background:var(--panel); border:1px solid var(--line); color:var(--fg); font:700 16px/1 var(--f-body); opacity:.65}
+@media (pointer:coarse){html.fs .fsx{display:grid}}
+html.fs body{grid-template-rows:1fr}
+.wrap{padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px))}
+button{font:inherit; color:inherit; cursor:pointer}
+:focus-visible{outline:3px solid var(--pink); outline-offset:3px}
+
+/* header */
+header{background:var(--panel); border-bottom:1px solid var(--line)}
+.top{display:flex; align-items:center; gap:.5em .8em; flex-wrap:wrap; padding-block:.5em}
+.brand{font:800 .8em/1 var(--f-display); letter-spacing:.05em; text-transform:uppercase; color:var(--muted)}
+.sel{display:flex; flex-wrap:wrap; gap:.35em; min-width:0}
+.sel button{--c:var(--muted); --cs:var(--panel-2); background:var(--cs); color:var(--c); border:2px solid var(--c); border-radius:.55em; padding:.25em .65em; font:700 .75em/1.2 var(--f-body)}
+.sel button[data-l="1"]{--c:var(--blue); --cs:var(--blue-soft)}
+.sel button[data-l="2"]{--c:var(--teal); --cs:var(--teal-soft)}
+.sel button[data-l="3"]{--c:var(--amber); --cs:var(--amber-soft)}
+.sel button[data-l="4"]{--c:var(--green); --cs:var(--green-soft)}
+.sel button[data-l="5"]{--c:var(--violet); --cs:var(--violet-soft)}
+.sel button[data-l="6"]{--c:var(--olive); --cs:var(--olive-soft)}
+.sel button[data-l="7"]{--c:var(--sienna); --cs:var(--sienna-soft)}
+.sel button[data-l="8"]{--c:var(--gold); --cs:var(--gold-soft)}
+.sel button[data-l="9"]{--c:var(--indigo); --cs:var(--indigo-soft)}
+.sel button[data-l="10"]{--c:var(--pink); --cs:var(--pink-soft)}
+.sel button.on{background:var(--c); color:var(--on-accent)}
+.sel button:hover:not(.on){background:var(--panel)}
+
+body[data-lesson="1"]{--accent:var(--blue); --accent-soft:var(--blue-soft)}
+body[data-lesson="2"]{--accent:var(--teal); --accent-soft:var(--teal-soft)}
+body[data-lesson="3"]{--accent:var(--amber); --accent-soft:var(--amber-soft)}
+body[data-lesson="4"]{--accent:var(--green); --accent-soft:var(--green-soft)}
+body[data-lesson="5"]{--accent:var(--violet); --accent-soft:var(--violet-soft)}
+body[data-lesson="6"]{--accent:var(--olive); --accent-soft:var(--olive-soft)}
+body[data-lesson="7"]{--accent:var(--sienna); --accent-soft:var(--sienna-soft)}
+body[data-lesson="8"]{--accent:var(--gold); --accent-soft:var(--gold-soft)}
+body[data-lesson="9"]{--accent:var(--indigo); --accent-soft:var(--indigo-soft)}
+body[data-lesson="10"]{--accent:var(--pink); --accent-soft:var(--pink-soft)}
+
+.tools{margin-left:auto; display:flex; align-items:center; gap:.5em}
+.count{font:700 .8em var(--f-body); color:var(--muted); font-variant-numeric:tabular-nums; min-width:4.2em; text-align:right}
+.ghost{background:transparent; border:1.5px solid var(--line); border-radius:.5em; padding:.3em .75em; font-size:.75em; font-weight:600}
+.ghost:hover{border-color:var(--accent,var(--blue))}
+a.ghost{color:inherit; text-decoration:none; display:inline-flex; align-items:center}
+.bar{height:6px; background:var(--panel-2)}
+.bar i{display:block; height:100%; width:0; background:var(--accent,var(--blue)); transition:width .3s ease}
+
+/* stage */
+main{display:flex; flex-direction:column; overflow-y:auto; min-height:0}
+.slide{display:none; --accent:var(--blue); --accent-soft:var(--blue-soft)}
+.slide[data-lesson="2"]{--accent:var(--teal); --accent-soft:var(--teal-soft)}
+.slide[data-lesson="3"]{--accent:var(--amber); --accent-soft:var(--amber-soft)}
+.slide[data-lesson="4"]{--accent:var(--green); --accent-soft:var(--green-soft)}
+.slide[data-lesson="5"]{--accent:var(--violet); --accent-soft:var(--violet-soft)}
+.slide[data-lesson="6"]{--accent:var(--olive); --accent-soft:var(--olive-soft)}
+.slide[data-lesson="7"]{--accent:var(--sienna); --accent-soft:var(--sienna-soft)}
+.slide[data-lesson="8"]{--accent:var(--gold); --accent-soft:var(--gold-soft)}
+.slide[data-lesson="9"]{--accent:var(--indigo); --accent-soft:var(--indigo-soft)}
+.slide[data-lesson="10"]{--accent:var(--pink); --accent-soft:var(--pink-soft)}
+.slide.active{display:flex; flex-direction:column; gap:.75em; margin:auto; width:100%; max-width:76em; padding-block:1em; animation:rise .3s ease both}
+@keyframes rise{from{opacity:0; transform:translateY(.4em)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion: reduce){.slide.active{animation:none} .bar i{transition:none}}
+
+.eyebrow{font:700 .85em/1 var(--f-body); letter-spacing:.12em; text-transform:uppercase; color:var(--accent)}
+h1,h2,h3{font-family:var(--f-display); margin:0; text-wrap:balance; line-height:1.08}
+h1{font-size:2.8em; font-weight:800}
+h2{font-size:2.1em; font-weight:800}
+h3{font-size:1.2em; font-weight:800; color:var(--accent)}
+p{margin:0}
+.lead{font-size:1.12em; color:var(--muted); max-width:44em}
+b,strong{font-weight:700}
+
+.def{background:var(--pink-soft); border-left:.3em solid var(--pink); border-radius:.3em; padding:.65em .95em; font-size:1.1em; font-weight:600; color:var(--pink)}
+.def small{display:block; font-size:.7em; letter-spacing:.1em; text-transform:uppercase; margin-bottom:.3em; opacity:.85}
+.cols{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,16.5em),1fr)); gap:.75em}
+.card{background:var(--panel); border:1px solid var(--line); border-radius:.6em; padding:.75em .95em; min-width:0}
+.card p{font-size:.98em; color:var(--muted); margin-top:.25em}
+.card.hl{border-color:var(--accent); background:var(--accent-soft)}
+.pts{margin:0; padding:0; list-style:none; display:grid; gap:.5em}
+.pts li{position:relative; padding-left:1.3em}
+.pts li::before{content:""; position:absolute; left:0; top:.55em; width:.55em; height:.55em; border-radius:50%; background:var(--accent)}
+.chips{display:flex; flex-wrap:wrap; gap:.4em}
+.tag{background:var(--accent-soft); color:var(--accent); border-radius:.4em; padding:.2em .65em; font-weight:700}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse; width:100%; background:var(--panel); font-size:.95em}
+th,td{border:1px solid var(--line); padding:.4em .75em; text-align:left; vertical-align:top}
+th{background:var(--accent); color:var(--on-accent); font-family:var(--f-display)}
+td:first-child{font-weight:700}
+.note{color:var(--muted); font-size:.92em}
+.split{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,19em),1fr)); gap:.9em; align-items:start}
+.pair{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,17em),1fr)); gap:.8em}
+
+/* Code & IDLE Shell Simulation */
+.code{margin:0; background:var(--panel); border:1px solid var(--line); border-left:.3em solid var(--accent); border-radius:.4em; padding:.55em .9em; font:500 .92em/1.45 var(--f-mono); white-space:pre-wrap; overflow-x:auto; color:var(--fg)}
+.code b{color:var(--accent); font-weight:700}
+.code i{color:var(--muted); font-style:normal}
+.code span.str{color:#0b7a56}
+.code span.num{color:#b45309}
+
+.idle{background:#ffffff; border:2px solid #9dc2f8; border-radius:.6em; overflow:hidden; box-shadow:0 3px 12px rgba(15,27,58,.08); font:500 .9em/1.4 var(--f-mono); margin-top:.3em}
+.idle-bar{background:#0078d7; color:#fff; padding:.3em .75em; display:flex; align-items:center; justify-content:space-between; font-size:.8em; font-weight:700}
+.idle-menu{background:#f0f4f9; border-bottom:1px solid #d5e0ee; padding:.2em .6em; display:flex; gap:.7em; font-size:.78em; color:#44526c}
+.idle-body{padding:.5em .8em; background:#ffffff; color:#0f1a35; white-space:pre-wrap; font-size:.9em}
+.idle-restart{color:#6c757d; font-size:.82em; margin-bottom:.3em}
+.idle-out{color:#0000cd; font-weight:600}
+.idle-err{color:#d32f2f; font-weight:700}
+
+/* Hero & Lessons grid */
+.hero{display:grid; gap:.45em}
+.hero h1 span{color:var(--blue)}
+.lessons{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,17.5em),1fr)); gap:.75em; margin-top:.5em}
+.lessons .card{border-width:2px; display:block; width:100%; text-align:left; cursor:pointer; transition:transform .12s, box-shadow .12s}
+.lessons .card:hover{background:var(--panel-2); transform:translateY(-2px)}
+.lessons .card.c1{border-color:var(--blue)} .lessons .card.c2{border-color:var(--teal)} .lessons .card.c3{border-color:var(--amber)} .lessons .card.c4{border-color:var(--green)} .lessons .card.c5{border-color:var(--violet)} .lessons .card.c6{border-color:var(--olive)} .lessons .card.c7{border-color:var(--sienna)} .lessons .card.c8{border-color:var(--gold)} .lessons .card.c9{border-color:var(--indigo)} .lessons .card.c10{border-color:var(--pink)}
+.lessons h3{font-size:1.05em}
+
+/* Checkpoint MCQ */
+.q-tag{display:inline-flex; align-items:center; gap:.5em; width:max-content; background:var(--pink-soft); color:var(--pink); font:800 .85em/1 var(--f-body); letter-spacing:.12em; text-transform:uppercase; padding:.45em .85em; border-radius:99px}
+.q-text{font:800 2.2em/1.12 var(--f-display); text-wrap:balance}
+.opts{display:grid; gap:.5em; margin-top:.2em}
+@media (min-width:900px){.opts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.opt{display:flex; align-items:center; gap:.75em; text-align:left; background:var(--panel); border:2px solid var(--line); border-radius:.6em; padding:.5em .8em; font-size:1.4em; font-weight:600; width:100%; line-height:1.25}
+.opt:hover{border-color:var(--accent)}
+.opt .k{flex:none; width:1.7em; height:1.7em; border-radius:.4em; display:grid; place-items:center; background:var(--panel-2); font:800 .9em var(--f-display)}
+.opt.correct{border-color:var(--ok); background:var(--ok-soft)}
+.opt.correct .k{background:var(--ok); color:var(--on-accent)}
+.opt.wrong{border-color:var(--bad); background:var(--bad-soft)}
+.opt.wrong .k{background:var(--bad); color:var(--on-accent)}
+.opt.dim{opacity:.55}
+.opt:disabled{cursor:default}
+.explain{border-radius:.5em; padding:.5em .9em; background:var(--panel); border:1px solid var(--line); font-size:1.2em}
+.explain b{display:block; margin-bottom:.15em}
+.explain.good b{color:var(--ok)} .explain.bad b{color:var(--bad)}
+.reset{width:max-content}
+
+/* footer */
+footer{background:var(--panel); border-top:1px solid var(--line)}
+.nav{display:flex; align-items:center; gap:.8em; padding-block:.5em}
+.nav .hint{flex:1; text-align:center; color:var(--muted); font-size:.9em}
+.btn{background:var(--accent,var(--blue)); color:var(--on-accent); border:0; border-radius:.55em; padding:.5em 1.3em; font-weight:700; font-size:1em}
+.btn.sec{background:transparent; color:var(--fg); border:2px solid var(--line)}
+.btn:disabled{opacity:.35; cursor:default}
+
+/* contents panel */
+.toc{position:fixed; inset:0; z-index:20; background:var(--scrim); padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px)); overflow-y:auto}
+.toc-panel{max-width:42em; margin:0 auto; background:var(--panel); border:1px solid var(--line); border-radius:.8em; padding:1em 1.2em; display:grid; gap:.3em; font-size:.85em}
+.toc-panel h3{margin-top:.7em; font-size:1em}
+.toc-panel h3:first-child{margin-top:0}
+.toc-item{display:flex; gap:.7em; align-items:baseline; background:none; border:0; text-align:left; padding:.25em .4em; border-radius:.35em; width:100%}
+.toc-item:hover{background:var(--panel-2)}
+.toc-item.now{background:var(--panel-2); font-weight:700}
+.toc-item .n{flex:none; width:2em; color:var(--muted); font-variant-numeric:tabular-nums}
+.toc-item.q{color:var(--pink)}
+@media (max-width:640px){h1{font-size:2.2em} h2{font-size:1.6em} .q-text{font-size:1.4em} .nav .hint{display:none} .nav{justify-content:space-between}}
+</style>
+
+<header>
+  <div class="top wrap">
+    <a class="ghost" href="index.html">← Unit 4 Hub</a>
+    <span class="brand">Unit 4 · Computer Science, Grade 10</span>
+    <nav class="sel" id="sel" aria-label="Choose a lesson"></nav>
+    <div class="tools">
+      <span class="count" id="count">1 / 1</span>
+      <button class="ghost" id="tocBtn" type="button">Contents</button>
+      <button class="ghost" id="fsBtn" type="button">Full screen</button>
+    </div>
+  </div>
+  <div class="bar"><i id="bar"></i></div>
+</header>
+
+<main id="main" class="wrap">
+<section class="slide hero" data-lesson="0">
+  <div class="hero-tag">Class 10 Computer Science · Unit 4 · Lesson 4.7</div>
+  <h1>Introduction to Data Visualization &amp; Python Project</h1>
+  <p class="hero-sub">Mastering data presentation with <b>Matplotlib</b> (bar &amp; scatter plots), <b>Seaborn</b> (statistical line plots), <b>Plotly</b> (interactive web visuals), and the complete <b>Student Result Management System</b> capstone project.</p>
+  <div class="hero-meta">
+    <span><b>Textbook:</b> CDC Nepal Grade 10 (Pages 244–255)</span>
+    <span><b>Interactive:</b> 35 Checkpoint MCQs</span>
+    <span><b>Capstone:</b> Full Python CSV Project</span>
+  </div>
+</section>
+<section class="slide" data-lesson="0">
+  <div class="slide-badge">Curriculum Map</div>
+  <h2>Lesson 4.7 Agenda</h2>
+  <div class="grid grid-3">
+    <div class="card">
+      <h3>1. Data Visualization</h3>
+      <p>Concept, purpose, and importance: spotting trends, patterns &amp; rapid data insights.</p>
+    </div>
+    <div class="card">
+      <h3>2. Visualization Libraries</h3>
+      <p>The three big pillars in Python: Matplotlib, Seaborn, and Plotly.</p>
+    </div>
+    <div class="card">
+      <h3>3. Matplotlib Bar Charts</h3>
+      <p>Vertical rectangular bars, categories, heights, color styles, titles &amp; labels.</p>
+    </div>
+    <div class="card">
+      <h3>4. Matplotlib Scatter Plots</h3>
+      <p>Cartesian dots, correlation between 2 variables (height vs weight), and grids.</p>
+    </div>
+    <div class="card">
+      <h3>5. Seaborn Line Plots</h3>
+      <p>Statistical line charts with data points, markers (marker='o'), and trends.</p>
+    </div>
+    <div class="card">
+      <h3>6. Plotly Interactive Charts</h3>
+      <p>Web-ready charts with hover tooltips, zooming, Dash integration &amp; browser view.</p>
+    </div>
+    <div class="card">
+      <h3>7. Worked-Out Examples</h3>
+      <p>Device sales (bar), employee salary (line), and exam percentages (seaborn).</p>
+    </div>
+    <div class="card">
+      <h3>8. Capstone Project</h3>
+      <p>Complete Student Result Management System: Add, Calculate Grade, Display, Search.</p>
+    </div>
+    <div class="card hl">
+      <h3>9. CDC Exercises &amp; Review</h3>
+      <p>Official questions a–e, short answer solutions, and SEE examination tips.</p>
+    </div>
+  </div>
+</section>
+<section class="slide" data-lesson="1">
+  <div class="slide-badge">Lesson 4.7.1 · Core Concepts</div>
+  <h2>4.7 Concept of Data Visualization</h2>
+  <p><b>Data visualization</b> is the process of converting raw data into organized pictorial formats such as charts, graphs, and maps.</p>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Why Raw Numbers Aren't Enough</h3>
+      <p>Reading thousands of rows in spreadsheets or databases is slow, tiring, and error-prone. The human brain processes visual imagery 60,000&times; faster than text!</p>
+      <p class="note">Visualization makes complex information intuitive, clear, and actionable.</p>
+    </div>
+    <div class="card hl">
+      <h3>Core Objectives</h3>
+      <ul>
+        <li>Identify hidden patterns and anomalies in large datasets</li>
+        <li>Observe changes, trends, and growth over time</li>
+        <li>Present compelling data stories to audiences and stakeholders</li>
+        <li>Empower fast, accurate, data-driven decisions</li>
+      </ul>
+    </div>
+  </div>
+</section>
+<section class="slide" data-lesson="1">
+  <div class="slide-badge">Lesson 4.7.1 · Business Value</div>
+  <h2>Importance of Data Visualization</h2>
+  <div class="grid grid-4">
+    <div class="card">
+      <h3>1. Instant Trends</h3>
+      <p>Identify positive/negative patterns at a single glance without manual computation.</p>
+    </div>
+    <div class="card">
+      <h3>2. Quick Insights</h3>
+      <p>Extract meaningful correlations between different factors (e.g. study hours vs marks).</p>
+    </div>
+    <div class="card">
+      <h3>3. Faster Decisions</h3>
+      <p>Managers and educators make evidence-backed decisions in minutes.</p>
+    </div>
+    <div class="card hl">
+      <h3>4. Engagement</h3>
+      <p>Visual charts hold audience interest far better than raw tables of numbers.</p>
+    </div>
+  </div>
+  <p class="note" style="margin-top:.8em">CDC Textbook: "Data visualization plays a vital role in sectors like business, education, healthcare, and research."</p>
+</section>
+<section class="slide mcq" data-lesson="1" data-q="c1"></section>
+<section class="slide mcq" data-lesson="1" data-q="c2"></section>
+<section class="slide" data-lesson="2">
+  <div class="slide-badge">Lesson 4.7.2 · Ecosystem</div>
+  <h2>Different Libraries for Visualization</h2>
+  <p>Python supports multiple powerful libraries for data visualization, each with distinct strengths:</p>
+  <div class="grid grid-3">
+    <div class="card">
+      <h3>1. Matplotlib</h3>
+      <p>The foundational plotting library. Creates static, publication-quality 2D charts (bar, scatter, line, histogram).</p>
+      <p class="note">Command: <code>pip install matplotlib</code></p>
+    </div>
+    <div class="card">
+      <h3>2. Seaborn</h3>
+      <p>Built directly on top of Matplotlib. Specialized for attractive statistical graphics with built-in color themes.</p>
+      <p class="note">Command: <code>pip install seaborn</code></p>
+    </div>
+    <div class="card hl">
+      <h3>3. Plotly</h3>
+      <p>Modern interactive visualization library. Generates interactive web charts with hover tooltips, zoom, and Dash support.</p>
+      <p class="note">Command: <code>pip install plotly</code></p>
+    </div>
+  </div>
+</section>
+<section class="slide mcq" data-lesson="2" data-q="c3"></section>
+<section class="slide mcq" data-lesson="2" data-q="c4"></section>
+<section class="slide" data-lesson="3">
+  <div class="slide-badge">Lesson 4.7.3 · Matplotlib</div>
+  <h2>Matplotlib: Bar Chart (Page 244–245)</h2>
+  <p>A <b>bar chart</b> uses rectangular bars where each bar's length or height represents the value/frequency of a category.</p>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Code Example</h3>
+      <pre><code>import matplotlib.pyplot as plt
+
+fruits = ['Apple', 'Banana', 'Mango', 'Orange']
+quantity = [25, 30, 15, 20]
+
+plt.bar(fruits, quantity, color='skyblue')
+plt.title('Fruit Quantity')
+plt.xlabel('Fruits')
+plt.ylabel('Quantity')
+plt.show()</code></pre>
+    </div>
+    <div class="card hl">
+      <h3>Key Functions Explained</h3>
+      <ul>
+        <li><code>plt.bar(x, y, color=...)</code>: Draws the rectangular bars.</li>
+        <li><code>plt.title('...')</code>: Sets the chart headline.</li>
+        <li><code>plt.xlabel('...')</code> &amp; <code>plt.ylabel('...')</code>: Labels the axes.</li>
+        <li><code>plt.show()</code>: Opens the GUI window displaying the plot!</li>
+      </ul>
+    </div>
+  </div>
+</section>
+<section class="slide" data-lesson="3">
+  <div class="slide-badge">Lesson 4.7.3 · Scatter Plots</div>
+  <h2>Matplotlib: Scatter Plot (Page 245–246)</h2>
+  <p>A <b>scatter plot</b> shows the relationship between two numerical variables using individual dots plotted on a Cartesian plane.</p>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Height vs Weight Example</h3>
+      <pre><code>import matplotlib.pyplot as plt
+
+height = [150, 155, 160, 165, 170, 175]
+weight = [45, 48, 52, 56, 60, 65]
+
+plt.scatter(height, weight)
+plt.title('Height vs Weight')
+plt.xlabel('Height (cm)')
+plt.ylabel('Weight (kg)')
+plt.show()</code></pre>
+    </div>
+    <div class="card hl">
+      <h3>Visual Interpretation</h3>
+      <p>As height increases along the X-axis (from 150 to 175 cm), weight also rises steadily along the Y-axis (from 45 to 65 kg).</p>
+      <p class="note">This displays a strong <b>positive correlation</b> between human height and weight!</p>
+    </div>
+  </div>
+</section>
+<section class="slide mcq" data-lesson="3" data-q="c5"></section>
+<section class="slide mcq" data-lesson="3" data-q="c6"></section>
+<section class="slide mcq" data-lesson="3" data-q="c7"></section>
+<section class="slide mcq" data-lesson="3" data-q="c8"></section>
+<section class="slide mcq" data-lesson="3" data-q="c9"></section>
+<section class="slide mcq" data-lesson="3" data-q="c10"></section>
+<section class="slide mcq" data-lesson="3" data-q="c11"></section>
+<section class="slide mcq" data-lesson="3" data-q="c12"></section>
+<section class="slide mcq" data-lesson="3" data-q="c13"></section>
+<section class="slide" data-lesson="4">
+  <div class="slide-badge">Lesson 4.7.4 · Seaborn</div>
+  <h2>Seaborn: Statistical Visualizations</h2>
+  <p><b>Seaborn</b> is built on top of Matplotlib and integrates directly with Pandas DataFrames to produce elegant statistical graphs.</p>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Monthly Sales Trend (Page 246–247)</h3>
+      <pre><code>import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+data = {
+  'Month': ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+  'Sales': [200, 250, 300, 280, 350]
+}
+df = pd.DataFrame(data)
+
+sns.lineplot(x='Month', y='Sales', data=df, marker='o')
+plt.title("Monthly Sales Trend")
+plt.xlabel("Month")
+plt.ylabel("Sales")
+plt.show()</code></pre>
+    </div>
+    <div class="card hl">
+      <h3>Why Combine Seaborn + Matplotlib?</h3>
+      <ul>
+        <li><code>sns.lineplot()</code> renders the smooth line and data points.</li>
+        <li><code>marker='o'</code> highlights actual monthly values with circular dots.</li>
+        <li>Matplotlib's <code>plt.title</code> and <code>plt.show()</code> are used to finalize and display the canvas.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+<section class="slide mcq" data-lesson="4" data-q="c14"></section>
+<section class="slide mcq" data-lesson="4" data-q="c15"></section>
+<section class="slide mcq" data-lesson="4" data-q="c16"></section>
+<section class="slide mcq" data-lesson="4" data-q="c17"></section>
+<section class="slide mcq" data-lesson="4" data-q="c18"></section>
+<section class="slide" data-lesson="5">
+  <div class="slide-badge">Lesson 4.7.5 · Plotly</div>
+  <h2>Plotly: Interactive Web Visualizations</h2>
+  <p><b>Plotly</b> creates rich, dynamic visualizations where users can hover to inspect data coordinates, zoom in, pan, and toggle series.</p>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Scatter Plot with Plotly Express</h3>
+      <pre><code>import pandas as pd
+import plotly.express as px
+
+dataset = pd.read_csv("employee.csv")
+graph = px.scatter(dataset, x="Name", y="Salary")
+graph.show()</code></pre>
+      <p class="note">Opens an interactive graph in your web browser!</p>
+    </div>
+    <div class="card hl">
+      <h3>Line Graph with Plotly Express</h3>
+      <pre><code>import pandas as pda
+import plotly.express as px
+
+dataset = pda.read_csv("employee.csv")
+graph = px.line(dataset, x="Name", y="Salary")
+graph.show()</code></pre>
+      <p class="note">Renders an interactive line connecting each employee to their salary.</p>
+    </div>
+  </div>
+</section>
+<section class="slide mcq" data-lesson="5" data-q="c19"></section>
+<section class="slide mcq" data-lesson="5" data-q="c20"></section>
+<section class="slide mcq" data-lesson="5" data-q="c21"></section>
+<section class="slide mcq" data-lesson="5" data-q="c22"></section>
+<section class="slide mcq" data-lesson="5" data-q="c23"></section>
+<section class="slide" data-lesson="6">
+  <div class="slide-badge">Lesson 4.7.6 · Worked Examples</div>
+  <h2>Worked Examples (Page 248–249)</h2>
+  <div class="grid grid-3">
+    <div class="card">
+      <h3>Example 1: Device Sales (Bar)</h3>
+      <pre><code>import matplotlib.pyplot as plt
+
+devices = ["Pen drive", "Scanner",
+           "SSD", "Mouse"]
+qs = [100, 68, 65, 110]
+
+plt.bar(devices, qs)
+plt.xlabel("Devices")
+plt.ylabel("Quantity")
+plt.title("Data of Sales")
+plt.show()</code></pre>
+    </div>
+    <div class="card">
+      <h3>Example 2: Salary Line Graph</h3>
+      <pre><code>import pandas as pd
+import matplotlib.pyplot as plt
+
+data = pd.read_csv("employee.csv")
+plt.plot(data['Name'], data['Salary'])
+plt.title("Employee Salaries")
+plt.xlabel('Name')
+plt.ylabel('Salary')
+plt.show()</code></pre>
+    </div>
+    <div class="card hl">
+      <h3>Example 3: Student % (Seaborn)</h3>
+      <pre><code>import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+data = {
+  "Name": ["Sirish", "Surendra", "Niraj", "Siwani"],
+  "Percentage": [85, 70, 60, 45]
+}
+df = pd.DataFrame(data)
+sns.lineplot(x="Name", y="Percentage",
+             data=df, marker="o")
+plt.title("Result of Students")
+plt.show()</code></pre>
+    </div>
+  </div>
+</section>
+<section class="slide mcq" data-lesson="6" data-q="c24"></section>
+<section class="slide mcq" data-lesson="6" data-q="c25"></section>
+<section class="slide mcq" data-lesson="6" data-q="c26"></section>
+<section class="slide" data-lesson="7">
+  <div class="slide-badge">Lesson 4.7.7 · Capstone Project</div>
+  <h2>Python Project: Student Result Management System</h2>
+  <p>CDC Nepal Textbook Capstone (Pages 251–255): A real-life, practical Python project combining CSV file persistence, functions, loops, and user menu.</p>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Project Capabilities</h3>
+      <ul>
+        <li><b>Add Student Result:</b> Roll, Name, Project marks (out of 50), Viva marks (out of 30), Report marks (out of 20).</li>
+        <li><b>Automatic Calculations:</b> Total marks, Percentage (total/100*100), Grade assignment (A+, A, B, C, D, E).</li>
+        <li><b>Persistent Storage:</b> Appends records to <code>student_results.csv</code>.</li>
+        <li><b>Display All:</b> Reads and prints all student records neatly.</li>
+        <li><b>Search by Roll:</b> Instant lookup by roll number.</li>
+      </ul>
+    </div>
+    <div class="card hl">
+      <h3>Project File Header Initialization</h3>
+      <pre><code>import csv
+filename = "student_results.csv"
+
+# Create file with headers if not exists
+try:
+    with open(filename, "x", newline="") as file:
+        writer = csv.writer(file)
+        writer.writerow(["Roll", "Name", "Project Marks",
+                         "Viva Marks", "Report Marks",
+                         "Total", "Percentage", "Grade"])
+except:
+    pass  # File already exists, continue</code></pre>
+      <p class="note">Mode <code>"x"</code> creates the file safely; if it exists, exception is caught gracefully!</p>
+    </div>
+  </div>
+</section>
+<section class="slide" data-lesson="7">
+  <div class="slide-badge">Lesson 4.7.7 · Capstone Architecture</div>
+  <h2>Capstone Code: Adding &amp; Searching Records</h2>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Grade Calculation &amp; Add Record</h3>
+      <pre><code>def calculate_grade(pct):
+    if pct >= 90: return "A+"
+    elif pct >= 80: return "A"
+    elif pct >= 70: return "B"
+    elif pct >= 60: return "C"
+    elif pct >= 50: return "D"
+    else: return "E"
+
+# In add_result():
+with open(filename, "a", newline="") as file:
+    writer = csv.writer(file)
+    writer.writerow([roll, name, project, viva,
+                     report, total, pct, grade])</code></pre>
+    </div>
+    <div class="card hl">
+      <h3>Search Student by Roll</h3>
+      <pre><code>def search_student():
+    roll = input("Enter Roll Number to Search: ")
+    found = False
+    with open(filename, "r") as file:
+        reader = csv.reader(file)
+        for row in reader:
+            if row and row[0] == roll:
+                print(f"Name: {row[1]}")
+                print(f"Total: {row[5]}")
+                print(f"Percentage: {row[6]}")
+                print(f"Grade: {row[7]}")
+                found = True
+                break
+    if not found:
+        print("No student found with that roll number.")</code></pre>
+    </div>
+  </div>
+</section>
+<section class="slide mcq" data-lesson="7" data-q="c27"></section>
+<section class="slide mcq" data-lesson="7" data-q="c28"></section>
+<section class="slide mcq" data-lesson="7" data-q="c29"></section>
+<section class="slide mcq" data-lesson="7" data-q="c30"></section>
+<section class="slide" data-lesson="8">
+  <div class="slide-badge">Lesson 4.7.8 · Official Exercises</div>
+  <h2>Official CDC Questions Review (Pages 249–250)</h2>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Choose the Best Answer (1. a &ndash; e)</h3>
+      <ul>
+        <li><b>a.</b> Library that supports data visualization: <b>(iii) plotly</b></li>
+        <li><b>b.</b> Graph showing relation using dots on cartesian plane: <b>(i) scatter</b></li>
+        <li><b>c.</b> Chart using rectangular bars for categories: <b>(iii) Bar chart</b></li>
+        <li><b>d.</b> Main use of data visualization: <b>(iv) To convert raw data into organized pictorial formats</b></li>
+        <li><b>e.</b> Library integrates with Jupyter, Dash &amp; web apps: <b>(iii) plotly</b></li>
+      </ul>
+    </div>
+    <div class="card hl">
+      <h3>Short Answer Prep for SEE Exam</h3>
+      <ul>
+        <li><b>What is data visualization?</b> Converting raw data into pictorial representations (charts, graphs) to spot patterns quickly.</li>
+        <li><b>Three visualization libraries:</b> Matplotlib, Seaborn, Plotly.</li>
+        <li><b>Bar chart data:</b> Discrete categorical data and frequencies.</li>
+        <li><b>What Seaborn is built upon:</b> Built on top of Matplotlib, focusing on statistical data visualization.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+<section class="slide mcq" data-lesson="8" data-q="c31"></section>
+<section class="slide mcq" data-lesson="8" data-q="c32"></section>
+<section class="slide mcq" data-lesson="8" data-q="c33"></section>
+<section class="slide mcq" data-lesson="8" data-q="c34"></section>
+<section class="slide mcq" data-lesson="8" data-q="c35"></section>
+<section class="slide" data-lesson="8">
+  <div class="slide-badge">Unit 4 Complete</div>
+  <h2>Unit 4 Lesson 4.7 Summary &amp; Review</h2>
+  <div class="grid grid-3">
+    <div class="card">
+      <h3>Matplotlib</h3>
+      <p><code>plt.bar()</code> for categorical bars, <code>plt.scatter()</code> for Cartesian dots, <code>plt.show()</code>.</p>
+    </div>
+    <div class="card">
+      <h3>Seaborn &amp; Plotly</h3>
+      <p><code>sns.lineplot()</code> for statistical trends, <code>px.scatter()</code> and <code>px.line()</code> for interactive web charts.</p>
+    </div>
+    <div class="card hl">
+      <h3>Capstone Project</h3>
+      <p>Complete Result Management System storing student records in CSV files with full CRUD and search.</p>
+    </div>
+  </div>
+  <p class="note" style="margin-top:.4em">Use the Contents button to review any topic or replay all 35 checkpoint questions!</p>
+</section>
+</main>
+
+<footer>
+  <div class="nav wrap">
+    <button class="btn sec" id="prev" type="button">← Prev</button>
+    <span class="hint">Use <b>Arrow keys</b> or <b>Space</b> to advance. Press <b>1-4</b> or <b>A-D</b> for MCQs. Press <b>F</b> for full screen.</span>
+    <button class="btn" id="next" type="button">Next →</button>
+  </div>
+</footer>
+
+<div class="toc" id="toc" hidden>
+  <div class="toc-panel" id="tocPanel">
+    <h2>Table of Contents</h2>
+  </div>
+</div>
+<button class="fsx" id="fsExit" type="button" aria-label="Exit full screen">✕</button>
+
+<script>
+(function(){
+  "use strict";
+  var LESSONS = {
+  "0": "Overview",
+  "1": "1. Visualization",
+  "2": "2. Libraries",
+  "3": "3. Matplotlib",
+  "4": "4. Seaborn",
+  "5": "5. Plotly",
+  "6": "6. Worked Examples",
+  "7": "7. Capstone Project",
+  "8": "8. CDC Exercises"
+};
+
+  var MCQ = {
+ "c1": {
+  "q": "What is Data Visualization?",
+  "o": [
+   "Encrypting databases with passwords",
+   "The process of converting raw data into organized pictorial formats such as charts, graphs, and maps",
+   "Compressing video files for the web",
+   "Writing operating system device drivers"
+  ],
+  "a": 1,
+  "e": "Data visualization converts raw numerical or categorical data into pictorial formats (charts, graphs, plots) so patterns and trends can be understood quickly."
+ },
+ "c2": {
+  "q": "Which of the following is a primary importance of data visualization?",
+  "o": [
+   "It eliminates the need for RAM",
+   "It allows users to identify trends/patterns at a glance and make faster data-driven decisions",
+   "It replaces all programming languages",
+   "It makes computer fans run quieter"
+  ],
+  "a": 1,
+  "e": "Visualizations allow users to spot trends at a glance, gain quick insights, and make faster data-driven decisions."
+ },
+ "c3": {
+  "q": "Which three major Python libraries are highlighted for data visualization in Grade 10?",
+  "o": [
+   "Django, Flask, and FastAPI",
+   "Matplotlib, Seaborn, and Plotly",
+   "NumPy, SciPy, and SymPy",
+   "SQLite, MySQL, and PostgreSQL"
+  ],
+  "a": 1,
+  "e": "The three prominent Python visualization libraries covered are Matplotlib (foundation), Seaborn (statistical graphics), and Plotly (interactive web charts)."
+ },
+ "c4": {
+  "q": "What is Matplotlib in Python?",
+  "o": [
+   "A database query engine",
+   "A popular 2D plotting library for creating static, publication-quality figures like bar charts, line plots, and histograms",
+   "A 3D video game rendering engine",
+   "A file compression utility"
+  ],
+  "a": 1,
+  "e": "Matplotlib is a widely used Python plotting library for creating a wide variety of static charts with just a few lines of code."
+ },
+ "c5": {
+  "q": "Which submodule of Matplotlib is standardly imported for plotting commands?",
+  "o": [
+   "matplotlib.draw",
+   "matplotlib.pyplot as plt",
+   "matplotlib.figure as fig",
+   "matplotlib.canvas as cv"
+  ],
+  "a": 1,
+  "e": "The convention is to import 'matplotlib.pyplot as plt' to access charting functions like plot(), bar(), and scatter()."
+ },
+ "c6": {
+  "q": "Which Matplotlib function actually displays the generated plot window to the user?",
+  "o": [
+   "plt.render()",
+   "plt.show()",
+   "plt.display()",
+   "plt.open()"
+  ],
+  "a": 1,
+  "e": "plt.show() opens a GUI window displaying the finalized figure with axes, titles, and data."
+ },
+ "c7": {
+  "q": "Which functions add labels to the X-axis, Y-axis, and main title in Matplotlib?",
+  "o": [
+   "plt.x(), plt.y(), plt.heading()",
+   "plt.xlabel(), plt.ylabel(), plt.title()",
+   "plt.set_x(), plt.set_y(), plt.set_main()",
+   "plt.tag_x(), plt.tag_y(), plt.header()"
+  ],
+  "a": 1,
+  "e": "plt.xlabel('text'), plt.ylabel('text'), and plt.title('text') configure the chart annotations."
+ },
+ "c8": {
+  "q": "What is a Bar Chart (Bar Graph)?",
+  "o": [
+   "A chart showing dots on an astronomical map",
+   "A type of graph that uses rectangular bars where each bar's length or height shows the value or frequency of a category",
+   "A circular pie sliced into angles",
+   "A heat map of CPU temperatures"
+  ],
+  "a": 1,
+  "e": "A bar chart represents discrete data categories using rectangular bars whose height or length is proportional to their values."
+ },
+ "c9": {
+  "q": "Which Matplotlib function is used to create a vertical bar chart?",
+  "o": [
+   "plt.rect()",
+   "plt.bar()",
+   "plt.column()",
+   "plt.block()"
+  ],
+  "a": 1,
+  "e": "plt.bar(x_categories, y_values, color=...) draws a vertical bar chart."
+ },
+ "c10": {
+  "q": "In 'plt.bar(fruits, quantity, color=\"skyblue\")', what does the 'color' parameter specify?",
+  "o": [
+   "The window background color",
+   "The fill color of the rectangular bars",
+   "The text font color of the axes",
+   "The color of the computer monitor"
+  ],
+  "a": 1,
+  "e": "The 'color' argument sets the fill color for all the bars (e.g. 'skyblue', 'red', 'green')."
+ },
+ "c11": {
+  "q": "What is a Scatter Plot?",
+  "o": [
+   "A chart with connected straight line segments",
+   "A type of graph that shows the relationship between two variables using individual dots plotted on a Cartesian coordinate plane",
+   "A 3D wireframe mesh",
+   "A bar chart sorted alphabetically"
+  ],
+  "a": 1,
+  "e": "A scatter plot plots individual (x, y) coordinates as dots on a Cartesian grid to reveal correlations or distributions."
+ },
+ "c12": {
+  "q": "Which Matplotlib function draws a scatter plot?",
+  "o": [
+   "plt.dot()",
+   "plt.scatter()",
+   "plt.points()",
+   "plt.point_cloud()"
+  ],
+  "a": 1,
+  "e": "plt.scatter(x_data, y_data) draws individual markers for each coordinate pair."
+ },
+ "c13": {
+  "q": "What does 'plt.grid(True)' do in a Matplotlib script?",
+  "o": [
+   "Splits the screen into multiple subplots",
+   "Displays grid background lines on the plot to help read coordinate values easily",
+   "Locks the window size",
+   "Removes all axis tick marks"
+  ],
+  "a": 1,
+  "e": "plt.grid(True) draws horizontal and vertical reference grid lines across the Cartesian plane."
+ },
+ "c14": {
+  "q": "What is Seaborn and what foundation is it built upon?",
+  "o": [
+   "An audio engine built on PyGame",
+   "A statistical data visualization library built directly on top of Matplotlib",
+   "A database engine built on SQLite",
+   "A web framework built on Flask"
+  ],
+  "a": 1,
+  "e": "Seaborn is built on top of Matplotlib and integrates closely with Pandas data structures for elegant statistical charts."
+ },
+ "c15": {
+  "q": "Is Seaborn an inbuilt standard module in Python?",
+  "o": [
+   "Yes, it is installed by default with Python",
+   "No, it is an external library and must be installed using 'pip install seaborn'",
+   "Yes, but only on Linux",
+   "No, it can only run inside Google Colab"
+  ],
+  "a": 1,
+  "e": "Seaborn is an external library requiring installation via 'pip install seaborn' before use."
+ },
+ "c16": {
+  "q": "What is the standard import convention for Seaborn?",
+  "o": [
+   "import seaborn_lib as sbn",
+   "import seaborn as sns",
+   "import seaborn as sb",
+   "from seaborn import *"
+  ],
+  "a": 1,
+  "e": "The standard community alias for Seaborn is 'sns' (named after Samuel Norman Seaborn from The West Wing)."
+ },
+ "c17": {
+  "q": "Which Seaborn function is used to create a line plot connecting data points?",
+  "o": [
+   "sns.line()",
+   "sns.lineplot()",
+   "sns.draw_line()",
+   "sns.trend()"
+  ],
+  "a": 1,
+  "e": "sns.lineplot(x=..., y=..., data=..., marker='o') creates a smooth line plot."
+ },
+ "c18": {
+  "q": "In 'sns.lineplot(x=\"Month\", y=\"Sales\", data=df, marker=\"o\")', what does 'marker=\"o\"' do?",
+  "o": [
+   "Turns off all axis numbers",
+   "Places circular dots on the line at each discrete data point",
+   "Rotates the chart 90 degrees",
+   "Hides missing values"
+  ],
+  "a": 1,
+  "e": "marker='o' marks each actual data coordinate on the line with a circular marker."
+ },
+ "c19": {
+  "q": "What makes Plotly distinct from Matplotlib and Seaborn?",
+  "o": [
+   "It only draws black and white images",
+   "It generates interactive charts (hover tooltips, zooming, panning) and integrates with web apps & Dash",
+   "It cannot run in Python",
+   "It requires a printer driver"
+  ],
+  "a": 1,
+  "e": "Plotly creates rich, interactive HTML/web-based visualizations where users can hover, zoom, filter, and pan dynamically."
+ },
+ "c20": {
+  "q": "Which high-level Plotly module provides concise, powerful plotting commands?",
+  "o": [
+   "plotly.basic",
+   "plotly.express as px",
+   "plotly.graph_objects.simple",
+   "plotly.fast"
+  ],
+  "a": 1,
+  "e": "Plotly Express (imported as 'import plotly.express as px') provides intuitive one-line plotting functions."
+ },
+ "c21": {
+  "q": "How does Plotly display an interactive visualization when 'graph.show()' is executed?",
+  "o": [
+   "It prints ASCII text in the console",
+   "It opens an interactive rendered graph in your default web browser (or Jupyter notebook)",
+   "It sends the graph to a local printer",
+   "It saves a low-res .bmp image"
+  ],
+  "a": 1,
+  "e": "graph.show() renders an interactive HTML visualization and launches it in the default web browser on a local port."
+ },
+ "c22": {
+  "q": "Which function in Plotly Express creates an interactive scatter plot from a DataFrame?",
+  "o": [
+   "px.dot_plot()",
+   "px.scatter(dataset, x=\"Name\", y=\"Salary\")",
+   "px.cartesian()",
+   "px.plot_dots()"
+  ],
+  "a": 1,
+  "e": "px.scatter(dataset, x=..., y=...) constructs an interactive scatter plot."
+ },
+ "c23": {
+  "q": "Which function in Plotly Express creates an interactive line chart?",
+  "o": [
+   "px.chart()",
+   "px.line(dataset, x=\"Name\", y=\"Salary\")",
+   "px.linegraph()",
+   "px.path()"
+  ],
+  "a": 1,
+  "e": "px.line(dataset, x=..., y=...) generates an interactive line chart."
+ },
+ "c24": {
+  "q": "In CDC Worked Example 1 (p. 248), hardware device sales are plotted using:",
+  "o": [
+   "plt.pie(devices, qs)",
+   "plt.bar(devices, qs)",
+   "plt.hist(devices)",
+   "plt.polar(qs)"
+  ],
+  "a": 1,
+  "e": "Worked Example 1 uses 'plt.bar(devices, qs)' to create a vertical bar chart of device sales."
+ },
+ "c25": {
+  "q": "In CDC Worked Example 2 (p. 248-249), employee salary is plotted using Matplotlib as:",
+  "o": [
+   "plt.barh(data['Name'])",
+   "plt.plot(data['Name'], data['Salary'])",
+   "plt.scatter_all(data)",
+   "plt.box(data)"
+  ],
+  "a": 1,
+  "e": "Worked Example 2 uses 'plt.plot(data[\"Name\"], data[\"Salary\"])' to draw a line graph connecting employees with their salaries."
+ },
+ "c26": {
+  "q": "In CDC Worked Example 3 (p. 249), student exam results are visualized using Seaborn as:",
+  "o": [
+   "sns.pie()",
+   "sns.lineplot(x=\"Name\", y=\"Percentage\", data=df, marker=\"o\")",
+   "sns.regplot(df)",
+   "sns.heatmap(df)"
+  ],
+  "a": 1,
+  "e": "Worked Example 3 plots student percentages using 'sns.lineplot(x=\"Name\", y=\"Percentage\", data=df, marker=\"o\")'."
+ },
+ "c27": {
+  "q": "In the Capstone Project (Student Result Management System), where are student records permanently saved?",
+  "o": [
+   "In CPU cache memory",
+   "In a CSV file named 'student_results.csv'",
+   "In RAM as global variables",
+   "In a temporary browser cookie"
+  ],
+  "a": 1,
+  "e": "The project saves all student entries (Roll, Name, Marks, Total, Percentage, Grade) permanently in 'student_results.csv'."
+ },
+ "c28": {
+  "q": "Which file open mode is used when adding a new student in the Capstone Project?",
+  "o": [
+   "'w' mode (overwrite)",
+   "'a' mode (append, so existing records are kept)",
+   "'r' mode (read-only)",
+   "'x' mode (crash if exists)"
+  ],
+  "a": 1,
+  "e": "Mode 'a' (append) is used so new student records are added to the end of 'student_results.csv' without erasing previous data."
+ },
+ "c29": {
+  "q": "In the Capstone Project, how is the student's Grade computed from their Percentage?",
+  "o": [
+   "Randomly generated",
+   "Using chained if/elif conditions (e.g. >=90: 'A+', >=80: 'A', >=70: 'B', >=60: 'C', >=50: 'D', else: 'E')",
+   "Using a database query",
+   "By user prompt"
+  ],
+  "a": 1,
+  "e": "The function calculate_grade(percentage) evaluates grade thresholds using conditional if/elif branching."
+ },
+ "c30": {
+  "q": "How does the 'Search Student by Roll' feature locate a record in 'student_results.csv'?",
+  "o": [
+   "By deleting all other students",
+   "By iterating through CSV rows via csv.reader() and checking if row[0] matches the entered roll number",
+   "By sorting the file backwards",
+   "By converting the CSV into an MP3 file"
+  ],
+  "a": 1,
+  "e": "It reads row-by-row using csv.reader(file) and checks 'if row[0] == roll:' to extract and display student marks."
+ },
+ "c31": {
+  "q": "(Official CDC Question a) Which of the following library supports data visualization?",
+  "o": [
+   "math",
+   "turtle",
+   "plotly",
+   "random"
+  ],
+  "a": 2,
+  "e": "Official textbook exercise 1(a): Plotly is the visualization library listed among the choices."
+ },
+ "c32": {
+  "q": "(Official CDC Question b) Which of the following is a type of graph that shows the relation between two variables using dots on a cartesian plane?",
+  "o": [
+   "scatter",
+   "line",
+   "bar",
+   "pie"
+  ],
+  "a": 0,
+  "e": "Official textbook exercise 1(b): A scatter plot uses dots on a Cartesian coordinate plane to show relationships between variables."
+ },
+ "c33": {
+  "q": "(Official CDC Question c) What type of chart uses rectangular bars to represent data categories?",
+  "o": [
+   "Scatter plot",
+   "Line chart",
+   "Bar chart",
+   "Pie plot"
+  ],
+  "a": 2,
+  "e": "Official textbook exercise 1(c): A Bar chart uses rectangular bars to depict categorical data."
+ },
+ "c34": {
+  "q": "(Official CDC Question d) What is the main use of data visualization?",
+  "o": [
+   "To perform calculations",
+   "To process data",
+   "To draw image",
+   "To convert raw data into organized pictorial formats"
+  ],
+  "a": 3,
+  "e": "Official textbook exercise 1(d): The primary purpose is to convert raw data into organized pictorial formats for quick comprehension."
+ },
+ "c35": {
+  "q": "(Official CDC Question e) Which of the following library integrates well with Jupyter notebooks, Dash and web applications?",
+  "o": [
+   "seaborn",
+   "matplotlib",
+   "plotly",
+   "turtle"
+  ],
+  "a": 2,
+  "e": "Official textbook exercise 1(e): Plotly is specifically built for interactive web rendering and integrates seamlessly with Dash and Jupyter notebooks."
+ }
+};
+
+  var LETTERS = ["A","B","C","D"];
+  var main = document.getElementById("main");
+  var slides = Array.prototype.slice.call(main.querySelectorAll(".slide"));
+  var cur = 0;
+  var updatingHash = false;
+
+  function buildMcq(s, key){
+    var d = MCQ[key];
+    if (!d) return;
+    s.dataset.title = "Checkpoint: " + d.q;
+    var html = '<span class="q-tag">Checkpoint Question</span><h2 class="q-text"></h2><div class="opts"></div><div class="explain" hidden></div><button class="ghost reset" type="button" hidden>Reset question</button>';
+    s.innerHTML = html;
+    s.querySelector(".q-text").textContent = d.q;
+    var box = s.querySelector(".opts");
+    d.o.forEach(function(t, i){
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "opt"; b.dataset.i = i;
+      var k = document.createElement("span"); k.className = "k"; k.textContent = LETTERS[i];
+      var tx = document.createElement("span"); tx.textContent = t;
+      b.appendChild(k); b.appendChild(tx);
+      b.addEventListener("click", function(){ answer(s, key, i); });
+      box.appendChild(b);
+    });
+    s.querySelector(".reset").addEventListener("click", function(){ reset(s); });
+  }
+
+  function answer(s, key, i){
+    if (s._done) return;
+    s._done = true;
+    var d = MCQ[key];
+    var opts = s.querySelectorAll(".opt");
+    opts.forEach(function(b, j){
+      b.disabled = true;
+      if (j === d.a) b.classList.add("correct");
+      else if (j === i) b.classList.add("wrong");
+      else b.classList.add("dim");
+    });
+    var ex = s.querySelector(".explain");
+    var good = i === d.a;
+    ex.className = "explain " + (good ? "good" : "bad");
+    ex.innerHTML = "";
+    var h = document.createElement("b"); h.textContent = good ? "✓ Correct!" : "✗ Not quite. The correct answer is " + LETTERS[d.a] + ".";
+    var p = document.createElement("span"); p.textContent = d.e;
+    ex.appendChild(h); ex.appendChild(p);
+    ex.hidden = false;
+    s.querySelector(".reset").hidden = false;
+    fitSlide();
+  }
+
+  function reset(s){
+    s._done = false;
+    s.querySelectorAll(".opt").forEach(function(b){ b.disabled = false; b.className = "opt"; });
+    s.querySelector(".explain").hidden = true;
+    s.querySelector(".reset").hidden = true;
+    fitSlide();
+  }
+
+  slides.forEach(function(s){ if (s.dataset.q) buildMcq(s, s.dataset.q); });
+
+  function goLesson(l){
+    for (var i = 0; i < slides.length; i++) {
+      if ((slides[i].dataset.lesson || "0") === l) { show(i); return; }
+    }
+  }
+
+  document.querySelectorAll("pre.code").forEach(function(c){
+    var t = c.textContent.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    c.innerHTML = t.replace(/\b(def|class|import|from|if|elif|else|while|for|in|return|print|input|len|range|append|insert|sum|min|max|get|keys|values|del|True|False|None|and|or|not|abs|pow|sqrt|int|float|str|list|dict|break|continue)\b/g, "<b>$1</b>");
+  });
+
+  var selBox = document.getElementById("sel");
+  var SELS = [
+  [
+    "0",
+    "Overview"
+  ],
+  [
+    "1",
+    "1. Intro"
+  ],
+  [
+    "2",
+    "2. Libraries"
+  ],
+  [
+    "3",
+    "3. Matplotlib"
+  ],
+  [
+    "4",
+    "4. Seaborn"
+  ],
+  [
+    "5",
+    "5. Plotly"
+  ],
+  [
+    "6",
+    "6. Examples"
+  ],
+  [
+    "7",
+    "7. Capstone"
+  ],
+  [
+    "8",
+    "8. Exercises"
+  ]
+];
+
+  var selBtns = SELS.map(function(x){
+    var b = document.createElement("button");
+    b.type = "button"; b.dataset.l = x[0]; b.textContent = x[1]; b.title = LESSONS[x[0]];
+    b.addEventListener("click", function(){ goLesson(x[0]); });
+    selBox.appendChild(b);
+    return b;
+  });
+
+  document.querySelectorAll("[data-go]").forEach(function(b){
+    b.addEventListener("click", function(){ goLesson(b.dataset.go); });
+  });
+
+  var count = document.getElementById("count");
+  var bar = document.getElementById("bar");
+  var prev = document.getElementById("prev");
+  var next = document.getElementById("next");
+
+  function reserveAnswer(s){
+    if (!s.dataset.q || s._done) return function(){};
+    var ex = s.querySelector(".explain"), rs = s.querySelector(".reset");
+    var h0 = ex.hidden, r0 = rs.hidden, html0 = ex.innerHTML;
+    ex.innerHTML = "<b>Not quite. The answer is A.</b><span></span>";
+    ex.lastChild.textContent = MCQ[s.dataset.q] ? MCQ[s.dataset.q].e : "";
+    ex.hidden = false; rs.hidden = false;
+    return function(){ ex.hidden = h0; rs.hidden = r0; ex.innerHTML = html0; };
+  }
+
+  function fitSlide(){
+    var s = slides[cur];
+    if (!s) return;
+    var base = parseFloat(getComputedStyle(document.body).fontSize) || 20;
+    var lo = Math.max(13, base * 0.58), hi = base * 1.7;
+    var restore = reserveAnswer(s);
+    function fits(px){
+      s.style.fontSize = px + "px";
+      if (s.offsetHeight > main.clientHeight + 1) return false;
+      if (s.scrollWidth > s.clientWidth + 1) return false;
+      var sc = s.querySelectorAll(".scroll, .code");
+      for (var k = 0; k < sc.length; k++) if (sc[k].scrollWidth > sc[k].clientWidth + 1) return false;
+      return true;
+    }
+    var best;
+    if (fits(hi)) best = hi;
+    else if (!fits(lo)) best = lo;
+    else {
+      for (var n = 0; n < 10; n++) {
+        var mid = (lo + hi) / 2;
+        if (fits(mid)) lo = mid; else hi = mid;
+      }
+      best = lo;
+    }
+    s.style.fontSize = best + "px";
+    restore();
+  }
+
+  var fitTimer = null;
+  function refit(){ cancelAnimationFrame(fitTimer); fitTimer = requestAnimationFrame(fitSlide); }
+  window.addEventListener("resize", refit);
+  document.addEventListener("fullscreenchange", function(){ setTimeout(refit, 120); setTimeout(refit, 600); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(refit);
+
+  function show(i, noHash){
+    if (i < 0) i = 0;
+    if (i > slides.length - 1) i = slides.length - 1;
+    cur = i;
+    slides.forEach(function(s, j){ s.classList.toggle("active", j === i); });
+    var l = slides[i].dataset.lesson || "0";
+    document.body.dataset.lesson = l;
+    selBtns.forEach(function(b){
+      var on = b.dataset.l === l;
+      b.classList.toggle("on", on);
+      if (on) b.setAttribute("aria-current", "true"); else b.removeAttribute("aria-current");
+    });
+    count.textContent = (i + 1) + " / " + slides.length;
+    bar.style.width = ((i + 1) / slides.length * 100) + "%";
+    prev.disabled = i === 0;
+    next.disabled = i === slides.length - 1;
+    main.scrollTop = 0;
+    fitSlide();
+    if (!noHash) {
+      updatingHash = true;
+      try {
+        var targetHash = "#slide-" + (i + 1);
+        if (location.hash !== targetHash) {
+          location.hash = targetHash;
+        }
+      } catch (e) {}
+      setTimeout(function(){ updatingHash = false; }, 80);
+    }
+    markToc();
+  }
+
+  function fromHash(){
+    var m = /^#slide-(\d+)$/.exec(location.hash || "");
+    return m ? parseInt(m[1], 10) - 1 : 0;
+  }
+
+  window.addEventListener("hashchange", function(){
+    if (updatingHash) return;
+    var i = fromHash();
+    if (i !== cur) show(i, true);
+  });
+
+  prev.addEventListener("click", function(){ show(cur - 1); });
+  next.addEventListener("click", function(){ show(cur + 1); });
+
+  /* TOC */
+  var toc = document.getElementById("toc");
+  var panel = document.getElementById("tocPanel");
+  var items = [];
+  function buildToc(){
+    var last = null;
+    slides.forEach(function(s, i){
+      var l = s.dataset.lesson || "0";
+      if (l !== last) {
+        var h = document.createElement("h3");
+        h.textContent = LESSONS[l] || ("Section " + l);
+        panel.appendChild(h);
+        last = l;
+      }
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "toc-item" + (s.dataset.q ? " q" : "");
+      var n = document.createElement("span"); n.className = "n"; n.textContent = i + 1;
+      var t = document.createElement("span"); t.textContent = s.dataset.q ? ("Checkpoint: " + (MCQ[s.dataset.q] ? MCQ[s.dataset.q].q : "")) : s.dataset.title;
+      b.appendChild(n); b.appendChild(t);
+      b.addEventListener("click", function(){ toc.hidden = true; show(i); });
+      panel.appendChild(b);
+      items.push(b);
+    });
+  }
+  function markToc(){ items.forEach(function(b, i){ b.classList.toggle("now", i === cur); }); }
+  buildToc();
+  document.getElementById("tocBtn").addEventListener("click", function(){
+    toc.hidden = !toc.hidden;
+    if (!toc.hidden && items[cur]) items[cur].scrollIntoView({block:"center"});
+  });
+  toc.addEventListener("click", function(e){ if (e.target === toc) toc.hidden = true; });
+
+  /* Full screen */
+  var fs = document.getElementById("fsBtn");
+  var root = document.documentElement;
+  function inFs(){ return root.classList.contains("fs"); }
+  function enterFs(){
+    root.classList.add("fs");
+    try {
+      if (root.requestFullscreen) { var p = root.requestFullscreen(); if (p && p.catch) p.catch(function(){}); }
+    } catch (e) {}
+    setTimeout(refit, 150); setTimeout(refit, 600);
+  }
+  function exitFs(){
+    root.classList.remove("fs");
+    try { if (document.fullscreenElement) { var p = document.exitFullscreen(); if (p && p.catch) p.catch(function(){}); } } catch (e) {}
+    setTimeout(refit, 150); setTimeout(refit, 600);
+  }
+  function toggleFs(){ if (inFs()) exitFs(); else enterFs(); }
+  fs.addEventListener("click", toggleFs);
+  document.getElementById("fsExit").addEventListener("click", exitFs);
+  document.addEventListener("fullscreenchange", function(){
+    root.classList.toggle("fs", !!document.fullscreenElement);
+    setTimeout(refit, 150); setTimeout(refit, 600);
+  });
+
+  /* Touch swipe */
+  var tx = 0, ty = 0, tt = 0, tracking = false;
+  main.addEventListener("touchstart", function(e){
+    tracking = false;
+    if (e.touches.length !== 1 || !toc.hidden) return;
+    var t = e.touches[0]; tx = t.clientX; ty = t.clientY; tt = Date.now(); tracking = true;
+    var el = e.target.closest ? e.target.closest(".scroll, .code, .idle") : null;
+    if (el && el.scrollWidth > el.clientWidth + 1) tracking = false;
+  }, {passive:true});
+  main.addEventListener("touchend", function(e){
+    if (!tracking) return;
+    tracking = false;
+    var t = e.changedTouches[0], dx = t.clientX - tx, dy = t.clientY - ty;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5 && Date.now() - tt < 900) {
+      if (dx < 0) show(cur + 1); else show(cur - 1);
+    }
+  }, {passive:true});
+
+  /* Keyboard */
+  document.addEventListener("keydown", function(e){
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    var k = e.key;
+    if (k === "Escape") { if (!toc.hidden) toc.hidden = true; else if (inFs() && !document.fullscreenElement) exitFs(); return; }
+    if (!toc.hidden) return;
+    var tag = document.activeElement && document.activeElement.tagName;
+    if (k === "ArrowRight" || k === "PageDown") { e.preventDefault(); show(cur + 1); }
+    else if (k === "ArrowLeft" || k === "PageUp") { e.preventDefault(); show(cur - 1); }
+    else if (k === " ") { e.preventDefault(); show(cur + 1); }
+    else if (k === "Home") { show(0); }
+    else if (k === "End") { show(slides.length - 1); }
+    else if (k === "f" || k === "F") { toggleFs(); }
+    else if (k === "t" || k === "T") { toc.hidden = false; if (items[cur]) items[cur].scrollIntoView({block:"center"}); }
+    else {
+      var s = slides[cur];
+      if (s && s.dataset.q) {
+        var idx = "1234".indexOf(k);
+        if (idx < 0) idx = "abcd".indexOf(k.toLowerCase());
+        if (idx > -1) { var b = s.querySelectorAll(".opt")[idx]; if (b && !b.disabled) b.click(); }
+      }
+    }
+  });
+
+  show(fromHash(), true);
+})();
+</script>
+</body></html>

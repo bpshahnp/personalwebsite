@@ -1,0 +1,1829 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Unit 4 · Review of Python Programming</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: one lesson slide at a time on a full-height stage. High contrast for classroom projection. */
+:root{
+  --bg:#f3f6fb; --panel:#ffffff; --panel-2:#e8eef8; --fg:#0f1a35; --muted:#475674; --line:#c9d4e6;
+  --blue:#1a4fb0; --blue-soft:#e1eafb;
+  --green:#0a7556; --green-soft:#dcf2e9;
+  --amber:#a64f08; --amber-soft:#fdebd5;
+  --teal:#0a6f86; --teal-soft:#d8f0f5;
+  --violet:#6a3cc0; --violet-soft:#ebe3fb;
+  --olive:#4f6f0a; --olive-soft:#e8f2cc;
+  --sienna:#8c3f1a; --sienna-soft:#f5e2d6;
+  --gold:#7d6400; --gold-soft:#f8f0c8;
+  --pink:#b0125f; --pink-soft:#fbe3ee;
+  --indigo:#283593; --indigo-soft:#e8eaf6;
+  --f-mono:"JetBrains Mono",ui-monospace,Consolas,"Courier New",monospace;
+  --ok:#0d7a3b; --ok-soft:#dcf3e4; --bad:#b3261e; --bad-soft:#fbe4e2;
+  --on-accent:#ffffff; --scrim:rgba(15,26,53,.55);
+  --f-display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --f-body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --base:clamp(17px, 1vw + 9px, 32px);
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; background:var(--bg); color:var(--fg);
+  font:400 var(--base)/1.45 var(--f-body);
+  display:grid; grid-template-rows:auto 1fr auto; overflow:hidden;
+}
+header,footer{font-size:clamp(13px,.7vw + 6px,19px)}
+html.fs header, html.fs footer{display:none}
+@supports (height:100dvh){html,body{height:100dvh}}
+main{touch-action:pan-y}
+.scroll,.code{touch-action:pan-x pan-y}
+.fsx{display:none; position:fixed; z-index:15; top:calc(env(safe-area-inset-top,0px) + 6px); right:max(8px,env(safe-area-inset-right,0px)); width:2.4em; height:2.4em; place-items:center; border-radius:50%; background:var(--panel); border:1px solid var(--line); color:var(--fg); font:700 16px/1 var(--f-body); opacity:.65}
+@media (pointer:coarse){html.fs .fsx{display:grid}}
+html.fs body{grid-template-rows:1fr}
+.wrap{padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px))}
+button{font:inherit; color:inherit; cursor:pointer}
+:focus-visible{outline:3px solid var(--pink); outline-offset:3px}
+
+/* header */
+header{background:var(--panel); border-bottom:1px solid var(--line)}
+.top{display:flex; align-items:center; gap:.5em .8em; flex-wrap:wrap; padding-block:.5em}
+.brand{font:800 .8em/1 var(--f-display); letter-spacing:.05em; text-transform:uppercase; color:var(--muted)}
+.sel{display:flex; flex-wrap:wrap; gap:.35em; min-width:0}
+.sel button{--c:var(--muted); --cs:var(--panel-2); background:var(--cs); color:var(--c); border:2px solid var(--c); border-radius:.55em; padding:.25em .65em; font:700 .75em/1.2 var(--f-body)}
+.sel button[data-l="1"]{--c:var(--blue); --cs:var(--blue-soft)}
+.sel button[data-l="2"]{--c:var(--teal); --cs:var(--teal-soft)}
+.sel button[data-l="3"]{--c:var(--amber); --cs:var(--amber-soft)}
+.sel button[data-l="4"]{--c:var(--green); --cs:var(--green-soft)}
+.sel button[data-l="5"]{--c:var(--violet); --cs:var(--violet-soft)}
+.sel button[data-l="6"]{--c:var(--olive); --cs:var(--olive-soft)}
+.sel button[data-l="7"]{--c:var(--sienna); --cs:var(--sienna-soft)}
+.sel button[data-l="8"]{--c:var(--gold); --cs:var(--gold-soft)}
+.sel button[data-l="9"]{--c:var(--indigo); --cs:var(--indigo-soft)}
+.sel button[data-l="10"]{--c:var(--pink); --cs:var(--pink-soft)}
+.sel button.on{background:var(--c); color:var(--on-accent)}
+.sel button:hover:not(.on){background:var(--panel)}
+
+body[data-lesson="1"]{--accent:var(--blue); --accent-soft:var(--blue-soft)}
+body[data-lesson="2"]{--accent:var(--teal); --accent-soft:var(--teal-soft)}
+body[data-lesson="3"]{--accent:var(--amber); --accent-soft:var(--amber-soft)}
+body[data-lesson="4"]{--accent:var(--green); --accent-soft:var(--green-soft)}
+body[data-lesson="5"]{--accent:var(--violet); --accent-soft:var(--violet-soft)}
+body[data-lesson="6"]{--accent:var(--olive); --accent-soft:var(--olive-soft)}
+body[data-lesson="7"]{--accent:var(--sienna); --accent-soft:var(--sienna-soft)}
+body[data-lesson="8"]{--accent:var(--gold); --accent-soft:var(--gold-soft)}
+body[data-lesson="9"]{--accent:var(--indigo); --accent-soft:var(--indigo-soft)}
+body[data-lesson="10"]{--accent:var(--pink); --accent-soft:var(--pink-soft)}
+
+.tools{margin-left:auto; display:flex; align-items:center; gap:.5em}
+.count{font:700 .8em var(--f-body); color:var(--muted); font-variant-numeric:tabular-nums; min-width:4.2em; text-align:right}
+.ghost{background:transparent; border:1.5px solid var(--line); border-radius:.5em; padding:.3em .75em; font-size:.75em; font-weight:600}
+.ghost:hover{border-color:var(--accent,var(--blue))}
+a.ghost{color:inherit; text-decoration:none; display:inline-flex; align-items:center}
+.bar{height:6px; background:var(--panel-2)}
+.bar i{display:block; height:100%; width:0; background:var(--accent,var(--blue)); transition:width .3s ease}
+
+/* stage */
+main{display:flex; flex-direction:column; overflow-y:auto; min-height:0}
+.slide{display:none; --accent:var(--blue); --accent-soft:var(--blue-soft)}
+.slide[data-lesson="2"]{--accent:var(--teal); --accent-soft:var(--teal-soft)}
+.slide[data-lesson="3"]{--accent:var(--amber); --accent-soft:var(--amber-soft)}
+.slide[data-lesson="4"]{--accent:var(--green); --accent-soft:var(--green-soft)}
+.slide[data-lesson="5"]{--accent:var(--violet); --accent-soft:var(--violet-soft)}
+.slide[data-lesson="6"]{--accent:var(--olive); --accent-soft:var(--olive-soft)}
+.slide[data-lesson="7"]{--accent:var(--sienna); --accent-soft:var(--sienna-soft)}
+.slide[data-lesson="8"]{--accent:var(--gold); --accent-soft:var(--gold-soft)}
+.slide[data-lesson="9"]{--accent:var(--indigo); --accent-soft:var(--indigo-soft)}
+.slide[data-lesson="10"]{--accent:var(--pink); --accent-soft:var(--pink-soft)}
+.slide.active{display:flex; flex-direction:column; gap:.75em; margin:auto; width:100%; max-width:76em; padding-block:1em; animation:rise .3s ease both}
+@keyframes rise{from{opacity:0; transform:translateY(.4em)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion: reduce){.slide.active{animation:none} .bar i{transition:none}}
+
+.eyebrow{font:700 .85em/1 var(--f-body); letter-spacing:.12em; text-transform:uppercase; color:var(--accent)}
+h1,h2,h3{font-family:var(--f-display); margin:0; text-wrap:balance; line-height:1.08}
+h1{font-size:2.8em; font-weight:800}
+h2{font-size:2.1em; font-weight:800}
+h3{font-size:1.2em; font-weight:800; color:var(--accent)}
+p{margin:0}
+.lead{font-size:1.12em; color:var(--muted); max-width:44em}
+b,strong{font-weight:700}
+
+.def{background:var(--pink-soft); border-left:.3em solid var(--pink); border-radius:.3em; padding:.65em .95em; font-size:1.1em; font-weight:600; color:var(--pink)}
+.def small{display:block; font-size:.7em; letter-spacing:.1em; text-transform:uppercase; margin-bottom:.3em; opacity:.85}
+.cols{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,16.5em),1fr)); gap:.75em}
+.card{background:var(--panel); border:1px solid var(--line); border-radius:.6em; padding:.75em .95em; min-width:0}
+.card p{font-size:.98em; color:var(--muted); margin-top:.25em}
+.card.hl{border-color:var(--accent); background:var(--accent-soft)}
+.pts{margin:0; padding:0; list-style:none; display:grid; gap:.5em}
+.pts li{position:relative; padding-left:1.3em}
+.pts li::before{content:""; position:absolute; left:0; top:.55em; width:.55em; height:.55em; border-radius:50%; background:var(--accent)}
+.chips{display:flex; flex-wrap:wrap; gap:.4em}
+.tag{background:var(--accent-soft); color:var(--accent); border-radius:.4em; padding:.2em .65em; font-weight:700}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse; width:100%; background:var(--panel); font-size:.95em}
+th,td{border:1px solid var(--line); padding:.4em .75em; text-align:left; vertical-align:top}
+th{background:var(--accent); color:var(--on-accent); font-family:var(--f-display)}
+td:first-child{font-weight:700}
+.note{color:var(--muted); font-size:.92em}
+.split{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,19em),1fr)); gap:.9em; align-items:start}
+.pair{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,17em),1fr)); gap:.8em}
+
+/* Code & IDLE Shell Simulation */
+.code{margin:0; background:var(--panel); border:1px solid var(--line); border-left:.3em solid var(--accent); border-radius:.4em; padding:.55em .9em; font:500 .92em/1.45 var(--f-mono); white-space:pre-wrap; overflow-x:auto; color:var(--fg)}
+.code b{color:var(--accent); font-weight:700}
+.code i{color:var(--muted); font-style:normal}
+.code span.str{color:#0b7a56}
+.code span.num{color:#b45309}
+
+.idle{background:#ffffff; border:2px solid #9dc2f8; border-radius:.6em; overflow:hidden; box-shadow:0 3px 12px rgba(15,27,58,.08); font:500 .9em/1.4 var(--f-mono); margin-top:.3em}
+.idle-bar{background:#0078d7; color:#fff; padding:.3em .75em; display:flex; align-items:center; justify-content:space-between; font-size:.8em; font-weight:700}
+.idle-menu{background:#f0f4f9; border-bottom:1px solid #d5e0ee; padding:.2em .6em; display:flex; gap:.7em; font-size:.78em; color:#44526c}
+.idle-body{padding:.5em .8em; background:#ffffff; color:#0f1a35; white-space:pre-wrap; font-size:.9em}
+.idle-restart{color:#6c757d; font-size:.82em; margin-bottom:.3em}
+.idle-out{color:#0000cd; font-weight:600}
+.idle-err{color:#d32f2f; font-weight:700}
+
+/* Hero & Lessons grid */
+.hero{display:grid; gap:.45em}
+.hero h1 span{color:var(--blue)}
+.lessons{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,17.5em),1fr)); gap:.75em; margin-top:.5em}
+.lessons .card{border-width:2px; display:block; width:100%; text-align:left; cursor:pointer; transition:transform .12s, box-shadow .12s}
+.lessons .card:hover{background:var(--panel-2); transform:translateY(-2px)}
+.lessons .card.c1{border-color:var(--blue)} .lessons .card.c2{border-color:var(--teal)} .lessons .card.c3{border-color:var(--amber)} .lessons .card.c4{border-color:var(--green)} .lessons .card.c5{border-color:var(--violet)} .lessons .card.c6{border-color:var(--olive)} .lessons .card.c7{border-color:var(--sienna)} .lessons .card.c8{border-color:var(--gold)} .lessons .card.c9{border-color:var(--indigo)} .lessons .card.c10{border-color:var(--pink)}
+.lessons h3{font-size:1.05em}
+
+/* Checkpoint MCQ */
+.q-tag{display:inline-flex; align-items:center; gap:.5em; width:max-content; background:var(--pink-soft); color:var(--pink); font:800 .85em/1 var(--f-body); letter-spacing:.12em; text-transform:uppercase; padding:.45em .85em; border-radius:99px}
+.q-text{font:800 2.2em/1.12 var(--f-display); text-wrap:balance}
+.opts{display:grid; gap:.5em; margin-top:.2em}
+@media (min-width:900px){.opts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.opt{display:flex; align-items:center; gap:.75em; text-align:left; background:var(--panel); border:2px solid var(--line); border-radius:.6em; padding:.5em .8em; font-size:1.4em; font-weight:600; width:100%; line-height:1.25}
+.opt:hover{border-color:var(--accent)}
+.opt .k{flex:none; width:1.7em; height:1.7em; border-radius:.4em; display:grid; place-items:center; background:var(--panel-2); font:800 .9em var(--f-display)}
+.opt.correct{border-color:var(--ok); background:var(--ok-soft)}
+.opt.correct .k{background:var(--ok); color:var(--on-accent)}
+.opt.wrong{border-color:var(--bad); background:var(--bad-soft)}
+.opt.wrong .k{background:var(--bad); color:var(--on-accent)}
+.opt.dim{opacity:.55}
+.opt:disabled{cursor:default}
+.explain{border-radius:.5em; padding:.5em .9em; background:var(--panel); border:1px solid var(--line); font-size:1.2em}
+.explain b{display:block; margin-bottom:.15em}
+.explain.good b{color:var(--ok)} .explain.bad b{color:var(--bad)}
+.reset{width:max-content}
+
+/* footer */
+footer{background:var(--panel); border-top:1px solid var(--line)}
+.nav{display:flex; align-items:center; gap:.8em; padding-block:.5em}
+.nav .hint{flex:1; text-align:center; color:var(--muted); font-size:.9em}
+.btn{background:var(--accent,var(--blue)); color:var(--on-accent); border:0; border-radius:.55em; padding:.5em 1.3em; font-weight:700; font-size:1em}
+.btn.sec{background:transparent; color:var(--fg); border:2px solid var(--line)}
+.btn:disabled{opacity:.35; cursor:default}
+
+/* contents panel */
+.toc{position:fixed; inset:0; z-index:20; background:var(--scrim); padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px)); overflow-y:auto}
+.toc-panel{max-width:42em; margin:0 auto; background:var(--panel); border:1px solid var(--line); border-radius:.8em; padding:1em 1.2em; display:grid; gap:.3em; font-size:.85em}
+.toc-panel h3{margin-top:.7em; font-size:1em}
+.toc-panel h3:first-child{margin-top:0}
+.toc-item{display:flex; gap:.7em; align-items:baseline; background:none; border:0; text-align:left; padding:.25em .4em; border-radius:.35em; width:100%}
+.toc-item:hover{background:var(--panel-2)}
+.toc-item.now{background:var(--panel-2); font-weight:700}
+.toc-item .n{flex:none; width:2em; color:var(--muted); font-variant-numeric:tabular-nums}
+.toc-item.q{color:var(--pink)}
+@media (max-width:640px){h1{font-size:2.2em} h2{font-size:1.6em} .q-text{font-size:1.4em} .nav .hint{display:none} .nav{justify-content:space-between}}
+</style>
+
+<header>
+  <div class="top wrap">
+    <a class="ghost" href="index.html">← Unit 4 Hub</a>
+    <span class="brand">Unit 4 · Computer Science, Grade 10</span>
+    <nav class="sel" id="sel" aria-label="Choose a lesson"></nav>
+    <div class="tools">
+      <span class="count" id="count">1 / 1</span>
+      <button class="ghost" id="tocBtn" type="button">Contents</button>
+      <button class="ghost" id="fsBtn" type="button">Full screen</button>
+    </div>
+  </div>
+  <div class="bar"><i id="bar"></i></div>
+</header>
+
+<main id="main" class="wrap">
+
+<section class="slide active" data-lesson="0" data-title="Review of Python Programming">
+  <div class="hero">
+    <span class="eyebrow" style="color:var(--muted)">Unit 4 · Lesson 4.1</span>
+    <h1>Review of <span>Python</span> Programming</h1>
+    <p class="lead">Complete interactive curriculum slides for Class 10 Computer Science (CDC Nepal). Includes textbook concepts, live code traces, algorithms, and 45 checkpoint MCQs.</p>
+  </div>
+  <div class="lessons">
+    <button class="card c1" type="button" data-go="1"><h3>1. Basics & Variables</h3><p>History, Guido van Rossum, variable rules, assignment, dynamic typing</p></button>
+    <button class="card c2" type="button" data-go="2"><h3>2. I/O & Formatting</h3><p>input(), print(), end parameter, type casting, f-strings</p></button>
+    <button class="card c3" type="button" data-go="3"><h3>3. Operators in Python</h3><p>Arithmetic (+, -, *, /, //, %, **), relational, assignment, logical</p></button>
+    <button class="card c4" type="button" data-go="4"><h3>4. Conditionals</h3><p>Indentation, if, if-else, if-elif-else multi-way branching</p></button>
+    <button class="card c5" type="button" data-go="5"><h3>5. Looping & Range</h3><p>for loops, range(start, stop, step), strings, while loops</p></button>
+    <button class="card c6" type="button" data-go="6"><h3>6. Lists</h3><p>Square brackets, mutability, indexing, append(), insert(), sum(), min(), max()</p></button>
+    <button class="card c7" type="button" data-go="7"><h3>7. Dictionaries</h3><p>Key-value pairs, get(), keys(), values(), del, updating</p></button>
+    <button class="card c8" type="button" data-go="8"><h3>8. Library Functions</h3><p>upper(), lower(), len(), count(), abs(), pow(), math.sqrt(), int(), hex()</p></button>
+    <button class="card c9" type="button" data-go="9"><h3>9. Programs & Dry Run</h3><p>Factorial, number reversal, vowel count, series, dry run trace tables</p></button>
+    <button class="card c10" type="button" data-go="10"><h3>10. CDC Exercises</h3><p>Official textbook review questions, output tracing, examination practice</p></button>
+  </div>
+  <p class="note" style="margin-top:.4em">Click any topic above or use the top buttons. Navigate with arrow keys or Space. Press 1 to 4 (or A to D) to answer checkpoint questions.</p>
+</section>
+
+
+<section class="slide" data-lesson="1" data-title="Introduction to Python">
+  <span class="eyebrow">4.1 · Lesson 1: Basics & Variables</span>
+  <h2>Introduction to Python</h2>
+  <p class="def"><small>Textbook Definition</small>Python is a high-level, general-purpose programming language known for its readability and simplicity.</p>
+  <ul class="pts">
+    <li>Created by <b>Guido van Rossum</b> and first released in <b>1991</b>.</li>
+    <li>Supports multiple programming paradigms: <b>procedural</b>, <b>object-oriented</b>, and <b>functional programming</b>.</li>
+    <li>A versatile language powering systems from <b>Netflix's personalized recommendations</b> to <b>self-driving cars</b>.</li>
+    <li>Widely used across Data Science, Artificial Intelligence, Web Development, Software Engineering, and Automation.</li>
+  </ul>
+  <div>
+    <p class="note" style="margin-bottom:.35em">Key Application Domains:</p>
+    <div class="chips">
+      <span class="tag">Data Science</span>
+      <span class="tag">Machine Learning & AI</span>
+      <span class="tag">Web Backend</span>
+      <span class="tag">Automation & Scripting</span>
+      <span class="tag">Robotics</span>
+    </div>
+  </div>
+</section>
+
+
+<section class="slide" data-lesson="1" data-title="Python Variables">
+  <span class="eyebrow">4.1 · Lesson 1: Basics & Variables</span>
+  <h2>Python Variables</h2>
+  <p class="def"><small>Definition</small>A variable is the name of a memory location used to store values.</p>
+  <div class="cols">
+    <div class="card hl">
+      <h3>No Declaration Command</h3>
+      <p>Python has no command for declaring variables (unlike C, C++, or Java). A variable is created the moment you first assign a value to it.</p>
+    </div>
+    <div class="card hl">
+      <h3>Dynamic Typing</h3>
+      <p>Python automatically determines the data type according to the assigned value. No need to specify <code>int</code>, <code>float</code>, or <code>string</code>.</p>
+    </div>
+    <div class="card hl">
+      <h3>Dynamic Re-assignment</h3>
+      <p>Once created, you can alter its stored value and even its data type simply by assigning a new value.</p>
+    </div>
+  </div>
+</section>
+
+
+<section class="slide" data-lesson="1" data-title="Rules for Variable Names">
+  <span class="eyebrow">4.1 · Lesson 1: Basics & Variables</span>
+  <h2>Rules for Python Variables</h2>
+  <p class="lead">Identifiers must adhere to strict lexical rules recognized by the Python interpreter:</p>
+  <ul class="pts">
+    <li>Variable names <b>must start with a letter (a–z, A–Z) or an underscore (_)</b>.</li>
+    <li>Variable names <b>cannot start with a number</b> (e.g. <code>2rank</code> is illegal; <code>rank2</code> is valid).</li>
+    <li>Can only contain <b>alphanumeric characters and underscores</b> (<code>a-z</code>, <code>A-Z</code>, <code>0-9</code>, and <code>_</code>). No spaces or special symbols like <code>$</code>, <code>@</code>, <code>%</code>.</li>
+    <li>Variables are <b>case-sensitive</b>: <code>name</code>, <code>Name</code>, and <code>NAME</code> are three distinct variables.</li>
+    <li><b>Reserved words (keywords)</b> cannot be used as variable names (e.g., <code>if</code>, <code>for</code>, <code>while</code>, <code>class</code>, <code>def</code>).</li>
+  </ul>
+</section>
+
+
+<section class="slide" data-lesson="1" data-title="Variable Assignment">
+  <span class="eyebrow">4.1 · Lesson 1: Basics & Variables</span>
+  <h2>Assigning Values to Variables</h2>
+  <div class="split">
+    <div>
+      <h3>Single & Multiple Assignment</h3>
+      <pre class="code"># Single assignments
+roll = 15
+mark = 48.5
+name = "Ritu"
+
+# Multiple assignments in one line
+roll, mark, name = 15, 48.5, "Ritu"
+
+# Assigning same value to multiple variables
+a = b = c = 5
+print(a, b, c)</pre>
+    </div>
+    <div>
+      <h3>IDLE Shell Output</h3>
+      <div class="idle">
+        <div class="idle-bar"><span>IDLE Shell 3.13.7</span><span>— □ ✕</span></div>
+        <div class="idle-menu"><span>File</span><span>Edit</span><span>Shell</span><span>Debug</span><span>Options</span><span>Window</span><span>Help</span></div>
+        <div class="idle-body">
+<div class="idle-restart">============ RESTART: C:/Users/Desktop/Example.py ============</div>
+<span class="idle-out">5  5  5</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide mcq" data-lesson="1" data-q="c1"></section>
+<section class="slide mcq" data-lesson="1" data-q="c2"></section>
+<section class="slide mcq" data-lesson="1" data-q="c3"></section>
+<section class="slide mcq" data-lesson="1" data-q="c4"></section>
+
+<section class="slide" data-lesson="2" data-title="Input/Output Functions">
+  <span class="eyebrow">4.1 · Lesson 2: I/O & Formatting</span>
+  <h2>Input / Output (I/O) in Python</h2>
+  <div class="split">
+    <div>
+      <h3>The input() Function</h3>
+      <p class="def"><small>Function</small>Takes user input from the keyboard. The program pauses and waits until the user types something and presses Enter.</p>
+      <ul class="pts">
+        <li><b>Always returns a string (text) by default!</b></li>
+        <li>To receive numbers, use <b>type casting</b>:
+          <pre class="code">age = int(input("Enter age: "))
+rate = float(input("Enter interest rate: "))</pre>
+        </li>
+      </ul>
+    </div>
+    <div>
+      <h3>The print() Function</h3>
+      <p class="def"><small>Function</small>Outputs text, numbers, variable values, or calculation results to the screen or console.</p>
+      <pre class="code"># Syntax 1: print variable
+name = "Aayush"
+print(name)
+
+# Syntax 2: print literal values
+print(5)
+print("hello")
+print("apple", "banana", "orange")</pre>
+    </div>
+  </div>
+</section>
+
+
+<section class="slide" data-lesson="2" data-title="The end Parameter">
+  <span class="eyebrow">4.1 · Lesson 2: I/O & Formatting</span>
+  <h2>The end Parameter in print()</h2>
+  <p class="lead">By default, <code>print()</code> automatically appends a newline character (<code>\n</code>), moving the cursor down.</p>
+  <div class="split">
+    <div>
+      <p>Using <code>end="..."</code> overrides this default behavior:</p>
+      <ul class="pts">
+        <li><code>end=" "</code>: keeps output on the same line separated by a space.</li>
+        <li><code>end=""</code>: joins printed items directly together.</li>
+        <li><code>end=","</code>: adds a comma between consecutive outputs.</li>
+        <li><code>end=" - "</code>: adds dashes between outputs.</li>
+      </ul>
+      <pre class="code">for x in range(1, 10, 2):
+    print(x, end=" ")</pre>
+    </div>
+    <div>
+      <div class="idle">
+        <div class="idle-bar"><span>IDLE Shell 3.13.7</span><span>— □ ✕</span></div>
+        <div class="idle-menu"><span>File</span><span>Edit</span><span>Shell</span><span>Debug</span><span>Options</span><span>Window</span><span>Help</span></div>
+        <div class="idle-body">
+<div class="idle-restart">============ RESTART: C:/Users/Desktop/Example.py ============</div>
+<span class="idle-out">1  3  5  7  9</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section class="slide" data-lesson="2" data-title="String Formatting (f-strings)">
+  <span class="eyebrow">4.1 · Lesson 2: I/O & Formatting</span>
+  <h2>String Formatting with f-strings</h2>
+  <p class="def"><small>Textbook Concept</small>f-strings create dynamic strings by embedding variables and expressions directly inside curly braces <code>{ }</code>.</p>
+  <div class="split">
+    <div>
+      <p>Prefix string with <code>f</code> or <code>F</code> before the opening quotation mark:</p>
+      <pre class="code">name = "Aayush"
+cl = 10
+print(f"He is {name} and studies in grade {cl}:")
+
+num1 = 9
+num2 = 9
+p = num1 * num2
+print(f"The product of {num1} and {num2} is {p}.")</pre>
+    </div>
+    <div>
+      <div class="idle">
+        <div class="idle-bar"><span>IDLE Shell 3.13.7</span><span>— □ ✕</span></div>
+        <div class="idle-menu"><span>File</span><span>Edit</span><span>Shell</span><span>Debug</span><span>Options</span><span>Window</span><span>Help</span></div>
+        <div class="idle-body">
+<div class="idle-restart">============ RESTART: C:/Users/Desktop/Example.py ============</div>
+<span class="idle-out">He is Aayush and studies in grade 10:
+The product of 9 and 9 is 81.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide mcq" data-lesson="2" data-q="c5"></section>
+<section class="slide mcq" data-lesson="2" data-q="c6"></section>
+<section class="slide mcq" data-lesson="2" data-q="c7"></section>
+<section class="slide mcq" data-lesson="2" data-q="c8"></section>
+
+<section class="slide" data-lesson="3" data-title="Operators in Python">
+  <span class="eyebrow">4.1 · Lesson 3: Operators</span>
+  <h2>Operators and Operands</h2>
+  <p class="def"><small>Definition</small>Operators are signs or symbols that instruct the interpreter to perform specific mathematical, relational, or logical operations.</p>
+  <ul class="pts">
+    <li>An <b>operand</b> is a value, variable, or constant operated on by an operator (in <code>5 + 3</code>, <code>5</code> and <code>3</code> are operands; <code>+</code> is the operator).</li>
+    <li>Four primary categories of operators in Grade 10 Python:</li>
+  </ul>
+  <div class="cols">
+    <div class="card hl"><h3>Arithmetic</h3><p>Perform math calculations: <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>//</code>, <code>%</code>, <code>**</code></p></div>
+    <div class="card hl"><h3>Relational</h3><p>Compare two operands and return True or False: <code>==</code>, <code>!=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code></p></div>
+    <div class="card hl"><h3>Assignment</h3><p>Assign and update values in memory: <code>=</code>, <code>+=</code>, <code>-=</code>, <code>*=</code>, <code>/=</code>, <code>%=</code></p></div>
+    <div class="card hl"><h3>Logical</h3><p>Evaluate multiple conditions: <code>and</code>, <code>or</code>, <code>not</code></p></div>
+  </div>
+</section>
+
+
+<section class="slide" data-lesson="3" data-title="Arithmetic Operators Table">
+  <span class="eyebrow">4.1 · Lesson 3: Operators</span>
+  <h2>Arithmetic Operators</h2>
+  <div class="scroll">
+    <table>
+      <thead>
+        <tr><th>Operator</th><th>Operation</th><th>Description</th><th>Example</th><th>Output</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>+</td><td>Addition</td><td>Adds two numbers</td><td>5 + 2</td><td>7</td></tr>
+        <tr><td>-</td><td>Subtraction</td><td>Subtracts right from left</td><td>4 - 2</td><td>2</td></tr>
+        <tr><td>*</td><td>Multiplication</td><td>Multiplies two numbers</td><td>2 * 3</td><td>6</td></tr>
+        <tr><td>/</td><td>Division</td><td>Standard division (always returns float)</td><td>4 / 2</td><td>2.0</td></tr>
+        <tr><td>//</td><td>Floor Division</td><td>Divides and truncates fractional part (integer quotient)</td><td>10 // 3</td><td>3</td></tr>
+        <tr><td>%</td><td>Modulo</td><td>Returns the division remainder</td><td>5 % 2</td><td>1</td></tr>
+        <tr><td>**</td><td>Power (Exponent)</td><td>Raises base to exponent</td><td>4 ** 2</td><td>16</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note" style="margin-top:.4em">Key distinction: <code>10 / 3</code> produces <code>3.3333333333333335</code> (float), while <code>10 // 3</code> produces <code>3</code> (integer).</p>
+</section>
+
+
+<section class="slide" data-lesson="3" data-title="Relational Operators">
+  <span class="eyebrow">4.1 · Lesson 3: Operators</span>
+  <h2>Relational (Comparison) Operators</h2>
+  <p class="lead">Relational operators compare two values and evaluate to a Boolean result: <b>True</b> or <b>False</b>.</p>
+  <div class="split">
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Operator</th><th>Name</th><th>Condition</th><th>Example</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td>==</td><td>Equal to</td><td>Values equal</td><td>5 == 3</td><td>False</td></tr>
+          <tr><td>!=</td><td>Not equal to</td><td>Values not equal</td><td>5 != 3</td><td>True</td></tr>
+          <tr><td>&lt;</td><td>Less than</td><td>Left is smaller</td><td>5 &lt; 3</td><td>False</td></tr>
+          <tr><td>&gt;</td><td>Greater than</td><td>Left is larger</td><td>5 &gt; 3</td><td>True</td></tr>
+          <tr><td>&lt;=</td><td>Less or equal</td><td>Left smaller or equal</td><td>5 &lt;= 5</td><td>True</td></tr>
+          <tr><td>&gt;=</td><td>Greater or equal</td><td>Left larger or equal</td><td>5 &gt;= 6</td><td>False</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <pre class="code">x = 10; y = 5
+print(x == y)  # False
+print(x != y)  # True
+print(x &gt; y)   # True
+print(x &lt; y)   # False</pre>
+    </div>
+  </div>
+</section>
+
+
+<section class="slide" data-lesson="3" data-title="Assignment Operators">
+  <span class="eyebrow">4.1 · Lesson 3: Operators</span>
+  <h2>Assignment & Compound Operators</h2>
+  <div class="split">
+    <div>
+      <h3>Simple vs Compound</h3>
+      <p>Simple: <code>x = 10</code> assigns 10 to variable <code>x</code>.</p>
+      <p>Compound combines arithmetic with assignment:</p>
+      <pre class="code">x = 10
+x += 5   # x = x + 5  -&gt; 15
+x -= 3   # x = x - 3  -&gt; 12
+x *= 2   # x = x * 2  -&gt; 24
+x /= 4   # x = x / 4  -&gt; 6.0
+x %= 2   # x = x % 2  -&gt; 0.0
+x **= 3  # x = x ** 3 -&gt; 0.0</pre>
+    </div>
+    <div>
+      <h3>Increment & Decrement</h3>
+      <p>Python has no <code>x++</code> or <code>x--</code> operators. Use compound operators:</p>
+      <pre class="code"># Increment by 1
+x += 1    # Equivalent to x = x + 1
+
+# Decrement by 1
+x -= 1    # Equivalent to x = x - 1</pre>
+    </div>
+  </div>
+</section>
+
+
+<section class="slide" data-lesson="3" data-title="Logical Operators">
+  <span class="eyebrow">4.1 · Lesson 3: Operators</span>
+  <h2>Logical Operators</h2>
+  <p class="lead">Used to combine or invert Boolean expressions (True / False):</p>
+  <div class="cols">
+    <div class="card hl">
+      <h3>and (Logical AND)</h3>
+      <p>Returns <b>True</b> only if <b>both operands are True</b>. Otherwise returns False.</p>
+      <pre class="code">5 &gt; 2 and 10 &gt; 3  # True
+5 &gt; 2 and 10 &lt; 3  # False</pre>
+    </div>
+    <div class="card hl">
+      <h3>or (Logical OR)</h3>
+      <p>Returns <b>True</b> if <b>at least one operand is True</b>. Returns False only if both are False.</p>
+      <pre class="code">5 &lt; 2 or 10 &gt; 3   # True
+5 &lt; 2 or 10 &lt; 3   # False</pre>
+    </div>
+    <div class="card hl">
+      <h3>not (Logical NOT)</h3>
+      <p>Inverts the Boolean value: returns <b>False</b> if condition is True, and <b>True</b> if condition is False.</p>
+      <pre class="code">not (5 &gt; 2)       # False
+not (5 &lt; 2)       # True</pre>
+    </div>
+  </div>
+</section>
+
+<section class="slide mcq" data-lesson="3" data-q="c9"></section>
+<section class="slide mcq" data-lesson="3" data-q="c10"></section>
+<section class="slide mcq" data-lesson="3" data-q="c11"></section>
+<section class="slide mcq" data-lesson="3" data-q="c12"></section>
+<section class="slide mcq" data-lesson="3" data-q="c13"></section>
+<section class="slide mcq" data-lesson="3" data-q="c14"></section>
+<section class="slide mcq" data-lesson="3" data-q="c15"></section>
+
+<section class="slide" data-lesson="4" data-title="Conditional Statements">
+  <span class="eyebrow">4.1 · Lesson 4: Conditionals</span>
+  <h2>Conditional Statements & Indentation</h2>
+  <p class="def"><small>Concept</small>Conditional statements make decisions in programs, executing specific blocks of code depending on whether a condition is True or False.</p>
+  <ul class="pts">
+    <li>Python uses <b>indentation</b> (whitespace) to define code blocks instead of curly braces <code>{ }</code>.</li>
+    <li>Every conditional header must conclude with a <b>colon (:)</b>.</li>
+    <li>Statements aligned at the same indentation level belong to the same block.</li>
+  </ul>
+  <div class="cols">
+    <div class="card hl"><h3>if statement</h3><p>Executes a single block only when condition is True.</p></div>
+    <div class="card hl"><h3>if-else statement</h3><p>Executes one block if True, alternate block if False.</p></div>
+    <div class="card hl"><h3>if-elif-else</h3><p>Tests multiple sequential conditions in a ladder.</p></div>
+  </div>
+</section>
+
+
+<section class="slide" data-lesson="4" data-title="if and if-else Statements">
+  <span class="eyebrow">4.1 · Lesson 4: Conditionals</span>
+  <h2>if and if-else Statements</h2>
+  <div class="split">
+    <div>
+      <h3>if statement</h3>
+      <pre class="code">num = 5
+if num &gt; 0:
+    print("The number is positive.")</pre>
+      <p class="note">If condition is True, indented lines execute. If False, they are bypassed.</p>
+    </div>
+    <div>
+      <h3>if-else statement</h3>
+      <pre class="code">num = int(input("Enter number: "))
+if num % 2 == 0:
+    print(num, "is even.")
+else:
+    print(num, "is odd.")</pre>
+      <p class="note">Provides two distinct execution paths depending on condition test.</p>
+    </div>
+  </div>
+</section>
+
+
+<section class="slide" data-lesson="4" data-title="if-elif-else Ladder">
+  <span class="eyebrow">4.1 · Lesson 4: Conditionals</span>
+  <h2>if-elif-else Ladder</h2>
+  <p class="lead">Used to evaluate multiple conditions sequentially:</p>
+  <div class="split">
+    <div>
+      <pre class="code">num = float(input("Enter a number: "))
+if num &gt; 0:
+    print("Positive number")
+elif num == 0:
+    print("Zero")
+else:
+    print("Negative number")</pre>
+    </div>
+    <div>
+      <div class="idle">
+        <div class="idle-bar"><span>IDLE Shell 3.13.7</span><span>— □ ✕</span></div>
+        <div class="idle-menu"><span>File</span><span>Edit</span><span>Shell</span><span>Debug</span><span>Options</span><span>Window</span><span>Help</span></div>
+        <div class="idle-body">
+<div class="idle-restart">============ RESTART: C:/Users/Desktop/Example.py ============</div>
+Enter a number: 0
+<span class="idle-out">Zero</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide mcq" data-lesson="4" data-q="c16"></section>
+<section class="slide mcq" data-lesson="4" data-q="c17"></section>
+<section class="slide mcq" data-lesson="4" data-q="c18"></section>
+
+<section class="slide" data-lesson="5" data-title="Iteration (Looping)">
+  <span class="eyebrow">4.1 · Lesson 5: Looping</span>
+  <h2>Iteration (Looping) in Python</h2>
+  <p class="def"><small>Definition</small>Iteration is the process where statements or code blocks are executed repeatedly until a specified condition is satisfied.</p>
+  <div class="cols">
+    <div class="card hl">
+      <h3>for Loop</h3>
+      <p>Iterates over a sequence (list, tuple, string, or range). Used primarily when the number of iterations is <b>known in advance</b>.</p>
+    </div>
+    <div class="card hl">
+      <h3>while Loop</h3>
+      <p>Repeatedly executes as long as a test condition remains <b>True</b>. Used when the number of iterations is <b>not known in advance</b>.</p>
+    </div>
+  </div>
+</section>
+
+
+<section class="slide" data-lesson="5" data-title="for Loop & Sequences">
+  <span class="eyebrow">4.1 · Lesson 5: Looping</span>
+  <h2>for Loop with Sequences</h2>
+  <div class="split">
+    <div>
+      <h3>Looping through a List</h3>
+      <pre class="code">marks = [80, 65, 79, 92]
+for num in marks:
+    print(num)</pre>
+      <p class="note">Variable <code>num</code> takes each element in sequence.</p>
+    </div>
+    <div>
+      <h3>Looping through a String</h3>
+      <pre class="code">word = "Sunrise"
+for char in word:
+    print(char)</pre>
+      <div class="idle">
+        <div class="idle-body"><span class="idle-out">S
+u
+n
+r
+i
+s
+e</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section class="slide" data-lesson="5" data-title="The range() Function">
+  <span class="eyebrow">4.1 · Lesson 5: Looping</span>
+  <h2>The range() Function</h2>
+  <p class="lead">Generates an arithmetic progression of integers for loops:</p>
+  <div class="cols">
+    <div class="card hl">
+      <h3>range(stop)</h3>
+      <p>Generates numbers from 0 up to <code>stop - 1</code>.</p>
+      <p><code>range(5)</code> &rarr; <code>0, 1, 2, 3, 4</code></p>
+    </div>
+    <div class="card hl">
+      <h3>range(start, stop)</h3>
+      <p>Generates numbers from <code>start</code> up to <code>stop - 1</code>.</p>
+      <p><code>range(1, 5)</code> &rarr; <code>1, 2, 3, 4</code></p>
+    </div>
+    <div class="card hl">
+      <h3>range(start, stop, step)</h3>
+      <p>Increments each value by <code>step</code>.</p>
+      <p><code>range(1, 10, 2)</code> &rarr; <code>1, 3, 5, 7, 9</code></p>
+    </div>
+  </div>
+</section>
+
+
+<section class="slide" data-lesson="5" data-title="while Loop in Python">
+  <span class="eyebrow">4.1 · Lesson 5: Looping</span>
+  <h2>while Loop</h2>
+  <p class="lead">Repeats statements while a condition evaluates to True:</p>
+  <div class="split">
+    <div>
+      <pre class="code">i = 1          # 1. Initialization
+while i &lt; 6:   # 2. Condition Test
+    print(i)
+    i += 1     # 3. Increment / Update</pre>
+      <p class="def" style="margin-top:.4em"><small>Caution</small>If the loop control variable is never updated, the condition remains True perpetually, creating an <b>infinite loop</b>.</p>
+    </div>
+    <div>
+      <div class="idle">
+        <div class="idle-bar"><span>IDLE Shell 3.13.7</span><span>— □ ✕</span></div>
+        <div class="idle-menu"><span>File</span><span>Edit</span><span>Shell</span><span>Debug</span><span>Options</span><span>Window</span><span>Help</span></div>
+        <div class="idle-body">
+<div class="idle-restart">============ RESTART: C:/Users/Desktop/Example.py ============</div>
+<span class="idle-out">1
+2
+3
+4
+5</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide mcq" data-lesson="5" data-q="c19"></section>
+<section class="slide mcq" data-lesson="5" data-q="c20"></section>
+<section class="slide mcq" data-lesson="5" data-q="c21"></section>
+<section class="slide mcq" data-lesson="5" data-q="c22"></section>
+<section class="slide mcq" data-lesson="5" data-q="c23"></section>
+
+<section class="slide" data-lesson="6" data-title="Data Structures: Lists">
+  <span class="eyebrow">4.1 · Lesson 6: Lists</span>
+  <h2>Lists in Python</h2>
+  <p class="def"><small>Definition</small>A list is a built-in data structure that holds an ordered, mutable collection of items enclosed in square brackets <code>[ ]</code>.</p>
+  <div class="cols">
+    <div class="card hl"><h3>Ordered</h3><p>Items have a defined sequence that does not change unless modified.</p></div>
+    <div class="card hl"><h3>Mutable</h3><p>Elements can be modified, appended, inserted, or removed in place.</p></div>
+    <div class="card hl"><h3>Heterogeneous</h3><p>Can contain mixed data types: <code>[10, "Python", 3.14, True]</code></p></div>
+    <div class="card hl"><h3>Duplicates Allowed</h3><p>Duplicate values can exist at separate indices: <code>[5, 10, 5]</code></p></div>
+  </div>
+</section>
+
+
+<section class="slide" data-lesson="6" data-title="List Indexing">
+  <span class="eyebrow">4.1 · Lesson 6: Lists</span>
+  <h2>List Indexing</h2>
+  <p class="lead">Python lists use zero-based indexing to access elements:</p>
+  <div class="split">
+    <div>
+      <pre class="code">name = ["Sunrise", "Publication", "Computer Science"]
+print(name[0])  # Sunrise
+print(name[1])  # Publication
+print(name[2])  # Computer Science
+
+# Negative indexing:
+print(name[-1]) # Computer Science</pre>
+    </div>
+    <div>
+      <div class="idle">
+        <div class="idle-bar"><span>IDLE Shell 3.13.7</span><span>— □ ✕</span></div>
+        <div class="idle-body">
+<div class="idle-restart">============ RESTART: C:/Users/Desktop/Example.py ============</div>
+<span class="idle-out">Sunrise
+Publication
+Computer Science</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section class="slide" data-lesson="6" data-title="Built-in List Methods">
+  <span class="eyebrow">4.1 · Lesson 6: Lists</span>
+  <h2>Built-in List Functions & Methods</h2>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Function / Method</th><th>Description</th><th>Example</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td>len(list)</td><td>Returns total number of items in the list</td><td>len(["A", "B", "C"])</td><td>3</td></tr>
+        <tr><td>list.append(data)</td><td>Adds an item to the end of the list</td><td>a = [1, 2]; a.append(3)</td><td>[1, 2, 3]</td></tr>
+        <tr><td>list.insert(pos, data)</td><td>Inserts an item at the specified index</td><td>a = ["K", "M"]; a.insert(1, "S")</td><td>['K', 'S', 'M']</td></tr>
+        <tr><td>sum(list)</td><td>Calculates the sum of all numerical items</td><td>sum([5, 43, 37, 30])</td><td>115</td></tr>
+        <tr><td>min(list)</td><td>Returns smallest element in the list</td><td>min([65, 800, 32, 900])</td><td>32</td></tr>
+        <tr><td>max(list)</td><td>Returns greatest element in the list</td><td>max([5, 200, 333, 976])</td><td>976</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="slide mcq" data-lesson="6" data-q="c24"></section>
+<section class="slide mcq" data-lesson="6" data-q="c25"></section>
+<section class="slide mcq" data-lesson="6" data-q="c26"></section>
+<section class="slide mcq" data-lesson="6" data-q="c27"></section>
+<section class="slide mcq" data-lesson="6" data-q="c28"></section>
+<section class="slide mcq" data-lesson="6" data-q="c29"></section>
+<section class="slide mcq" data-lesson="6" data-q="c30"></section>
+<section class="slide mcq" data-lesson="6" data-q="c31"></section>
+
+<section class="slide" data-lesson="7" data-title="Data Structures: Dictionaries">
+  <span class="eyebrow">4.1 · Lesson 7: Dictionaries</span>
+  <h2>Dictionaries in Python</h2>
+  <p class="def"><small>Definition</small>Dictionaries store data in <code>key: value</code> pairs enclosed in curly braces <code>{ }</code>. They are ordered (since Python 3.7), changeable, and do not allow duplicate keys.</p>
+  <div class="split">
+    <div>
+      <pre class="code">data = {
+    "Nepal": "Kathmandu",
+    "India": "New Delhi",
+    "Bhutan": "Thimpu"
+}
+# Accessing via key:
+print(data["Nepal"])   # Kathmandu</pre>
+    </div>
+    <div>
+      <ul class="pts">
+        <li><b>Keys must be unique</b>: Duplicate keys overwrite existing values.</li>
+        <li><b>Keys must be immutable</b>: Commonly strings or integers.</li>
+        <li>Values can be of any data type and can duplicate.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+
+<section class="slide" data-lesson="7" data-title="Dictionary Operations">
+  <span class="eyebrow">4.1 · Lesson 7: Dictionaries</span>
+  <h2>Dictionary Methods & Operations</h2>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Operation / Method</th><th>Description</th><th>Example</th><th>Output</th></tr></thead>
+      <tbody>
+        <tr><td>data.get(key, default)</td><td>Retrieves value; returns None/default if key not found (no crash)</td><td>data.get("Nepal")</td><td>'Kathmandu'</td></tr>
+        <tr><td>data.keys()</td><td>Returns all keys in the dictionary</td><td>list(data.keys())</td><td>['Nepal', 'India', 'Bhutan']</td></tr>
+        <tr><td>data.values()</td><td>Returns all values in the dictionary</td><td>list(data.values())</td><td>['Kathmandu', 'New Delhi', 'Thimpu']</td></tr>
+        <tr><td>del data[key]</td><td>Deletes specified key-value pair from dictionary</td><td>del data["Bhutan"]</td><td>Entry removed</td></tr>
+        <tr><td>data[key] = new_val</td><td>Updates existing value or adds new key-value pair</td><td>data["Address"] = "Bhaktapur"</td><td>Updated in place</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="slide mcq" data-lesson="7" data-q="c32"></section>
+<section class="slide mcq" data-lesson="7" data-q="c33"></section>
+<section class="slide mcq" data-lesson="7" data-q="c34"></section>
+<section class="slide mcq" data-lesson="7" data-q="c35"></section>
+
+<section class="slide" data-lesson="8" data-title="Library Functions">
+  <span class="eyebrow">4.1 · Lesson 8: Library Functions</span>
+  <h2>Library Functions</h2>
+  <p class="def"><small>Definition</small>Library functions are ready-made or predefined functions built into Python allowing programmers to perform common tasks without writing code from scratch.</p>
+  <div class="cols">
+    <div class="card hl"><h3>Easier Writing</h3><p>Eliminates repetitive coding for standard routines.</p></div>
+    <div class="card hl"><h3>Reduces Code Size</h3><p>Shrinks source code into compact, readable calls.</p></div>
+    <div class="card hl"><h3>Bug Minimization</h3><p>Pre-tested and verified by Python core developers.</p></div>
+    <div class="card hl"><h3>High Performance</h3><p>Optimized at the interpreter level for faster execution.</p></div>
+  </div>
+</section>
+
+
+<section class="slide" data-lesson="8" data-title="String Manipulation Functions">
+  <span class="eyebrow">4.1 · Lesson 8: Library Functions</span>
+  <h2>String Manipulation Functions</h2>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Function / Method</th><th>Description</th><th>Example</th><th>Output</th></tr></thead>
+      <tbody>
+        <tr><td>upper()</td><td>Converts string to uppercase</td><td>"Hello, World!".upper()</td><td>'HELLO, WORLD!'</td></tr>
+        <tr><td>lower()</td><td>Converts string to lowercase</td><td>"Hello, World!".lower()</td><td>'hello, world!'</td></tr>
+        <tr><td>len(str)</td><td>Returns count of characters in string</td><td>len("Python")</td><td>6</td></tr>
+        <tr><td>str.count(sub)</td><td>Returns occurrences of substring</td><td>"apple".count("p")</td><td>2</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+
+<section class="slide" data-lesson="8" data-title="Math & Conversion Functions">
+  <span class="eyebrow">4.1 · Lesson 8: Library Functions</span>
+  <h2>Numeric, Math & Conversion Functions</h2>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Function</th><th>Module</th><th>Description</th><th>Example</th><th>Output</th></tr></thead>
+      <tbody>
+        <tr><td>abs(x)</td><td>Built-in</td><td>Absolute positive value</td><td>abs(-7.25)</td><td>7.25</td></tr>
+        <tr><td>pow(x, y)</td><td>Built-in</td><td>Computes x to power y</td><td>pow(4, 3)</td><td>64</td></tr>
+        <tr><td>int(x)</td><td>Built-in</td><td>Truncates float/string to integer</td><td>int(3.8)</td><td>3</td></tr>
+        <tr><td>hex(x)</td><td>Built-in</td><td>Converts integer to hex string</td><td>hex(255)</td><td>'0xff'</td></tr>
+        <tr><td>math.sqrt(x)</td><td>import math</td><td>Calculates square root (as float)</td><td>math.sqrt(16)</td><td>4.0</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="slide mcq" data-lesson="8" data-q="c36"></section>
+<section class="slide mcq" data-lesson="8" data-q="c37"></section>
+<section class="slide mcq" data-lesson="8" data-q="c38"></section>
+<section class="slide mcq" data-lesson="8" data-q="c39"></section>
+<section class="slide mcq" data-lesson="8" data-q="c40"></section>
+<section class="slide mcq" data-lesson="8" data-q="c41"></section>
+<section class="slide mcq" data-lesson="8" data-q="c42"></section>
+
+<section class="slide" data-lesson="9" data-title="Worked-Out Programs">
+  <span class="eyebrow">4.1 · Lesson 9: Programs & Dry Run</span>
+  <h2>Core Textbook Algorithms</h2>
+  <div class="cols">
+    <div class="card hl">
+      <h3>1. Factorial of a Number</h3>
+      <pre class="code">num = int(input("Enter number: "))
+fact = 1
+for i in range(1, num + 1):
+    fact *= i
+print(f"Factorial of {num} is {fact}")</pre>
+    </div>
+    <div class="card hl">
+      <h3>2. Reverse a Number</h3>
+      <pre class="code">num = int(input("Enter number: "))
+rev = 0
+while num &gt; 0:
+    digit = num % 10
+    rev = rev * 10 + digit
+    num //= 10
+print("Reversed:", rev)</pre>
+    </div>
+    <div class="card hl">
+      <h3>3. Counting Vowels</h3>
+      <pre class="code">word = input("Enter word: ").upper()
+c = 0
+for ch in word:
+    if ch in "AEIOU":
+        c += 1
+print("Vowels:", c)</pre>
+    </div>
+  </div>
+</section>
+
+
+<section class="slide" data-lesson="9" data-title="Dry Run Table Analysis">
+  <span class="eyebrow">4.1 · Lesson 9: Programs & Dry Run</span>
+  <h2>Dry Run Analysis</h2>
+  <p class="lead">A dry run tracks variable states at each loop iteration on paper:</p>
+  <div class="split">
+    <div>
+      <pre class="code">p = 1
+n = 5
+for i in range(1, n + 1):
+    p = p * i
+print(f"The result is {p}")</pre>
+    </div>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>p</th><th>n</th><th>i</th><th>Output</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>5</td><td>1</td><td></td></tr>
+          <tr><td>1</td><td></td><td>2</td><td></td></tr>
+          <tr><td>2</td><td></td><td>3</td><td></td></tr>
+          <tr><td>6</td><td></td><td>4</td><td></td></tr>
+          <tr><td>24</td><td></td><td>5</td><td></td></tr>
+          <tr><td><b>120</b></td><td></td><td></td><td><b>The result is 120</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="slide mcq" data-lesson="9" data-q="c43"></section>
+<section class="slide mcq" data-lesson="9" data-q="c44"></section>
+<section class="slide mcq" data-lesson="9" data-q="c45"></section>
+
+<section class="slide" data-lesson="10" data-title="CDC Exercises & Summary">
+  <span class="eyebrow">4.1 · Lesson 10: CDC Exercises & Review</span>
+  <h2>CDC Textbook Questions Summary</h2>
+  <p class="lead">Essential takeaways from Rising School Level Computer Science, Grade 10:</p>
+  <div class="cols">
+    <div class="card hl">
+      <h3>Syntax Essentials</h3>
+      <ul class="pts">
+        <li>Variables: created upon assignment, dynamically typed.</li>
+        <li>Indentation: strictly required following colons <code>:</code>.</li>
+        <li>Case sensitivity: <code>Score</code> &ne; <code>score</code>.</li>
+      </ul>
+    </div>
+    <div class="card hl">
+      <h3>Operators Checklist</h3>
+      <ul class="pts">
+        <li>Division: <code>/</code> (float), <code>//</code> (floor quotient), <code>%</code> (remainder).</li>
+        <li>Power: <code>**</code></li>
+        <li>Comparison: <code>==</code>, <code>!=</code>, <code>&lt;=</code>, <code>&gt;=</code></li>
+        <li>Logical: <code>and</code>, <code>or</code>, <code>not</code></li>
+      </ul>
+    </div>
+    <div class="card hl">
+      <h3>Data Structures</h3>
+      <ul class="pts">
+        <li><b>Lists</b>: <code>[ ]</code>, ordered, mutable, indexed from 0.</li>
+        <li><b>Dictionaries</b>: <code>{ }</code>, key-value pairs, unique keys.</li>
+      </ul>
+    </div>
+  </div>
+  <p class="note" style="margin-top:.4em">Use the Contents button to review any topic or replay all 45 checkpoint MCQs!</p>
+</section>
+
+</main>
+
+<footer>
+  <div class="nav wrap">
+    <button class="btn sec" id="prev" type="button">← Prev</button>
+    <span class="hint">Use <b>Arrow keys</b> or <b>Space</b> to advance. Press <b>1-4</b> or <b>A-D</b> for MCQs. Press <b>F</b> for full screen.</span>
+    <button class="btn" id="next" type="button">Next →</button>
+  </div>
+</footer>
+
+<div class="toc" id="toc" hidden>
+  <div class="toc-panel" id="tocPanel">
+    <h2>Table of Contents</h2>
+  </div>
+</div>
+<button class="fsx" id="fsExit" type="button" aria-label="Exit full screen">✕</button>
+
+<script>
+(function(){
+  "use strict";
+  var LESSONS = {
+    "0": "Overview",
+    "1": "1. Python Basics & Variables",
+    "2": "2. I/O & Formatting",
+    "3": "3. Operators in Python",
+    "4": "4. Conditional Statements",
+    "5": "5. Looping & Iteration",
+    "6": "6. Data Structures: Lists",
+    "7": "7. Data Structures: Dictionaries",
+    "8": "8. Library Functions",
+    "9": "9. Worked-out Programs & Dry Run",
+    "10": "10. CDC Exercises & Review"
+  };
+
+  var MCQ = {
+ "c1": {
+  "q": "Who created the Python programming language, and when was it first released?",
+  "o": [
+   "Guido van Rossum in 1991",
+   "Dennis Ritchie in 1972",
+   "James Gosling in 1995",
+   "Bjarne Stroustrup in 1983"
+  ],
+  "a": 0,
+  "e": "Python was conceived in the late 1980s by Guido van Rossum and first released in 1991 as an easy-to-read, high-level language."
+ },
+ "c2": {
+  "q": "Which of the following is an INVALID variable name in Python?",
+  "o": [
+   "_student_age",
+   "totalScore",
+   "2nd_rank",
+   "roll_number_15"
+  ],
+  "a": 2,
+  "e": "Variable names in Python cannot start with a digit. '2nd_rank' starts with '2', making it invalid."
+ },
+ "c3": {
+  "q": "Why doesn't Python require explicit data type declarations when creating variables?",
+  "o": [
+   "Python has no data types",
+   "Python is dynamically typed and infers the data type from assigned values",
+   "Python variables only hold strings",
+   "Python converts all values into numbers"
+  ],
+  "a": 1,
+  "e": "Python uses dynamic typing: it automatically determines and assigns a variable's data type according to the value assigned to it."
+ },
+ "c4": {
+  "q": "What will be stored in variables after executing: a, b, c = 10, 20.5, 'Computer'?",
+  "o": [
+   "SyntaxError: multiple assignment not allowed",
+   "a is 10, b is 20.5, and c is 'Computer'",
+   "a, b, and c all equal 10",
+   "A list containing the three items is created"
+  ],
+  "a": 1,
+  "e": "Python supports assigning multiple variables simultaneously in one line by unpacking values in corresponding order."
+ },
+ "c5": {
+  "q": "What data type does the input() function ALWAYS return by default in Python?",
+  "o": [
+   "Integer (int)",
+   "Floating-point (float)",
+   "String (str)",
+   "Boolean (bool)"
+  ],
+  "a": 2,
+  "e": "The input() function always reads user keystrokes as a text string (str). To use it as a number, type casting with int() or float() is required."
+ },
+ "c6": {
+  "q": "If a user enters '4' and then '5', what is displayed by print(input() + input())?",
+  "o": [
+   "9",
+   "45",
+   "4 5",
+   "TypeError"
+  ],
+  "a": 1,
+  "e": "Because input() returns strings, the + operator concatenates '4' and '5' into '45' instead of performing numerical addition."
+ },
+ "c7": {
+  "q": "By default, print() adds a newline. Which parameter keeps output on the same line with a space?",
+  "o": [
+   "print(x, next=' ')",
+   "print(x, sep='\\n')",
+   "print(x, end=' ')",
+   "print(x, inline=True)"
+  ],
+  "a": 2,
+  "e": "The 'end' parameter defines what character is printed at the conclusion of print(). Setting end=' ' replaces the newline with a single space."
+ },
+ "c8": {
+  "q": "Which of the following shows the correct syntax for an f-string in Python?",
+  "o": [
+   "f'Name: (name), Grade: (cl)'",
+   "f'Name: {name}, Grade: {cl}'",
+   "format('Name: %name, Grade: %cl')",
+   "'Name: {name}, Grade: {cl}'f"
+  ],
+  "a": 1,
+  "e": "f-strings begin with prefix f or F before quotes, with variables or expressions enclosed inside curly braces {}."
+ },
+ "c9": {
+  "q": "What is the result of the arithmetic expression: 22 % 3?",
+  "o": [
+   "7",
+   "1",
+   "0",
+   "7.33"
+  ],
+  "a": 1,
+  "e": "The % (modulo) operator returns the division remainder: 22 / 3 = 7 with a remainder of 1."
+ },
+ "c10": {
+  "q": "What is the difference between / and // in Python?",
+  "o": [
+   "/ gives an integer, while // gives a float",
+   "// gives integer floor division (quotient), while / always returns a float",
+   "Both perform identical division",
+   "// can only be used with negative integers"
+  ],
+  "a": 1,
+  "e": "Standard division / returns a floating point number (10 / 3 = 3.333...), while floor division // truncates decimals to return an integer quotient (10 // 3 = 3)."
+ },
+ "c11": {
+  "q": "What does 4 ** 3 evaluate to in Python?",
+  "o": [
+   "12",
+   "64",
+   "81",
+   "16"
+  ],
+  "a": 1,
+  "e": "The ** operator computes exponentiation (power): 4 ** 3 = 4 * 4 * 4 = 64."
+ },
+ "c12": {
+  "q": "If count = 10, what is the value of count after executing: count += 5?",
+  "o": [
+   "5",
+   "10",
+   "15",
+   "50"
+  ],
+  "a": 2,
+  "e": "The compound operator count += 5 is shorthand for count = count + 5, resulting in 15."
+ },
+ "c13": {
+  "q": "Which of the following relational operators checks for inequality (not equal)?",
+  "o": [
+   "<>",
+   "!==",
+   "not =",
+   "!="
+  ],
+  "a": 3,
+  "e": "In Python, != is the standard relational operator testing whether two operands are not equal."
+ },
+ "c14": {
+  "q": "What is the result of: (5 > 3) and (10 < 8)?",
+  "o": [
+   "True",
+   "False",
+   "None",
+   "TypeError"
+  ],
+  "a": 1,
+  "e": "The logical 'and' operator requires both conditions to be True. 5 > 3 is True, but 10 < 8 is False, so True and False yields False."
+ },
+ "c15": {
+  "q": "What is the result of: not (7 == 7)?",
+  "o": [
+   "True",
+   "False",
+   "7",
+   "SyntaxError"
+  ],
+  "a": 1,
+  "e": "7 == 7 is True. The 'not' operator inverts the Boolean result, making it False."
+ },
+ "c16": {
+  "q": "How does Python define code blocks inside if, for, and while statements?",
+  "o": [
+   "Enclosed in curly braces { }",
+   "Enclosed between BEGIN and END",
+   "Defined by consistent indentation (whitespace) following a colon :",
+   "Terminated with a semicolon ;"
+  ],
+  "a": 2,
+  "e": "Python relies on indentation (typically 4 spaces) following a colon : to establish statement block hierarchy."
+ },
+ "c17": {
+  "q": "Which keyword represents the 'else if' branch in Python?",
+  "o": [
+   "elseif",
+   "elsif",
+   "elif",
+   "else if"
+  ],
+  "a": 2,
+  "e": "Python uses the keyword 'elif' (a contraction of else-if) to test subsequent conditions."
+ },
+ "c18": {
+  "q": "What is printed by: num = -5; if num > 0: print('P') elif num == 0: print('Z') else: print('N')?",
+  "o": [
+   "P",
+   "Z",
+   "N",
+   "Nothing"
+  ],
+  "a": 2,
+  "e": "Since -5 is neither > 0 nor == 0, the program executes the else block and prints 'N'."
+ },
+ "c19": {
+  "q": "When is a for loop preferred over a while loop?",
+  "o": [
+   "When the number of iterations is known or iterating through a sequence",
+   "When the loop must execute indefinitely",
+   "When the number of loops is completely unknown in advance",
+   "When comparing floating point numbers"
+  ],
+  "a": 0,
+  "e": "A for loop is designed to iterate over a defined sequence or known number of steps. A while loop is condition-driven."
+ },
+ "c20": {
+  "q": "Which numbers are generated by range(1, 6)?",
+  "o": [
+   "1, 2, 3, 4, 5, 6",
+   "1, 2, 3, 4, 5",
+   "0, 1, 2, 3, 4, 5",
+   "2, 3, 4, 5, 6"
+  ],
+  "a": 1,
+  "e": "The range(start, stop) function stops one step before the 'stop' value: 1 up to 6 - 1 = 5."
+ },
+ "c21": {
+  "q": "What numbers are generated by range(2, 11, 3)?",
+  "o": [
+   "2, 5, 8",
+   "2, 5, 8, 11",
+   "3, 6, 9",
+   "2, 4, 6, 8, 10"
+  ],
+  "a": 0,
+  "e": "Starting at 2 with a step of 3: 2, 5, 8. The next value would be 11, which equals the stop value and is therefore excluded."
+ },
+ "c22": {
+  "q": "What happens if a while loop condition never becomes False?",
+  "o": [
+   "Python stops the program automatically after 100 loops",
+   "An infinite loop occurs and execution never terminates on its own",
+   "A SyntaxError is raised before running",
+   "The loop variable automatically resets to zero"
+  ],
+  "a": 1,
+  "e": "A while loop will run forever (infinite loop) unless its test condition eventually becomes False or a break occurs."
+ },
+ "c23": {
+  "q": "What is printed by: for ch in 'BPS': print(ch, end='.')?",
+  "o": [
+   "BPS",
+   "B.P.S.",
+   "B. P. S.",
+   ".B.P.S"
+  ],
+  "a": 1,
+  "e": "Each character ('B', 'P', 'S') is printed followed immediately by a dot '.', resulting in 'B.P.S.'."
+ },
+ "c24": {
+  "q": "Which bracket notation is used to define a list in Python?",
+  "o": [
+   "Parentheses ( )",
+   "Square brackets [ ]",
+   "Curly braces { }",
+   "Angle brackets < >"
+  ],
+  "a": 1,
+  "e": "Lists are enclosed in square brackets [ ], tuples in ( ), and dictionaries or sets in { }."
+ },
+ "c25": {
+  "q": "Lists in Python are described as 'mutable'. What does this mean?",
+  "o": [
+   "They can only store integer numbers",
+   "Their items cannot be altered once created",
+   "Their elements can be modified, appended, or removed after creation",
+   "They cannot contain duplicate elements"
+  ],
+  "a": 2,
+  "e": "Mutability means that elements within the list can be changed, reordered, added, or deleted in place."
+ },
+ "c26": {
+  "q": "What is the index of the first element in a Python list?",
+  "o": [
+   "1",
+   "-1",
+   "0",
+   "None"
+  ],
+  "a": 2,
+  "e": "Python uses 0-based indexing: the first element is at index 0, the second at 1, and so forth."
+ },
+ "c27": {
+  "q": "If fruits = ['apple', 'banana', 'mango'], what is fruits[1]?",
+  "o": [
+   "'apple'",
+   "'banana'",
+   "'mango'",
+   "IndexError"
+  ],
+  "a": 1,
+  "e": "Index 0 is 'apple', and index 1 is 'banana'."
+ },
+ "c28": {
+  "q": "Which list method adds a new element to the END of an existing list?",
+  "o": [
+   "add()",
+   "push()",
+   "insert()",
+   "append()"
+  ],
+  "a": 3,
+  "e": "append() adds a single item to the very end of a list. insert() can place an item at any specific index."
+ },
+ "c29": {
+  "q": "What does devices.insert(1, 'Mouse') do to the list devices?",
+  "o": [
+   "Replaces all items with 'Mouse'",
+   "Inserts 'Mouse' at index position 1, shifting subsequent elements to the right",
+   "Appends 'Mouse' to the end of the list",
+   "Raises an error if index 1 already exists"
+  ],
+  "a": 1,
+  "e": "insert(index, element) inserts the element at the specified index without deleting existing items."
+ },
+ "c30": {
+  "q": "If scores = [10, 20, 30, 40], what does sum(scores) return?",
+  "o": [
+   "40",
+   "100",
+   "4",
+   "25"
+  ],
+  "a": 1,
+  "e": "The sum() function totals all numbers in the list: 10 + 20 + 30 + 40 = 100."
+ },
+ "c31": {
+  "q": "What is returned by min([45, 12, 89, 3, 27]) and max([45, 12, 89, 3, 27])?",
+  "o": [
+   "3 and 89",
+   "12 and 45",
+   "45 and 27",
+   "3 and 45"
+  ],
+  "a": 0,
+  "e": "min() finds the lowest value (3) and max() finds the highest value (89)."
+ },
+ "c32": {
+  "q": "How are elements stored inside a Python dictionary?",
+  "o": [
+   "As indexed single values in square brackets",
+   "As key: value pairs enclosed in curly braces { }",
+   "As comma-separated values in parentheses",
+   "In tabular rows only"
+  ],
+  "a": 1,
+  "e": "A dictionary stores mappings of unique keys associated with corresponding values: {key: value}."
+ },
+ "c33": {
+  "q": "What happens when accessing a missing key via data['abc'] vs data.get('abc')?",
+  "o": [
+   "Both return None",
+   "data['abc'] raises a KeyError, whereas data.get('abc') returns None or a default",
+   "data.get('abc') raises an error, whereas data['abc'] returns 0",
+   "Both crash the program"
+  ],
+  "a": 1,
+  "e": "Using square brackets with a missing key throws a KeyError. The get() method safely returns None without throwing an exception."
+ },
+ "c34": {
+  "q": "How do you remove a key-value pair from a dictionary capitals for the key 'India'?",
+  "o": [
+   "remove capitals['India']",
+   "delete(capitals['India'])",
+   "del capitals['India']",
+   "capitals.discard('India')"
+  ],
+  "a": 2,
+  "e": "The del keyword removes the entry: del capitals['India']."
+ },
+ "c35": {
+  "q": "Which dictionary method returns a view of only the keys in the dictionary?",
+  "o": [
+   "data.all_keys()",
+   "data.keys()",
+   "data.get_keys()",
+   "data.items()"
+  ],
+  "a": 1,
+  "e": "The keys() method returns a sequence of all keys present in the dictionary."
+ },
+ "c36": {
+  "q": "Which of the following is an advantage of using library functions in Python?",
+  "o": [
+   "They make program writing easier and reduce code size",
+   "They are thoroughly pre-tested, reducing bugs and errors",
+   "They provide reusable, optimized code for faster execution",
+   "All of the above"
+  ],
+  "a": 3,
+  "e": "Library functions save development time, simplify debugging, ensure high performance, and promote clean code."
+ },
+ "c37": {
+  "q": "What is the output of 'Hello World'.upper()?",
+  "o": [
+   "'hello world'",
+   "'HELLO WORLD'",
+   "'Hello World'",
+   "'Hello WORLD'"
+  ],
+  "a": 1,
+  "e": "upper() converts all alphabetic characters in the string into uppercase: 'HELLO WORLD'."
+ },
+ "c38": {
+  "q": "What does 'banana'.count('a') return?",
+  "o": [
+   "2",
+   "3",
+   "6",
+   "1"
+  ],
+  "a": 1,
+  "e": "The character 'a' occurs 3 times in 'banana' (indices 1, 3, and 5)."
+ },
+ "c39": {
+  "q": "What is the return value of abs(-15.75)?",
+  "o": [
+   "-15.75",
+   "15.75",
+   "15",
+   "-16"
+  ],
+  "a": 1,
+  "e": "The abs() function computes the absolute (non-negative magnitude) value of a number."
+ },
+ "c40": {
+  "q": "To calculate square root using math.sqrt(25), what must precede it?",
+  "o": [
+   "include math",
+   "import math",
+   "use math",
+   "from math.all"
+  ],
+  "a": 1,
+  "e": "Functions in standard Python modules must be imported first using 'import <module_name>'."
+ },
+ "c41": {
+  "q": "What does int(9.8) evaluate to in Python?",
+  "o": [
+   "10 (rounded up)",
+   "9 (truncated towards zero)",
+   "9.0",
+   "TypeError"
+  ],
+  "a": 1,
+  "e": "The int() function truncates (drops) the fractional portion of a floating-point number, giving 9."
+ },
+ "c42": {
+  "q": "What is the return format of hex(255) in Python?",
+  "o": [
+   "'255H'",
+   "'#FF'",
+   "'0xff'",
+   "'FF'"
+  ],
+  "a": 2,
+  "e": "The hex() function converts an integer to a lowercase hexadecimal string with the '0x' prefix: '0xff'."
+ },
+ "c43": {
+  "q": "In a number reversal algorithm, what does digit = num % 10 extract from 847?",
+  "o": [
+   "The first digit 8",
+   "The last digit 7",
+   "The middle digit 4",
+   "The count of digits"
+  ],
+  "a": 1,
+  "e": "Modulo 10 (num % 10) isolates the rightmost (units) digit: 847 % 10 = 7."
+ },
+ "c44": {
+  "q": "What symbol is used to start a single-line comment in Python?",
+  "o": [
+   "//",
+   "/*",
+   "#",
+   "--"
+  ],
+  "a": 2,
+  "e": "In Python, the hash symbol # denotes the start of a single-line comment. The interpreter ignores it."
+ },
+ "c45": {
+  "q": "Which of the following data types is NOT built-in by default in standard Python?",
+  "o": [
+   "str (String)",
+   "int (Integer)",
+   "list (List)",
+   "array (Fixed Array)"
+  ],
+  "a": 3,
+  "e": "Standard Python provides lists, tuples, and dictionaries built-in. Traditional fixed arrays require importing the 'array' or 'numpy' module."
+ }
+};
+
+  var LETTERS = ["A","B","C","D"];
+  var main = document.getElementById("main");
+  var slides = Array.prototype.slice.call(main.querySelectorAll(".slide"));
+  var cur = 0;
+  var updatingHash = false;
+
+  function buildMcq(s, key){
+    var d = MCQ[key];
+    if (!d) return;
+    s.dataset.title = "Checkpoint: " + d.q;
+    var html = '<span class="q-tag">Checkpoint Question</span><h2 class="q-text"></h2><div class="opts"></div><div class="explain" hidden></div><button class="ghost reset" type="button" hidden>Reset question</button>';
+    s.innerHTML = html;
+    s.querySelector(".q-text").textContent = d.q;
+    var box = s.querySelector(".opts");
+    d.o.forEach(function(t, i){
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "opt"; b.dataset.i = i;
+      var k = document.createElement("span"); k.className = "k"; k.textContent = LETTERS[i];
+      var tx = document.createElement("span"); tx.textContent = t;
+      b.appendChild(k); b.appendChild(tx);
+      b.addEventListener("click", function(){ answer(s, key, i); });
+      box.appendChild(b);
+    });
+    s.querySelector(".reset").addEventListener("click", function(){ reset(s); });
+  }
+
+  function answer(s, key, i){
+    if (s._done) return;
+    s._done = true;
+    var d = MCQ[key];
+    var opts = s.querySelectorAll(".opt");
+    opts.forEach(function(b, j){
+      b.disabled = true;
+      if (j === d.a) b.classList.add("correct");
+      else if (j === i) b.classList.add("wrong");
+      else b.classList.add("dim");
+    });
+    var ex = s.querySelector(".explain");
+    var good = i === d.a;
+    ex.className = "explain " + (good ? "good" : "bad");
+    ex.innerHTML = "";
+    var h = document.createElement("b"); h.textContent = good ? "✓ Correct!" : "✗ Not quite. The correct answer is " + LETTERS[d.a] + ".";
+    var p = document.createElement("span"); p.textContent = d.e;
+    ex.appendChild(h); ex.appendChild(p);
+    ex.hidden = false;
+    s.querySelector(".reset").hidden = false;
+    fitSlide();
+  }
+
+  function reset(s){
+    s._done = false;
+    s.querySelectorAll(".opt").forEach(function(b){ b.disabled = false; b.className = "opt"; });
+    s.querySelector(".explain").hidden = true;
+    s.querySelector(".reset").hidden = true;
+    fitSlide();
+  }
+
+  slides.forEach(function(s){ if (s.dataset.q) buildMcq(s, s.dataset.q); });
+
+  function goLesson(l){
+    for (var i = 0; i < slides.length; i++) {
+      if ((slides[i].dataset.lesson || "0") === l) { show(i); return; }
+    }
+  }
+
+  document.querySelectorAll("pre.code").forEach(function(c){
+    var t = c.textContent.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    c.innerHTML = t.replace(/\b(def|class|import|from|if|elif|else|while|for|in|return|print|input|len|range|append|insert|sum|min|max|get|keys|values|del|True|False|None|and|or|not|abs|pow|sqrt|int|float|str|list|dict|break|continue)\b/g, "<b>$1</b>");
+  });
+
+  var selBox = document.getElementById("sel");
+  var SELS = [
+    ["0", "Overview"],
+    ["1", "1. Basics & Vars"],
+    ["2", "2. I/O & Format"],
+    ["3", "3. Operators"],
+    ["4", "4. Conditionals"],
+    ["5", "5. Loops & Range"],
+    ["6", "6. Lists"],
+    ["7", "7. Dictionaries"],
+    ["8", "8. Functions"],
+    ["9", "9. Programs"],
+    ["10", "10. Exercises"]
+  ];
+
+  var selBtns = SELS.map(function(x){
+    var b = document.createElement("button");
+    b.type = "button"; b.dataset.l = x[0]; b.textContent = x[1]; b.title = LESSONS[x[0]];
+    b.addEventListener("click", function(){ goLesson(x[0]); });
+    selBox.appendChild(b);
+    return b;
+  });
+
+  document.querySelectorAll("[data-go]").forEach(function(b){
+    b.addEventListener("click", function(){ goLesson(b.dataset.go); });
+  });
+
+  var count = document.getElementById("count");
+  var bar = document.getElementById("bar");
+  var prev = document.getElementById("prev");
+  var next = document.getElementById("next");
+
+  function reserveAnswer(s){
+    if (!s.dataset.q || s._done) return function(){};
+    var ex = s.querySelector(".explain"), rs = s.querySelector(".reset");
+    var h0 = ex.hidden, r0 = rs.hidden, html0 = ex.innerHTML;
+    ex.innerHTML = "<b>Not quite. The answer is A.</b><span></span>";
+    ex.lastChild.textContent = MCQ[s.dataset.q] ? MCQ[s.dataset.q].e : "";
+    ex.hidden = false; rs.hidden = false;
+    return function(){ ex.hidden = h0; rs.hidden = r0; ex.innerHTML = html0; };
+  }
+
+  function fitSlide(){
+    var s = slides[cur];
+    if (!s) return;
+    var base = parseFloat(getComputedStyle(document.body).fontSize) || 20;
+    var lo = Math.max(13, base * 0.58), hi = base * 1.7;
+    var restore = reserveAnswer(s);
+    function fits(px){
+      s.style.fontSize = px + "px";
+      if (s.offsetHeight > main.clientHeight + 1) return false;
+      if (s.scrollWidth > s.clientWidth + 1) return false;
+      var sc = s.querySelectorAll(".scroll, .code");
+      for (var k = 0; k < sc.length; k++) if (sc[k].scrollWidth > sc[k].clientWidth + 1) return false;
+      return true;
+    }
+    var best;
+    if (fits(hi)) best = hi;
+    else if (!fits(lo)) best = lo;
+    else {
+      for (var n = 0; n < 10; n++) {
+        var mid = (lo + hi) / 2;
+        if (fits(mid)) lo = mid; else hi = mid;
+      }
+      best = lo;
+    }
+    s.style.fontSize = best + "px";
+    restore();
+  }
+
+  var fitTimer = null;
+  function refit(){ cancelAnimationFrame(fitTimer); fitTimer = requestAnimationFrame(fitSlide); }
+  window.addEventListener("resize", refit);
+  document.addEventListener("fullscreenchange", function(){ setTimeout(refit, 120); setTimeout(refit, 600); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(refit);
+
+  function show(i, noHash){
+    if (i < 0) i = 0;
+    if (i > slides.length - 1) i = slides.length - 1;
+    cur = i;
+    slides.forEach(function(s, j){ s.classList.toggle("active", j === i); });
+    var l = slides[i].dataset.lesson || "0";
+    document.body.dataset.lesson = l;
+    selBtns.forEach(function(b){
+      var on = b.dataset.l === l;
+      b.classList.toggle("on", on);
+      if (on) b.setAttribute("aria-current", "true"); else b.removeAttribute("aria-current");
+    });
+    count.textContent = (i + 1) + " / " + slides.length;
+    bar.style.width = ((i + 1) / slides.length * 100) + "%";
+    prev.disabled = i === 0;
+    next.disabled = i === slides.length - 1;
+    main.scrollTop = 0;
+    fitSlide();
+    if (!noHash) {
+      updatingHash = true;
+      try {
+        var targetHash = "#slide-" + (i + 1);
+        if (location.hash !== targetHash) {
+          location.hash = targetHash;
+        }
+      } catch (e) {}
+      setTimeout(function(){ updatingHash = false; }, 80);
+    }
+    markToc();
+  }
+
+  function fromHash(){
+    var m = /^#slide-(\d+)$/.exec(location.hash || "");
+    return m ? parseInt(m[1], 10) - 1 : 0;
+  }
+
+  window.addEventListener("hashchange", function(){
+    if (updatingHash) return;
+    var i = fromHash();
+    if (i !== cur) show(i, true);
+  });
+
+  prev.addEventListener("click", function(){ show(cur - 1); });
+  next.addEventListener("click", function(){ show(cur + 1); });
+
+  /* TOC */
+  var toc = document.getElementById("toc");
+  var panel = document.getElementById("tocPanel");
+  var items = [];
+  function buildToc(){
+    var last = null;
+    slides.forEach(function(s, i){
+      var l = s.dataset.lesson || "0";
+      if (l !== last) {
+        var h = document.createElement("h3");
+        h.textContent = LESSONS[l] || ("Section " + l);
+        panel.appendChild(h);
+        last = l;
+      }
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "toc-item" + (s.dataset.q ? " q" : "");
+      var n = document.createElement("span"); n.className = "n"; n.textContent = i + 1;
+      var t = document.createElement("span"); t.textContent = s.dataset.q ? ("Checkpoint: " + (MCQ[s.dataset.q] ? MCQ[s.dataset.q].q : "")) : s.dataset.title;
+      b.appendChild(n); b.appendChild(t);
+      b.addEventListener("click", function(){ toc.hidden = true; show(i); });
+      panel.appendChild(b);
+      items.push(b);
+    });
+  }
+  function markToc(){ items.forEach(function(b, i){ b.classList.toggle("now", i === cur); }); }
+  buildToc();
+  document.getElementById("tocBtn").addEventListener("click", function(){
+    toc.hidden = !toc.hidden;
+    if (!toc.hidden && items[cur]) items[cur].scrollIntoView({block:"center"});
+  });
+  toc.addEventListener("click", function(e){ if (e.target === toc) toc.hidden = true; });
+
+  /* Full screen */
+  var fs = document.getElementById("fsBtn");
+  var root = document.documentElement;
+  function inFs(){ return root.classList.contains("fs"); }
+  function enterFs(){
+    root.classList.add("fs");
+    try {
+      if (root.requestFullscreen) { var p = root.requestFullscreen(); if (p && p.catch) p.catch(function(){}); }
+    } catch (e) {}
+    setTimeout(refit, 150); setTimeout(refit, 600);
+  }
+  function exitFs(){
+    root.classList.remove("fs");
+    try { if (document.fullscreenElement) { var p = document.exitFullscreen(); if (p && p.catch) p.catch(function(){}); } } catch (e) {}
+    setTimeout(refit, 150); setTimeout(refit, 600);
+  }
+  function toggleFs(){ if (inFs()) exitFs(); else enterFs(); }
+  fs.addEventListener("click", toggleFs);
+  document.getElementById("fsExit").addEventListener("click", exitFs);
+  document.addEventListener("fullscreenchange", function(){
+    root.classList.toggle("fs", !!document.fullscreenElement);
+    setTimeout(refit, 150); setTimeout(refit, 600);
+  });
+
+  /* Touch swipe */
+  var tx = 0, ty = 0, tt = 0, tracking = false;
+  main.addEventListener("touchstart", function(e){
+    tracking = false;
+    if (e.touches.length !== 1 || !toc.hidden) return;
+    var t = e.touches[0]; tx = t.clientX; ty = t.clientY; tt = Date.now(); tracking = true;
+    var el = e.target.closest ? e.target.closest(".scroll, .code, .idle") : null;
+    if (el && el.scrollWidth > el.clientWidth + 1) tracking = false;
+  }, {passive:true});
+  main.addEventListener("touchend", function(e){
+    if (!tracking) return;
+    tracking = false;
+    var t = e.changedTouches[0], dx = t.clientX - tx, dy = t.clientY - ty;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5 && Date.now() - tt < 900) {
+      if (dx < 0) show(cur + 1); else show(cur - 1);
+    }
+  }, {passive:true});
+
+  /* Keyboard */
+  document.addEventListener("keydown", function(e){
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    var k = e.key;
+    if (k === "Escape") { if (!toc.hidden) toc.hidden = true; else if (inFs() && !document.fullscreenElement) exitFs(); return; }
+    if (!toc.hidden) return;
+    var tag = document.activeElement && document.activeElement.tagName;
+    if (k === "ArrowRight" || k === "PageDown") { e.preventDefault(); show(cur + 1); }
+    else if (k === "ArrowLeft" || k === "PageUp") { e.preventDefault(); show(cur - 1); }
+    else if (k === " ") { e.preventDefault(); show(cur + 1); }
+    else if (k === "Home") { show(0); }
+    else if (k === "End") { show(slides.length - 1); }
+    else if (k === "f" || k === "F") { toggleFs(); }
+    else if (k === "t" || k === "T") { toc.hidden = false; if (items[cur]) items[cur].scrollIntoView({block:"center"}); }
+    else {
+      var s = slides[cur];
+      if (s && s.dataset.q) {
+        var idx = "1234".indexOf(k);
+        if (idx < 0) idx = "abcd".indexOf(k.toLowerCase());
+        if (idx > -1) { var b = s.querySelectorAll(".opt")[idx]; if (b && !b.disabled) b.click(); }
+      }
+    }
+  });
+
+  show(fromHash(), true);
+})();
+</script>
+</body></html>

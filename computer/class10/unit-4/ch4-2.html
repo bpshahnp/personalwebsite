@@ -1,0 +1,1572 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Unit 4 · User Defined Functions</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: one lesson slide at a time on a full-height stage. High contrast for classroom projection. */
+:root{
+  --bg:#f3f6fb; --panel:#ffffff; --panel-2:#e8eef8; --fg:#0f1a35; --muted:#475674; --line:#c9d4e6;
+  --blue:#1a4fb0; --blue-soft:#e1eafb;
+  --green:#0a7556; --green-soft:#dcf2e9;
+  --amber:#a64f08; --amber-soft:#fdebd5;
+  --teal:#0a6f86; --teal-soft:#d8f0f5;
+  --violet:#6a3cc0; --violet-soft:#ebe3fb;
+  --olive:#4f6f0a; --olive-soft:#e8f2cc;
+  --sienna:#8c3f1a; --sienna-soft:#f5e2d6;
+  --gold:#7d6400; --gold-soft:#f8f0c8;
+  --pink:#b0125f; --pink-soft:#fbe3ee;
+  --indigo:#283593; --indigo-soft:#e8eaf6;
+  --f-mono:"JetBrains Mono",ui-monospace,Consolas,"Courier New",monospace;
+  --ok:#0d7a3b; --ok-soft:#dcf3e4; --bad:#b3261e; --bad-soft:#fbe4e2;
+  --on-accent:#ffffff; --scrim:rgba(15,26,53,.55);
+  --f-display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --f-body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --base:clamp(17px, 1vw + 9px, 32px);
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; background:var(--bg); color:var(--fg);
+  font:400 var(--base)/1.45 var(--f-body);
+  display:grid; grid-template-rows:auto 1fr auto; overflow:hidden;
+}
+header,footer{font-size:clamp(13px,.7vw + 6px,19px)}
+html.fs header, html.fs footer{display:none}
+@supports (height:100dvh){html,body{height:100dvh}}
+main{touch-action:pan-y}
+.scroll,.code{touch-action:pan-x pan-y}
+.fsx{display:none; position:fixed; z-index:15; top:calc(env(safe-area-inset-top,0px) + 6px); right:max(8px,env(safe-area-inset-right,0px)); width:2.4em; height:2.4em; place-items:center; border-radius:50%; background:var(--panel); border:1px solid var(--line); color:var(--fg); font:700 16px/1 var(--f-body); opacity:.65}
+@media (pointer:coarse){html.fs .fsx{display:grid}}
+html.fs body{grid-template-rows:1fr}
+.wrap{padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px))}
+button{font:inherit; color:inherit; cursor:pointer}
+:focus-visible{outline:3px solid var(--pink); outline-offset:3px}
+
+/* header */
+header{background:var(--panel); border-bottom:1px solid var(--line)}
+.top{display:flex; align-items:center; gap:.5em .8em; flex-wrap:wrap; padding-block:.5em}
+.brand{font:800 .8em/1 var(--f-display); letter-spacing:.05em; text-transform:uppercase; color:var(--muted)}
+.sel{display:flex; flex-wrap:wrap; gap:.35em; min-width:0}
+.sel button{--c:var(--muted); --cs:var(--panel-2); background:var(--cs); color:var(--c); border:2px solid var(--c); border-radius:.55em; padding:.25em .65em; font:700 .75em/1.2 var(--f-body)}
+.sel button[data-l="1"]{--c:var(--blue); --cs:var(--blue-soft)}
+.sel button[data-l="2"]{--c:var(--teal); --cs:var(--teal-soft)}
+.sel button[data-l="3"]{--c:var(--amber); --cs:var(--amber-soft)}
+.sel button[data-l="4"]{--c:var(--green); --cs:var(--green-soft)}
+.sel button[data-l="5"]{--c:var(--violet); --cs:var(--violet-soft)}
+.sel button[data-l="6"]{--c:var(--olive); --cs:var(--olive-soft)}
+.sel button[data-l="7"]{--c:var(--sienna); --cs:var(--sienna-soft)}
+.sel button[data-l="8"]{--c:var(--gold); --cs:var(--gold-soft)}
+.sel button[data-l="9"]{--c:var(--indigo); --cs:var(--indigo-soft)}
+.sel button[data-l="10"]{--c:var(--pink); --cs:var(--pink-soft)}
+.sel button.on{background:var(--c); color:var(--on-accent)}
+.sel button:hover:not(.on){background:var(--panel)}
+
+body[data-lesson="1"]{--accent:var(--blue); --accent-soft:var(--blue-soft)}
+body[data-lesson="2"]{--accent:var(--teal); --accent-soft:var(--teal-soft)}
+body[data-lesson="3"]{--accent:var(--amber); --accent-soft:var(--amber-soft)}
+body[data-lesson="4"]{--accent:var(--green); --accent-soft:var(--green-soft)}
+body[data-lesson="5"]{--accent:var(--violet); --accent-soft:var(--violet-soft)}
+body[data-lesson="6"]{--accent:var(--olive); --accent-soft:var(--olive-soft)}
+body[data-lesson="7"]{--accent:var(--sienna); --accent-soft:var(--sienna-soft)}
+body[data-lesson="8"]{--accent:var(--gold); --accent-soft:var(--gold-soft)}
+body[data-lesson="9"]{--accent:var(--indigo); --accent-soft:var(--indigo-soft)}
+body[data-lesson="10"]{--accent:var(--pink); --accent-soft:var(--pink-soft)}
+
+.tools{margin-left:auto; display:flex; align-items:center; gap:.5em}
+.count{font:700 .8em var(--f-body); color:var(--muted); font-variant-numeric:tabular-nums; min-width:4.2em; text-align:right}
+.ghost{background:transparent; border:1.5px solid var(--line); border-radius:.5em; padding:.3em .75em; font-size:.75em; font-weight:600}
+.ghost:hover{border-color:var(--accent,var(--blue))}
+a.ghost{color:inherit; text-decoration:none; display:inline-flex; align-items:center}
+.bar{height:6px; background:var(--panel-2)}
+.bar i{display:block; height:100%; width:0; background:var(--accent,var(--blue)); transition:width .3s ease}
+
+/* stage */
+main{display:flex; flex-direction:column; overflow-y:auto; min-height:0}
+.slide{display:none; --accent:var(--blue); --accent-soft:var(--blue-soft)}
+.slide[data-lesson="2"]{--accent:var(--teal); --accent-soft:var(--teal-soft)}
+.slide[data-lesson="3"]{--accent:var(--amber); --accent-soft:var(--amber-soft)}
+.slide[data-lesson="4"]{--accent:var(--green); --accent-soft:var(--green-soft)}
+.slide[data-lesson="5"]{--accent:var(--violet); --accent-soft:var(--violet-soft)}
+.slide[data-lesson="6"]{--accent:var(--olive); --accent-soft:var(--olive-soft)}
+.slide[data-lesson="7"]{--accent:var(--sienna); --accent-soft:var(--sienna-soft)}
+.slide[data-lesson="8"]{--accent:var(--gold); --accent-soft:var(--gold-soft)}
+.slide[data-lesson="9"]{--accent:var(--indigo); --accent-soft:var(--indigo-soft)}
+.slide[data-lesson="10"]{--accent:var(--pink); --accent-soft:var(--pink-soft)}
+.slide.active{display:flex; flex-direction:column; gap:.75em; margin:auto; width:100%; max-width:76em; padding-block:1em; animation:rise .3s ease both}
+@keyframes rise{from{opacity:0; transform:translateY(.4em)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion: reduce){.slide.active{animation:none} .bar i{transition:none}}
+
+.eyebrow{font:700 .85em/1 var(--f-body); letter-spacing:.12em; text-transform:uppercase; color:var(--accent)}
+h1,h2,h3{font-family:var(--f-display); margin:0; text-wrap:balance; line-height:1.08}
+h1{font-size:2.8em; font-weight:800}
+h2{font-size:2.1em; font-weight:800}
+h3{font-size:1.2em; font-weight:800; color:var(--accent)}
+p{margin:0}
+.lead{font-size:1.12em; color:var(--muted); max-width:44em}
+b,strong{font-weight:700}
+
+.def{background:var(--pink-soft); border-left:.3em solid var(--pink); border-radius:.3em; padding:.65em .95em; font-size:1.1em; font-weight:600; color:var(--pink)}
+.def small{display:block; font-size:.7em; letter-spacing:.1em; text-transform:uppercase; margin-bottom:.3em; opacity:.85}
+.cols{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,16.5em),1fr)); gap:.75em}
+.card{background:var(--panel); border:1px solid var(--line); border-radius:.6em; padding:.75em .95em; min-width:0}
+.card p{font-size:.98em; color:var(--muted); margin-top:.25em}
+.card.hl{border-color:var(--accent); background:var(--accent-soft)}
+.pts{margin:0; padding:0; list-style:none; display:grid; gap:.5em}
+.pts li{position:relative; padding-left:1.3em}
+.pts li::before{content:""; position:absolute; left:0; top:.55em; width:.55em; height:.55em; border-radius:50%; background:var(--accent)}
+.chips{display:flex; flex-wrap:wrap; gap:.4em}
+.tag{background:var(--accent-soft); color:var(--accent); border-radius:.4em; padding:.2em .65em; font-weight:700}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse; width:100%; background:var(--panel); font-size:.95em}
+th,td{border:1px solid var(--line); padding:.4em .75em; text-align:left; vertical-align:top}
+th{background:var(--accent); color:var(--on-accent); font-family:var(--f-display)}
+td:first-child{font-weight:700}
+.note{color:var(--muted); font-size:.92em}
+.split{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,19em),1fr)); gap:.9em; align-items:start}
+.pair{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,17em),1fr)); gap:.8em}
+
+/* Code & IDLE Shell Simulation */
+.code{margin:0; background:var(--panel); border:1px solid var(--line); border-left:.3em solid var(--accent); border-radius:.4em; padding:.55em .9em; font:500 .92em/1.45 var(--f-mono); white-space:pre-wrap; overflow-x:auto; color:var(--fg)}
+.code b{color:var(--accent); font-weight:700}
+.code i{color:var(--muted); font-style:normal}
+.code span.str{color:#0b7a56}
+.code span.num{color:#b45309}
+
+.idle{background:#ffffff; border:2px solid #9dc2f8; border-radius:.6em; overflow:hidden; box-shadow:0 3px 12px rgba(15,27,58,.08); font:500 .9em/1.4 var(--f-mono); margin-top:.3em}
+.idle-bar{background:#0078d7; color:#fff; padding:.3em .75em; display:flex; align-items:center; justify-content:space-between; font-size:.8em; font-weight:700}
+.idle-menu{background:#f0f4f9; border-bottom:1px solid #d5e0ee; padding:.2em .6em; display:flex; gap:.7em; font-size:.78em; color:#44526c}
+.idle-body{padding:.5em .8em; background:#ffffff; color:#0f1a35; white-space:pre-wrap; font-size:.9em}
+.idle-restart{color:#6c757d; font-size:.82em; margin-bottom:.3em}
+.idle-out{color:#0000cd; font-weight:600}
+.idle-err{color:#d32f2f; font-weight:700}
+
+/* Hero & Lessons grid */
+.hero{display:grid; gap:.45em}
+.hero h1 span{color:var(--blue)}
+.lessons{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,17.5em),1fr)); gap:.75em; margin-top:.5em}
+.lessons .card{border-width:2px; display:block; width:100%; text-align:left; cursor:pointer; transition:transform .12s, box-shadow .12s}
+.lessons .card:hover{background:var(--panel-2); transform:translateY(-2px)}
+.lessons .card.c1{border-color:var(--blue)} .lessons .card.c2{border-color:var(--teal)} .lessons .card.c3{border-color:var(--amber)} .lessons .card.c4{border-color:var(--green)} .lessons .card.c5{border-color:var(--violet)} .lessons .card.c6{border-color:var(--olive)} .lessons .card.c7{border-color:var(--sienna)} .lessons .card.c8{border-color:var(--gold)} .lessons .card.c9{border-color:var(--indigo)} .lessons .card.c10{border-color:var(--pink)}
+.lessons h3{font-size:1.05em}
+
+/* Checkpoint MCQ */
+.q-tag{display:inline-flex; align-items:center; gap:.5em; width:max-content; background:var(--pink-soft); color:var(--pink); font:800 .85em/1 var(--f-body); letter-spacing:.12em; text-transform:uppercase; padding:.45em .85em; border-radius:99px}
+.q-text{font:800 2.2em/1.12 var(--f-display); text-wrap:balance}
+.opts{display:grid; gap:.5em; margin-top:.2em}
+@media (min-width:900px){.opts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.opt{display:flex; align-items:center; gap:.75em; text-align:left; background:var(--panel); border:2px solid var(--line); border-radius:.6em; padding:.5em .8em; font-size:1.4em; font-weight:600; width:100%; line-height:1.25}
+.opt:hover{border-color:var(--accent)}
+.opt .k{flex:none; width:1.7em; height:1.7em; border-radius:.4em; display:grid; place-items:center; background:var(--panel-2); font:800 .9em var(--f-display)}
+.opt.correct{border-color:var(--ok); background:var(--ok-soft)}
+.opt.correct .k{background:var(--ok); color:var(--on-accent)}
+.opt.wrong{border-color:var(--bad); background:var(--bad-soft)}
+.opt.wrong .k{background:var(--bad); color:var(--on-accent)}
+.opt.dim{opacity:.55}
+.opt:disabled{cursor:default}
+.explain{border-radius:.5em; padding:.5em .9em; background:var(--panel); border:1px solid var(--line); font-size:1.2em}
+.explain b{display:block; margin-bottom:.15em}
+.explain.good b{color:var(--ok)} .explain.bad b{color:var(--bad)}
+.reset{width:max-content}
+
+/* footer */
+footer{background:var(--panel); border-top:1px solid var(--line)}
+.nav{display:flex; align-items:center; gap:.8em; padding-block:.5em}
+.nav .hint{flex:1; text-align:center; color:var(--muted); font-size:.9em}
+.btn{background:var(--accent,var(--blue)); color:var(--on-accent); border:0; border-radius:.55em; padding:.5em 1.3em; font-weight:700; font-size:1em}
+.btn.sec{background:transparent; color:var(--fg); border:2px solid var(--line)}
+.btn:disabled{opacity:.35; cursor:default}
+
+/* contents panel */
+.toc{position:fixed; inset:0; z-index:20; background:var(--scrim); padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px)); overflow-y:auto}
+.toc-panel{max-width:42em; margin:0 auto; background:var(--panel); border:1px solid var(--line); border-radius:.8em; padding:1em 1.2em; display:grid; gap:.3em; font-size:.85em}
+.toc-panel h3{margin-top:.7em; font-size:1em}
+.toc-panel h3:first-child{margin-top:0}
+.toc-item{display:flex; gap:.7em; align-items:baseline; background:none; border:0; text-align:left; padding:.25em .4em; border-radius:.35em; width:100%}
+.toc-item:hover{background:var(--panel-2)}
+.toc-item.now{background:var(--panel-2); font-weight:700}
+.toc-item .n{flex:none; width:2em; color:var(--muted); font-variant-numeric:tabular-nums}
+.toc-item.q{color:var(--pink)}
+@media (max-width:640px){h1{font-size:2.2em} h2{font-size:1.6em} .q-text{font-size:1.4em} .nav .hint{display:none} .nav{justify-content:space-between}}
+</style>
+
+<header>
+  <div class="top wrap">
+    <a class="ghost" href="index.html">← Unit 4 Hub</a>
+    <span class="brand">Unit 4 · Computer Science, Grade 10</span>
+    <nav class="sel" id="sel" aria-label="Choose a lesson"></nav>
+    <div class="tools">
+      <span class="count" id="count">1 / 1</span>
+      <button class="ghost" id="tocBtn" type="button">Contents</button>
+      <button class="ghost" id="fsBtn" type="button">Full screen</button>
+    </div>
+  </div>
+  <div class="bar"><i id="bar"></i></div>
+</header>
+
+<main id="main" class="wrap">
+
+<section class="slide active" data-lesson="0" data-title="User Defined Functions">
+  <div class="hero">
+    <span class="eyebrow" style="color:var(--muted)">Unit 4 · Lesson 4.2</span>
+    <h1>User Defined <span>Functions</span> in Python</h1>
+    <p class="lead">Class 10 Computer Science (CDC Nepal). Covers library vs user-defined functions, syntax, parameters vs arguments, local vs global scope, return values, argument types, algorithms, and 40 interactive checkpoint MCQs.</p>
+  </div>
+  <div class="lessons">
+    <button class="card c1" type="button" data-go="1"><h3>1. Concept & Advantages</h3><p>Modularity, code reusability, library vs user-defined functions</p></button>
+    <button class="card c2" type="button" data-go="2"><h3>2. Creating Functions</h3><p>def keyword, syntax, naming rules, header colon, indentation</p></button>
+    <button class="card c3" type="button" data-go="3"><h3>3. Function Calls</h3><p>Transfer of control, calling syntax, IDLE Shell output</p></button>
+    <button class="card c4" type="button" data-go="4"><h3>4. Parameters vs Arguments</h3><p>Formal parameters vs actual arguments, placeholders vs values</p></button>
+    <button class="card c5" type="button" data-go="5"><h3>5. Variable Scope</h3><p>Local vs Global variables, lifetime, NameError outside scope</p></button>
+    <button class="card c6" type="button" data-go="6"><h3>6. Return Statement</h3><p>Returning values, void functions (None), multiple values as tuples</p></button>
+    <button class="card c7" type="button" data-go="7"><h3>7. Types of Arguments</h3><p>Positional, default, keyword, and arbitrary (*args) arguments</p></button>
+    <button class="card c8" type="button" data-go="8"><h3>8. Worked-out Programs</h3><p>Area, temperature, factorial, reverse number, vowels</p></button>
+    <button class="card c9" type="button" data-go="9"><h3>9. Dry Run Analysis</h3><p>Step-by-step trace tables for function loops and calculations</p></button>
+    <button class="card c10" type="button" data-go="10"><h3>10. CDC Exercises</h3><p>Official textbook review questions, output tracing, examination practice</p></button>
+  </div>
+  <p class="note" style="margin-top:.4em">Click any topic above or use the top buttons. Navigate with arrow keys or Space. Press 1 to 4 (or A to D) to answer checkpoint questions.</p>
+</section>
+
+
+<section class="slide" data-lesson="1" data-title="Concept of Functions">
+  <span class="eyebrow">4.2 · Lesson 1: Concept & Advantages</span>
+  <h2>What is a Function?</h2>
+  <p class="def"><small>Textbook Definition</small>A function is a block of code that performs a specific task. It is a reusable block of code that makes a program easier to understand, test, debug, and modify.</p>
+  <ul class="pts">
+    <li>Functions <b>modularize</b> programs by breaking large, complex problems into smaller, manageable subprograms.</li>
+    <li>Also referred to as <b>procedures</b> or <b>subroutines</b> in other programming languages.</li>
+    <li>Can be called multiple times from different parts of a program, providing <b>code reusability</b>.</li>
+  </ul>
+  <div class="cols" style="margin-top:.4em">
+    <div class="card hl">
+      <h3>Library Functions</h3>
+      <p>Predefined functions supplied in Python libraries (e.g., <code>sqrt()</code>, <code>min()</code>, <code>max()</code>, <code>len()</code>). Ready to use, often requiring a module import.</p>
+    </div>
+    <div class="card hl">
+      <h3>User-defined Functions</h3>
+      <p>Functions written by the programmer to meet specific task requirements. Custom names, parameters, algorithms, and return behaviors.</p>
+    </div>
+  </div>
+</section>
+
+
+<section class="slide" data-lesson="1" data-title="Advantages of Functions">
+  <span class="eyebrow">4.2 · Lesson 1: Concept & Advantages</span>
+  <h2>Advantages of Functions</h2>
+  <p class="lead">Modularizing software into functions offers fundamental software engineering benefits:</p>
+  <div class="cols">
+    <div class="card hl">
+      <h3>Code Reusability</h3>
+      <p>Write once, use anywhere. Eliminates the need to rewrite the same algorithm repeatedly across the program.</p>
+    </div>
+    <div class="card hl">
+      <h3>Reduces Code Size</h3>
+      <p>Replaces duplicate sets of statements with concise function calls, significantly reducing code redundancy.</p>
+    </div>
+    <div class="card hl">
+      <h3>Easier Debugging</h3>
+      <p>Isolates logic into self-contained units so bugs and errors can be traced and corrected rapidly.</p>
+    </div>
+    <div class="card hl">
+      <h3>Team Development</h3>
+      <p>Large projects can be split into smaller modules developed concurrently by separate programmers.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide mcq" data-lesson="1" data-q="c1"></section>
+<section class="slide mcq" data-lesson="1" data-q="c2"></section>
+<section class="slide mcq" data-lesson="1" data-q="c4"></section>
+<section class="slide mcq" data-lesson="1" data-q="c5"></section>
+<section class="slide mcq" data-lesson="1" data-q="c6"></section>
+
+<section class="slide" data-lesson="2" data-title="Creating Functions">
+  <span class="eyebrow">4.2 · Lesson 2: Creating Functions</span>
+  <h2>Creating User Defined Functions</h2>
+  <p class="def"><small>Syntax Rule</small>A function definition begins with the <code>def</code> keyword, followed by the function name, parentheses containing optional parameters, and a colon <code>:</code>.</p>
+  <div class="split">
+    <div>
+      <pre class="code">def &lt;function_name&gt;([param1, param2, ...]):
+    # statements (algorithm)
+    statements
+    [return &lt;value&gt;]
+
+# Function call:
+function_name(arg1, arg2, ...)</pre>
+      <ul class="pts">
+        <li><b>def</b>: Keyword telling Python you are defining a function.</li>
+        <li><b>Parameters</b> inside <code>[ ]</code> are optional.</li>
+        <li><b>Colon (:)</b>: Required at the end of the header.</li>
+        <li><b>Indentation</b>: All statements inside the function must be indented.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Naming Rules</h3>
+      <div class="card hl">
+        <p>Function names follow the exact same rules as Python variables:</p>
+        <ul class="pts" style="margin-top:.3em">
+          <li>Must start with a letter or underscore (<code>_</code>).</li>
+          <li><b>Cannot start with a digit</b> (e.g. <code>2add</code> is invalid).</li>
+          <li>Only alphanumeric characters & underscores.</li>
+          <li>Case-sensitive (<code>sum()</code> &ne; <code>Sum()</code>).</li>
+          <li>Cannot use Python reserved keywords (like <code>for</code>, <code>if</code>, <code>while</code>).</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide mcq" data-lesson="2" data-q="c3"></section>
+<section class="slide mcq" data-lesson="2" data-q="c35"></section>
+<section class="slide mcq" data-lesson="2" data-q="c38"></section>
+
+<section class="slide" data-lesson="3" data-title="Function Calls & Execution Flow">
+  <span class="eyebrow">4.2 · Lesson 3: Function Calls</span>
+  <h2>Function Call & Program Flow</h2>
+  <p class="def"><small>Concept</small>A function call is the invocation of a function when required. When called, program control transfers to the function body, executes its statements, and then returns control back.</p>
+  <div class="split">
+    <div>
+      <h3>Code Example</h3>
+      <pre class="code">def add(x, y):
+    z = x + y
+    return z
+
+# Calling the function:
+s = add(70, 50)
+print("The sum of two numbers is", s)</pre>
+    </div>
+    <div>
+      <h3>IDLE Shell Output</h3>
+      <div class="idle">
+        <div class="idle-bar"><span>IDLE Shell 3.13.7</span><span>— □ ✕</span></div>
+        <div class="idle-menu"><span>File</span><span>Edit</span><span>Shell</span><span>Debug</span><span>Options</span><span>Window</span><span>Help</span></div>
+        <div class="idle-body">
+<div class="idle-restart">============ RESTART: C:/Users/Desktop/Example.py ============</div>
+<span class="idle-out">The sum of two numbers is 120</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide mcq" data-lesson="3" data-q="c11"></section>
+
+<section class="slide" data-lesson="4" data-title="Parameters vs Arguments">
+  <span class="eyebrow">4.2 · Lesson 4: Parameters vs Arguments</span>
+  <h2>Parameters vs Arguments</h2>
+  <p class="lead">Although often used interchangeably in casual talk, they have distinct technical meanings:</p>
+  <div class="cols">
+    <div class="card hl">
+      <h3>Parameters (Formal Parameters)</h3>
+      <p class="def" style="margin:.3em 0 .4em"><small>Definition Header</small>Variables declared inside the function definition header.</p>
+      <ul class="pts">
+        <li>Act as <b>placeholders</b> for data that will be passed in.</li>
+        <li>Define the number and type of inputs expected.</li>
+        <li>Example: In <code>def add(x, y):</code>, <b>x</b> and <b>y</b> are parameters.</li>
+      </ul>
+    </div>
+    <div class="card hl">
+      <h3>Arguments (Actual Parameters)</h3>
+      <p class="def" style="margin:.3em 0 .4em"><small>Function Call</small>The actual values or expressions supplied during a function call.</p>
+      <ul class="pts">
+        <li>Fill the parameters with real data during execution.</li>
+        <li>Can be constants, variables, or expressions.</li>
+        <li>Example: In <code>s = add(70, 50)</code>, <b>70</b> and <b>50</b> are arguments.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="slide mcq" data-lesson="4" data-q="c7"></section>
+<section class="slide mcq" data-lesson="4" data-q="c8"></section>
+<section class="slide mcq" data-lesson="4" data-q="c9"></section>
+<section class="slide mcq" data-lesson="4" data-q="c10"></section>
+
+<section class="slide" data-lesson="5" data-title="Scope of Variables">
+  <span class="eyebrow">4.2 · Lesson 5: Variable Scope</span>
+  <h2>Scope of Variables (Local vs Global)</h2>
+  <p class="def"><small>Definition</small>Scope refers to the visibility and lifetime of a variable—which parts of your program can see and access it.</p>
+  <div class="cols">
+    <div class="card hl">
+      <h3>Local Variable</h3>
+      <p>Declared <b>inside a function</b>. Can only be accessed within that function.</p>
+      <ul class="pts">
+        <li>Created when the function is called.</li>
+        <li><b>Destroyed</b> when function execution ends.</li>
+        <li>Cannot be accessed from outside the function.</li>
+      </ul>
+    </div>
+    <div class="card hl">
+      <h3>Global Variable</h3>
+      <p>Declared <b>outside of all functions</b> in the main body.</p>
+      <ul class="pts">
+        <li>Has a broader scope.</li>
+        <li>Accessible across multiple functions and modules.</li>
+        <li>Persists as long as the program runs.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+
+<section class="slide" data-lesson="5" data-title="Scope Code Traces">
+  <span class="eyebrow">4.2 · Lesson 5: Variable Scope</span>
+  <h2>Local vs Global Code Demonstrations</h2>
+  <div class="split">
+    <div>
+      <h3>Reading a Global Variable</h3>
+      <pre class="code">y = 100  # Global variable
+
+def exm():
+    x = 10  # Local variable
+    z = x + y
+    print("The sum is:", z)
+
+exm()  # Output: The sum is: 110</pre>
+      <p class="note">The function can access global variable <code>y</code> directly.</p>
+    </div>
+    <div>
+      <h3>NameError Outside Scope</h3>
+      <pre class="code">def exm():
+    x = 100
+    y = 200
+
+exm()
+print(x)  # ERROR!</pre>
+      <div class="idle">
+        <div class="idle-bar"><span>IDLE Shell 3.13.7</span><span>— □ ✕</span></div>
+        <div class="idle-body">
+<span class="idle-err">Traceback (most recent call last):
+  File "Example.py", line 5, in &lt;module&gt;
+    print(x)
+NameError: name 'x' is not defined</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide mcq" data-lesson="5" data-q="c12"></section>
+<section class="slide mcq" data-lesson="5" data-q="c13"></section>
+<section class="slide mcq" data-lesson="5" data-q="c14"></section>
+<section class="slide mcq" data-lesson="5" data-q="c15"></section>
+<section class="slide mcq" data-lesson="5" data-q="c16"></section>
+
+<section class="slide" data-lesson="6" data-title="Returning Values">
+  <span class="eyebrow">4.2 · Lesson 6: Return Values</span>
+  <h2>Returning Values from Functions</h2>
+  <p class="lead">Functions in Python can be classified into three categories based on return behavior:</p>
+  <div class="cols">
+    <div class="card hl">
+      <h3>1. Functions Returning Value</h3>
+      <p><b>Non-void functions</b>. Use <code>return &lt;value&gt;</code> to send data back to caller.</p>
+      <pre class="code">def product(a, b, c):
+    p = a * b * c
+    return p
+mul = product(10, 20, 30)
+# mul receives 6000</pre>
+    </div>
+    <div class="card hl">
+      <h3>2. Void Functions (No Return)</h3>
+      <p>Perform an action (like printing) and do not return data. Implicitly return <b>None</b>.</p>
+      <pre class="code">def product(a, b, c):
+    p = a * b * c
+    print("Product:", p)
+# Returns None</pre>
+    </div>
+    <div class="card hl">
+      <h3>3. Multiple Return Values</h3>
+      <p>Python can return multiple values separated by commas, packed automatically as a <b>tuple</b>.</p>
+      <pre class="code">def square(a, b):
+    return a*a, b*b
+s1, s2 = square(5, 6)
+# s1=25, s2=36</pre>
+    </div>
+  </div>
+</section>
+
+
+<section class="slide" data-lesson="6" data-title="Multiple Return Values & Tuples">
+  <span class="eyebrow">4.2 · Lesson 6: Return Values</span>
+  <h2>Returning Multiple Values & Unpacking</h2>
+  <div class="split">
+    <div>
+      <h3>Tuple Packing & Unpacking</h3>
+      <pre class="code">def square(a, b, c):
+    return a*a, b*b, c*c
+
+# 1. Unpacking into separate variables:
+s1, s2, s3 = square(10, 20, 30)
+print(s1, s2, s3)
+
+# 2. Receiving as a single tuple:
+s = square(5, 6, 7)
+print(s)</pre>
+    </div>
+    <div>
+      <h3>IDLE Shell Output</h3>
+      <div class="idle">
+        <div class="idle-bar"><span>IDLE Shell 3.13.7</span><span>— □ ✕</span></div>
+        <div class="idle-body">
+<div class="idle-restart">============ RESTART: C:/Users/Desktop/Example.py ============</div>
+<span class="idle-out">100 400 900
+(25, 36, 49)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide mcq" data-lesson="6" data-q="c17"></section>
+<section class="slide mcq" data-lesson="6" data-q="c18"></section>
+<section class="slide mcq" data-lesson="6" data-q="c19"></section>
+<section class="slide mcq" data-lesson="6" data-q="c20"></section>
+<section class="slide mcq" data-lesson="6" data-q="c21"></section>
+<section class="slide mcq" data-lesson="6" data-q="c22"></section>
+<section class="slide mcq" data-lesson="6" data-q="c33"></section>
+<section class="slide mcq" data-lesson="6" data-q="c34"></section>
+
+<section class="slide" data-lesson="7" data-title="Types of Function Arguments">
+  <span class="eyebrow">4.2 · Lesson 7: Types of Arguments</span>
+  <h2>Types of Function Arguments</h2>
+  <p class="lead">Python provides four distinct mechanisms for passing arguments to functions:</p>
+  <div class="cols">
+    <div class="card hl">
+      <h3>1. Positional Arguments</h3>
+      <p>Values must match the exact position and sequence of parameters in the definition.</p>
+      <pre class="code">def sum(x, y, z):
+    return x + y + z
+sum(80, 32, 100) # 212</pre>
+    </div>
+    <div class="card hl">
+      <h3>2. Default Arguments</h3>
+      <p>Parameters assigned fallback values with <code>=</code>. Caller can omit them.</p>
+      <pre class="code">def sum(x=50, y=100):
+    return x + y
+sum() # 150</pre>
+    </div>
+    <div class="card hl">
+      <h3>3. Keyword Arguments</h3>
+      <p>Arguments passed by parameter name (<code>name=val</code>). Order does not matter.</p>
+      <pre class="code">def data(name, age): ...
+data(age=20, name="Ramesh")</pre>
+    </div>
+    <div class="card hl">
+      <h3>4. Arbitrary (*args)</h3>
+      <p>Asterisk <code>*</code> collects variable number of arguments into a tuple.</p>
+      <pre class="code">def addition(*nums):
+    return sum(nums)
+addition(1, 2, 3, 4)</pre>
+    </div>
+  </div>
+</section>
+
+
+<section class="slide" data-lesson="7" data-title="Default Arguments & Arbitrary Arguments">
+  <span class="eyebrow">4.2 · Lesson 7: Types of Arguments</span>
+  <h2>Default vs Arbitrary Arguments</h2>
+  <div class="split">
+    <div>
+      <h3>Default Arguments</h3>
+      <pre class="code">def calc(x=50, y=100):
+    return x + y
+
+print(calc(1000, 2000)) # 3000 (both override)
+print(calc(500))         # 600 (x overrides, y default)
+print(calc())            # 150 (both default)</pre>
+    </div>
+    <div>
+      <h3>Arbitrary Arguments (*num)</h3>
+      <pre class="code">def addition(*num):
+    s = 0
+    for value in num:
+        s += value
+    print("Sum is:", s)
+
+addition(100, 20)
+addition(100, 200, 300, 400, 500)</pre>
+    </div>
+  </div>
+</section>
+
+<section class="slide mcq" data-lesson="7" data-q="c23"></section>
+<section class="slide mcq" data-lesson="7" data-q="c24"></section>
+<section class="slide mcq" data-lesson="7" data-q="c25"></section>
+<section class="slide mcq" data-lesson="7" data-q="c26"></section>
+<section class="slide mcq" data-lesson="7" data-q="c27"></section>
+<section class="slide mcq" data-lesson="7" data-q="c28"></section>
+<section class="slide mcq" data-lesson="7" data-q="c29"></section>
+<section class="slide mcq" data-lesson="7" data-q="c30"></section>
+<section class="slide mcq" data-lesson="7" data-q="c31"></section>
+<section class="slide mcq" data-lesson="7" data-q="c32"></section>
+
+<section class="slide" data-lesson="8" data-title="Worked-Out Programs">
+  <span class="eyebrow">4.2 · Lesson 8: Worked-out Programs</span>
+  <h2>Classic Function Programs</h2>
+  <div class="cols">
+    <div class="card hl">
+      <h3>1. Factorial of a Number</h3>
+      <pre class="code">def fact(num):
+    if num &lt; 0:
+        return "Not for negative"
+    f = 1
+    for i in range(1, num + 1):
+        f *= i
+    return f
+
+print(fact(5)) # 120</pre>
+    </div>
+    <div class="card hl">
+      <h3>2. Reverse a Number</h3>
+      <pre class="code">def reverse(num):
+    rev = 0
+    while num &gt; 0:
+        digit = num % 10
+        rev = rev * 10 + digit
+        num //= 10
+    return rev
+
+print(reverse(783)) # 387</pre>
+    </div>
+    <div class="card hl">
+      <h3>3. Vowels Count</h3>
+      <pre class="code">def vowels(w):
+    w = w.upper()
+    c = 0
+    for ch in w:
+        if ch in "AEIOU":
+            c += 1
+    return c
+
+print(vowels("Computer")) # 3</pre>
+    </div>
+  </div>
+</section>
+
+
+<section class="slide" data-lesson="8" data-title="Area & Temperature Programs">
+  <span class="eyebrow">4.2 · Lesson 8: Worked-out Programs</span>
+  <h2>Math & Conversion Functions</h2>
+  <div class="split">
+    <div>
+      <h3>Circle Area & Perimeter</h3>
+      <pre class="code">def area(r):
+    return (22 / 7) * r * r
+
+def perimeter(r):
+    return 2 * (22 / 7) * r
+
+r = float(input("Enter radius: "))
+print(f"Area: {area(r):.2f}")
+print(f"Perimeter: {perimeter(r):.2f}")</pre>
+    </div>
+    <div>
+      <h3>Temperature Conversion</h3>
+      <pre class="code">def to_fahrenheit(c):
+    return (c * 9 / 5) + 32
+
+def to_kelvin(c):
+    return c + 273.15
+
+c = float(input("Enter Celsius: "))
+print("Fahrenheit:", to_fahrenheit(c))
+print("Kelvin:", to_kelvin(c))</pre>
+    </div>
+  </div>
+</section>
+
+<section class="slide mcq" data-lesson="8" data-q="c36"></section>
+<section class="slide mcq" data-lesson="8" data-q="c37"></section>
+<section class="slide mcq" data-lesson="8" data-q="c39"></section>
+
+<section class="slide" data-lesson="9" data-title="Dry Run Analysis">
+  <span class="eyebrow">4.2 · Lesson 9: Dry Run</span>
+  <h2>Dry Run Analysis: Reverse Number</h2>
+  <p class="lead">Tracking variable states for <code>def reverse(n):</code> when <code>n = 783</code>:</p>
+  <div class="split">
+    <div>
+      <pre class="code">def reverse(n):
+    s = 0
+    while n &gt; 0:
+        r = n % 10
+        s = s * 10 + r
+        n = n // 10
+    return s
+
+t = reverse(783)
+print(t)</pre>
+    </div>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>n</th><th>r (n % 10)</th><th>s (s*10 + r)</th><th>t</th><th>Output</th></tr></thead>
+        <tbody>
+          <tr><td>783</td><td>3</td><td>0 + 3 = 3</td><td>-</td><td></td></tr>
+          <tr><td>78</td><td>8</td><td>30 + 8 = 38</td><td>-</td><td></td></tr>
+          <tr><td>7</td><td>7</td><td>380 + 7 = 387</td><td>-</td><td></td></tr>
+          <tr><td>0</td><td>-</td><td>387</td><td>387</td><td><b>387</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+
+<section class="slide" data-lesson="9" data-title="Dry Run: Powers Series">
+  <span class="eyebrow">4.2 · Lesson 9: Dry Run</span>
+  <h2>Dry Run: Powers Series</h2>
+  <p class="lead">Tracking loop execution for <code>def calc(): for i in range(1, 6): z = i**2; print(z, end=" ")</code>:</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Iteration (i)</th><th>Calculation (z = i ** 2)</th><th>Output Printed</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>1 ** 2 = 1</td><td>1 </td></tr>
+        <tr><td>2</td><td>2 ** 2 = 4</td><td>1 4 </td></tr>
+        <tr><td>3</td><td>3 ** 2 = 9</td><td>1 4 9 </td></tr>
+        <tr><td>4</td><td>4 ** 2 = 16</td><td>1 4 9 16 </td></tr>
+        <tr><td>5</td><td>5 ** 2 = 25</td><td><b>1 4 9 16 25</b></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="slide mcq" data-lesson="9" data-q="c40"></section>
+
+<section class="slide" data-lesson="10" data-title="CDC Exercises & Summary">
+  <span class="eyebrow">4.2 · Lesson 10: CDC Exercises & Review</span>
+  <h2>CDC Textbook Questions Summary</h2>
+  <p class="lead">Essential takeaways for Class 10 Board Examinations:</p>
+  <div class="cols">
+    <div class="card hl">
+      <h3>Key Concepts</h3>
+      <ul class="pts">
+        <li><code>def</code> keyword begins function definition.</li>
+        <li>Header ends with colon <code>:</code> and body is indented.</li>
+        <li><code>return</code> sends value back; omitting it returns <code>None</code>.</li>
+      </ul>
+    </div>
+    <div class="card hl">
+      <h3>Terminology Checklist</h3>
+      <ul class="pts">
+        <li><b>Parameters</b>: Formal placeholders in <code>def</code>.</li>
+        <li><b>Arguments</b>: Real values supplied in call.</li>
+        <li><b>Local variable</b>: Function scope, temporary.</li>
+        <li><b>Global variable</b>: Module scope, persistent.</li>
+      </ul>
+    </div>
+    <div class="card hl">
+      <h3>Argument Modes</h3>
+      <ul class="pts">
+        <li><b>Positional</b>: order matters.</li>
+        <li><b>Default</b>: <code>x=50</code> fallback.</li>
+        <li><b>Keyword</b>: <code>name='Ram'</code> order-independent.</li>
+        <li><b>Arbitrary</b>: <code>*args</code> receives tuple.</li>
+      </ul>
+    </div>
+  </div>
+  <p class="note" style="margin-top:.4em">Use the Contents button to review any topic or replay all 40 checkpoint questions!</p>
+</section>
+
+</main>
+
+<footer>
+  <div class="nav wrap">
+    <button class="btn sec" id="prev" type="button">← Prev</button>
+    <span class="hint">Use <b>Arrow keys</b> or <b>Space</b> to advance. Press <b>1-4</b> or <b>A-D</b> for MCQs. Press <b>F</b> for full screen.</span>
+    <button class="btn" id="next" type="button">Next →</button>
+  </div>
+</footer>
+
+<div class="toc" id="toc" hidden>
+  <div class="toc-panel" id="tocPanel">
+    <h2>Table of Contents</h2>
+  </div>
+</div>
+<button class="fsx" id="fsExit" type="button" aria-label="Exit full screen">✕</button>
+
+<script>
+(function(){
+  "use strict";
+  var LESSONS = {
+  "0": "Overview",
+  "1": "1. Concept & Advantages",
+  "2": "2. Creating Functions",
+  "3": "3. Function Calls",
+  "4": "4. Parameters vs Arguments",
+  "5": "5. Variable Scope",
+  "6": "6. Return Statement",
+  "7": "7. Types of Arguments",
+  "8": "8. Worked-out Programs",
+  "9": "9. Dry Run Analysis",
+  "10": "10. CDC Exercises"
+};
+
+  var MCQ = {
+ "c1": {
+  "q": "Which keyword is used to define a user-defined function in Python?",
+  "o": [
+   "function",
+   "def",
+   "define",
+   "fun"
+  ],
+  "a": 1,
+  "e": "In Python, all user-defined functions are defined using the 'def' keyword (short for define)."
+ },
+ "c2": {
+  "q": "What does the keyword 'def' stand for in Python?",
+  "o": [
+   "default",
+   "define",
+   "definite",
+   "deferred"
+  ],
+  "a": 1,
+  "e": "'def' stands for 'define' and indicates the start of a function definition."
+ },
+ "c3": {
+  "q": "What punctuation mark MUST terminate a function definition header line in Python?",
+  "o": [
+   "Semicolon (;)",
+   "Colon (:)",
+   "Period (.)",
+   "Arrow (->)"
+  ],
+  "a": 1,
+  "e": "Every function header in Python must end with a colon (:), signaling the start of the indented function body."
+ },
+ "c4": {
+  "q": "Which of the following is a major advantage of using functions in programming?",
+  "o": [
+   "Code reusability without repeating statements",
+   "Improves program readability and modularity",
+   "Makes debugging and tracking errors easier",
+   "All of the above"
+  ],
+  "a": 3,
+  "e": "Functions provide modularity, eliminate code redundancy through reusability, make programs readable, and isolate bugs for easier testing."
+ },
+ "c5": {
+  "q": "What are functions that are already built into Python or standard libraries called?",
+  "o": [
+   "User-defined functions",
+   "Library functions",
+   "Temporary functions",
+   "Local routines"
+  ],
+  "a": 1,
+  "e": "Functions that are pre-defined and supplied with Python (such as sqrt(), len(), min(), max()) are called library functions."
+ },
+ "c6": {
+  "q": "To use a library function from a standard module like sqrt(), what must the programmer do first?",
+  "o": [
+   "Declare the function body",
+   "Import the module into memory using 'import <module>'",
+   "Compile the module manually",
+   "Define it with the 'def' keyword"
+  ],
+  "a": 1,
+  "e": "Module functions are not loaded into memory by default; you must import them first, e.g., 'import math'."
+ },
+ "c7": {
+  "q": "Variables specified inside the parentheses in a function DEFINITION header are called:",
+  "o": [
+   "Actual parameters",
+   "Parameters (Formal parameters)",
+   "Global variables",
+   "Constants"
+  ],
+  "a": 1,
+  "e": "Parameters (or formal parameters) are the placeholder variables declared in the function definition header to receive incoming values."
+ },
+ "c8": {
+  "q": "The actual values or expressions passed to a function when it is CALLED are called:",
+  "o": [
+   "Arguments (Actual parameters)",
+   "Formal parameters",
+   "Return types",
+   "Local scopes"
+  ],
+  "a": 0,
+  "e": "Arguments (or actual parameters) are the concrete values, variables, or expressions supplied to a function during its call."
+ },
+ "c9": {
+  "q": "In 'def calculate(a, b): return a * b', what are 'a' and 'b'?",
+  "o": [
+   "Arguments",
+   "Parameters",
+   "Global variables",
+   "Operators"
+  ],
+  "a": 1,
+  "e": "Because 'a' and 'b' appear in the function definition header, they are formal parameters."
+ },
+ "c10": {
+  "q": "In 'result = calculate(5, 8)', what are '5' and '8'?",
+  "o": [
+   "Parameters",
+   "Arguments",
+   "Keywords",
+   "Void types"
+  ],
+  "a": 1,
+  "e": "Values supplied inside the function call parentheses (5 and 8) are the actual arguments."
+ },
+ "c11": {
+  "q": "What happens to the execution flow when a function call is encountered?",
+  "o": [
+   "The program terminates immediately",
+   "Control transfers to the called function until it finishes or returns",
+   "A new variable is declared without running the code",
+   "The interpreter skips the function body"
+  ],
+  "a": 1,
+  "e": "When a function is called, the interpreter pauses the caller, transfers control to the function body, executes its statements, and then returns control back."
+ },
+ "c12": {
+  "q": "What is the scope of a variable declared INSIDE a function block?",
+  "o": [
+   "Global scope (accessible anywhere)",
+   "Local scope (accessible only inside that function)",
+   "Universal scope",
+   "External scope"
+  ],
+  "a": 1,
+  "e": "Variables created inside a function are local to that function and cannot be seen or used outside its block."
+ },
+ "c13": {
+  "q": "When is a local variable created and destroyed?",
+  "o": [
+   "Created when program starts; destroyed when computer shuts down",
+   "Created when function is called; destroyed when function exits",
+   "Permanent in memory once assigned",
+   "Created only when printed"
+  ],
+  "a": 1,
+  "e": "Local variables exist in memory only during the execution of that function call and are destroyed as soon as the function terminates."
+ },
+ "c14": {
+  "q": "What error occurs if you attempt to access a local variable from outside its function?",
+  "o": [
+   "TypeError",
+   "ValueError",
+   "NameError (name is not defined)",
+   "IndentationError"
+  ],
+  "a": 2,
+  "e": "Outside the function, the local variable does not exist in the global symbol table, raising 'NameError: name is not defined'."
+ },
+ "c15": {
+  "q": "Variables declared OUTSIDE of all functions and blocks are called:",
+  "o": [
+   "Local variables",
+   "Global variables",
+   "Hidden variables",
+   "Transient variables"
+  ],
+  "a": 1,
+  "e": "Global variables are defined at the top-level module scope and can be accessed across multiple functions throughout the program."
+ },
+ "c16": {
+  "q": "In: y = 100; def test(): x = 10; print(x + y); test() - what is the scope of 'y'?",
+  "o": [
+   "Local variable of test()",
+   "Global variable accessible inside test()",
+   "Parameter of test()",
+   "Private attribute"
+  ],
+  "a": 1,
+  "e": "'y' is defined outside test(), making it a global variable that can be read inside the function."
+ },
+ "c17": {
+  "q": "Which statement is placed at the end of a function body to send a result back to the caller?",
+  "o": [
+   "send",
+   "output",
+   "return",
+   "give"
+  ],
+  "a": 2,
+  "e": "The 'return' statement evaluates an expression and hands the resulting value back to the caller."
+ },
+ "c18": {
+  "q": "What value does a Python function return if it has NO return statement (or a bare 'return')?",
+  "o": [
+   "0",
+   "False",
+   "None",
+   "Empty string"
+  ],
+  "a": 2,
+  "e": "In Python, functions that do not explicitly return a value implicitly return the special object 'None'."
+ },
+ "c19": {
+  "q": "Functions that perform an action (like printing) without returning any computed value are called:",
+  "o": [
+   "Non-void functions",
+   "Void functions",
+   "Recursive functions",
+   "Tuple functions"
+  ],
+  "a": 1,
+  "e": "Functions that return no value (returning None) are called void functions."
+ },
+ "c20": {
+  "q": "Can a Python function return multiple values at the same time?",
+  "o": [
+   "No, functions can only return a single value",
+   "Yes, Python automatically packs multiple return values into a tuple",
+   "Only if they are all integers",
+   "Only through global variables"
+  ],
+  "a": 1,
+  "e": "Python uniquely allows returning multiple comma-separated values (e.g. return x, y, z), automatically packing them into a tuple."
+ },
+ "c21": {
+  "q": "If 'def calc(a, b): return a + b, a * b', what is stored in 'res' after 'res = calc(3, 4)'?",
+  "o": [
+   "7",
+   "12",
+   "(7, 12)",
+   "[7, 12]"
+  ],
+  "a": 2,
+  "e": "The two returned values are packed into the tuple (7, 12)."
+ },
+ "c22": {
+  "q": "In 's, p = calc(3, 4)', what is the process of extracting tuple elements into variables called?",
+  "o": [
+   "Tuple unpacking",
+   "Type casting",
+   "String formatting",
+   "Concatenation"
+  ],
+  "a": 0,
+  "e": "Assigning multiple variables from a sequence or tuple is known as tuple unpacking."
+ },
+ "c23": {
+  "q": "Which type of arguments must be provided in the exact order specified by the function header?",
+  "o": [
+   "Keyword arguments",
+   "Default arguments",
+   "Positional arguments",
+   "Arbitrary arguments"
+  ],
+  "a": 2,
+  "e": "Positional arguments map 1-to-1 based on their position in the call matching the position in the definition header."
+ },
+ "c24": {
+  "q": "If 'def info(name, age):', what happens if you call 'info(16, \"Sita\")'?",
+  "o": [
+   "Python automatically swaps them based on types",
+   "A positional mismatch occurs: 'name' receives 16 and 'age' receives 'Sita'",
+   "A SyntaxError is raised immediately",
+   "The call is ignored"
+  ],
+  "a": 1,
+  "e": "Positional arguments bind by index order, not type, leading to logic bugs if the caller reverses them."
+ },
+ "c25": {
+  "q": "How are default arguments defined in a Python function?",
+  "o": [
+   "By placing a question mark after the parameter",
+   "By assigning a default value in the header: def func(x=50, y=100):",
+   "By declaring them in a separate global block",
+   "By using the 'default' keyword"
+  ],
+  "a": 1,
+  "e": "Default parameters are initialized in the header with '='. If the caller omits that argument, the default is used."
+ },
+ "c26": {
+  "q": "Given: def greet(msg='Hello'): print(msg). What does greet() display?",
+  "o": [
+   "Nothing",
+   "None",
+   "Hello",
+   "TypeError"
+  ],
+  "a": 2,
+  "e": "Because no argument was supplied, the function falls back to its default value 'Hello'."
+ },
+ "c27": {
+  "q": "Given: def greet(msg='Hello'): print(msg). What does greet('Namaste') display?",
+  "o": [
+   "Hello",
+   "Namaste",
+   "Hello Namaste",
+   "Error"
+  ],
+  "a": 1,
+  "e": "Passing an argument explicitly overrides the parameter's default value."
+ },
+ "c28": {
+  "q": "Which argument type allows values to be passed in ANY order by specifying parameter names?",
+  "o": [
+   "Positional arguments",
+   "Keyword arguments",
+   "Default arguments",
+   "Index arguments"
+  ],
+  "a": 1,
+  "e": "Keyword arguments use 'parameter=value' syntax during the call, allowing the caller to pass them in any order."
+ },
+ "c29": {
+  "q": "If 'def data(name, age):', which call demonstrates valid keyword arguments?",
+  "o": [
+   "data(age=20, name='Ramesh')",
+   "data('Ramesh', 20)",
+   "data(name: 'Ramesh', age: 20)",
+   "data(20, 'Ramesh')"
+  ],
+  "a": 0,
+  "e": "'data(age=20, name=\"Ramesh\")' explicitly names each parameter, so argument ordering does not matter."
+ },
+ "c30": {
+  "q": "Which symbol is placed before a parameter name to accept an arbitrary (variable) number of arguments?",
+  "o": [
+   "Ampersand (&)",
+   "Asterisk (*)",
+   "Dollar sign ($)",
+   "Hash (#)"
+  ],
+  "a": 1,
+  "e": "An asterisk (*) before a parameter (e.g. *nums) collects any number of positional arguments into a tuple."
+ },
+ "c31": {
+  "q": "Inside 'def addition(*nums):', what data type is 'nums'?",
+  "o": [
+   "List",
+   "Tuple",
+   "Dictionary",
+   "Integer"
+  ],
+  "a": 1,
+  "e": "Python packs all arbitrary positional arguments into a tuple named 'nums'."
+ },
+ "c32": {
+  "q": "If 'def add(*nums): return sum(nums)', what does 'add(10, 20, 30)' return?",
+  "o": [
+   "10",
+   "30",
+   "60",
+   "(10, 20, 30)"
+  ],
+  "a": 2,
+  "e": "The tuple (10, 20, 30) is passed to sum(), which totals 10 + 20 + 30 = 60."
+ },
+ "c33": {
+  "q": "What happens when a 'return' statement is encountered inside a function?",
+  "o": [
+   "The function pauses and resumes later",
+   "The function terminates immediately, returning control and value to the caller",
+   "The entire program exits",
+   "The loop resets"
+  ],
+  "a": 1,
+  "e": "Executing 'return' halts the function immediately. Any statements below it inside the function are skipped."
+ },
+ "c34": {
+  "q": "What is output by: def test(): return 1; return 2; print(test())?",
+  "o": [
+   "1",
+   "2",
+   "(1, 2)",
+   "3"
+  ],
+  "a": 0,
+  "e": "The function exits at 'return 1'; 'return 2' is unreachable dead code, so 1 is printed."
+ },
+ "c35": {
+  "q": "What error occurs if the statements inside a function body are NOT indented?",
+  "o": [
+   "NameError",
+   "IndentationError: expected an indented block",
+   "TypeError",
+   "SyntaxWarning"
+  ],
+  "a": 1,
+  "e": "Python requires an indented block following the function header colon (:); omitting it raises IndentationError."
+ },
+ "c36": {
+  "q": "In a number reversal function, what does 'digit = num % 10' isolate from '783'?",
+  "o": [
+   "7",
+   "8",
+   "3",
+   "78"
+  ],
+  "a": 2,
+  "e": "Modulo 10 (783 % 10) extracts the rightmost (units) digit, which is 3."
+ },
+ "c37": {
+  "q": "In the same reversal function, what does 'num //= 10' do to '783'?",
+  "o": [
+   "Leaves 78",
+   "Leaves 3",
+   "Leaves 7",
+   "Multiplies by 10"
+  ],
+  "a": 0,
+  "e": "Floor division by 10 (783 // 10) truncates the rightmost digit, leaving 78."
+ },
+ "c38": {
+  "q": "Which of the following is an INVALID function name in Python?",
+  "o": [
+   "calculate_area",
+   "_findTotal",
+   "3rd_calculation",
+   "displaySum"
+  ],
+  "a": 2,
+  "e": "Function names follow variable naming rules and cannot start with a number. '3rd_calculation' is invalid."
+ },
+ "c39": {
+  "q": "If 'def power(a, b=2): return a ** b', what does 'power(5)' evaluate to?",
+  "o": [
+   "10",
+   "25",
+   "7",
+   "TypeError"
+  ],
+  "a": 1,
+  "e": "'power(5)' uses the default exponent b=2: 5 ** 2 = 25."
+ },
+ "c40": {
+  "q": "What is printed by: def sq(): for i in range(1, 4): print(i**2, end=' '); sq()?",
+  "o": [
+   "1 4 9 ",
+   "1 2 3 ",
+   "2 4 6 ",
+   "1 4 9 16 "
+  ],
+  "a": 0,
+  "e": "range(1, 4) produces 1, 2, 3. The square of each is 1, 4, 9, printed with spaces."
+ }
+};
+
+  var LETTERS = ["A","B","C","D"];
+  var main = document.getElementById("main");
+  var slides = Array.prototype.slice.call(main.querySelectorAll(".slide"));
+  var cur = 0;
+  var updatingHash = false;
+
+  function buildMcq(s, key){
+    var d = MCQ[key];
+    if (!d) return;
+    s.dataset.title = "Checkpoint: " + d.q;
+    var html = '<span class="q-tag">Checkpoint Question</span><h2 class="q-text"></h2><div class="opts"></div><div class="explain" hidden></div><button class="ghost reset" type="button" hidden>Reset question</button>';
+    s.innerHTML = html;
+    s.querySelector(".q-text").textContent = d.q;
+    var box = s.querySelector(".opts");
+    d.o.forEach(function(t, i){
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "opt"; b.dataset.i = i;
+      var k = document.createElement("span"); k.className = "k"; k.textContent = LETTERS[i];
+      var tx = document.createElement("span"); tx.textContent = t;
+      b.appendChild(k); b.appendChild(tx);
+      b.addEventListener("click", function(){ answer(s, key, i); });
+      box.appendChild(b);
+    });
+    s.querySelector(".reset").addEventListener("click", function(){ reset(s); });
+  }
+
+  function answer(s, key, i){
+    if (s._done) return;
+    s._done = true;
+    var d = MCQ[key];
+    var opts = s.querySelectorAll(".opt");
+    opts.forEach(function(b, j){
+      b.disabled = true;
+      if (j === d.a) b.classList.add("correct");
+      else if (j === i) b.classList.add("wrong");
+      else b.classList.add("dim");
+    });
+    var ex = s.querySelector(".explain");
+    var good = i === d.a;
+    ex.className = "explain " + (good ? "good" : "bad");
+    ex.innerHTML = "";
+    var h = document.createElement("b"); h.textContent = good ? "✓ Correct!" : "✗ Not quite. The correct answer is " + LETTERS[d.a] + ".";
+    var p = document.createElement("span"); p.textContent = d.e;
+    ex.appendChild(h); ex.appendChild(p);
+    ex.hidden = false;
+    s.querySelector(".reset").hidden = false;
+    fitSlide();
+  }
+
+  function reset(s){
+    s._done = false;
+    s.querySelectorAll(".opt").forEach(function(b){ b.disabled = false; b.className = "opt"; });
+    s.querySelector(".explain").hidden = true;
+    s.querySelector(".reset").hidden = true;
+    fitSlide();
+  }
+
+  slides.forEach(function(s){ if (s.dataset.q) buildMcq(s, s.dataset.q); });
+
+  function goLesson(l){
+    for (var i = 0; i < slides.length; i++) {
+      if ((slides[i].dataset.lesson || "0") === l) { show(i); return; }
+    }
+  }
+
+  document.querySelectorAll("pre.code").forEach(function(c){
+    var t = c.textContent.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    c.innerHTML = t.replace(/\b(def|class|import|from|if|elif|else|while|for|in|return|print|input|len|range|append|insert|sum|min|max|get|keys|values|del|True|False|None|and|or|not|abs|pow|sqrt|int|float|str|list|dict|break|continue)\b/g, "<b>$1</b>");
+  });
+
+  var selBox = document.getElementById("sel");
+  var SELS = [
+  [
+    "0",
+    "Overview"
+  ],
+  [
+    "1",
+    "1. Concept"
+  ],
+  [
+    "2",
+    "2. Creating"
+  ],
+  [
+    "3",
+    "3. Calls"
+  ],
+  [
+    "4",
+    "4. Params"
+  ],
+  [
+    "5",
+    "5. Scope"
+  ],
+  [
+    "6",
+    "6. Return"
+  ],
+  [
+    "7",
+    "7. Arguments"
+  ],
+  [
+    "8",
+    "8. Programs"
+  ],
+  [
+    "9",
+    "9. Dry Run"
+  ],
+  [
+    "10",
+    "10. Exercises"
+  ]
+];
+
+  var selBtns = SELS.map(function(x){
+    var b = document.createElement("button");
+    b.type = "button"; b.dataset.l = x[0]; b.textContent = x[1]; b.title = LESSONS[x[0]];
+    b.addEventListener("click", function(){ goLesson(x[0]); });
+    selBox.appendChild(b);
+    return b;
+  });
+
+  document.querySelectorAll("[data-go]").forEach(function(b){
+    b.addEventListener("click", function(){ goLesson(b.dataset.go); });
+  });
+
+  var count = document.getElementById("count");
+  var bar = document.getElementById("bar");
+  var prev = document.getElementById("prev");
+  var next = document.getElementById("next");
+
+  function reserveAnswer(s){
+    if (!s.dataset.q || s._done) return function(){};
+    var ex = s.querySelector(".explain"), rs = s.querySelector(".reset");
+    var h0 = ex.hidden, r0 = rs.hidden, html0 = ex.innerHTML;
+    ex.innerHTML = "<b>Not quite. The answer is A.</b><span></span>";
+    ex.lastChild.textContent = MCQ[s.dataset.q] ? MCQ[s.dataset.q].e : "";
+    ex.hidden = false; rs.hidden = false;
+    return function(){ ex.hidden = h0; rs.hidden = r0; ex.innerHTML = html0; };
+  }
+
+  function fitSlide(){
+    var s = slides[cur];
+    if (!s) return;
+    var base = parseFloat(getComputedStyle(document.body).fontSize) || 20;
+    var lo = Math.max(13, base * 0.58), hi = base * 1.7;
+    var restore = reserveAnswer(s);
+    function fits(px){
+      s.style.fontSize = px + "px";
+      if (s.offsetHeight > main.clientHeight + 1) return false;
+      if (s.scrollWidth > s.clientWidth + 1) return false;
+      var sc = s.querySelectorAll(".scroll, .code");
+      for (var k = 0; k < sc.length; k++) if (sc[k].scrollWidth > sc[k].clientWidth + 1) return false;
+      return true;
+    }
+    var best;
+    if (fits(hi)) best = hi;
+    else if (!fits(lo)) best = lo;
+    else {
+      for (var n = 0; n < 10; n++) {
+        var mid = (lo + hi) / 2;
+        if (fits(mid)) lo = mid; else hi = mid;
+      }
+      best = lo;
+    }
+    s.style.fontSize = best + "px";
+    restore();
+  }
+
+  var fitTimer = null;
+  function refit(){ cancelAnimationFrame(fitTimer); fitTimer = requestAnimationFrame(fitSlide); }
+  window.addEventListener("resize", refit);
+  document.addEventListener("fullscreenchange", function(){ setTimeout(refit, 120); setTimeout(refit, 600); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(refit);
+
+  function show(i, noHash){
+    if (i < 0) i = 0;
+    if (i > slides.length - 1) i = slides.length - 1;
+    cur = i;
+    slides.forEach(function(s, j){ s.classList.toggle("active", j === i); });
+    var l = slides[i].dataset.lesson || "0";
+    document.body.dataset.lesson = l;
+    selBtns.forEach(function(b){
+      var on = b.dataset.l === l;
+      b.classList.toggle("on", on);
+      if (on) b.setAttribute("aria-current", "true"); else b.removeAttribute("aria-current");
+    });
+    count.textContent = (i + 1) + " / " + slides.length;
+    bar.style.width = ((i + 1) / slides.length * 100) + "%";
+    prev.disabled = i === 0;
+    next.disabled = i === slides.length - 1;
+    main.scrollTop = 0;
+    fitSlide();
+    if (!noHash) {
+      updatingHash = true;
+      try {
+        var targetHash = "#slide-" + (i + 1);
+        if (location.hash !== targetHash) {
+          location.hash = targetHash;
+        }
+      } catch (e) {}
+      setTimeout(function(){ updatingHash = false; }, 80);
+    }
+    markToc();
+  }
+
+  function fromHash(){
+    var m = /^#slide-(\d+)$/.exec(location.hash || "");
+    return m ? parseInt(m[1], 10) - 1 : 0;
+  }
+
+  window.addEventListener("hashchange", function(){
+    if (updatingHash) return;
+    var i = fromHash();
+    if (i !== cur) show(i, true);
+  });
+
+  prev.addEventListener("click", function(){ show(cur - 1); });
+  next.addEventListener("click", function(){ show(cur + 1); });
+
+  /* TOC */
+  var toc = document.getElementById("toc");
+  var panel = document.getElementById("tocPanel");
+  var items = [];
+  function buildToc(){
+    var last = null;
+    slides.forEach(function(s, i){
+      var l = s.dataset.lesson || "0";
+      if (l !== last) {
+        var h = document.createElement("h3");
+        h.textContent = LESSONS[l] || ("Section " + l);
+        panel.appendChild(h);
+        last = l;
+      }
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "toc-item" + (s.dataset.q ? " q" : "");
+      var n = document.createElement("span"); n.className = "n"; n.textContent = i + 1;
+      var t = document.createElement("span"); t.textContent = s.dataset.q ? ("Checkpoint: " + (MCQ[s.dataset.q] ? MCQ[s.dataset.q].q : "")) : s.dataset.title;
+      b.appendChild(n); b.appendChild(t);
+      b.addEventListener("click", function(){ toc.hidden = true; show(i); });
+      panel.appendChild(b);
+      items.push(b);
+    });
+  }
+  function markToc(){ items.forEach(function(b, i){ b.classList.toggle("now", i === cur); }); }
+  buildToc();
+  document.getElementById("tocBtn").addEventListener("click", function(){
+    toc.hidden = !toc.hidden;
+    if (!toc.hidden && items[cur]) items[cur].scrollIntoView({block:"center"});
+  });
+  toc.addEventListener("click", function(e){ if (e.target === toc) toc.hidden = true; });
+
+  /* Full screen */
+  var fs = document.getElementById("fsBtn");
+  var root = document.documentElement;
+  function inFs(){ return root.classList.contains("fs"); }
+  function enterFs(){
+    root.classList.add("fs");
+    try {
+      if (root.requestFullscreen) { var p = root.requestFullscreen(); if (p && p.catch) p.catch(function(){}); }
+    } catch (e) {}
+    setTimeout(refit, 150); setTimeout(refit, 600);
+  }
+  function exitFs(){
+    root.classList.remove("fs");
+    try { if (document.fullscreenElement) { var p = document.exitFullscreen(); if (p && p.catch) p.catch(function(){}); } } catch (e) {}
+    setTimeout(refit, 150); setTimeout(refit, 600);
+  }
+  function toggleFs(){ if (inFs()) exitFs(); else enterFs(); }
+  fs.addEventListener("click", toggleFs);
+  document.getElementById("fsExit").addEventListener("click", exitFs);
+  document.addEventListener("fullscreenchange", function(){
+    root.classList.toggle("fs", !!document.fullscreenElement);
+    setTimeout(refit, 150); setTimeout(refit, 600);
+  });
+
+  /* Touch swipe */
+  var tx = 0, ty = 0, tt = 0, tracking = false;
+  main.addEventListener("touchstart", function(e){
+    tracking = false;
+    if (e.touches.length !== 1 || !toc.hidden) return;
+    var t = e.touches[0]; tx = t.clientX; ty = t.clientY; tt = Date.now(); tracking = true;
+    var el = e.target.closest ? e.target.closest(".scroll, .code, .idle") : null;
+    if (el && el.scrollWidth > el.clientWidth + 1) tracking = false;
+  }, {passive:true});
+  main.addEventListener("touchend", function(e){
+    if (!tracking) return;
+    tracking = false;
+    var t = e.changedTouches[0], dx = t.clientX - tx, dy = t.clientY - ty;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5 && Date.now() - tt < 900) {
+      if (dx < 0) show(cur + 1); else show(cur - 1);
+    }
+  }, {passive:true});
+
+  /* Keyboard */
+  document.addEventListener("keydown", function(e){
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    var k = e.key;
+    if (k === "Escape") { if (!toc.hidden) toc.hidden = true; else if (inFs() && !document.fullscreenElement) exitFs(); return; }
+    if (!toc.hidden) return;
+    var tag = document.activeElement && document.activeElement.tagName;
+    if (k === "ArrowRight" || k === "PageDown") { e.preventDefault(); show(cur + 1); }
+    else if (k === "ArrowLeft" || k === "PageUp") { e.preventDefault(); show(cur - 1); }
+    else if (k === " ") { e.preventDefault(); show(cur + 1); }
+    else if (k === "Home") { show(0); }
+    else if (k === "End") { show(slides.length - 1); }
+    else if (k === "f" || k === "F") { toggleFs(); }
+    else if (k === "t" || k === "T") { toc.hidden = false; if (items[cur]) items[cur].scrollIntoView({block:"center"}); }
+    else {
+      var s = slides[cur];
+      if (s && s.dataset.q) {
+        var idx = "1234".indexOf(k);
+        if (idx < 0) idx = "abcd".indexOf(k.toLowerCase());
+        if (idx > -1) { var b = s.querySelectorAll(".opt")[idx]; if (b && !b.disabled) b.click(); }
+      }
+    }
+  });
+
+  show(fromHash(), true);
+})();
+</script>
+</body></html>
